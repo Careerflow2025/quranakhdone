@@ -1,0 +1,266 @@
+  const renderAddModal = () => {
+    if (!showAddModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Add New {addModalType.charAt(0).toUpperCase() + addModalType.slice(1)}</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <form className="space-y-4">
+              {addModalType === 'student' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter student name" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Age *</label>
+                      <input type="number" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Age" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Grade *</label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option>Select Grade</option>
+                        <option>4th Grade</option>
+                        <option>5th Grade</option>
+                        <option>6th Grade</option>
+                        <option>7th Grade</option>
+                        <option>8th Grade</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Class *</label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option>Select Class</option>
+                        {classes.map(cls => (
+                          <option key={cls.id}>{cls.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input type="email" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="student@email.com" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input type="tel" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="+1 234-567-8900" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Parent Name *</label>
+                    <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Parent full name" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <textarea className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows={2} placeholder="Home address"></textarea>
+                  </div>
+                </>
+              )}
+
+              {addModalType === 'teacher' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter teacher name" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option>Select Subject</option>
+                        <option>Quran Memorization</option>
+                        <option>Tajweed</option>
+                        <option>Islamic Studies</option>
+                        <option>Arabic Language</option>
+                        <option>Fiqh</option>
+                        <option>Hadith</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                      <input type="email" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="teacher@alnoor.edu" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                      <input type="tel" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="+1 234-567-8900" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Ijazah, Masters" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 5 years" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assign Classes</label>
+                    <div className="space-y-2">
+                      {classes.map(cls => (
+                        <label key={cls.id} className="flex items-center">
+                          <input type="checkbox" className="mr-2" />
+                          <span className="text-sm">{cls.name} - {cls.grade}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {addModalType === 'parent' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter parent name" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Occupation" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                      <input type="email" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="parent@email.com" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                      <input type="tel" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="+1 234-567-8900" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <textarea className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" rows={2} placeholder="Home address"></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Link Children</label>
+                    <select multiple className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" size={4}>
+                      {students.map(student => (
+                        <option key={student.id}>{student.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple children</p>
+                  </div>
+                </>
+              )}
+
+              {addModalType === 'class' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Class Name *</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Class 9A" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Grade Level *</label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option>Select Grade</option>
+                        <option>4th Grade</option>
+                        <option>5th Grade</option>
+                        <option>6th Grade</option>
+                        <option>7th Grade</option>
+                        <option>8th Grade</option>
+                        <option>9th Grade</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Room 101" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Schedule *</label>
+                      <input type="text" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., Mon-Fri 8:00 AM" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assign Teacher *</label>
+                    <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                      <option>Select Teacher</option>
+                      {teachers.map(teacher => (
+                        <option key={teacher.id}>{teacher.name} - {teacher.subject}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Subjects</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic', 'Fiqh', 'Hadith'].map(subject => (
+                        <label key={subject} className="flex items-center">
+                          <input type="checkbox" className="mr-2" />
+                          <span className="text-sm">{subject}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </form>
+          </div>
+
+          <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+            <button onClick={() => setShowAddModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+              Cancel
+            </button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              Add {addModalType.charAt(0).toUpperCase() + addModalType.slice(1)}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Confirm Upload Function
+  const confirmUpload = (newRows: any[], duplicatesToAdd: any[]) => {
+    const allRowsToAdd = [...newRows, ...duplicatesToAdd];
+    
+    if (bulkUploadType === 'students') {
+      const formattedStudents = allRowsToAdd.map((row, index) => ({
+        id: row.id || `STU${String(students.length + index + 1).padStart(3, '0')}`,
+        name: row.Name || row.name,
+        age: parseInt(row.Age) || 0,
+        grade: row.Grade || row.grade,
+        class: row.Class || row.class,
+        email: row.Email || row.email,
+        phone: row.Phone || row.phone,
+        parent: row['Parent Name'] || row.parent || '',
+        joinDate: row.joinDate || new Date().toISOString().split('T')[0],
+        progress: row.progress || Math.floor(Math.random() * 30) + 60,
+        attendance: row.attendance || Math.floor(Math.random() * 10) + 85,
+        status: 'active',
+        memorized: row.memorized || `${Math.floor(Math.random() * 10) + 1} Juz`
+      }));
+      
+      setStudents(prev => [...prev, ...formattedStudents]);
+      
+      // Show success message
+      alert(`Successfully uploaded ${allRowsToAdd.length} students!${duplicatesToAdd.length > 0 ? ` (Including ${duplicatesToAdd.length} updated duplicates)` : ''}`);
+    }
+    
+    // Reset states
+    setShowBulkUpload(false);
+    setShowDuplicateReview(false);
+    setUploadedData([]);
+    setDuplicates([]);
+  };
+

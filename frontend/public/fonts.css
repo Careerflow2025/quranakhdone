@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&display=swap');
+
+@font-face {
+  font-family: 'KFGQPC Uthmanic Script HAFS';
+  src: url('https://cdn.jsdelivr.net/gh/mustafa0x/qpc-fonts@1.0/QPC_Uthmanic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Me Quran';
+  src: url('https://cdn.jsdelivr.net/gh/mizanur/fonts@master/me_quran.ttf') format('truetype');
+}

@@ -1,0 +1,357 @@
+        </div>
+      )}
+
+      {/* Homework Tab */}
+      {activeTab === 'homework' && (
+        <div className="space-y-6">
+          {/* Search and Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold flex items-center">
+                <BookOpen className="w-6 h-6 mr-2 text-green-600" />
+                My Homework
+                <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
+                  {highlights.filter(h => h.type === 'homework').length} Total
+                </span>
+              </h2>
+            </div>
+
+            {/* Filters */}
+            <div className="flex items-center space-x-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search homework by surah, note, or teacher..."
+                  value={homeworkSearchTerm}
+                  onChange={(e) => setHomeworkSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-100 focus:border-green-400"
+                />
+              </div>
+
+              <select
+                value={homeworkStatusFilter}
+                onChange={(e) => setHomeworkStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-100 focus:border-green-400"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="overdue">Overdue</option>
+              </select>
+
+              <button
+                onClick={() => {
+                  setHomeworkSearchTerm('');
+                  setHomeworkStatusFilter('all');
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Homework Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {highlights
+              .filter(h => h.type === 'homework')
+              .filter(h => {
+                if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
+                if (homeworkSearchTerm) {
+                  const searchLower = homeworkSearchTerm.toLowerCase();
+                  return h.teacherNote.toLowerCase().includes(searchLower) ||
+                         h.teacherName.toLowerCase().includes(searchLower) ||
+                         `surah ${h.surah}`.toLowerCase().includes(searchLower);
+                }
+                return true;
+              })
+              .map((homework) => (
+                <div
+                  key={homework.id}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
+                >
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">
+                          Surah {homework.surah}, Ayah {homework.ayahIndex + 1}
+                        </h3>
+                        <p className="text-green-100 text-sm mt-1">
+                          Assigned by {homework.teacherName}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        homework.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                        homework.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {homework.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <p className="text-gray-700 mb-4">
+                      {homework.teacherNote}
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Due Date:</span>
+                        <span className={`font-medium ${
+                          homework.status === 'overdue' ? 'text-red-600' : 'text-gray-700'
+                        }`}>
+                          {homework.dueDate}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Assigned:</span>
+                        <span className="text-gray-700">{homework.timestamp}</span>
+                      </div>
+
+                      {homework.replies.length > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">Conversation:</span>
+                          <span className="text-blue-600 font-medium">
+                            {homework.replies.length} messages
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setActiveTab('quran');
+                          setCurrentSurah(homework.surah);
+                          const page = Math.floor(homework.ayahIndex / AYAHS_PER_PAGE) + 1;
+                          setCurrentPage(page);
+                        }}
+                        className="flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Go to Quran</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleHighlightClick(homework.id)}
+                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Reply</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {highlights.filter(h => h.type === 'homework').filter(h => {
+            if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
+            if (homeworkSearchTerm) {
+              const searchLower = homeworkSearchTerm.toLowerCase();
+              return h.teacherNote.toLowerCase().includes(searchLower) ||
+                     h.teacherName.toLowerCase().includes(searchLower) ||
+                     `surah ${h.surah}`.toLowerCase().includes(searchLower);
+            }
+            return true;
+          }).length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No homework found</h3>
+              <p className="text-gray-500">
+                {homeworkSearchTerm || homeworkStatusFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'You don\'t have any homework assigned yet'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Assignments Tab */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-6">
+          {/* Search and Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold flex items-center">
+                <FileText className="w-6 h-6 mr-2 text-purple-600" />
+                My Assignments (Mistakes)
+                <span className="ml-3 bg-purple-100 text-purple-700 text-sm px-2 py-1 rounded-full">
+                  {highlights.filter(h => h.type === 'assignment').length} Total
+                </span>
+              </h2>
+            </div>
+
+            {/* Filters */}
+            <div className="flex items-center space-x-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search assignments by surah, note, or type..."
+                  value={assignmentSearchTerm}
+                  onChange={(e) => setAssignmentSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-400"
+                />
+              </div>
+
+              <select
+                value={assignmentTypeFilter}
+                onChange={(e) => setAssignmentTypeFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-400"
+              >
+                <option value="all">All Types</option>
+                <option value="tajweed">Tajweed</option>
+                <option value="haraka">Haraka</option>
+                <option value="recap">Recap</option>
+              </select>
+
+              <button
+                onClick={() => {
+                  setAssignmentSearchTerm('');
+                  setAssignmentTypeFilter('all');
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Assignments Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {highlights
+              .filter(h => h.type === 'assignment')
+              .filter(h => {
+                if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
+                if (assignmentSearchTerm) {
+                  const searchLower = assignmentSearchTerm.toLowerCase();
+                  return h.teacherNote.toLowerCase().includes(searchLower) ||
+                         h.teacherName.toLowerCase().includes(searchLower) ||
+                         h.mistakeType.toLowerCase().includes(searchLower) ||
+                         `surah ${h.surah}`.toLowerCase().includes(searchLower);
+                }
+                return true;
+              })
+              .map((assignment) => (
+                <div
+                  key={assignment.id}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
+                >
+                  <div className={`p-4 ${
+                    assignment.mistakeType === 'tajweed' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
+                    assignment.mistakeType === 'recap' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
+                    assignment.mistakeType === 'haraka' ? 'bg-gradient-to-r from-red-500 to-rose-500' :
+                    'bg-gradient-to-r from-gray-500 to-gray-600'
+                  }`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">
+                          Surah {assignment.surah}, Ayah {assignment.ayahIndex + 1}
+                        </h3>
+                        <p className="text-white text-opacity-90 text-sm mt-1">
+                          {assignment.teacherName}
+                        </p>
+                      </div>
+                      <span className="bg-white bg-opacity-20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white">
+                        {assignment.mistakeType}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <p className="text-gray-700 mb-4">
+                      {assignment.teacherNote}
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Status:</span>
+                        <span className={`font-medium ${
+                          assignment.status === 'reviewed' ? 'text-green-600' :
+                          assignment.status === 'pending' ? 'text-yellow-600' :
+                          'text-gray-600'
+                        }`}>
+                          {assignment.status}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Assigned:</span>
+                        <span className="text-gray-700">{assignment.timestamp}</span>
+                      </div>
+
+                      {assignment.replies.length > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">Conversation:</span>
+                          <span className="text-blue-600 font-medium">
+                            {assignment.replies.length} messages
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setActiveTab('quran');
+                          setCurrentSurah(assignment.surah);
+                          const page = Math.floor(assignment.ayahIndex / AYAHS_PER_PAGE) + 1;
+                          setCurrentPage(page);
+                        }}
+                        className="flex items-center space-x-2 text-purple-600 hover:text-purple-700 font-medium"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Go to Quran</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleHighlightClick(assignment.id)}
+                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Reply</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {highlights.filter(h => h.type === 'assignment').filter(h => {
+            if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
+            if (assignmentSearchTerm) {
+              const searchLower = assignmentSearchTerm.toLowerCase();
+              return h.teacherNote.toLowerCase().includes(searchLower) ||
+                     h.teacherName.toLowerCase().includes(searchLower) ||
+                     h.mistakeType.toLowerCase().includes(searchLower) ||
+                     `surah ${h.surah}`.toLowerCase().includes(searchLower);
+            }
+            return true;
+          }).length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">No assignments found</h3>
+              <p className="text-gray-500">
+                {assignmentSearchTerm || assignmentTypeFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'You don\'t have any assignments yet'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Messages Tab */}
+      {activeTab === 'messages' && (
+        <div className="bg-white rounded-xl shadow-sm p-8">
+          <h2 className="text-xl font-semibold mb-6">Messages</h2>
+          {/* Add your messages content here */}
+          <p className="text-gray-500">Messages feature coming soon...</p>
+        </div>
+      )}
+    </div>

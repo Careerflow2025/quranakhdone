@@ -1,0 +1,135 @@
+/* Uthmani Hafs - Traditional Saudi Mushaf style */
+@font-face {
+  font-family: 'KFGQPC Uthmanic Script HAFS';
+  src: url('https://fonts.qurancdn.com/fonts/quran/hafs/v2/woff2/p1.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* Warsh - North African style */
+@font-face {
+  font-family: 'Scheherazade New';
+  src: url('https://fonts.googleapis.com/css2?family=Scheherazade+New&display=swap');
+  font-display: swap;
+}
+
+/* Indo-Pak Nastaliq style */
+@font-face {
+  font-family: 'Me Quran';
+  src: url('https://fonts.qurancdn.com/fonts/quran/hafs/me_quran/woff2/p1.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* Amiri - Maghrebi style */
+@font-face {
+  font-family: 'Amiri';
+  src: url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Amiri Quran';
+  src: url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+  font-display: swap;
+}
+
+/* Noto Naskh Arabic - Qaloon style */
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  src: url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+  font-display: swap;
+}
+
+/* Traditional Arabic - fallback */
+@font-face {
+  font-family: 'Traditional Arabic';
+  src: local('Traditional Arabic'), local('Arabic Typesetting');
+  font-display: swap;
+}
+
+/* Simplified Arabic - Modern style */
+@font-face {
+  font-family: 'Simplified Arabic';
+  src: local('Simplified Arabic'), local('Arial');
+  font-display: swap;
+}
+
+/* Lateef - Alternative Maghrebi */
+@font-face {
+  font-family: 'Lateef';
+  src: url('https://fonts.googleapis.com/css2?family=Lateef:wght@200;300;400;500;600;700;800&display=swap');
+  font-display: swap;
+}
+
+/* Base mushaf text styles */
+.mushaf-text {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Style for each script type - All standardized to 31px like Indo-Pak */
+.script-uthmani-hafs {
+  font-family: 'KFGQPC Uthmanic Script HAFS', 'Amiri Quran', serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: 0.02em;
+  word-spacing: 0.3em;
+  color: #000000;
+  font-weight: normal;
+}
+
+.script-warsh {
+  font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: 0.01em;
+  word-spacing: 0.25em;
+  color: #000000;
+  font-weight: 500;
+}
+
+.script-qaloon {
+  font-family: 'Noto Naskh Arabic', 'Arabic Typesetting', serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: 0.015em;
+  word-spacing: 0.28em;
+  color: #000000;
+  font-weight: 400;
+}
+
+.script-simple {
+  font-family: 'Simplified Arabic', 'Arial', sans-serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: normal;
+  word-spacing: normal;
+  color: #000000;
+  font-weight: bold;
+}
+
+.script-tajweed {
+  font-family: 'Me Quran', 'Jameel Noori Nastaleeq', serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: 0.03em;
+  word-spacing: 0.4em;
+  color: #000000;
+  font-weight: normal;
+}
+
+.script-maghrebi {
+  font-family: 'Amiri', 'Lateef', serif;
+  font-size: 31px;
+  line-height: 2.5;
+  letter-spacing: 0.005em;
+  word-spacing: 0.2em;
+  color: #000000;
+  font-weight: 600;
+}
+
+/* Justified text for mushaf pages */
+.mushaf-page-justified {
+  text-align: justify;
+  text-align-last: justify;
+  text-justify: inter-word;
+}
