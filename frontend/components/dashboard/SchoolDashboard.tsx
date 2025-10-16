@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
 import { useAuthStore } from '@/store/authStore';
 import SchoolProfile from './SchoolProfile';
 import {
@@ -30,6 +31,10 @@ const ClassBuilderUltra = dynamic(() => import('./ClassBuilderUltra'), {
   ssr: false,
   loading: () => <div className="flex items-center justify-center p-8"><div className="text-gray-500">Loading Class Builder Ultra...</div></div>
 });
+
+// Type definitions for Supabase operations
+type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
+type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
 
 export default function SchoolDashboard() {
   // Reports filters (declare early for useReportsData)
@@ -703,21 +708,23 @@ export default function SchoolDashboard() {
       }));
 
       // Create class record
-      const { data, error } = await supabase
+      const classInsertData: TablesInsert<'classes'> = {
+        school_id: user?.schoolId || '',
+        name: classData.name,
+        room: classData.room || null,
+        grade: classData.grade || null,
+        capacity: classData.capacity || 30,
+        schedule: {
+          schedules: formattedSchedules,
+          timezone: 'Africa/Casablanca' // Default timezone
+        },
+        created_by: null, // Will be set when teacher is assigned in Class Builder
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await (supabase as any)
         .from('classes')
-        .insert({
-          school_id: user?.schoolId,
-          name: classData.name,
-          room: classData.room || null,
-          grade: classData.grade || null,
-          capacity: classData.capacity || 30,
-          schedule_json: {
-            schedules: formattedSchedules,
-            timezone: 'Africa/Casablanca' // Default timezone
-          },
-          created_by: null, // Will be set when teacher is assigned in Class Builder
-          created_at: new Date().toISOString()
-        } as any)
+        .insert(classInsertData)
         .select()
         .single();
 
@@ -836,17 +843,19 @@ export default function SchoolDashboard() {
         return;
       }
 
-      const { data, error } = await supabase
+      const insertData: TablesInsert<'assignments'> = {
+        school_id: user?.schoolId || '',
+        created_by_teacher_id: (teacherData as any).id,
+        student_id: assignmentData.student_id,
+        title: assignmentData.title,
+        description: assignmentData.description || null,
+        due_at: assignmentData.due_at,
+        status: 'assigned'
+      };
+
+      const { data, error } = await (supabase as any)
         .from('assignments')
-        .insert({
-          school_id: user?.schoolId,
-          created_by_teacher_id: (teacherData as any).id,
-          student_id: assignmentData.student_id,
-          title: assignmentData.title,
-          description: assignmentData.description,
-          due_at: assignmentData.due_at,
-          status: 'assigned'
-        } as any)
+        .insert(insertData)
         .select()
         .single();
 
@@ -875,16 +884,18 @@ export default function SchoolDashboard() {
     setShowAddModal(true);
   };
 
-  const handleUpdateAssignment = async (assignmentId: any, assignmentData: any) => {
+  const handleUpdateAssignment = async (assignmentId: string, assignmentData: any) => {
     try {
-      const { error } = await supabase
+      const updateData: TablesUpdate<'assignments'> = {
+        title: assignmentData.title,
+        description: assignmentData.description || null,
+        student_id: assignmentData.student_id,
+        due_at: assignmentData.due_at
+      };
+
+      const { error } = await (supabase as any)
         .from('assignments')
-        .update({
-          title: assignmentData.title,
-          description: assignmentData.description,
-          student_id: assignmentData.student_id,
-          due_at: assignmentData.due_at
-        } as any)
+        .update(updateData)
         .eq('id', assignmentId);
 
       if (error) throw error;
@@ -901,7 +912,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId, title) => {
+  const handleDeleteAssignment = async (assignmentId: any, title: any) => {
     if (!confirm(`Are you sure you want to delete "${title}?`)) return;
 
     try {
@@ -920,7 +931,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  const handleDeleteTarget = async (targetId, title) => {
+  const handleDeleteTarget = async (targetId: any, title: any) => {
     if (!confirm(`Are you sure you want to delete "${title}?`)) return;
 
     try {
@@ -961,7 +972,7 @@ export default function SchoolDashboard() {
           quran_ayahs(surah, ayah),
           notes(text, audio_url)
         `)
-        .eq('school_id', user?.schoolId)
+        .eq('school_id', user?.schoolId || '')
         .eq('mistake_type', 'recap') // Green highlights for memorization
         .order('created_at', { ascending: false }) as any;
 
@@ -1001,7 +1012,7 @@ export default function SchoolDashboard() {
           teachers(name),
           assignment_submissions(count)
         `)
-        .eq('school_id', user?.schoolId)
+        .eq('school_id', user?.schoolId || '')
         .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
@@ -1084,7 +1095,7 @@ export default function SchoolDashboard() {
   };
 
   // Send credential email
-  const sendCredentialEmail = async (credentialId) => {
+  const sendCredentialEmail = async (credentialId: any) => {
     setSendingEmail((prev: any) => ({ ...prev, [credentialId]: true }));
 
     try {
@@ -1095,12 +1106,12 @@ export default function SchoolDashboard() {
       const { data: schoolData } = await supabase
         .from('schools')
         .select('name')
-        .eq('id', user.schoolId)
+        .eq('id', user?.schoolId || '')
         .single();
 
       // Call the edge function to send email
       const emailHtml = `
-        <h2>Welcome to ${schoolData?.name || 'QuranAkh School'}</h2>
+        <h2>Welcome to ${(schoolData as any)?.name || 'QuranAkh School'}</h2>
         <p>Hello ${credential.profiles?.display_name || 'User'},</p>
         <p>Your ${credential.role} account has been created.</p>
         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -1116,7 +1127,7 @@ export default function SchoolDashboard() {
       const { error } = await supabase.functions.invoke('send-email', {
         body: {
           to: credential.email,
-          subject: `Your ${schoolData?.name || 'QuranAkh School'} Login Credentials`,
+          subject: `Your ${(schoolData as any)?.name || 'QuranAkh School'} Login Credentials`,
           html: emailHtml
         }
       });
@@ -1124,9 +1135,13 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Update sent_at timestamp
-      await supabase
+      const updateData: TablesUpdate<'user_credentials'> = {
+        sent_at: new Date().toISOString()
+      };
+
+      await (supabase as any)
         .from('user_credentials')
-        .update({ sent_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', credentialId);
 
       showNotification('Credential email sent successfully', 'success');
@@ -1160,17 +1175,19 @@ export default function SchoolDashboard() {
   };
 
   // Reset password
-  const resetCredentialPassword = async (credentialId) => {
+  const resetCredentialPassword = async (credentialId: any) => {
     try {
       // Generate new password
       const newPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-5);
 
-      const { error } = await supabase
+      const resetData: TablesUpdate<'user_credentials'> = {
+        password: newPassword,
+        sent_at: null // Reset sent status so they need to send new email
+      };
+
+      const { error } = await (supabase as any)
         .from('user_credentials')
-        .update({
-          password: newPassword,
-          sent_at: null // Reset sent status so they need to send new email
-        })
+        .update(resetData)
         .eq('id', credentialId);
 
       if (error) throw error;
@@ -1187,11 +1204,11 @@ export default function SchoolDashboard() {
   const loadMessages = async () => {
     try {
       // Get messages where the current user is either sender or recipient
-      const { data: sentMessages, error: sentError } = await supabase
+      const { data: sentMessages, error: sentError } = await (supabase as any)
         .from('messages')
         .select('*')
-        .eq('school_id', user?.schoolId)
-        .eq('sender_id', user?.id)
+        .eq('school_id', user?.schoolId || '')
+        .eq('sender_id', user?.id || '')
         .order('created_at', { ascending: false });
 
       // Get sender profiles separately
@@ -1210,16 +1227,16 @@ export default function SchoolDashboard() {
       }
 
       // Get received messages
-      const { data: receivedRecords, error: receivedError } = await supabase
+      const { data: receivedRecords, error: receivedError } = await (supabase as any)
         .from('message_recipients')
         .select('*')
-        .eq('recipient_id', user?.id)
+        .eq('recipient_id', user?.id || '')
         .order('created_at', { ascending: false });
 
       let receivedMessages = [];
       if (receivedRecords && !receivedError) {
         const messageIds = receivedRecords.map((r: any) => r.message_id);
-        const { data: messages } = await supabase
+        const { data: messages } = await (supabase as any)
           .from('messages')
           .select('*')
           .in('id', messageIds);
@@ -1233,11 +1250,11 @@ export default function SchoolDashboard() {
 
           receivedMessages = receivedRecords.map((rec: any) => {
             const message = messages.find((m: any) => m.id === rec.message_id);
-            const sender = senderProfiles?.find((p: any) => p.user_id === message?.sender_id);
+            const sender = senderProfiles?.find((p: any) => p.user_id === (message as any)?.sender_id);
             return {
               ...rec,
               messages: {
-                ...message,
+                ...(message || {}),
                 sender
               }
             };
@@ -1264,7 +1281,7 @@ export default function SchoolDashboard() {
       ];
 
       // Sort by date
-      allMessages.sort((a, b) => new Date(b.created_at || b.messages?.created_at) - new Date(a.created_at || a.messages?.created_at));
+      allMessages.sort((a, b) => new Date(b.created_at || b.messages?.created_at).getTime() - new Date(a.created_at || a.messages?.created_at).getTime());
 
       setMessages(allMessages);
 
@@ -1280,7 +1297,7 @@ export default function SchoolDashboard() {
   };
 
   // Send Message function
-  const handleSendMessage = async (recipient, subject, body, recipientType, priority = 'normal', sendViaEmail = false) => {
+  const handleSendMessage = async (recipient: any, subject: any, body: any, recipientType: any, priority = 'normal', sendViaEmail = false) => {
     try {
       // Make sure we have required values
       if (!user?.id || !user?.schoolId) {
@@ -1305,7 +1322,7 @@ export default function SchoolDashboard() {
         recipient_type: recipientType
       });
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('messages')
         .insert({
           school_id: user.schoolId,
@@ -1323,7 +1340,7 @@ export default function SchoolDashboard() {
         console.error('Send message error details:', error);
         // Try without select() if that's causing issues
         if (error.message?.includes('select')) {
-          const { data: retryData, error: retryError } = await supabase
+          const { data: retryData, error: retryError } = await (supabase as any)
             .from('messages')
             .insert({
               school_id: user.schoolId,
@@ -1370,11 +1387,11 @@ export default function SchoolDashboard() {
   };
 
   // Mark message as read
-  const markMessageAsRead = async (messageId) => {
+  const markMessageAsRead = async (messageId: any) => {
     try {
-      await supabase.rpc('mark_message_read', {
+      await (supabase as any).rpc('mark_message_read', {
         p_message_id: messageId,
-        p_user_id: user?.id
+        p_user_id: user?.id || ''
       });
 
       // Update local state
@@ -1435,7 +1452,7 @@ export default function SchoolDashboard() {
 
   const pendingAssignments = assignments.filter((a: any) => a.status === 'assigned' && !a.late).length;
 
-  const handleViewClass = async (classId) => {
+  const handleViewClass = async (classId: any) => {
     const cls = classes.find((c: any) => c.id === classId);
     if (cls) {
       // Fetch additional details like enrolled students and assigned teachers
@@ -1458,7 +1475,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Edit Class Function
-  const handleEditClass = async (classData) => {
+  const handleEditClass = async (classData: any) => {
     try {
       // Format schedules for storage
       const formattedSchedules = classData.schedules.map((schedule: any) => ({
@@ -1468,18 +1485,20 @@ export default function SchoolDashboard() {
         duration: calculateDuration(schedule.startTime, schedule.endTime)
       }));
 
-      const { error } = await supabase
+      const classUpdateData: TablesUpdate<'classes'> = {
+        name: classData.name,
+        room: classData.room || null,
+        grade: classData.grade || null,
+        capacity: classData.capacity,
+        schedule: {
+          schedules: formattedSchedules,
+          timezone: 'Africa/Casablanca'
+        }
+      };
+
+      const { error } = await (supabase as any)
         .from('classes')
-        .update({
-          name: classData.name,
-          room: classData.room,
-          grade: classData.grade,
-          capacity: classData.capacity,
-          schedule_json: {
-            schedules: formattedSchedules,
-            timezone: 'Africa/Casablanca'
-          }
-        })
+        .update(classUpdateData)
         .eq('id', classData.id);
 
       if (error) throw error;
@@ -1505,7 +1524,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Delete Class Function
-  const handleDeleteClass = async (classId, className) => {
+  const handleDeleteClass = async (classId: any, className: any) => {
     if (!confirm(`Are you sure you want to delete "${className}? This will remove all enrollments and teacher assignments.`)) {
       return;
     }
@@ -1539,7 +1558,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Bulk Upload Function with Duplicate Detection
-  const handleBulkUpload = async (file, type) => {
+  const handleBulkUpload = async (file: any, type: any) => {
     try {
       // Parse CSV file
       const text = await file.text();
@@ -1664,7 +1683,7 @@ export default function SchoolDashboard() {
   };
 
   // Process bulk students - Professional version
-  const processBulkStudents = async (students, duplicateAction = 'skip') => {
+  const processBulkStudents = async (students: any, duplicateAction = 'skip') => {
     setShowBulkProgress(true);
     setBulkProgress({
       total: students.length,
@@ -1673,7 +1692,8 @@ export default function SchoolDashboard() {
       failed: 0,
       skipped: 0,
       current: 'Initializing...',
-      credentials: []
+      credentials: [],
+      isComplete: false
     });
 
     let successCount = 0;
@@ -1730,7 +1750,7 @@ export default function SchoolDashboard() {
 
               if (existingProfile) {
                 // Update student data
-                await supabase
+                await (supabase as any)
                   .from('students')
                   .update({
                     age: student.age,
@@ -1738,7 +1758,7 @@ export default function SchoolDashboard() {
                     gender: student.gender,
                     address: student.address
                   })
-                  .eq('user_id', existingProfile.user_id);
+                  .eq('user_id', (existingProfile as any).user_id);
 
                 successCount++;
                 setBulkProgress((prev: any) => ({ ...prev, success: successCount }));
@@ -1787,7 +1807,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Delete Student Function - Complete removal
-  const handleDeleteStudent = async (studentId) => {
+  const handleDeleteStudent = async (studentId: any) => {
     if (confirm('Are you sure you want to delete this student? This will completely remove them from the system.')) {
       try {
         // First, get the student's user_id
@@ -1799,10 +1819,10 @@ export default function SchoolDashboard() {
 
         if (fetchError) throw fetchError;
 
-        const userId = studentData.user_id;
+        const userId = (studentData as any).user_id;
 
         // Try to use the database function to delete completely
-        const { error: rpcError } = await supabase
+        const { error: rpcError } = await (supabase as any)
           .rpc('delete_user_completely', { user_id_to_delete: userId });
 
         if (rpcError) {
@@ -1944,7 +1964,7 @@ export default function SchoolDashboard() {
     a.click();
   };
 
-  const handleDeleteStudents = async (studentIds) => {
+  const handleDeleteStudents = async (studentIds: any) => {
     if (!confirm(`Are you sure you want to delete ${studentIds.length} student(s)? This will completely remove them from the system.`)) return;
 
     try {
@@ -1964,10 +1984,10 @@ export default function SchoolDashboard() {
             continue;
           }
 
-          const userId = studentData.user_id;
+          const userId = (studentData as any).user_id;
 
           // Try to use the database function to delete completely
-          const { error: rpcError } = await supabase
+          const { error: rpcError } = await (supabase as any)
             .rpc('delete_user_completely', { user_id_to_delete: userId });
 
           if (rpcError) {
@@ -2029,7 +2049,7 @@ export default function SchoolDashboard() {
   };
 
   // Delete Teacher Function
-  const handleDeleteTeacher = async (teacherId) => {
+  const handleDeleteTeacher = async (teacherId: any) => {
     if (confirm('Are you sure you want to delete this teacher? This will completely remove them from the system.')) {
       try {
         // First, get the teacher's user_id
@@ -2041,10 +2061,10 @@ export default function SchoolDashboard() {
 
         if (fetchError) throw fetchError;
 
-        const userId = teacherData.user_id;
+        const userId = (teacherData as any).user_id;
 
         // Try to use the database function to delete completely
-        const { error: rpcError } = await supabase
+        const { error: rpcError } = await (supabase as any)
           .rpc('delete_user_completely', { user_id_to_delete: userId });
 
         if (rpcError) {
@@ -3091,7 +3111,7 @@ export default function SchoolDashboard() {
                                     )
                                   `)
                                   .eq('parent_id', parent.id) as any)
-                                  .then(({ data }) => {
+                                  .then(({ data }: any) => {
                                     const linkedStudents = data?.map((link: any) => ({
                                       id: link.students.id,
                                       name: link.students.profiles.display_name,
@@ -3976,7 +3996,7 @@ export default function SchoolDashboard() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <button
-                              onClick={() => handleStarMessage(selectedMessage.id)}
+                              onClick={() => {/* TODO: Implement handleStarMessage(selectedMessage.id) */}}
                               className={`p-2 rounded-lg hover:bg-gray-100 ${
                                 selectedMessage.starred ? 'text-yellow-500' : 'text-gray-400'
                               }`}

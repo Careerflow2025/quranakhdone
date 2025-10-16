@@ -440,6 +440,7 @@ export type Database = {
           email: string
           password: string
           role: string
+          sent_at: string | null
           created_at: string
         }
         Insert: {
@@ -449,6 +450,7 @@ export type Database = {
           email: string
           password: string
           role: string
+          sent_at?: string | null
           created_at?: string
         }
         Update: {
@@ -458,6 +460,7 @@ export type Database = {
           email?: string
           password?: string
           role?: string
+          sent_at?: string | null
           created_at?: string
         }
       }
