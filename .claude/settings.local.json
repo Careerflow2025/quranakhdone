@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./fix_implicit_any_build23.sh)"
+      "Bash(./fix_implicit_any_build23.sh)",
+      "Read(//c//**)",
+      "Bash(./fix_build24_syntax.sh)"
     ],
     "deny": [],
     "ask": []

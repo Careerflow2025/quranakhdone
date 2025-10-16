@@ -927,7 +927,7 @@ export default function ParentDashboard() {
                                 )}
                                 {/* Waveform */}
                                 <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array(_: any)].map((_: any: any, i: any: any) => {
+                                  {[...Array(20)].map((_: any, i: any) => {
                                     const isPlaying = playingAudioId === reply.id;
                                     const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
                                     return (
