@@ -150,7 +150,7 @@ export default function StudentDashboard() {
       // Use the actual Quran data
       setQuranText({
         surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
-        ayahs: surahData.ayahs.map((ayah) => ({
+        ayahs: surahData.ayahs.map((ayah: any) => ({
           number: ayah.numberInSurah,
           text: ayah.text,
           words: ayah.text.split(' ')
