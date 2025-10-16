@@ -107,6 +107,9 @@ export default function RegisterPage() {
         }
       });
 
+      // Create mutable variable for authenticated user
+      let authenticatedUser: any = authData?.user;
+
       // Handle existing user case
       if (authError && authError.message === 'User already registered') {
         // User exists, try to sign them in
@@ -131,12 +134,12 @@ export default function RegisterPage() {
         }
 
         // Continue with school creation for existing user
-        authData.user = signInData.user;
+        authenticatedUser = signInData.user;
       } else if (authError) {
         throw authError;
       }
 
-      if (!authData.user) throw new Error('Failed to create user account');
+      if (!authenticatedUser) throw new Error('Failed to create user account');
 
       // Step 2: Now we're authenticated, create the school
       const { data: schoolInsertData, error: schoolError } = await supabase
@@ -165,7 +168,7 @@ export default function RegisterPage() {
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert([{
-          user_id: authData.user.id,
+          user_id: authenticatedUser.id,
           school_id: schoolInsertData.id,
           role: 'school',
           display_name: adminData.fullName,
@@ -187,7 +190,7 @@ export default function RegisterPage() {
             display_name: adminData.fullName,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', authData.user.id);
+          .eq('user_id', authenticatedUser.id);
 
         if (updateError) {
           console.error('Profile update error:', updateError);
@@ -199,7 +202,7 @@ export default function RegisterPage() {
       await supabase
         .from('user_credentials')
         .upsert([{
-          user_id: authData.user.id,
+          user_id: authenticatedUser.id,
           school_id: schoolInsertData.id,
           username: adminData.email,
           password: adminData.password,
