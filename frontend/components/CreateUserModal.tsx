@@ -91,14 +91,12 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          user_id: authData.user.id,
           school_id: adminProfile.school_id,
           email: formData.email,
-          full_name: formData.fullName,
+          display_name: formData.fullName,
           role: formData.role,
-          phone: formData.phone,
-          password: 'managed_by_auth', // Don't store actual password
-          created_at: new Date().toISOString()
+          phone: formData.phone
         });
 
       if (profileError) throw profileError;
