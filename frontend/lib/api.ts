@@ -250,7 +250,88 @@ export const gradebookApi = {
 export const dashboardApi = {
   getStats: (role: string) =>
     apiClient.get(`/schools/my/stats?role=${role}`),
-  
+
   getRecentActivity: () =>
     apiClient.get('/schools/my/stats'),
+};
+
+export const teacherApi = {
+  getTeachers: (params?: { school_id?: string }) =>
+    apiClient.get('/teachers', { params }),
+
+  getTeacher: (id: string) =>
+    apiClient.get(`/teachers/${id}`),
+
+  createTeacher: (data: any) =>
+    apiClient.post('/teachers', data),
+
+  updateTeacher: (id: string, data: any) =>
+    apiClient.put(`/teachers/${id}`, data),
+
+  deleteTeacher: (id: string) =>
+    apiClient.delete(`/teachers/${id}`),
+
+  getTeacherClasses: (id: string) =>
+    apiClient.get(`/teachers/${id}/classes`),
+
+  getTeacherStudents: (id: string) =>
+    apiClient.get(`/teachers/${id}/students`),
+};
+
+export const studentApi = {
+  getStudents: (params?: { school_id?: string; class_id?: string }) =>
+    apiClient.get('/students', { params }),
+
+  getStudent: (id: string) =>
+    apiClient.get(`/students/${id}`),
+
+  createStudent: (data: any) =>
+    apiClient.post('/students', data),
+
+  updateStudent: (id: string, data: any) =>
+    apiClient.put(`/students/${id}`, data),
+
+  deleteStudent: (id: string) =>
+    apiClient.delete(`/students/${id}`),
+
+  getStudentProgress: (id: string) =>
+    apiClient.get(`/students/${id}/progress`),
+
+  getStudentAssignments: (id: string) =>
+    apiClient.get(`/students/${id}/assignments`),
+
+  bulkImport: (file: File, onProgress?: (progress: number) => void) =>
+    apiClient.uploadFile('/students/bulk-import', file, onProgress),
+};
+
+export const classApi = {
+  getClasses: (params?: { school_id?: string; teacher_id?: string }) =>
+    apiClient.get('/classes', { params }),
+
+  getClass: (id: string) =>
+    apiClient.get(`/classes/${id}`),
+
+  createClass: (data: any) =>
+    apiClient.post('/classes', data),
+
+  updateClass: (id: string, data: any) =>
+    apiClient.put(`/classes/${id}`, data),
+
+  deleteClass: (id: string) =>
+    apiClient.delete(`/classes/${id}`),
+
+  getClassStudents: (id: string) =>
+    apiClient.get(`/classes/${id}/students`),
+
+  addStudentToClass: (classId: string, studentId: string) =>
+    apiClient.post(`/classes/${classId}/students`, { student_id: studentId }),
+
+  removeStudentFromClass: (classId: string, studentId: string) =>
+    apiClient.delete(`/classes/${classId}/students/${studentId}`),
+
+  getClassTeachers: (id: string) =>
+    apiClient.get(`/classes/${id}/teachers`),
+
+  addTeacherToClass: (classId: string, teacherId: string) =>
+    apiClient.post(`/classes/${classId}/teachers`, { teacher_id: teacherId }),
 };
