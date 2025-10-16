@@ -137,13 +137,12 @@ export default function RegisterSchool() {
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          user_id: authData.user.id,
           school_id: newSchool.id,
           email: adminData.email,
-          full_name: adminData.fullName,
+          display_name: adminData.fullName,
           role: 'school_admin',
-          phone: adminData.phone || '',
-          password: adminData.password // Store the actual password for now (not ideal but works)
+          phone: adminData.phone || ''
         } as any);
 
       if (profileError) {
