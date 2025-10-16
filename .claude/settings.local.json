@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(dir /b /s C:quranakhfinalproduction)",
+      "Bash(findstr:*)",
+      "mcp__supabase__live_dangerously",
+      "mcp__supabase__execute_postgresql",
+      "Bash(git check-ignore:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
