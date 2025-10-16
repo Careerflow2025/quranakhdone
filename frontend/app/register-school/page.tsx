@@ -85,7 +85,11 @@ export default function RegisterSchool() {
         throw authError;
       }
 
-      console.log('Auth account created successfully:', authData?.user?.id);
+      if (!authData.user) {
+        throw new Error('User creation failed - no user data returned');
+      }
+
+      console.log('Auth account created successfully:', authData.user.id);
 
       // Step 2: Try to sign in - if email confirmation is required, continue anyway
       console.log('Step 2: Attempting sign in...');
