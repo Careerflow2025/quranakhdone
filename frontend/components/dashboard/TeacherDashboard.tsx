@@ -21,7 +21,7 @@ export default function TeacherDashboard() {
   // Homework State
   const [homeworkList, setHomeworkList] = useState([]);
   const [homeworkFilter, setHomeworkFilter] = useState('all');
-  const [showHomeworkDetail, setShowHomeworkDetail] = useState(null);
+  const [showHomeworkDetail, setShowHomeworkDetail] = useState<any>(null);
 
   // Targets State
   const [targets, setTargets] = useState([]);

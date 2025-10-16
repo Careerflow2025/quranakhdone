@@ -73,7 +73,7 @@ export default function StudentManagementDashboard() {
   const [scriptLocked, setScriptLocked] = useState(false);
   const [currentSurah, setCurrentSurah] = useState(1);
   const [currentAyah, setCurrentAyah] = useState(1);
-  const [selectedText, setSelectedText] = useState(null);
+  const [selectedText, setSelectedText] = useState<any>(null);
   const [highlightMode, setHighlightMode] = useState(false);
   const [selectedMistakeType, setSelectedMistakeType] = useState('');
   const [highlights, setHighlights] = useState([]);
@@ -81,18 +81,18 @@ export default function StudentManagementDashboard() {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [audioBlob, setAudioBlob] = useState(null);
-  const [playingAudioId, setPlayingAudioId] = useState(null);
-  const [currentAudio, setCurrentAudio] = useState(null);
+  const [mediaRecorder, setMediaRecorder] = useState<any>(null);
+  const [audioBlob, setAudioBlob] = useState<any>(null);
+  const [playingAudioId, setPlayingAudioId] = useState<any>(null);
+  const [currentAudio, setCurrentAudio] = useState<any>(null);
   const [selectedHighlightsForNote, setSelectedHighlightsForNote] = useState([]);
-  const [showNotePopup, setShowNotePopup] = useState(null);
+  const [showNotePopup, setShowNotePopup] = useState<any>(null);
   const [noteMode, setNoteMode] = useState(false);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [selectionStart, setSelectionStart] = useState(null);
-  const [selectionEnd, setSelectionEnd] = useState(null);
+  const [selectionStart, setSelectionStart] = useState<any>(null);
+  const [selectionEnd, setSelectionEnd] = useState<any>(null);
   
   // Pen Annotation States
   const [penMode, setPenMode] = useState(false);

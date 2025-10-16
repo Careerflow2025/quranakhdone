@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 export default function SchoolDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
-  const [schoolInfo, setSchoolInfo] = useState(null);
+  const [schoolInfo, setSchoolInfo] = useState<any>(null);
   const { user, logout } = useAuthStore();
   const [notifications, setNotifications] = useState([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);

@@ -32,7 +32,7 @@ export default function SchoolDashboard() {
   const [bulkUploadType, setBulkUploadType] = useState('students');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeSettingsPanel, setActiveSettingsPanel] = useState(null);
+  const [activeSettingsPanel, setActiveSettingsPanel] = useState<any>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -55,8 +55,8 @@ export default function SchoolDashboard() {
   const [uploadedData, setUploadedData] = useState([]);
   const [duplicates, setDuplicates] = useState([]);
   const [showDuplicateReview, setShowDuplicateReview] = useState(false);
-  const [showStudentDetails, setShowStudentDetails] = useState(null);
-  const [editingStudent, setEditingStudent] = useState(null);
+  const [showStudentDetails, setShowStudentDetails] = useState<any>(null);
+  const [editingStudent, setEditingStudent] = useState<any>(null);
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [newClass, setNewClass] = useState({
     name: '',
@@ -76,7 +76,7 @@ export default function SchoolDashboard() {
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [showViewTeacher, setShowViewTeacher] = useState(false);
   const [showEditTeacher, setShowEditTeacher] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [messageRecipientType, setMessageRecipientType] = useState('all');
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   
@@ -87,7 +87,7 @@ export default function SchoolDashboard() {
     { id: 'CRED003', userId: 'PAR001', userName: 'Ahmed Hassan', userType: 'parent', email: 'ahmed.hassan@parent.com', password: 'Parent789$', created: '2024-01-20', lastModified: '2024-01-20', status: 'active' },
   ]);
   const [showAddCredential, setShowAddCredential] = useState(false);
-  const [editingCredential, setEditingCredential] = useState(null);
+  const [editingCredential, setEditingCredential] = useState<any>(null);
   const [credentialSearch, setCredentialSearch] = useState('');
   const [credentialFilter, setCredentialFilter] = useState('all');
   const [showPassword, setShowPassword] = useState({});
@@ -95,7 +95,7 @@ export default function SchoolDashboard() {
   // Create Credential Form State
   const [credUserType, setCredUserType] = useState('');
   const [credUserSearch, setCredUserSearch] = useState('');
-  const [credSelectedUser, setCredSelectedUser] = useState(null);
+  const [credSelectedUser, setCredSelectedUser] = useState<any>(null);
   const [showCredUserDropdown, setShowCredUserDropdown] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState('');
   const [messageSubject, setMessageSubject] = useState('');

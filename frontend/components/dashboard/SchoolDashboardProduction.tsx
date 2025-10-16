@@ -54,7 +54,7 @@ export default function SchoolDashboardProduction() {
   const [bulkUploadType, setBulkUploadType] = useState('students');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeSettingsPanel, setActiveSettingsPanel] = useState(null);
+  const [activeSettingsPanel, setActiveSettingsPanel] = useState<any>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
 

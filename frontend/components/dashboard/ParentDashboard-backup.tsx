@@ -103,10 +103,10 @@ export default function ParentDashboard() {
   const [messageTab, setMessageTab] = useState('inbox');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(3);
-  const [showNoteReply, setShowNoteReply] = useState(null);
+  const [showNoteReply, setShowNoteReply] = useState<any>(null);
   const [replyText, setReplyText] = useState('');
   const [isRecordingReply, setIsRecordingReply] = useState(false);
-  const [playingAudioId, setPlayingAudioId] = useState(null);
+  const [playingAudioId, setPlayingAudioId] = useState<any>(null);
   const [audioProgress, setAudioProgress] = useState({});
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);

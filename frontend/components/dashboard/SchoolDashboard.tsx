@@ -100,7 +100,7 @@ export default function SchoolDashboard() {
   const [bulkUploadType, setBulkUploadType] = useState('students');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeSettingsPanel, setActiveSettingsPanel] = useState(null);
+  const [activeSettingsPanel, setActiveSettingsPanel] = useState<any>(null);
   const [showProfile, setShowProfile] = useState(false);
 
   // Bulk upload states
@@ -136,10 +136,10 @@ export default function SchoolDashboard() {
     },
     frequency: 'immediate'
   });
-  const [showStudentDetails, setShowStudentDetails] = useState(null);
-  const [editingStudent, setEditingStudent] = useState(null);
-  const [showTeacherDetails, setShowTeacherDetails] = useState(null);
-  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [showStudentDetails, setShowStudentDetails] = useState<any>(null);
+  const [editingStudent, setEditingStudent] = useState<any>(null);
+  const [showTeacherDetails, setShowTeacherDetails] = useState<any>(null);
+  const [editingTeacher, setEditingTeacher] = useState<any>(null);
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [selectedTeachersForClass, setSelectedTeachersForClass] = useState([]);
   const [selectedStudentsForClass, setSelectedStudentsForClass] = useState([]);
@@ -147,8 +147,8 @@ export default function SchoolDashboard() {
   const [classSchedules, setClassSchedules] = useState([]);
   const [showClassBuilder, setShowClassBuilder] = useState(false);
   const [classStudentSearch, setClassStudentSearch] = useState('');
-  const [viewingClass, setViewingClass] = useState(null);
-  const [editingClass, setEditingClass] = useState(null);
+  const [viewingClass, setViewingClass] = useState<any>(null);
+  const [editingClass, setEditingClass] = useState<any>(null);
   const [editClassSchedules, setEditClassSchedules] = useState([]);
 
   // Homework, Assignments & Targets State
@@ -156,13 +156,13 @@ export default function SchoolDashboard() {
   const [assignments, setAssignments] = useState([]);
   const [targets, setTargets] = useState([]);
   const [assignmentFilter, setAssignmentFilter] = useState('all');
-  const [editingAssignment, setEditingAssignment] = useState(null);
-  const [viewingAssignment, setViewingAssignment] = useState(null);
-  const [viewingHomework, setViewingHomework] = useState(null);
+  const [editingAssignment, setEditingAssignment] = useState<any>(null);
+  const [viewingAssignment, setViewingAssignment] = useState<any>(null);
+  const [viewingHomework, setViewingHomework] = useState<any>(null);
 
   // Messaging System State
   const [messages, setMessages] = useState([]);
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [messageFilter, setMessageFilter] = useState('all');
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const [showComposeMessage, setShowComposeMessage] = useState(false);
@@ -219,8 +219,8 @@ export default function SchoolDashboard() {
     subjects: []
   });
   const [showAddParent, setShowAddParent] = useState(false);
-  const [showViewParent, setShowViewParent] = useState(null);
-  const [showEditParent, setShowEditParent] = useState(null);
+  const [showViewParent, setShowViewParent] = useState<any>(null);
+  const [showEditParent, setShowEditParent] = useState<any>(null);
   const [parentViewMode, setParentViewMode] = useState('grid');
   const [parentSearchTerm, setParentSearchTerm] = useState('');
   const [childrenSearchTerm, setChildrenSearchTerm] = useState('');
@@ -233,7 +233,7 @@ export default function SchoolDashboard() {
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [showViewTeacher, setShowViewTeacher] = useState(false);
   const [showEditTeacher, setShowEditTeacher] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
 
   // Homework State (view-only for school)
   const [homeworkFilter, setHomeworkFilter] = useState({
@@ -254,14 +254,14 @@ export default function SchoolDashboard() {
 
   // Additional Credential State
   const [showAddCredential, setShowAddCredential] = useState(false);
-  const [editingCredential, setEditingCredential] = useState(null);
+  const [editingCredential, setEditingCredential] = useState<any>(null);
   const [credentialSearch, setCredentialSearch] = useState('');
   const [showPassword, setShowPassword] = useState({});
 
   // Create Credential Form State
   const [credUserType, setCredUserType] = useState('');
   const [credUserSearch, setCredUserSearch] = useState('');
-  const [credSelectedUser, setCredSelectedUser] = useState(null);
+  const [credSelectedUser, setCredSelectedUser] = useState<any>(null);
   const [showCredUserDropdown, setShowCredUserDropdown] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState('');
   const [messageSubject, setMessageSubject] = useState('');

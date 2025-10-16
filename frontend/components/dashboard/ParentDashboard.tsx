@@ -290,7 +290,7 @@ export default function ParentDashboard() {
   });
 
   // UI States
-  const [showNoteDetail, setShowNoteDetail] = useState(null);
+  const [showNoteDetail, setShowNoteDetail] = useState<any>(null);
 
   const AYAHS_PER_PAGE = 10;
   const allSurahs = surahList;
