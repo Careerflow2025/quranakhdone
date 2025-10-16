@@ -652,13 +652,13 @@ export default function ParentDashboard() {
               <div className="p-8" style={{ minHeight: '800px' }}>
                 <div className="text-center leading-loose px-16 py-8" style={scriptStyling}>
                   <div className="text-gray-900">
-                    {currentAyahs.map((ayah, displayIndex) => {
+                    {currentAyahs.map((ayah: any, displayIndex: any) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       const ayahHighlights = highlights.filter((h: any) => h.ayahIndex === ayahIndex);
                       
                       return (
                         <div key={ayah.number} className="inline-block relative group">
-                          {ayah.words.map((word, wordIndex) => {
+                          {ayah.words.map((word: any, wordIndex: any) => {
                             const wordHighlights = ayahHighlights.filter((h: any) => 
                               h.wordIndices.includes(wordIndex)
                             );
