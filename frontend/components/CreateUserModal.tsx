@@ -41,6 +41,11 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
     try {
       // Get current user's school ID
       const { data: currentUser } = await supabase.auth.getUser();
+
+      if (!currentUser.user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data: adminProfile } = await supabase
         .from('profiles')
         .select('school_id')
@@ -69,6 +74,10 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
       });
 
       if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
 
       // Step 2: Create profile
       const { error: profileError } = await supabase
