@@ -63,17 +63,17 @@ export default function LoginPage() {
           .eq('user_id', authData.user.id)
           .single();
 
-        if (profile) {
+        if (profile && typeof profile === 'object' && 'role' in profile) {
           console.log('✅ Profile found (fallback):', profile);
 
           // Update auth store
           await storeLogin(email, password);
 
           // Redirect based on role
-          const dashboardRoute = profile.role === 'school' ? '/school-dashboard' :
-                                profile.role === 'teacher' ? '/teacher' :
-                                profile.role === 'student' ? '/student' :
-                                profile.role === 'parent' ? '/parent' : '/';
+          const dashboardRoute = (profile as any).role === 'school' ? '/school-dashboard' :
+                                (profile as any).role === 'teacher' ? '/teacher' :
+                                (profile as any).role === 'student' ? '/student' :
+                                (profile as any).role === 'parent' ? '/parent' : '/';
 
           console.log('🚀 Redirecting to:', dashboardRoute);
           router.push(dashboardRoute);
