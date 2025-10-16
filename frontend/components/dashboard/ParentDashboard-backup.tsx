@@ -107,7 +107,7 @@ export default function ParentDashboard() {
   const [replyText, setReplyText] = useState('');
   const [isRecordingReply, setIsRecordingReply] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<any>(null);
-  const [audioProgress, setAudioProgress] = useState({});
+  const [audioProgress, setAudioProgress] = useState<{ [key: string]: number }>({});
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);

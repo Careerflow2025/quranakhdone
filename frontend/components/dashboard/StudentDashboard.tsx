@@ -170,7 +170,7 @@ export default function StudentDashboard() {
   const [replyText, setReplyText] = useState('');
   const [isRecordingReply, setIsRecordingReply] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<any>(null);
-  const [audioProgress, setAudioProgress] = useState({});
+  const [audioProgress, setAudioProgress] = useState<{ [key: string]: number }>({});
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [composeSubject, setComposeSubject] = useState('');
   const [composeMessage, setComposeMessage] = useState('');
