@@ -35,13 +35,13 @@ export const notificationApi = {
 
   // Mark notification as read
   async markAsRead(notificationId: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = (await supabase
       .from('notifications')
-      .update({ 
+      .update({
         is_read: true,
         read_at: new Date().toISOString()
-      })
-      .eq('id', notificationId)
+      } as any)
+      .eq('id', notificationId)) as { error: any }
 
     if (error) throw error
   },
@@ -51,14 +51,14 @@ export const notificationApi = {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('User not authenticated')
 
-    const { error } = await supabase
+    const { error } = (await supabase
       .from('notifications')
-      .update({ 
+      .update({
         is_read: true,
         read_at: new Date().toISOString()
-      })
+      } as any)
       .eq('user_id', user.user.id)
-      .eq('is_read', false)
+      .eq('is_read', false)) as { error: any }
 
     if (error) throw error
   },
@@ -137,10 +137,10 @@ export const notificationApi = {
 
   // Clean expired notifications (run periodically)
   async cleanExpiredNotifications(): Promise<void> {
-    const { error } = await supabase
+    const { error } = (await supabase
       .from('notifications')
       .delete()
-      .lt('expires_at', new Date().toISOString())
+      .lt('expires_at', new Date().toISOString())) as { error: any }
 
     if (error) throw error
   }

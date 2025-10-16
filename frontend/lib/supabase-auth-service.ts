@@ -96,10 +96,10 @@ export async function createSchoolWithAdmin(data: {
     if (authError) throw authError;
 
     // 3. Update the school record with admin_id
-    const { error: updateError } = await supabase
+    const { error: updateError } = (await supabase
       .from('schools')
-      .update({ admin_id: authUser.user.id })
-      .eq('id', school.id);
+      .update({ admin_id: authUser.user.id } as any)
+      .eq('id', school.id)) as { error: any };
 
     if (updateError) throw updateError;
     
@@ -206,7 +206,7 @@ export async function createTeacherAccount(data: {
       for (const classId of data.assignedClasses) {
         await supabase
           .from('classes')
-          .update({ teacher_id: teacher.id })
+          .update({ teacher_id: teacher.id } as any)
           .eq('id', classId)
           .is('teacher_id', null);
       }
@@ -348,7 +348,7 @@ export async function createStudentWithParent(data: {
           .from('classes')
           .update({
             student_count: (currentClass.student_count || 0) + 1
-          })
+          } as any)
           .eq('id', data.classId);
       }
     }

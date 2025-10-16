@@ -358,7 +358,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
             .insert({
               class_id: cls.id,
               teacher_id: cls.teacher.id
-            });
+            } as any);
         }
 
         // Update student enrollments

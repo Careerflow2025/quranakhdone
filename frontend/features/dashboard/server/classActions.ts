@@ -74,16 +74,16 @@ export async function updateClass(
 ) {
   try {
     const supabase = await getSupabaseClient();
-    
-    const { data, error } = await supabase
+
+    const { data, error } = (await supabase
       .from('classes')
-      .update(updates)
+      .update(updates as any)
       .eq('id', classId)
       .select()
-      .single();
-    
+      .single()) as { data: any; error: any };
+
     if (error) throw error;
-    
+
     return { success: true, data };
   } catch (error) {
     console.error('Error updating class:', error);
@@ -94,14 +94,14 @@ export async function updateClass(
 export async function deleteClass(classId: string) {
   try {
     const supabase = await getSupabaseClient();
-    
-    const { error } = await supabase
+
+    const { error } = (await supabase
       .from('classes')
       .delete()
-      .eq('id', classId);
-    
+      .eq('id', classId)) as { error: any };
+
     if (error) throw error;
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error deleting class:', error);
@@ -177,15 +177,15 @@ export async function addStudentToClass(studentId: string, classId: string, scho
 export async function removeStudentFromClass(studentId: string, classId: string) {
   try {
     const supabase = await getSupabaseClient();
-    
-    const { error } = await supabase
+
+    const { error } = (await supabase
       .from('enrollments')
       .delete()
       .eq('student_id', studentId)
-      .eq('class_id', classId);
-    
+      .eq('class_id', classId)) as { error: any };
+
     if (error) throw error;
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error removing student from class:', error);
@@ -247,15 +247,15 @@ export async function getImportedStudents(userId: string, schoolId: string) {
 export async function clearImportedStudents(userId: string, schoolId: string) {
   try {
     const supabase = await getSupabaseClient();
-    
-    const { error } = await supabase
+
+    const { error } = (await supabase
       .from('imported_students_temp')
       .delete()
       .eq('user_id', userId)
-      .eq('school_id', schoolId);
-    
+      .eq('school_id', schoolId)) as { error: any };
+
     if (error) throw error;
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error clearing imported students:', error);
@@ -266,17 +266,17 @@ export async function clearImportedStudents(userId: string, schoolId: string) {
 export async function updateClassOrder(classIds: string[]) {
   try {
     const supabase = await getSupabaseClient();
-    
+
     // Update display_order for each class
-    const updates = classIds.map((id, index) => 
+    const updates = classIds.map((id, index) =>
       supabase
         .from('classes')
-        .update({ display_order: index })
+        .update({ display_order: index } as any)
         .eq('id', id)
     );
-    
+
     await Promise.all(updates);
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error updating class order:', error);

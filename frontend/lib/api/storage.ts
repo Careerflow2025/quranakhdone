@@ -62,7 +62,7 @@ export const storageApi = {
     // Update profile
     await supabase
       .from('profiles')
-      .update({ avatar_url: publicUrl })
+      .update({ avatar_url: publicUrl } as any)
       .eq('user_id', userId)
 
     return publicUrl
@@ -90,7 +90,7 @@ export const storageApi = {
     // Update school
     await supabase
       .from('schools')
-      .update({ logo_url: publicUrl })
+      .update({ logo_url: publicUrl } as any)
       .eq('id', schoolId)
 
     return publicUrl

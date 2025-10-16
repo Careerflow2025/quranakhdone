@@ -61,15 +61,15 @@ export const highlightApi = {
 
     if (!highlight) throw new Error('Highlight not found')
 
-    const { error } = await supabase
+    const { error } = (await supabase
       .from('highlights')
       .update({
         previous_color: highlight.color,
         color: 'gold',
         completed_at: new Date().toISOString(),
         completed_by: (await supabase.auth.getUser()).data.user?.id
-      })
-      .eq('id', highlightId)
+      } as any)
+      .eq('id', highlightId)) as { error: any }
 
     if (error) throw error
   },
@@ -182,10 +182,10 @@ export const highlightApi = {
     }
 
     // Delete the note
-    const { error } = await supabase
+    const { error } = (await supabase
       .from('highlight_notes')
       .delete()
-      .eq('id', noteId)
+      .eq('id', noteId)) as { error: any }
 
     if (error) throw error
   },
