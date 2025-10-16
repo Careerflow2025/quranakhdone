@@ -599,7 +599,7 @@ export default function ParentDashboard() {
                   <div 
                     key={msg.id} 
                     className={`p-2 rounded cursor-pointer hover:bg-gray-50 ${
-                      msg.unread ? 'bg-blue-50 border-l-2 border-blue-500' : ''
+                      ('unread' in msg && msg.unread) ? 'bg-blue-50 border-l-2 border-blue-500' : ''
                     }`}
                   >
                     <div className="flex justify-between items-start">
@@ -609,7 +609,7 @@ export default function ParentDashboard() {
                         </p>
                         <p className="text-xs text-gray-600 truncate">{msg.subject}</p>
                       </div>
-                      {msg.unread && (
+                      {('unread' in msg && msg.unread) && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full mt-1"></span>
                       )}
                     </div>
