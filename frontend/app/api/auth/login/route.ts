@@ -21,6 +21,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verify user and role were returned
+    if (!result.user || !result.role) {
+      return NextResponse.json(
+        { error: 'Authentication data incomplete' },
+        { status: 500 }
+      );
+    }
+
     // Set the auth cookie (for server-side authentication)
     const response = NextResponse.json({
       success: true,
