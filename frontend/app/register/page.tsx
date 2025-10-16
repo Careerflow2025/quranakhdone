@@ -182,14 +182,15 @@ export default function RegisterPage() {
       if (profileError) {
         console.error('Profile creation error:', profileError);
         // Try to update if insert fails
+        const updateData: any = {
+          school_id: schoolInsertData.id,
+          role: 'school',
+          display_name: adminData.fullName,
+          updated_at: new Date().toISOString()
+        };
         const { error: updateError } = (await supabase
           .from('profiles')
-          .update({
-            school_id: schoolInsertData.id,
-            role: 'school',
-            display_name: adminData.fullName,
-            updated_at: new Date().toISOString()
-          } as any)
+          .update(updateData)
           .eq('user_id', authenticatedUser.id)) as { error: any };
 
         if (updateError) {
