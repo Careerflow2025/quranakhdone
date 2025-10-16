@@ -322,7 +322,7 @@ export default function ParentDashboard() {
   useEffect(() => {
     const scriptId = selectedScript || 'uthmani-hafs';
     const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = surahList.find(s => s.number === currentSurah);
+    const surahInfo = surahList.find((s: any) => s.number === currentSurah);
 
     if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
       setQuranText({
@@ -338,7 +338,7 @@ export default function ParentDashboard() {
   }, [currentSurah, selectedScript]);
 
   const handleViewHighlight = (highlightId: any) => {
-    const highlight = highlights.find(h => h.id === highlightId);
+    const highlight = highlights.find((h: any) => h.id === highlightId);
     if (highlight) {
       setShowNoteDetail(highlight);
     }
@@ -371,7 +371,7 @@ export default function ParentDashboard() {
   const endIdx = startIdx + AYAHS_PER_PAGE;
   const currentAyahs = quranText.ayahs?.slice(startIdx, endIdx) || [];
 
-  const currentSurahInfo = allSurahs.find(s => s.number === currentSurah) || allSurahs[0];
+  const currentSurahInfo = allSurahs.find((s: any) => s.number === currentSurah) || allSurahs[0];
   const scriptStyling = getScriptStyling(selectedScript);
 
   return (
@@ -529,9 +529,9 @@ export default function ParentDashboard() {
                   className="p-2.5 hover:bg-gray-100 rounded-xl relative transition-colors"
                 >
                   <Bell className="w-5 h-5 text-gray-700" />
-                  {notifications.filter(n => n.unread).length > 0 && (
+                  {notifications.filter((n: any) => n.unread).length > 0 && (
                     <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {notifications.filter(n => n.unread).length}
+                      {notifications.filter((n: any) => n.unread).length}
                     </span>
                   )}
                 </button>
@@ -682,9 +682,9 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <BookOpen className="w-4 h-4" />
                 <span>Homework</span>
-                {highlights.filter(h => h.type === 'homework').length > 0 && (
+                {highlights.filter((h: any) => h.type === 'homework').length > 0 && (
                   <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter(h => h.type === 'homework').length}
+                    {highlights.filter((h: any) => h.type === 'homework').length}
                   </span>
                 )}
               </span>
@@ -701,9 +701,9 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <FileText className="w-4 h-4" />
                 <span>Assignments</span>
-                {highlights.filter(h => h.type === 'assignment').length > 0 && (
+                {highlights.filter((h: any) => h.type === 'assignment').length > 0 && (
                   <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter(h => h.type === 'assignment').length}
+                    {highlights.filter((h: any) => h.type === 'assignment').length}
                   </span>
                 )}
               </span>
@@ -734,9 +734,9 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <Target className="w-4 h-4" />
                 <span>Targets</span>
-                {childTargets.filter(t => t.status === 'active').length > 0 && (
+                {childTargets.filter((t: any) => t.status === 'active').length > 0 && (
                   <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {childTargets.filter(t => t.status === 'active').length}
+                    {childTargets.filter((t: any) => t.status === 'active').length}
                   </span>
                 )}
               </span>
@@ -753,9 +753,9 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
                 <span>Messages</span>
-                {messages.inbox.filter(m => m.unread).length > 0 && (
+                {messages.inbox.filter((m: any) => m.unread).length > 0 && (
                   <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {messages.inbox.filter(m => m.unread).length}
+                    {messages.inbox.filter((m: any) => m.unread).length}
                   </span>
                 )}
               </span>
@@ -988,7 +988,7 @@ export default function ParentDashboard() {
                         {/* Surah List */}
                         <div className="max-h-80 overflow-y-auto">
                           {surahList
-                            .filter(surah => {
+                            .filter((surah: any) => {
                               const search = surahSearch.toLowerCase();
                               return surah.nameEnglish.toLowerCase().includes(search) ||
                                      surah.nameArabic.includes(search) ||
@@ -996,7 +996,7 @@ export default function ParentDashboard() {
                             })
                             .map((surah) => {
                               // Check if this surah has any highlights (homework/assignments)
-                              const hasWork = highlights.some(h => h.surah === surah.number);
+                              const hasWork = highlights.some((h: any) => h.surah === surah.number);
 
                               return (
                                 <button
@@ -1086,14 +1086,14 @@ export default function ParentDashboard() {
                 `}</style>
               {currentAyahs.map((ayah, displayIndex) => {
                 const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
-                const ayahHighlights = highlights.filter(h =>
+                const ayahHighlights = highlights.filter((h: any) =>
                   h.surah === currentSurah && h.ayahIndex === ayahIndex
                 );
 
                 return (
                   <div key={ayah.number} className="inline-block relative group mb-4">
                     {ayah.words.map((word, wordIndex) => {
-                      const wordHighlights = ayahHighlights.filter(h =>
+                      const wordHighlights = ayahHighlights.filter((h: any) =>
                         h.wordIndices.includes(wordIndex)
                       );
 
@@ -1197,7 +1197,7 @@ export default function ParentDashboard() {
                   <BookOpen className="w-6 h-6 mr-2 text-green-600" />
                   {currentChild.name}'s Homework
                   <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                    {highlights.filter(h => h.type === 'homework').length} Total
+                    {highlights.filter((h: any) => h.type === 'homework').length} Total
                   </span>
                 </h2>
                 <div className="bg-yellow-50 px-4 py-2 rounded-lg">
@@ -1232,8 +1232,8 @@ export default function ParentDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {highlights
-                .filter(h => h.type === 'homework')
-                .filter(h => {
+                .filter((h: any) => h.type === 'homework')
+                .filter((h: any) => {
                   if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
                   if (homeworkSearchTerm) {
                     const searchLower = homeworkSearchTerm.toLowerCase();
@@ -1291,7 +1291,7 @@ export default function ParentDashboard() {
                   <FileText className="w-6 h-6 mr-2 text-purple-600" />
                   {currentChild.name}'s Assignments (Mistakes)
                   <span className="ml-3 bg-purple-100 text-purple-700 text-sm px-2 py-1 rounded-full">
-                    {highlights.filter(h => h.type === 'assignment').length} Total
+                    {highlights.filter((h: any) => h.type === 'assignment').length} Total
                   </span>
                 </h2>
                 <div className="bg-yellow-50 px-4 py-2 rounded-lg">
@@ -1326,8 +1326,8 @@ export default function ParentDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {highlights
-                .filter(h => h.type === 'assignment')
-                .filter(h => {
+                .filter((h: any) => h.type === 'assignment')
+                .filter((h: any) => {
                   if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
                   if (assignmentSearchTerm) {
                     const searchLower = assignmentSearchTerm.toLowerCase();
@@ -1704,7 +1704,7 @@ export default function ParentDashboard() {
                 <div className="mt-6 pt-6 border-t">
                   <h4 className="font-semibold text-gray-700 mb-3">Platform Activity on Class Days</h4>
                   <div className="space-y-3">
-                    {currentChild.classSchedule?.map(day => {
+                    {currentChild.classSchedule?.map((day: any) => {
                       // Sample platform activity data
                       const activityData = {
                         'Monday': { minutes: 45, assignments: 2, quranPages: 3, homework: 1 },
@@ -1746,7 +1746,7 @@ export default function ParentDashboard() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Active Targets Progress</h3>
               <div className="space-y-4">
-                {childTargets.filter(t => t.status === 'active').map(target => (
+                {childTargets.filter((t: any) => t.status === 'active').map((target: any) => (
                   <div key={target.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium">{target.title}</p>
@@ -1794,7 +1794,7 @@ export default function ParentDashboard() {
                     <div>
                       <p className="text-sm text-gray-600">Average Progress</p>
                       <p className="text-2xl font-bold text-green-700">
-                        {Math.round(childTargets.reduce((acc, t) => acc + t.progress, 0) / childTargets.length)}%
+                        {Math.round(childTargets.reduce((acc: any, t: any) => acc + t.progress, 0) / childTargets.length)}%
                       </p>
                     </div>
                     <TrendingUp className="w-8 h-8 text-green-600" />
@@ -1805,7 +1805,7 @@ export default function ParentDashboard() {
                     <div>
                       <p className="text-sm text-gray-600">Active Targets</p>
                       <p className="text-2xl font-bold text-blue-700">
-                        {childTargets.filter(t => t.status === 'active').length}
+                        {childTargets.filter((t: any) => t.status === 'active').length}
                       </p>
                     </div>
                     <Target className="w-8 h-8 text-blue-600" />
@@ -1925,9 +1925,9 @@ export default function ParentDashboard() {
                       {tab === 'sent' && <Send className="w-4 h-4" />}
                       {tab === 'archive' && <Archive className="w-4 h-4" />}
                       <span>{tab}</span>
-                      {tab === 'inbox' && messages.inbox.filter(m => m.unread).length > 0 && (
+                      {tab === 'inbox' && messages.inbox.filter((m: any) => m.unread).length > 0 && (
                         <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {messages.inbox.filter(m => m.unread).length}
+                          {messages.inbox.filter((m: any) => m.unread).length}
                         </span>
                       )}
                     </span>

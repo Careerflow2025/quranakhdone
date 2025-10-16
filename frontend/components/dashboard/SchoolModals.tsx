@@ -144,7 +144,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({ show, onClose,
                     required
                   >
                     <option value="">Select Class</option>
-                    {classes.map(c => (
+                    {classes.map((c: any) => (
                       <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
                   </select>
@@ -316,7 +316,7 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({ show, studen
                   onChange={(e) => setEditedStudent({...editedStudent, class: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  {classes.map(c => (
+                  {classes.map((c: any) => (
                     <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
@@ -1035,7 +1035,7 @@ export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="">Select Class</option>
-                    {classes.map(c => (
+                    {classes.map((c: any) => (
                       <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
                   </select>

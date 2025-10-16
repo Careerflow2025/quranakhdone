@@ -201,13 +201,13 @@ export default function SchoolDashboard() {
 
     // Auto-remove after duration
     setTimeout(() => {
-      setNotifications((prev: any) => prev.filter(n => n.id !== id));
+      setNotifications((prev: any) => prev.filter((n: any) => n.id !== id));
     }, duration);
   };
 
   // Remove notification manually
   const removeNotification = (id) => {
-    setNotifications((prev: any) => prev.filter(n => n.id !== id));
+    setNotifications((prev: any) => prev.filter((n: any) => n.id !== id));
   };
 
   const [newClass, setNewClass] = useState({
@@ -644,7 +644,7 @@ export default function SchoolDashboard() {
 
       // Link parent to students if provided
       if (parentData.studentIds && parentData.studentIds.length > 0) {
-        const parentStudentLinks = parentData.studentIds.map(studentId => ({
+        const parentStudentLinks = parentData.studentIds.map((studentId: any) => ({
           parent_id: data.id,
           student_id: studentId
         }));
@@ -695,7 +695,7 @@ export default function SchoolDashboard() {
   const handleCreateClass = async (classData) => {
     try {
       // Format schedules for storage
-      const formattedSchedules = classData.schedules.map(schedule => ({
+      const formattedSchedules = classData.schedules.map((schedule: any) => ({
         day: schedule.day,
         startTime: schedule.startTime,
         endTime: schedule.endTime,
@@ -783,7 +783,7 @@ export default function SchoolDashboard() {
         id: Date.now().toString(),
         teacherId: teacherData.id,
         studentId: homeworkData.student_id,
-        studentName: students.find(s => s.id === homeworkData.student_id)?.name || 'Unknown',
+        studentName: students.find((s: any) => s.id === homeworkData.student_id)?.name || 'Unknown',
         surah: homeworkData.surah,
         startVerse: homeworkData.startVerse,
         endVerse: homeworkData.endVerse,
@@ -807,13 +807,13 @@ export default function SchoolDashboard() {
   };
 
   const handleViewHomework = (homeworkId: any) => {
-    const homework = homeworkList.find(h => h.id === homeworkId);
+    const homework = homeworkList.find((h: any) => h.id === homeworkId);
     setViewingHomework(homework);
     // Open Quran viewer with highlighting enabled
   };
 
   const handleGradeHomework = (homeworkId) => {
-    const homework = homeworkList.find(h => h.id === homeworkId);
+    const homework = homeworkList.find((h: any) => h.id === homeworkId);
     // Open grading interface for Quran homework
     showNotification('Opening grading interface...', 'info');
   };
@@ -865,7 +865,7 @@ export default function SchoolDashboard() {
   };
 
   const handleViewAssignment = async (assignmentId) => {
-    const assignment = assignments.find(a => a.id === assignmentId);
+    const assignment = assignments.find((a: any) => a.id === assignmentId);
     setViewingAssignment(assignment);
   };
 
@@ -912,7 +912,7 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      setAssignments((prev: any) => prev.filter(a => a.id !== assignmentId));
+      setAssignments((prev: any) => prev.filter((a: any) => a.id !== assignmentId));
       showNotification('Assignment deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting assignment:', error);
@@ -925,7 +925,7 @@ export default function SchoolDashboard() {
 
     try {
       // For now, targets will be stored locally or in a different table
-      setTargets((prev: any) => prev.filter(t => t.id !== targetId));
+      setTargets((prev: any) => prev.filter((t: any) => t.id !== targetId));
       showNotification('Target deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting target:', error);
@@ -935,12 +935,12 @@ export default function SchoolDashboard() {
 
   const handleUpdateTargetProgress = (targetId) => {
     // Open a modal to update progress
-    const target = targets.find(t => t.id === targetId);
+    const target = targets.find((t: any) => t.id === targetId);
     if (target) {
       const newProgress = prompt(`Update progress for "${target.title}" (0-100):`, target.progress);
       if (newProgress !== null) {
         const progress = Math.max(0, Math.min(100, parseInt(newProgress) || 0));
-        setTargets((prev: any) => prev.map(t =>
+        setTargets((prev: any) => prev.map((t: any) =>
           t.id === targetId ? { ...t, progress } : t
         ));
         showNotification('Target progress updated', 'success');
@@ -968,7 +968,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Transform highlights into homework format
-      const transformedHomework = (data || []).map(highlight => ({
+      const transformedHomework = (data || []).map((highlight: any) => ({
         id: highlight.id,
         studentId: highlight.student_id,
         studentName: highlight.students?.name || 'Unknown Student',
@@ -1007,7 +1007,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Transform data to include student and teacher names
-      const transformedAssignments = (data || []).map(assignment => ({
+      const transformedAssignments = (data || []).map((assignment: any) => ({
         ...assignment,
         studentName: assignment.students?.name || 'Unknown Student',
         teacherName: assignment.teachers?.name || 'Unknown Teacher',
@@ -1035,7 +1035,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Transform mastery data into targets format
-      const transformedTargets = (data || []).map(mastery => ({
+      const transformedTargets = (data || []).map((mastery: any) => ({
         id: mastery.id,
         studentName: mastery.students?.name || 'Unknown Student',
         student_id: mastery.student_id,
@@ -1088,7 +1088,7 @@ export default function SchoolDashboard() {
     setSendingEmail((prev: any) => ({ ...prev, [credentialId]: true }));
 
     try {
-      const credential = credentials.find(c => c.id === credentialId);
+      const credential = credentials.find((c: any) => c.id === credentialId);
       if (!credential) throw new Error('Credential not found');
 
       // Get school name
@@ -1141,7 +1141,7 @@ export default function SchoolDashboard() {
 
   // Send bulk credential emails
   const sendBulkCredentialEmails = async () => {
-    const pendingCredentials = credentials.filter(c => !c.sent_at);
+    const pendingCredentials = credentials.filter((c: any) => !c.sent_at);
 
     if (pendingCredentials.length === 0) {
       showNotification('No pending credentials to send', 'warning');
@@ -1197,15 +1197,15 @@ export default function SchoolDashboard() {
       // Get sender profiles separately
       let sentWithProfiles = [];
       if (sentMessages && !sentError) {
-        const senderIds = [...new Set(sentMessages.map(m => m.sender_id))];
+        const senderIds = [...new Set(sentMessages.map((m: any) => m.sender_id))];
         const { data: senderProfiles } = await supabase
           .from('profiles')
           .select('user_id, display_name, email, role')
           .in('user_id', senderIds);
 
-        sentWithProfiles = sentMessages.map(msg => ({
+        sentWithProfiles = sentMessages.map((msg: any) => ({
           ...msg,
-          sender: senderProfiles?.find(p => p.user_id === msg.sender_id) || null
+          sender: senderProfiles?.find((p: any) => p.user_id === msg.sender_id) || null
         }));
       }
 
@@ -1218,22 +1218,22 @@ export default function SchoolDashboard() {
 
       let receivedMessages = [];
       if (receivedRecords && !receivedError) {
-        const messageIds = receivedRecords.map(r => r.message_id);
+        const messageIds = receivedRecords.map((r: any) => r.message_id);
         const { data: messages } = await supabase
           .from('messages')
           .select('*')
           .in('id', messageIds);
 
         if (messages) {
-          const senderIds = [...new Set(messages.map(m => m.sender_id))];
+          const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
           const { data: senderProfiles } = await supabase
             .from('profiles')
             .select('user_id, display_name, email, role')
             .in('user_id', senderIds);
 
-          receivedMessages = receivedRecords.map(rec => {
-            const message = messages.find(m => m.id === rec.message_id);
-            const sender = senderProfiles?.find(p => p.user_id === message?.sender_id);
+          receivedMessages = receivedRecords.map((rec: any) => {
+            const message = messages.find((m: any) => m.id === rec.message_id);
+            const sender = senderProfiles?.find((p: any) => p.user_id === message?.sender_id);
             return {
               ...rec,
               messages: {
@@ -1250,12 +1250,12 @@ export default function SchoolDashboard() {
 
       // Combine and format messages
       const allMessages = [
-        ...(sentWithProfiles || []).map(msg => ({
+        ...(sentWithProfiles || []).map((msg: any) => ({
           ...msg,
           type: 'sent',
           unread: false
         })),
-        ...(receivedMessages || []).map(rec => ({
+        ...(receivedMessages || []).map((rec: any) => ({
           ...rec.messages,
           type: 'received',
           unread: !rec.is_read,
@@ -1269,7 +1269,7 @@ export default function SchoolDashboard() {
       setMessages(allMessages);
 
       // Get unread count
-      const unreadCount = allMessages.filter(m => m.type === 'received' && m.unread).length;
+      const unreadCount = allMessages.filter((m: any) => m.type === 'received' && m.unread).length;
       if (unreadCount > 0) {
         showNotification(`You have ${unreadCount} unread message${unreadCount > 1 ? 's' : ''}`, 'info');
       }
@@ -1294,7 +1294,7 @@ export default function SchoolDashboard() {
       if (recipientType === 'specific_class' && selectedClass) {
         recipientDetails = { class_id: selectedClass };
       } else if (recipientType === 'individual' && selectedRecipients.length > 0) {
-        recipientDetails = { user_ids: selectedRecipients.map(r => r.user_id || r.id) };
+        recipientDetails = { user_ids: selectedRecipients.map((r: any) => r.user_id || r.id) };
       }
 
       console.log('Sending message with:', {
@@ -1378,7 +1378,7 @@ export default function SchoolDashboard() {
       });
 
       // Update local state
-      setMessages((prev: any) => prev.map(msg =>
+      setMessages((prev: any) => prev.map((msg: any) =>
         msg.id === messageId ? { ...msg, unread: false } : msg
       ));
     } catch (error) {
@@ -1427,16 +1427,16 @@ export default function SchoolDashboard() {
   }, [user?.schoolId]);
 
   // Filter assignments based on status
-  const filteredAssignments = assignments.filter(assignment => {
+  const filteredAssignments = assignments.filter((assignment: any) => {
     if (assignmentFilter === 'all') return true;
     if (assignmentFilter === 'pending') return assignment.status === 'assigned' && !assignment.late;
     return assignment.status === assignmentFilter;
   });
 
-  const pendingAssignments = assignments.filter(a => a.status === 'assigned' && !a.late).length;
+  const pendingAssignments = assignments.filter((a: any) => a.status === 'assigned' && !a.late).length;
 
   const handleViewClass = async (classId) => {
-    const cls = classes.find(c => c.id === classId);
+    const cls = classes.find((c: any) => c.id === classId);
     if (cls) {
       // Fetch additional details like enrolled students and assigned teachers
       const { data: teachers } = await supabase
@@ -1461,7 +1461,7 @@ export default function SchoolDashboard() {
   const handleEditClass = async (classData) => {
     try {
       // Format schedules for storage
-      const formattedSchedules = classData.schedules.map(schedule => ({
+      const formattedSchedules = classData.schedules.map((schedule: any) => ({
         day: schedule.day,
         startTime: schedule.startTime,
         endTime: schedule.endTime,
@@ -1519,7 +1519,7 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      setClasses((prev: any) => prev.filter(c => c.id !== classId));
+      setClasses((prev: any) => prev.filter((c: any) => c.id !== classId));
       refreshData();
 
       showNotification(
@@ -1543,7 +1543,7 @@ export default function SchoolDashboard() {
     try {
       // Parse CSV file
       const text = await file.text();
-      const rows = text.split('\n').filter(row => row.trim());
+      const rows = text.split('\n').filter((row: any) => row.trim());
       const headers = rows[0];
       const data = rows.slice(1);
 
@@ -1554,7 +1554,7 @@ export default function SchoolDashboard() {
 
         for (const row of data) {
           // Better CSV parsing - handle commas within quotes
-          const cols = row.split(',').map(col => col.trim());
+          const cols = row.split(',').map((col: any) => col.trim());
 
           if (cols[0] && cols[0].trim()) {
             // Clean email field - remove any quotes, spaces, and special characters
@@ -1603,7 +1603,7 @@ export default function SchoolDashboard() {
           console.error('Error checking duplicates:', checkError);
         }
 
-        const existingEmails = (existingProfiles || []).map(p => p.email.toLowerCase());
+        const existingEmails = (existingProfiles || []).map((p: any) => p.email.toLowerCase());
 
         // Separate duplicates and new records
         const duplicateRows = [];
@@ -1894,7 +1894,7 @@ export default function SchoolDashboard() {
   }
 
   // Filter functions
-  const filteredStudents = students.filter(student => {
+  const filteredStudents = students.filter((student: any) => {
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       return student.name?.toLowerCase().includes(search) ||
@@ -1904,7 +1904,7 @@ export default function SchoolDashboard() {
     return true;
   });
 
-  const filteredTeachers = teachers.filter(teacher => {
+  const filteredTeachers = teachers.filter((teacher: any) => {
     if (teacherSearchTerm) {
       const search = teacherSearchTerm.toLowerCase();
       return teacher.name?.toLowerCase().includes(search) ||
@@ -1914,7 +1914,7 @@ export default function SchoolDashboard() {
     return true;
   });
 
-  const filteredParents = parents.filter(parent => {
+  const filteredParents = parents.filter((parent: any) => {
     if (parentSearchTerm) {
       const search = parentSearchTerm.toLowerCase();
       return parent.name?.toLowerCase().includes(search) ||
@@ -1935,7 +1935,7 @@ export default function SchoolDashboard() {
   };
 
   const handleExportStudents = () => {
-    const csv = students.map(s => `${s.name},${s.email},${s.grade},${s.status}`).join('\n');
+    const csv = students.map((s: any) => `${s.name},${s.email},${s.grade},${s.status}`).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2491,8 +2491,8 @@ export default function SchoolDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-green-100 text-sm">Active Students</p>
-                      <p className="text-3xl font-bold mt-1">{students.filter(s => s.status === 'active').length}</p>
-                      <p className="text-green-100 text-xs mt-2">{students.length > 0 ? `${Math.round((students.filter(s => s.status === 'active').length / students.length) * 100)}% active` : 'N/A'}</p>
+                      <p className="text-3xl font-bold mt-1">{students.filter((s: any) => s.status === 'active').length}</p>
+                      <p className="text-green-100 text-xs mt-2">{students.length > 0 ? `${Math.round((students.filter((s: any) => s.status === 'active').length / students.length) * 100)}% active` : 'N/A'}</p>
                     </div>
                     <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                       <Activity className="w-6 h-6" />
@@ -2504,7 +2504,7 @@ export default function SchoolDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-purple-100 text-sm">Avg. Progress</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc, s) => acc + (s.progress || 0), 0) / students.length) : 0}%</p>
+                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.progress || 0), 0) / students.length) : 0}%</p>
                       <p className="text-purple-100 text-xs mt-2">Across all students</p>
                     </div>
                     <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -2517,7 +2517,7 @@ export default function SchoolDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-orange-100 text-sm">Avg. Attendance</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc, s) => acc + (s.attendance || 0), 0) / students.length) : 0}%</p>
+                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.attendance || 0), 0) / students.length) : 0}%</p>
                       <p className="text-orange-100 text-xs mt-2">This month</p>
                     </div>
                     <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -2584,7 +2584,7 @@ export default function SchoolDashboard() {
 
                       <select className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option value="">All Classes</option>
-                        {classes.map(cls => (
+                        {classes.map((cls: any) => (
                           <option key={cls.id} value={cls.id}>{cls.name}</option>
                         ))}
                       </select>
@@ -2681,7 +2681,7 @@ export default function SchoolDashboard() {
                                   if (selectedUsers.length === filteredStudents.length) {
                                     setSelectedUsers([]);
                                   } else {
-                                    setSelectedUsers(filteredStudents.map(s => s.id));
+                                    setSelectedUsers(filteredStudents.map((s: any) => s.id));
                                   }
                                 }}
                               />
@@ -2696,7 +2696,7 @@ export default function SchoolDashboard() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                          {filteredStudents.map(student => (
+                          {filteredStudents.map((student: any) => (
                             <tr key={student.id} className="hover:bg-gray-50 transition">
                               <td className="px-6 py-4">
                                 <input
@@ -2705,7 +2705,7 @@ export default function SchoolDashboard() {
                                   checked={selectedUsers.includes(student.id)}
                                   onChange={() => {
                                     if (selectedUsers.includes(student.id)) {
-                                      setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
+                                      setSelectedUsers((prev: any) => prev.filter((id: any) => id !== student.id));
                                     } else {
                                       setSelectedUsers((prev: any) => [...prev, student.id]);
                                     }
@@ -2715,7 +2715,7 @@ export default function SchoolDashboard() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center">
                                   <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                    {student.name ? student.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'ST'}
+                                    {student.name ? student.name.split(' ').map((n: any) => n[0]).join('').toUpperCase() : 'ST'}
                                   </div>
                                   <div className="ml-3">
                                     <p className="text-sm font-semibold text-gray-900">{student.name || 'Unknown'}</p>
@@ -2795,12 +2795,12 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {filteredStudents.map(student => (
+                      {filteredStudents.map((student: any) => (
                         <div key={student.id} className="bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all duration-300 overflow-hidden group">
                           <div className="p-5">
                             <div className="flex items-start justify-between mb-4">
                               <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                {student.name ? student.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'ST'}
+                                {student.name ? student.name.split(' ').map((n: any) => n[0]).join('').toUpperCase() : 'ST'}
                               </div>
                               <input
                                 type="checkbox"
@@ -2808,7 +2808,7 @@ export default function SchoolDashboard() {
                                 checked={selectedUsers.includes(student.id)}
                                 onChange={() => {
                                   if (selectedUsers.includes(student.id)) {
-                                    setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
+                                    setSelectedUsers((prev: any) => prev.filter((id: any) => id !== student.id));
                                   } else {
                                     setSelectedUsers((prev: any) => [...prev, student.id]);
                                   }
@@ -2936,7 +2936,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {teachers.map(teacher => (
+                      {teachers.map((teacher: any) => (
                         <div key={teacher.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
                           <div className="flex items-center mb-3">
                             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -3013,7 +3013,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {parents.map(parent => (
+                      {parents.map((parent: any) => (
                         <div key={parent.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
                           <div className="flex items-center mb-3">
                             <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -3061,7 +3061,7 @@ export default function SchoolDashboard() {
                                   `)
                                   .eq('parent_id', parent.id) as any;
 
-                                const formattedStudents = linkedStudents?.map(link => ({
+                                const formattedStudents = linkedStudents?.map((link: any) => ({
                                   id: link.students.id,
                                   name: link.students.profiles.display_name,
                                   email: link.students.profiles.email
@@ -3092,7 +3092,7 @@ export default function SchoolDashboard() {
                                   `)
                                   .eq('parent_id', parent.id) as any)
                                   .then(({ data }) => {
-                                    const linkedStudents = data?.map(link => ({
+                                    const linkedStudents = data?.map((link: any) => ({
                                       id: link.students.id,
                                       name: link.students.profiles.display_name,
                                       email: link.students.profiles.email
@@ -3206,14 +3206,14 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {classes.map(cls => {
+                      {classes.map((cls: any) => {
                         // Parse schedule_json to display properly
                         const schedule = cls.schedule_json || {};
                         const schedules = schedule.schedules || [];
 
                         // Format schedule display
                         const scheduleDisplay = schedules.length > 0
-                          ? schedules.map(s => `${s.day.slice(0, 3)} ${s.startTime}`).join(' • ')
+                          ? schedules.map((s: any) => `${s.day.slice(0, 3)} ${s.startTime}`).join(' • ')
                           : 'Not scheduled';
 
                         // Calculate utilization percentage
@@ -3816,8 +3816,8 @@ export default function SchoolDashboard() {
 
                     {/* Filter Tabs */}
                     <div className="flex space-x-1 mb-3">
-                      {['all', 'unread', 'sent', 'starred'].map(filter => {
-                        const unreadCount = messages.filter(m => m.unread && m.type === 'received').length;
+                      {['all', 'unread', 'sent', 'starred'].map((filter: any) => {
+                        const unreadCount = messages.filter((m: any) => m.unread && m.type === 'received').length;
                         return (
                           <button
                             key={filter}
@@ -3844,7 +3844,7 @@ export default function SchoolDashboard() {
                   <div className="overflow-y-auto max-h-[600px]">
                     {(() => {
                       // Filter messages based on the filter and search
-                      const filteredMessages = messages.filter(msg => {
+                      const filteredMessages = messages.filter((msg: any) => {
                         // Apply filter
                         if (messageFilter === 'unread' && !msg.unread) return false;
                         if (messageFilter === 'sent' && msg.type !== 'sent') return false;
@@ -3875,7 +3875,7 @@ export default function SchoolDashboard() {
                         </button>
                       </div>
                     ) : (
-                      filteredMessages.map(message => (
+                      filteredMessages.map((message: any) => (
                         <div
                           key={message.id}
                           onClick={() => {
@@ -4181,7 +4181,7 @@ export default function SchoolDashboard() {
                         const isToday = currentDate.getTime() === today.getTime();
 
                         // Get events for this day from ALL calendar events
-                        const dayEvents = allCalendarEvents?.filter(event => {
+                        const dayEvents = allCalendarEvents?.filter((event: any) => {
                           const eventDate = new Date(event.date);
                           return eventDate.toDateString() === currentDate.toDateString();
                         }) || [];
@@ -4332,7 +4332,7 @@ export default function SchoolDashboard() {
                       <div>
                         <p className="text-sm text-green-600 font-medium">Emails Sent</p>
                         <p className="text-2xl font-bold text-green-900">
-                          {credentials.filter(c => c.sent_at).length || 0}
+                          {credentials.filter((c: any) => c.sent_at).length || 0}
                         </p>
                       </div>
                       <CheckCircle className="w-8 h-8 text-green-500" />
@@ -4344,7 +4344,7 @@ export default function SchoolDashboard() {
                       <div>
                         <p className="text-sm text-yellow-600 font-medium">Pending</p>
                         <p className="text-2xl font-bold text-yellow-900">
-                          {credentials.filter(c => !c.sent_at).length || 0}
+                          {credentials.filter((c: any) => !c.sent_at).length || 0}
                         </p>
                       </div>
                       <Clock className="w-8 h-8 text-yellow-500" />
@@ -4356,7 +4356,7 @@ export default function SchoolDashboard() {
                       <div>
                         <p className="text-sm text-purple-600 font-medium">Active Users</p>
                         <p className="text-2xl font-bold text-purple-900">
-                          {credentials.filter(c => c.last_login).length || 0}
+                          {credentials.filter((c: any) => c.last_login).length || 0}
                         </p>
                       </div>
                       <Shield className="w-8 h-8 text-purple-500" />
@@ -4417,7 +4417,7 @@ export default function SchoolDashboard() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {(credentialFilter === 'all'
                         ? credentials
-                        : credentials.filter(c => c.profiles?.role === credentialFilter)
+                        : credentials.filter((c: any) => c.profiles?.role === credentialFilter)
                       ).map((credential) => (
                         <tr key={credential.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -4855,7 +4855,7 @@ export default function SchoolDashboard() {
                       ? reportData.assignmentsTrend
                       : Array(7).fill({ count: 0 })
                     ).map((item, index) => {
-                      const maxCount = Math.max(...(reportData?.assignmentsTrend?.map(t => t.count) || [1]), 1);
+                      const maxCount = Math.max(...(reportData?.assignmentsTrend?.map((t: any) => t.count) || [1]), 1);
                       const height = item.count ? (item.count / maxCount) * 100 : 0;
                       return (
                         <div key={index} className="flex-1 flex flex-col items-center">
@@ -5250,7 +5250,7 @@ export default function SchoolDashboard() {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
                 address: formData.get('address'),
-                studentIds: selectedStudentsForParent.map(s => s.id)
+                studentIds: selectedStudentsForParent.map((s: any) => s.id)
               });
 
               // Reset selections after submit
@@ -5307,7 +5307,7 @@ export default function SchoolDashboard() {
                       <div className="mb-3 p-2 bg-blue-50 rounded-lg">
                         <p className="text-xs font-medium text-blue-900 mb-1">Selected Students ({selectedStudentsForParent.length}):</p>
                         <div className="flex flex-wrap gap-1">
-                          {selectedStudentsForParent.map(student => (
+                          {selectedStudentsForParent.map((student: any) => (
                             <span
                               key={student.id}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
@@ -5316,7 +5316,7 @@ export default function SchoolDashboard() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedStudentsForParent((prev: any) =>
-                                  prev.filter(s => s.id !== student.id)
+                                  prev.filter((s: any) => s.id !== student.id)
                                 )}
                                 className="hover:text-blue-900"
                               >
@@ -5331,13 +5331,13 @@ export default function SchoolDashboard() {
                     {/* Filtered Student List */}
                     <div className="space-y-1 max-h-40 overflow-y-auto border rounded p-2">
                       {students
-                        .filter(student =>
+                        .filter((student: any) =>
                           student.name.toLowerCase().includes(parentModalStudentSearch.toLowerCase()) ||
                           student.email.toLowerCase().includes(parentModalStudentSearch.toLowerCase())
                         )
                         .slice(0, 50) // Limit display to 50 students at a time
-                        .map(student => {
-                          const isSelected = selectedStudentsForParent.some(s => s.id === student.id);
+                        .map((student: any) => {
+                          const isSelected = selectedStudentsForParent.some((s: any) => s.id === student.id);
                           return (
                             <label
                               key={student.id}
@@ -5353,7 +5353,7 @@ export default function SchoolDashboard() {
                                     setSelectedStudentsForParent((prev: any) => [...prev, student]);
                                   } else {
                                     setSelectedStudentsForParent((prev: any) =>
-                                      prev.filter(s => s.id !== student.id)
+                                      prev.filter((s: any) => s.id !== student.id)
                                     );
                                   }
                                 }}
@@ -5370,14 +5370,14 @@ export default function SchoolDashboard() {
                           );
                         })}
 
-                      {students.filter(student =>
+                      {students.filter((student: any) =>
                         student.name.toLowerCase().includes(parentModalStudentSearch.toLowerCase()) ||
                         student.email.toLowerCase().includes(parentModalStudentSearch.toLowerCase())
                       ).length === 0 && (
                         <p className="text-sm text-gray-500 text-center py-2">No students found</p>
                       )}
 
-                      {students.filter(student =>
+                      {students.filter((student: any) =>
                         student.name.toLowerCase().includes(parentModalStudentSearch.toLowerCase()) ||
                         student.email.toLowerCase().includes(parentModalStudentSearch.toLowerCase())
                       ).length > 50 && (
@@ -5448,7 +5448,7 @@ export default function SchoolDashboard() {
                       }}
                     >
                       <option value="">Select a class...</option>
-                      {classes.map(cls => (
+                      {classes.map((cls: any) => (
                         <option key={cls.id} value={cls.id}>
                           {cls.name} - {cls.grade}
                         </option>
@@ -5466,7 +5466,7 @@ export default function SchoolDashboard() {
                       required
                     >
                       <option value="">Select a student...</option>
-                      {students.map(student => (
+                      {students.map((student: any) => (
                         <option key={student.id} value={student.id}>
                           {student.name} - {student.grade}
                         </option>
@@ -5667,7 +5667,7 @@ export default function SchoolDashboard() {
                       required
                     >
                       <option value="">Select a class...</option>
-                      {classes.map(cls => (
+                      {classes.map((cls: any) => (
                         <option key={cls.id} value={cls.id}>
                           {cls.name} - {cls.grade}
                         </option>
@@ -5686,7 +5686,7 @@ export default function SchoolDashboard() {
                       required
                     >
                       <option value="">Select a student...</option>
-                      {students.map(student => (
+                      {students.map((student: any) => (
                         <option key={student.id} value={student.id}>
                           {student.name} - {student.grade}
                         </option>
@@ -5788,7 +5788,7 @@ export default function SchoolDashboard() {
                 id: Date.now().toString(),
                 title: formData.get('title'),
                 description: formData.get('description'),
-                studentName: students.find(s => s.id === formData.get('student_id'))?.name || 'Unknown',
+                studentName: students.find((s: any) => s.id === formData.get('student_id'))?.name || 'Unknown',
                 student_id: formData.get('student_id'),
                 deadline: formData.get('deadline'),
                 progress: 0
@@ -5835,7 +5835,7 @@ export default function SchoolDashboard() {
                     required
                   >
                     <option value="">Select a student...</option>
-                    {students.map(student => (
+                    {students.map((student: any) => (
                       <option key={student.id} value={student.id}>
                         {student.name} - {student.grade}
                       </option>
@@ -6026,7 +6026,7 @@ export default function SchoolDashboard() {
 
                 // Then add new links
                 if (selectedStudentsForParent.length > 0) {
-                  const parentStudentLinks = selectedStudentsForParent.map(student => ({
+                  const parentStudentLinks = selectedStudentsForParent.map((student: any) => ({
                     parent_id: showEditParent.id,
                     student_id: student.id
                   }));
@@ -6108,7 +6108,7 @@ export default function SchoolDashboard() {
                       <div className="mb-3 p-2 bg-blue-50 rounded-lg">
                         <p className="text-xs font-medium text-blue-900 mb-1">Selected Students ({selectedStudentsForParent.length}):</p>
                         <div className="flex flex-wrap gap-1">
-                          {selectedStudentsForParent.map(student => (
+                          {selectedStudentsForParent.map((student: any) => (
                             <span
                               key={student.id}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
@@ -6117,7 +6117,7 @@ export default function SchoolDashboard() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedStudentsForParent((prev: any) =>
-                                  prev.filter(s => s.id !== student.id)
+                                  prev.filter((s: any) => s.id !== student.id)
                                 )}
                                 className="hover:text-blue-900"
                               >
@@ -6132,13 +6132,13 @@ export default function SchoolDashboard() {
                     {/* Filtered Student List */}
                     <div className="space-y-1 max-h-40 overflow-y-auto border rounded p-2">
                       {students
-                        .filter(student =>
+                        .filter((student: any) =>
                           student.name.toLowerCase().includes(parentModalStudentSearch.toLowerCase()) ||
                           student.email.toLowerCase().includes(parentModalStudentSearch.toLowerCase())
                         )
                         .slice(0, 50)
-                        .map(student => {
-                          const isSelected = selectedStudentsForParent.some(s => s.id === student.id);
+                        .map((student: any) => {
+                          const isSelected = selectedStudentsForParent.some((s: any) => s.id === student.id);
                           return (
                             <label
                               key={student.id}
@@ -6154,7 +6154,7 @@ export default function SchoolDashboard() {
                                     setSelectedStudentsForParent((prev: any) => [...prev, student]);
                                   } else {
                                     setSelectedStudentsForParent((prev: any) =>
-                                      prev.filter(s => s.id !== student.id)
+                                      prev.filter((s: any) => s.id !== student.id)
                                     );
                                   }
                                 }}
@@ -6345,7 +6345,7 @@ export default function SchoolDashboard() {
                   onClick={() => {
                     // Generate CSV of credentials
                     const csvContent = 'Name,Email,Password\n' +
-                      bulkProgress.credentials.map(c => `${c.name},${c.email},${c.password}`).join('\n');
+                      bulkProgress.credentials.map((c: any) => `${c.name},${c.email},${c.password}`).join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -7547,7 +7547,7 @@ export default function SchoolDashboard() {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a class...</option>
-                    {classes.map(cls => (
+                    {classes.map((cls: any) => (
                       <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
                   </select>
@@ -7571,23 +7571,23 @@ export default function SchoolDashboard() {
                     {recipientSearch && (
                       <div className="space-y-1">
                         {[...students, ...teachers, ...parents]
-                          .filter(person =>
+                          .filter((person: any) =>
                             person.name?.toLowerCase().includes(recipientSearch.toLowerCase()) ||
                             person.email?.toLowerCase().includes(recipientSearch.toLowerCase())
                           )
                           .slice(0, 10)
-                          .map(person => (
+                          .map((person: any) => (
                             <div
                               key={person.id}
                               onClick={() => {
                                 setSelectedRecipients((prev: any) => {
-                                  const exists = prev.find(r => r.id === person.id);
-                                  if (exists) return prev.filter(r => r.id !== person.id);
+                                  const exists = prev.find((r: any) => r.id === person.id);
+                                  if (exists) return prev.filter((r: any) => r.id !== person.id);
                                   return [...prev, person];
                                 });
                               }}
                               className={`p-2 rounded cursor-pointer hover:bg-gray-100 ${
-                                selectedRecipients.find(r => r.id === person.id) ? 'bg-blue-50' : ''
+                                selectedRecipients.find((r: any) => r.id === person.id) ? 'bg-blue-50' : ''
                               }`}
                             >
                               <div className="font-medium">{person.name}</div>
@@ -7600,11 +7600,11 @@ export default function SchoolDashboard() {
                       <div className="mt-2 pt-2 border-t">
                         <div className="text-sm font-medium text-gray-700 mb-1">Selected:</div>
                         <div className="flex flex-wrap gap-1">
-                          {selectedRecipients.map(person => (
+                          {selectedRecipients.map((person: any) => (
                             <span key={person.id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                               {person.name}
                               <button
-                                onClick={() => setSelectedRecipients((prev: any) => prev.filter(r => r.id !== person.id))}
+                                onClick={() => setSelectedRecipients((prev: any) => prev.filter((r: any) => r.id !== person.id))}
                                 className="ml-1 text-blue-500 hover:text-blue-700"
                               >
                                 ×

@@ -506,7 +506,7 @@ export default function SchoolDashboard() {
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {studentsList.map(student => (
+                  {studentsList.map((student: any) => (
                     <div key={student.user_id} className="border rounded-lg p-4 hover:shadow-md transition">
                       <div className="flex items-start justify-between">
                         <div>
@@ -569,7 +569,7 @@ export default function SchoolDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teachersList.map(teacher => (
+                {teachersList.map((teacher: any) => (
                   <div key={teacher.user_id} className="border rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-start justify-between">
                       <div>
@@ -624,7 +624,7 @@ export default function SchoolDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {parentsList.map(parent => (
+                {parentsList.map((parent: any) => (
                   <div key={parent.user_id} className="border rounded-lg p-4 hover:shadow-md transition">
                     <div>
                       <h3 className="font-semibold text-gray-900">{parent.display_name}</h3>

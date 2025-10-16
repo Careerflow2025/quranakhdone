@@ -140,7 +140,7 @@ export default function TeacherDashboard() {
 
   // Function to mark homework as complete (turns green to gold)
   const markHomeworkComplete = (homeworkId) => {
-    setHomeworkList((prev: any) => prev.map(hw =>
+    setHomeworkList((prev: any) => prev.map((hw: any) =>
       hw.id === homeworkId
         ? { ...hw, status: 'completed', color: 'gold' }
         : hw
@@ -373,7 +373,7 @@ export default function TeacherDashboard() {
             {/* Homework Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {homeworkData
-                .filter(hw => homeworkFilter === 'all' || hw.status === homeworkFilter)
+                .filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter)
                 .map((homework) => (
                 <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className={`h-2 ${
@@ -445,7 +445,7 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Empty State */}
-            {homeworkData.filter(hw => homeworkFilter === 'all' || hw.status === homeworkFilter).length === 0 && (
+            {homeworkData.filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter).length === 0 && (
               <div className="text-center py-12 bg-white rounded-xl">
                 <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No homework found</p>
@@ -538,11 +538,11 @@ export default function TeacherDashboard() {
                       >
                         <option value="">Select...</option>
                         {targetForm.type === 'individual' ? (
-                          myStudents.map(student => (
+                          myStudents.map((student: any) => (
                             <option key={student.id} value={student.name}>{student.name}</option>
                           ))
                         ) : (
-                          myClasses.map(cls => (
+                          myClasses.map((cls: any) => (
                             <option key={cls.id} value={cls.name}>{cls.name}</option>
                           ))
                         )}

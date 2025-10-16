@@ -686,7 +686,7 @@ export default function TeacherDashboard() {
   };
 
   // Get unique classes from assignments
-  const uniqueClasses = [...new Set(assignments.map(a => a.class))].sort();
+  const uniqueClasses = [...new Set(assignments.map((a: any) => a.class))].sort();
 
   // Messages data
   const inboxMessages = [
@@ -1077,7 +1077,7 @@ export default function TeacherDashboard() {
                   className="p-2 hover:bg-gray-100 rounded-lg relative"
                 >
                   <Bell className="w-5 h-5 text-gray-600" />
-                  {schoolMessages.filter(m => !m.read).length > 0 && (
+                  {schoolMessages.filter((m: any) => !m.read).length > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
@@ -1561,8 +1561,8 @@ export default function TeacherDashboard() {
                   <p className="text-green-100 mt-1">
                     {(() => {
                       const filteredCount = myStudents
-                        .filter(s => selectedClass === 'all' || s.classId === selectedClass)
-                        .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase())).length;
+                        .filter((s: any) => selectedClass === 'all' || s.classId === selectedClass)
+                        .filter((s: any) => s.name.toLowerCase().includes(searchTerm.toLowerCase())).length;
                       const totalCount = myStudents.length;
                       return filteredCount === totalCount 
                         ? `Showing all ${totalCount} students` 
@@ -1603,8 +1603,8 @@ export default function TeacherDashboard() {
                     className="px-4 py-2 bg-white bg-opacity-20 backdrop-blur text-white rounded-lg border border-green-400 focus:ring-2 focus:ring-white"
                   >
                     <option value="all" className="text-gray-800">All Classes</option>
-                    {myClasses.map(cls => (
-                      <option key={cls.id} value={cls.id} className="text-gray-800">{cls.name} ({myStudents.filter(s => s.classId === cls.id).length} students)</option>
+                    {myClasses.map((cls: any) => (
+                      <option key={cls.id} value={cls.id} className="text-gray-800">{cls.name} ({myStudents.filter((s: any) => s.classId === cls.id).length} students)</option>
                     ))}
                   </select>
                   <div className="relative">
@@ -1643,8 +1643,8 @@ export default function TeacherDashboard() {
             {/* Students View */}
             {(() => {
               const filteredStudents = myStudents
-                .filter(s => selectedClass === 'all' || s.classId === selectedClass)
-                .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                .filter((s: any) => selectedClass === 'all' || s.classId === selectedClass)
+                .filter((s: any) => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
               
               if (filteredStudents.length === 0) {
                 return (
@@ -1653,9 +1653,9 @@ export default function TeacherDashboard() {
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">No students found</h3>
                     <p className="text-gray-500 mb-6">
                       {selectedClass !== 'all' && searchTerm 
-                        ? `No students matching "${searchTerm}" in ${myClasses.find(c => c.id === selectedClass)?.name}`
+                        ? `No students matching "${searchTerm}" in ${myClasses.find((c: any) => c.id === selectedClass)?.name}`
                         : selectedClass !== 'all' 
-                        ? `No students in ${myClasses.find(c => c.id === selectedClass)?.name}`
+                        ? `No students in ${myClasses.find((c: any) => c.id === selectedClass)?.name}`
                         : searchTerm 
                         ? `No students matching "${searchTerm}"`
                         : 'No students available'}
@@ -1699,7 +1699,7 @@ export default function TeacherDashboard() {
                                 <div className="flex items-center space-x-3">
                                   <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
                                     <span className="text-white font-bold text-sm">
-                                      {student.name.split(' ').map(n => n[0]).join('')}
+                                      {student.name.split(' ').map((n: any) => n[0]).join('')}
                                     </span>
                                   </div>
                                   <div>
@@ -1830,7 +1830,7 @@ export default function TeacherDashboard() {
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-white bg-opacity-30 backdrop-blur rounded-full flex items-center justify-center">
                           <span className="text-xl font-bold text-white">
-                            {student.name.split(' ').map(n => n[0]).join('')}
+                            {student.name.split(' ').map((n: any) => n[0]).join('')}
                           </span>
                         </div>
                         <div>
@@ -1980,7 +1980,7 @@ export default function TeacherDashboard() {
                 <div>
                   <h2 className="text-xl font-semibold">Assignments</h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    {assignments.filter(assignment => 
+                    {assignments.filter((assignment: any) => 
                       (assignmentStatusFilter === 'all' || assignment.status === assignmentStatusFilter) &&
                       (assignmentClassFilter === 'all' || assignment.class === assignmentClassFilter) &&
                       (assignmentSearchTerm === '' || assignment.studentName.toLowerCase().includes(assignmentSearchTerm.toLowerCase()))
@@ -2012,7 +2012,7 @@ export default function TeacherDashboard() {
                     className="px-3 py-2 border rounded-lg text-sm"
                   >
                     <option value="all">All Classes</option>
-                    {uniqueClasses.map(cls => (
+                    {uniqueClasses.map((cls: any) => (
                       <option key={cls} value={cls}>{cls}</option>
                     ))}
                   </select>
@@ -2043,7 +2043,7 @@ export default function TeacherDashboard() {
               
               <div className="space-y-4">
                 {(() => {
-                  const filteredAssignments = assignments.filter(assignment => 
+                  const filteredAssignments = assignments.filter((assignment: any) => 
                     (assignmentStatusFilter === 'all' || assignment.status === assignmentStatusFilter) &&
                     (assignmentClassFilter === 'all' || assignment.class === assignmentClassFilter) &&
                     (assignmentSearchTerm === '' || assignment.studentName.toLowerCase().includes(assignmentSearchTerm.toLowerCase()))
@@ -2236,7 +2236,7 @@ export default function TeacherDashboard() {
                       }}
                       className="w-full px-4 py-3 border-2 border-green-300 rounded-lg text-sm font-medium bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200"
                     >
-                      {myClasses.map(cls => (
+                      {myClasses.map((cls: any) => (
                         <option key={cls.id} value={cls.id}>
                           {cls.name} - {cls.subject} ({cls.students} students)
                         </option>
@@ -2270,7 +2270,7 @@ export default function TeacherDashboard() {
                       <p className="text-2xl font-bold text-green-700">
                         {(() => {
                           const todayData = attendanceHistory[attendanceDate]?.[selectedAttendanceClass] || {};
-                          return Object.values(todayData).filter(record => record.status === 'present').length;
+                          return Object.values(todayData).filter((record: any) => record.status === 'present').length;
                         })()}
                       </p>
                     </div>
@@ -2284,7 +2284,7 @@ export default function TeacherDashboard() {
                       <p className="text-2xl font-bold text-red-700">
                         {(() => {
                           const todayData = attendanceHistory[attendanceDate]?.[selectedAttendanceClass] || {};
-                          return Object.values(todayData).filter(record => record.status === 'absent').length;
+                          return Object.values(todayData).filter((record: any) => record.status === 'absent').length;
                         })()}
                       </p>
                     </div>
@@ -2298,7 +2298,7 @@ export default function TeacherDashboard() {
                       <p className="text-2xl font-bold text-yellow-700">
                         {(() => {
                           const todayData = attendanceHistory[attendanceDate]?.[selectedAttendanceClass] || {};
-                          return Object.values(todayData).filter(record => record.status === 'late').length;
+                          return Object.values(todayData).filter((record: any) => record.status === 'late').length;
                         })()}
                       </p>
                     </div>
@@ -2312,7 +2312,7 @@ export default function TeacherDashboard() {
                       <p className="text-2xl font-bold text-blue-700">
                         {(() => {
                           const todayData = attendanceHistory[attendanceDate]?.[selectedAttendanceClass] || {};
-                          return Object.values(todayData).filter(record => record.status === 'excused').length;
+                          return Object.values(todayData).filter((record: any) => record.status === 'excused').length;
                         })()}
                       </p>
                     </div>
@@ -2326,7 +2326,7 @@ export default function TeacherDashboard() {
                 <div className="bg-gray-50 px-6 py-3 border-b">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-gray-700">
-                      {myClasses.find(c => c.id === selectedAttendanceClass)?.name} - {attendanceDate}
+                      {myClasses.find((c: any) => c.id === selectedAttendanceClass)?.name} - {attendanceDate}
                     </h3>
                     <div className="flex items-center space-x-2">
                       <button className="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm">
@@ -2374,7 +2374,7 @@ export default function TeacherDashboard() {
                                   currentStatus === 'excused' ? 'text-blue-700' :
                                   'text-gray-700'
                                 }`}>
-                                  {student.name.split(' ').map(n => n[0]).join('')}
+                                  {student.name.split(' ').map((n: any) => n[0]).join('')}
                                 </span>
                               </div>
                               <div>
@@ -2543,14 +2543,14 @@ export default function TeacherDashboard() {
                 </div>
                 <button 
                   onClick={() => {
-                    const className = myClasses.find(c => c.id === selectedAttendanceClass)?.name || 'Class';
+                    const className = myClasses.find((c: any) => c.id === selectedAttendanceClass)?.name || 'Class';
                     setAttendanceSaveMessage(`Attendance saved for ${className} on ${attendanceDate}`);
                     setTimeout(() => setAttendanceSaveMessage(''), 3000);
                   }}
                   className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 font-medium shadow-md hover:shadow-lg transition-all"
                 >
                   <CheckCircle className="w-5 h-5" />
-                  <span>Save Attendance for {myClasses.find(c => c.id === selectedAttendanceClass)?.name}</span>
+                  <span>Save Attendance for {myClasses.find((c: any) => c.id === selectedAttendanceClass)?.name}</span>
                 </button>
               </div>
             </div>
@@ -2566,7 +2566,7 @@ export default function TeacherDashboard() {
                 <div>
                   <h2 className="text-2xl font-bold">Messages</h2>
                   <p className="text-green-100 mt-1">
-                    {messageTab === 'inbox' && `${inboxMessages.filter(m => !m.read).length} unread messages`}
+                    {messageTab === 'inbox' && `${inboxMessages.filter((m: any) => !m.read).length} unread messages`}
                     {messageTab === 'sent' && `${sentMessages.length} sent messages`}
                     {messageTab === 'archived' && `${archivedMessages.length} archived messages`}
                   </p>
@@ -2596,9 +2596,9 @@ export default function TeacherDashboard() {
                   >
                     <Mail className="w-4 h-4 inline mr-2" />
                     Inbox
-                    {inboxMessages.filter(m => !m.read).length > 0 && (
+                    {inboxMessages.filter((m: any) => !m.read).length > 0 && (
                       <span className="ml-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-xs">
-                        {inboxMessages.filter(m => !m.read).length}
+                        {inboxMessages.filter((m: any) => !m.read).length}
                       </span>
                     )}
                   </button>
@@ -2948,7 +2948,7 @@ export default function TeacherDashboard() {
                   {/* Month View Grid */}
                   <div className="grid grid-cols-7 gap-px bg-gray-200">
                     {/* Days of Week Headers */}
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day: any) => (
                       <div key={day} className="bg-gray-50 p-3 text-center text-sm font-semibold text-gray-700">
                         {day}
                       </div>
@@ -2977,13 +2977,13 @@ export default function TeacherDashboard() {
                         // Filter events for this day
                         const currentDateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                         const events = calendarType === 'school' 
-                          ? schoolEvents.filter(e => {
+                          ? schoolEvents.filter((e: any) => {
                               const eventDate = new Date(e.date);
                               return eventDate.getDate() === dayNum && 
                                      eventDate.getMonth() === selectedDate.getMonth() &&
                                      eventDate.getFullYear() === selectedDate.getFullYear();
                             })
-                          : teacherCalendar.filter(e => {
+                          : teacherCalendar.filter((e: any) => {
                               const eventDate = new Date(e.date);
                               return eventDate.getDate() === dayNum && 
                                      eventDate.getMonth() === selectedDate.getMonth() &&
@@ -3042,7 +3042,7 @@ export default function TeacherDashboard() {
                     {/* Time Column */}
                     <div className="text-right pr-4">
                       <div className="h-12 border-b"></div>
-                      {['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'].map(time => (
+                      {['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'].map((time: any) => (
                         <div key={time} className="h-20 text-sm text-gray-500 pt-2">
                           {time}
                         </div>
@@ -3053,11 +3053,11 @@ export default function TeacherDashboard() {
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIndex) => {
                       const currentDate = 7 + dayIndex; // January 7-13, 2025
                       const dayEvents = calendarType === 'school' 
-                        ? schoolEvents.filter(e => {
+                        ? schoolEvents.filter((e: any) => {
                             const eventDay = parseInt(e.date.split('-')[2]);
                             return eventDay >= 7 && eventDay <= 13 && eventDay === currentDate;
                           })
-                        : teacherCalendar.filter(e => {
+                        : teacherCalendar.filter((e: any) => {
                             const eventDay = parseInt(e.date.split('-')[2]);
                             return eventDay === 11 || e.recurring === 'daily'; // Show daily classes
                           });
@@ -3185,7 +3185,7 @@ export default function TeacherDashboard() {
                     
                     {(calendarType === 'school' ? schoolEvents : teacherCalendar)
                       .sort((a, b) => new Date(a.date) - new Date(b.date))
-                      .map(event => (
+                      .map((event: any) => (
                       <div 
                         key={event.id} 
                         className="flex items-center space-x-4 p-4 border rounded-lg hover:shadow-md transition cursor-pointer"
@@ -3275,7 +3275,7 @@ export default function TeacherDashboard() {
               <div className="bg-white rounded-lg shadow-sm p-4">
                 <h4 className="font-semibold text-gray-700 mb-2">Upcoming Events</h4>
                 <div className="space-y-2">
-                  {schoolEvents.slice(0, 3).map(event => (
+                  {schoolEvents.slice(0, 3).map((event: any) => (
                     <div key={event.id} className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">{event.date.split('-')[2]} Jan</span>
                       <span className="font-medium truncate ml-2">{event.title}</span>
@@ -3413,7 +3413,7 @@ export default function TeacherDashboard() {
                               setSelectedRecipient({ id: 'all-parents', name: 'All Parents' });
                             } else if (value.startsWith('class-')) {
                               const classId = value.replace('class-', '');
-                              const className = myClasses.find(c => c.id === classId)?.name;
+                              const className = myClasses.find((c: any) => c.id === classId)?.name;
                               setSelectedRecipient({ id: value, name: `${className} Students` });
                             } else if (value === 'school-admin') {
                               setSelectedRecipient({ id: 'school-admin', name: 'School Administration' });
@@ -3424,9 +3424,9 @@ export default function TeacherDashboard() {
                           <option value="">Select a group</option>
                           <option value="all-students">All Students</option>
                           <option value="all-parents">All Parents</option>
-                          {myClasses.map(cls => (
+                          {myClasses.map((cls: any) => (
                             <option key={cls.id} value={`class-${cls.id}`}>
-                              {cls.name} Students ({myStudents.filter(s => s.classId === cls.id).length})
+                              {cls.name} Students ({myStudents.filter((s: any) => s.classId === cls.id).length})
                             </option>
                           ))}
                           <option value="school-admin">School Administration</option>
@@ -3449,8 +3449,8 @@ export default function TeacherDashboard() {
                           <div className="border rounded-lg max-h-48 overflow-y-auto">
                             {messageRecipientType === 'students' ? (
                               myStudents
-                                .filter(s => s.name.toLowerCase().includes(messageRecipientSearch.toLowerCase()))
-                                .map(student => (
+                                .filter((s: any) => s.name.toLowerCase().includes(messageRecipientSearch.toLowerCase()))
+                                .map((student: any) => (
                                   <button
                                     key={student.id}
                                     type="button"
@@ -3476,8 +3476,8 @@ export default function TeacherDashboard() {
                             ) : (
                               // Parents List
                               myStudents
-                                .filter(s => s.parentName.toLowerCase().includes(messageRecipientSearch.toLowerCase()))
-                                .map(student => (
+                                .filter((s: any) => s.parentName.toLowerCase().includes(messageRecipientSearch.toLowerCase()))
+                                .map((student: any) => (
                                   <button
                                     key={`parent-${student.id}`}
                                     type="button"
@@ -3750,7 +3750,7 @@ export default function TeacherDashboard() {
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
                               <span className="text-green-700 font-semibold text-sm">
-                                {student.name.split(' ').map(n => n[0]).join('')}
+                                {student.name.split(' ').map((n: any) => n[0]).join('')}
                               </span>
                             </div>
                             <span className="font-medium text-gray-900">{student.name}</span>
@@ -3984,7 +3984,7 @@ export default function TeacherDashboard() {
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-white bg-opacity-30 backdrop-blur rounded-full flex items-center justify-center">
                     <span className="text-2xl font-bold text-white">
-                      {selectedStudent.name.split(' ').map(n => n[0]).join('')}
+                      {selectedStudent.name.split(' ').map((n: any) => n[0]).join('')}
                     </span>
                   </div>
                   <div>

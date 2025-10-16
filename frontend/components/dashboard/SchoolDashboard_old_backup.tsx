@@ -153,7 +153,7 @@ export default function SchoolDashboard() {
   const handleSelectUser = (userId: string) => {
     setSelectedUsers((prev: any) => 
       prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
+        ? prev.filter((id: any) => id !== userId)
         : [...prev, userId]
     );
   };
@@ -162,14 +162,14 @@ export default function SchoolDashboard() {
     if (selectedUsers.length === students.length) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(students.map(s => s.id));
+      setSelectedUsers(students.map((s: any) => s.id));
     }
   };
 
   // Student Actions
   const handleDeleteStudents = (studentIds: string[]) => {
     if (confirm(`Are you sure you want to delete ${studentIds.length} student(s)?`)) {
-      setStudents((prev: any) => prev.filter(s => !studentIds.includes(s.id)));
+      setStudents((prev: any) => prev.filter((s: any) => !studentIds.includes(s.id)));
       setSelectedUsers([]);
       alert(`Successfully deleted ${studentIds.length} student(s)`);
     }
@@ -178,7 +178,7 @@ export default function SchoolDashboard() {
   const handleExportStudents = () => {
     const csv = [
       'ID,Name,Age,Grade,Class,Email,Phone,Parent,Progress,Attendance,Memorized',
-      ...students.map(s => 
+      ...students.map((s: any) => 
         `${s.id},${s.name},${s.age},${s.grade},${s.class},${s.email},${s.phone},${s.parent},${s.progress},${s.attendance},${s.memorized}`
       )
     ].join('\n');
@@ -192,8 +192,8 @@ export default function SchoolDashboard() {
   };
 
   const handleSendEmail = (studentIds: string[]) => {
-    const selectedStudents = students.filter(s => studentIds.includes(s.id));
-    const emails = selectedStudents.map(s => s.email).join(', ');
+    const selectedStudents = students.filter((s: any) => studentIds.includes(s.id));
+    const emails = selectedStudents.map((s: any) => s.email).join(', ');
     window.location.href = `mailto:${emails}`;
   };
 
@@ -203,7 +203,7 @@ export default function SchoolDashboard() {
 
   const handleSaveStudent = () => {
     if (editingStudent) {
-      setStudents((prev: any) => prev.map(s => 
+      setStudents((prev: any) => prev.map((s: any) => 
         s.id === editingStudent.id ? editingStudent : s
       ));
       setEditingStudent(null);
@@ -256,7 +256,7 @@ export default function SchoolDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Class *</label>
                       <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option>Select Class</option>
-                        {classes.map(cls => (
+                        {classes.map((cls: any) => (
                           <option key={cls.id}>{cls.name}</option>
                         ))}
                       </select>
@@ -326,7 +326,7 @@ export default function SchoolDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Assign Classes</label>
                     <div className="space-y-2">
-                      {classes.map(cls => (
+                      {classes.map((cls: any) => (
                         <label key={cls.id} className="flex items-center">
                           <input type="checkbox" className="mr-2" />
                           <span className="text-sm">{cls.name} - {cls.grade}</span>
@@ -366,7 +366,7 @@ export default function SchoolDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Link Children</label>
                     <select multiple className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" size={4}>
-                      {students.map(student => (
+                      {students.map((student: any) => (
                         <option key={student.id}>{student.name}</option>
                       ))}
                     </select>
@@ -409,7 +409,7 @@ export default function SchoolDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Assign Teacher *</label>
                     <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                       <option>Select Teacher</option>
-                      {teachers.map(teacher => (
+                      {teachers.map((teacher: any) => (
                         <option key={teacher.id}>{teacher.name} - {teacher.subject}</option>
                       ))}
                     </select>
@@ -417,7 +417,7 @@ export default function SchoolDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Subjects</label>
                     <div className="grid grid-cols-2 gap-2">
-                      {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic', 'Fiqh', 'Hadith'].map(subject => (
+                      {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic', 'Fiqh', 'Hadith'].map((subject: any) => (
                         <label key={subject} className="flex items-center">
                           <input type="checkbox" className="mr-2" />
                           <span className="text-sm">{subject}</span>
@@ -526,13 +526,13 @@ export default function SchoolDashboard() {
                   </h3>
                   
                   {/* CSV Internal Duplicates */}
-                  {duplicates.filter(d => d.duplicateType === 'csv').length > 0 && (
+                  {duplicates.filter((d: any) => d.duplicateType === 'csv').length > 0 && (
                     <div className="mb-4">
                       <p className="text-sm font-semibold text-red-700 mb-2">
                         ⚠️ Duplicates within your CSV file:
                       </p>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {duplicates.filter(d => d.duplicateType === 'csv').map((row, idx) => (
+                        {duplicates.filter((d: any) => d.duplicateType === 'csv').map((row, idx) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-300">
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-900">
@@ -555,13 +555,13 @@ export default function SchoolDashboard() {
                   )}
                   
                   {/* System Duplicates */}
-                  {duplicates.filter(d => d.duplicateType === 'system').length > 0 && (
+                  {duplicates.filter((d: any) => d.duplicateType === 'system').length > 0 && (
                     <div>
                       <p className="text-sm font-semibold text-yellow-700 mb-2">
                         ⚠️ Already exist in the system:
                       </p>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {duplicates.filter(d => d.duplicateType === 'system').map((row, idx) => (
+                        {duplicates.filter((d: any) => d.duplicateType === 'system').map((row, idx) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-yellow-50 rounded border border-yellow-300">
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-900">
@@ -595,13 +595,13 @@ export default function SchoolDashboard() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-red-600">
-                    {duplicates.filter(d => d.duplicateType === 'csv').length}
+                    {duplicates.filter((d: any) => d.duplicateType === 'csv').length}
                   </p>
                   <p className="text-xs text-gray-500">CSV Duplicates</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-yellow-600">
-                    {duplicates.filter(d => d.duplicateType === 'system').length}
+                    {duplicates.filter((d: any) => d.duplicateType === 'system').length}
                   </p>
                   <p className="text-xs text-gray-500">System Duplicates</p>
                 </div>
@@ -670,12 +670,12 @@ export default function SchoolDashboard() {
 
     const processCsvData = (csvText: string) => {
       const lines = csvText.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
+      const headers = lines[0].split(',').map((h: any) => h.trim());
       const data = [];
       
       for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim()) {
-          const values = lines[i].split(',').map(v => v.trim());
+          const values = lines[i].split(',').map((v: any) => v.trim());
           const row: any = {};
           headers.forEach((header, index) => {
             row[header] = values[index] || '';
@@ -702,7 +702,7 @@ export default function SchoolDashboard() {
       const csvInternalDuplicates = [];
       const uniqueInCsv = [];
       
-      data.forEach(row => {
+      data.forEach((row: any) => {
         const email = (row.Email || row.email || '').toLowerCase();
         if (email) {
           if (csvEmailMap.has(email)) {
@@ -725,15 +725,15 @@ export default function SchoolDashboard() {
       });
       
       // SECOND: Check the unique CSV records against existing students
-      const existingEmails = students.map(s => s.email.toLowerCase());
+      const existingEmails = students.map((s: any) => s.email.toLowerCase());
       const systemDuplicates = [];
       const newRows = [];
       
-      uniqueInCsv.forEach(row => {
+      uniqueInCsv.forEach((row: any) => {
         const email = (row.Email || row.email || '').toLowerCase();
         if (email && existingEmails.includes(email)) {
           // Find the existing student
-          const existingStudent = students.find(s => s.email.toLowerCase() === email);
+          const existingStudent = students.find((s: any) => s.email.toLowerCase() === email);
           systemDuplicates.push({
             ...row,
             existingRecord: existingStudent
@@ -745,12 +745,12 @@ export default function SchoolDashboard() {
       
       // Combine all duplicates for review
       const allDuplicates = [
-        ...csvInternalDuplicates.map(d => ({
+        ...csvInternalDuplicates.map((d: any) => ({
           ...d,
           duplicateType: 'csv',
           message: `Duplicate in CSV (line ${d.originalLineNumber} duplicates line ${d.duplicateOf})`
         })),
-        ...systemDuplicates.map(d => ({
+        ...systemDuplicates.map((d: any) => ({
           ...d,
           duplicateType: 'system',
           message: `Already exists in system: ${d.existingRecord?.name} (${d.existingRecord?.id})`
@@ -1231,7 +1231,7 @@ export default function SchoolDashboard() {
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-3">User Roles & Permissions</h4>
               <div className="space-y-3">
-                {['Admin', 'Teacher', 'Student', 'Parent'].map(role => (
+                {['Admin', 'Teacher', 'Student', 'Parent'].map((role: any) => (
                   <div key={role} className="flex items-center justify-between p-3 bg-white rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Shield className="w-5 h-5 text-gray-500" />
@@ -1857,7 +1857,7 @@ export default function SchoolDashboard() {
                 </button>
                 <select className="px-3 py-2 border border-gray-300 rounded-lg">
                   <option>All Classes</option>
-                  {classes.map(cls => (
+                  {classes.map((cls: any) => (
                     <option key={cls.id}>{cls.name}</option>
                   ))}
                 </select>
@@ -1958,7 +1958,7 @@ export default function SchoolDashboard() {
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                               <span className="text-sm font-semibold text-blue-600">
-                                {student.name.split(' ').map(n => n[0]).join('')}
+                                {student.name.split(' ').map((n: any) => n[0]).join('')}
                               </span>
                             </div>
                             <div>
@@ -2032,7 +2032,7 @@ export default function SchoolDashboard() {
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-lg font-semibold text-blue-600">
-                            {student.name.split(' ').map(n => n[0]).join('')}
+                            {student.name.split(' ').map((n: any) => n[0]).join('')}
                           </span>
                         </div>
                         <div>
@@ -2314,7 +2314,7 @@ export default function SchoolDashboard() {
           ];
           
           // Filter assignments based on selected filters
-          const filteredAssignments = allAssignments.filter(assignment => {
+          const filteredAssignments = allAssignments.filter((assignment: any) => {
             if (classFilter !== 'all' && assignment.class !== classFilter) return false;
             if (teacherFilter !== 'all' && assignment.teacher !== teacherFilter) return false;
             if (subjectFilter !== 'all' && assignment.subject !== subjectFilter) return false;
@@ -2401,7 +2401,7 @@ export default function SchoolDashboard() {
                   onChange={(e) => setClassFilter(e.target.value)}
                 >
                   <option value="all">All Classes</option>
-                  {classes.map(cls => (
+                  {classes.map((cls: any) => (
                     <option key={cls.id} value={cls.name}>{cls.name}</option>
                   ))}
                 </select>
@@ -2411,7 +2411,7 @@ export default function SchoolDashboard() {
                   onChange={(e) => setTeacherFilter(e.target.value)}
                 >
                   <option value="all">All Teachers</option>
-                  {Array.from(new Set(allAssignments.map(a => a.teacher))).map(teacher => (
+                  {Array.from(new Set(allAssignments.map((a: any) => a.teacher))).map((teacher: any) => (
                     <option key={teacher} value={teacher}>{teacher}</option>
                   ))}
                 </select>
@@ -2421,7 +2421,7 @@ export default function SchoolDashboard() {
                   onChange={(e) => setSubjectFilter(e.target.value)}
                 >
                   <option value="all">All Subjects</option>
-                  {Array.from(new Set(allAssignments.map(a => a.subject))).sort().map(subject => (
+                  {Array.from(new Set(allAssignments.map((a: any) => a.subject))).sort().map((subject: any) => (
                     <option key={subject} value={subject}>{subject}</option>
                   ))}
                 </select>

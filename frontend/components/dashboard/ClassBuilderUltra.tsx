@@ -338,28 +338,28 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
   // Get unassigned students
   const getUnassignedStudents = () => {
-    const assignedIds = classes.flatMap(cls => cls.students.map(s => s.id));
-    return allStudents.filter(s => !assignedIds.includes(s.id));
+    const assignedIds = classes.flatMap(cls => cls.students.map((s: any) => s.id));
+    return allStudents.filter((s: any) => !assignedIds.includes(s.id));
   };
 
   // Get unassigned teachers
   const getUnassignedTeachers = () => {
-    const assignedIds = classes.filter(cls => cls.teacher).map(cls => cls.teacher!.id);
-    return allTeachers.filter(t => !assignedIds.includes(t.id));
+    const assignedIds = classes.filter((cls: any) => cls.teacher).map((cls: any) => cls.teacher!.id);
+    return allTeachers.filter((t: any) => !assignedIds.includes(t.id));
   };
 
   // Check for schedule conflicts
   const checkScheduleConflict = (entityId: string, entityType: 'student' | 'teacher', targetClassId: string): string | null => {
-    const targetClass = classes.find(c => c.id === targetClassId);
+    const targetClass = classes.find((c: any) => c.id === targetClassId);
     if (!targetClass || !targetClass.schedule_json?.schedules) return null;
 
     const targetSchedules = targetClass.schedule_json.schedules || [];
 
     // Find all classes that this entity is already in
-    const entityClasses = classes.filter(cls => {
+    const entityClasses = classes.filter((cls: any) => {
       if (cls.id === targetClassId) return false; // Skip the target class
       if (entityType === 'student') {
-        return cls.students.some(s => s.id === entityId);
+        return cls.students.some((s: any) => s.id === entityId);
       } else {
         return cls.teacher?.id === entityId;
       }
@@ -403,18 +403,18 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     let students = showOnlyUnassigned ? getUnassignedStudents() : allStudents;
 
     if (studentSearchTerm) {
-      students = students.filter(s =>
+      students = students.filter((s: any) =>
         s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) ||
         s.email.toLowerCase().includes(studentSearchTerm.toLowerCase())
       );
     }
 
     if (filterGrade !== 'all') {
-      students = students.filter(s => s.grade === filterGrade);
+      students = students.filter((s: any) => s.grade === filterGrade);
     }
 
     if (filterGender !== 'all') {
-      students = students.filter(s => s.gender === filterGender);
+      students = students.filter((s: any) => s.gender === filterGender);
     }
 
     return students;
@@ -425,7 +425,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     let teachers = allTeachers; // Show ALL teachers
 
     if (teacherSearchTerm) {
-      teachers = teachers.filter(t =>
+      teachers = teachers.filter((t: any) =>
         t.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
         t.email.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
         (t.subject && t.subject.toLowerCase().includes(teacherSearchTerm.toLowerCase()))
@@ -433,7 +433,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     }
 
     if (filterSubject !== 'all') {
-      teachers = teachers.filter(t => t.subject === filterSubject);
+      teachers = teachers.filter((t: any) => t.subject === filterSubject);
     }
 
     return teachers;
@@ -444,27 +444,27 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     if (event?.shiftKey && selectedStudents.length > 0) {
       // Shift-click for range selection
       const students = getFilteredStudents();
-      const clickedIndex = students.findIndex(s => s.id === studentId);
-      const lastSelectedIndex = students.findIndex(s => selectedStudents.includes(s.id));
+      const clickedIndex = students.findIndex((s: any) => s.id === studentId);
+      const lastSelectedIndex = students.findIndex((s: any) => selectedStudents.includes(s.id));
 
       if (clickedIndex !== -1 && lastSelectedIndex !== -1) {
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
-        const rangeIds = students.slice(start, end + 1).map(s => s.id);
+        const rangeIds = students.slice(start, end + 1).map((s: any) => s.id);
         setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
       setSelectedStudents((prev: any) =>
         prev.includes(studentId)
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
       setSelectedStudents((prev: any) =>
         prev.includes(studentId)
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     }
@@ -473,14 +473,14 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
   // Handle select all - improved version
   const handleSelectAll = () => {
     const filteredStudents = getFilteredStudents();
-    const filteredIds = filteredStudents.map(s => s.id);
+    const filteredIds = filteredStudents.map((s: any) => s.id);
 
     // Check if all filtered students are selected
-    const allSelected = filteredIds.every(id => selectedStudents.includes(id));
+    const allSelected = filteredIds.every((id: any) => selectedStudents.includes(id));
 
     if (allSelected) {
       // Deselect all filtered students
-      setSelectedStudents(selectedStudents.filter(id => !filteredIds.includes(id)));
+      setSelectedStudents(selectedStudents.filter((id: any) => !filteredIds.includes(id)));
     } else {
       // Select all filtered students (merge with existing selection)
       const newSelection = [...new Set([...selectedStudents, ...filteredIds])];
@@ -491,7 +491,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
   // Drag and Drop Handlers
   const handleDragStart = (e: React.DragEvent) => {
     if (selectedStudents.length > 0) {
-      const students = allStudents.filter(s => selectedStudents.includes(s.id));
+      const students = allStudents.filter((s: any) => selectedStudents.includes(s.id));
       setDraggedItems(students);
       e.dataTransfer.effectAllowed = 'move';
     }
@@ -522,7 +522,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
       for (const student of draggedItems) {
         // Skip if already in class
-        if (selectedClass.students.some(s => s.id === student.id)) continue;
+        if (selectedClass.students.some((s: any) => s.id === student.id)) continue;
 
         // Check for schedule conflict
         const conflict = checkScheduleConflict(student.id, 'student', selectedClass.id);
@@ -544,7 +544,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           students: [...selectedClass.students, ...studentsToAdd].sort((a: any, b: any) => a.name.localeCompare(b.name))
         };
 
-        setClasses((prev: any) => prev.map(cls =>
+        setClasses((prev: any) => prev.map((cls: any) =>
           cls.id === selectedClass.id ? updatedClass : cls
         ));
         setSelectedClass(updatedClass);
@@ -569,7 +569,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           teacher: draggedTeacher
         };
 
-        setClasses((prev: any) => prev.map(cls =>
+        setClasses((prev: any) => prev.map((cls: any) =>
           cls.id === selectedClass.id ? updatedClass : cls
         ));
         setSelectedClass(updatedClass);
@@ -586,10 +586,10 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
     const updatedClass = {
       ...selectedClass,
-      students: selectedClass.students.filter(s => s.id !== studentId)
+      students: selectedClass.students.filter((s: any) => s.id !== studentId)
     };
 
-    setClasses((prev: any) => prev.map(cls =>
+    setClasses((prev: any) => prev.map((cls: any) =>
       cls.id === selectedClass.id ? updatedClass : cls
     ));
     setSelectedClass(updatedClass);
@@ -605,7 +605,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       teacher: null
     };
 
-    setClasses((prev: any) => prev.map(cls =>
+    setClasses((prev: any) => prev.map((cls: any) =>
       cls.id === selectedClass.id ? updatedClass : cls
     ));
     setSelectedClass(updatedClass);
@@ -640,7 +640,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           .eq('class_id', cls.id);
 
         if (cls.students.length > 0) {
-          const enrollments = cls.students.map(student => ({
+          const enrollments = cls.students.map((student: any) => ({
             class_id: cls.id,
             student_id: student.id
           }));
@@ -701,13 +701,13 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                 <select
                   value={selectedClass?.id || ''}
                   onChange={(e) => {
-                    const cls = classes.find(c => c.id === e.target.value);
+                    const cls = classes.find((c: any) => c.id === e.target.value);
                     setSelectedClass(cls || null);
                   }}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium bg-white shadow-sm hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Choose a class...</option>
-                  {classes.map(cls => (
+                  {classes.map((cls: any) => (
                     <option key={cls.id} value={cls.id}>
                       {cls.name} {cls.room && `- ${cls.room}`} ({cls.students.length}/{cls.capacity} students)
                     </option>
@@ -867,7 +867,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                     className="flex-1 px-2 py-1.5 text-sm border rounded-lg"
                   >
                     <option value="all">All Grades</option>
-                    {['KG', ...Array.from({length: 12}, (_, i) => i + 1)].map(grade => (
+                    {['KG', ...Array.from({length: 12}, (_, i) => i + 1)].map((grade: any) => (
                       <option key={grade} value={grade.toString()}>
                         {grade === 'KG' ? 'KG' : `Grade ${grade}`}
                       </option>
@@ -920,7 +920,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                   <p className="text-gray-400 text-xs mt-1">Try adjusting your filters</p>
                 </div>
               ) : (
-                filteredStudents.map(student => (
+                filteredStudents.map((student: any) => (
                   <div
                     key={student.id}
                     onClick={(e) => handleSelectStudent(student.id, e)}
@@ -1028,7 +1028,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                         onClick={() => {
                           if (confirm(`Remove all ${selectedClass.students.length} students from this class?`)) {
                             const updatedClass = { ...selectedClass, students: [] };
-                            setClasses((prev: any) => prev.map(cls =>
+                            setClasses((prev: any) => prev.map((cls: any) =>
                               cls.id === selectedClass.id ? updatedClass : cls
                             ));
                             setSelectedClass(updatedClass);
@@ -1119,7 +1119,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                   className="w-full px-2 py-1.5 text-sm border rounded-lg"
                 >
                   <option value="all">All Subjects</option>
-                  {Array.from(new Set(allTeachers.map(t => t.subject).filter(Boolean))).map(subject => (
+                  {Array.from(new Set(allTeachers.map((t: any) => t.subject).filter(Boolean))).map((subject: any) => (
                     <option key={subject} value={subject}>{subject}</option>
                   ))}
                 </select>
@@ -1135,9 +1135,9 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                   <p className="text-gray-400 text-xs mt-1">All teachers may be assigned</p>
                 </div>
               ) : (
-                filteredTeachers.map(teacher => {
+                filteredTeachers.map((teacher: any) => {
                   // Find which class this teacher is assigned to
-                  const assignedClass = classes.find(cls => cls.teacher?.id === teacher.id);
+                  const assignedClass = classes.find((cls: any) => cls.teacher?.id === teacher.id);
                   const isAssigned = !!assignedClass;
 
                   return (

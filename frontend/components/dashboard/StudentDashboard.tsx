@@ -330,7 +330,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     const scriptId = selectedScript || 'uthmani-hafs';
     const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = surahList.find(s => s.number === currentSurah);
+    const surahInfo = surahList.find((s: any) => s.number === currentSurah);
 
     if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
       setQuranText({
@@ -348,7 +348,7 @@ export default function StudentDashboard() {
     }
   }, [currentSurah, selectedScript]);
 
-  const allSurahs = surahList.map(s => ({
+  const allSurahs = surahList.map((s: any) => ({
     number: s.number,
     nameArabic: s.nameArabic,
     nameEnglish: s.nameEnglish,
@@ -358,7 +358,7 @@ export default function StudentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    const highlight = highlights.find(h => h.id === highlightId);
+    const highlight = highlights.find((h: any) => h.id === highlightId);
     if (highlight) {
       setShowNoteReply(highlight);
     }
@@ -376,7 +376,7 @@ export default function StudentDashboard() {
       
       // Update the highlights with the new reply
       setHighlights((prevHighlights: any) => 
-        prevHighlights.map(h => 
+        prevHighlights.map((h: any) => 
           h.id === showNoteReply.id 
             ? { ...h, replies: [...h.replies, newReply] }
             : h
@@ -458,7 +458,7 @@ export default function StudentDashboard() {
   const endIdx = startIdx + AYAHS_PER_PAGE;
   const currentAyahs = quranText.ayahs?.slice(startIdx, endIdx) || [];
 
-  const currentSurahInfo = allSurahs.find(s => s.number === currentSurah) || allSurahs[0];
+  const currentSurahInfo = allSurahs.find((s: any) => s.number === currentSurah) || allSurahs[0];
   const scriptStyling = getScriptStyling(selectedScript);
 
   return (
@@ -513,9 +513,9 @@ export default function StudentDashboard() {
                   className="relative p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <Bell className="w-5 h-5" />
-                  {notifications.filter(n => n.unread).length > 0 && (
+                  {notifications.filter((n: any) => n.unread).length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notifications.filter(n => n.unread).length}
+                      {notifications.filter((n: any) => n.unread).length}
                     </span>
                   )}
                 </button>
@@ -526,7 +526,7 @@ export default function StudentDashboard() {
                       <h3 className="font-semibold text-sm">Notifications</h3>
                       <button 
                         onClick={() => {
-                          setNotifications((prev: any) => prev.map(n => ({ ...n, unread: false })));
+                          setNotifications((prev: any) => prev.map((n: any) => ({ ...n, unread: false })));
                         }}
                         className="text-xs text-blue-600 hover:text-blue-700"
                       >
@@ -541,7 +541,7 @@ export default function StudentDashboard() {
                             key={notif.id}
                             onClick={() => {
                               setNotifications((prev: any) => 
-                                prev.map(n => n.id === notif.id ? { ...n, unread: false } : n)
+                                prev.map((n: any) => n.id === notif.id ? { ...n, unread: false } : n)
                               );
                             }}
                             className={`p-3 border-b hover:bg-gray-50 cursor-pointer transition ${
@@ -695,9 +695,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <BookOpen className="w-4 h-4" />
                 <span>Homework</span>
-                {highlights.filter(h => h.type === 'homework' && h.status === 'pending').length > 0 && (
+                {highlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
                   <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter(h => h.type === 'homework' && h.status === 'pending').length}
+                    {highlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -714,9 +714,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <FileText className="w-4 h-4" />
                 <span>Assignments</span>
-                {highlights.filter(h => h.type === 'assignment' && h.status === 'pending').length > 0 && (
+                {highlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
                   <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter(h => h.type === 'assignment' && h.status === 'pending').length}
+                    {highlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -734,7 +734,7 @@ export default function StudentDashboard() {
                 <TrendingUp className="w-4 h-4" />
                 <span>Progress</span>
                 <span className="bg-indigo-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {myTargets.filter(t => t.status === 'active').length}
+                  {myTargets.filter((t: any) => t.status === 'active').length}
                 </span>
               </span>
             </button>
@@ -750,9 +750,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <Target className="w-4 h-4" />
                 <span>Targets</span>
-                {myTargets.filter(t => t.status === 'active').length > 0 && (
+                {myTargets.filter((t: any) => t.status === 'active').length > 0 && (
                   <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {myTargets.filter(t => t.status === 'active').length}
+                    {myTargets.filter((t: any) => t.status === 'active').length}
                   </span>
                 )}
               </span>
@@ -769,9 +769,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
                 <span>Messages</span>
-                {messages.inbox.filter(m => m.unread).length > 0 && (
+                {messages.inbox.filter((m: any) => m.unread).length > 0 && (
                   <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {messages.inbox.filter(m => m.unread).length}
+                    {messages.inbox.filter((m: any) => m.unread).length}
                   </span>
                 )}
               </span>
@@ -832,14 +832,14 @@ export default function StudentDashboard() {
                     {currentAyahs.map((ayah, displayIndex) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       // Filter highlights for current surah and ayah
-                      const ayahHighlights = highlights.filter(h =>
+                      const ayahHighlights = highlights.filter((h: any) =>
                         h.surah === currentSurah && h.ayahIndex === ayahIndex
                       );
 
                       return (
                         <div key={ayah.number} className="inline-block relative group">
                           {ayah.words.map((word, wordIndex) => {
-                            const wordHighlights = ayahHighlights.filter(h =>
+                            const wordHighlights = ayahHighlights.filter((h: any) =>
                               h.wordIndices.includes(wordIndex)
                             );
 
@@ -948,7 +948,7 @@ export default function StudentDashboard() {
                 <BookOpen className="w-6 h-6 mr-2 text-green-600" />
                 My Homework
                 <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                  {highlights.filter(h => h.type === 'homework').length} Total
+                  {highlights.filter((h: any) => h.type === 'homework').length} Total
                 </span>
               </h2>
             </div>
@@ -992,8 +992,8 @@ export default function StudentDashboard() {
           {/* Homework Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {highlights
-              .filter(h => h.type === 'homework')
-              .filter(h => {
+              .filter((h: any) => h.type === 'homework')
+              .filter((h: any) => {
                 if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
                 if (homeworkSearchTerm) {
                   const searchLower = homeworkSearchTerm.toLowerCase();
@@ -1097,7 +1097,7 @@ export default function StudentDashboard() {
                 <FileText className="w-6 h-6 mr-2 text-purple-600" />
                 My Assignments (Mistakes)
                 <span className="ml-3 bg-purple-100 text-purple-700 text-sm px-2 py-1 rounded-full">
-                  {highlights.filter(h => h.type === 'assignment').length} Total
+                  {highlights.filter((h: any) => h.type === 'assignment').length} Total
                 </span>
               </h2>
             </div>
@@ -1141,8 +1141,8 @@ export default function StudentDashboard() {
           {/* Assignments Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {highlights
-              .filter(h => h.type === 'assignment')
-              .filter(h => {
+              .filter((h: any) => h.type === 'assignment')
+              .filter((h: any) => {
                 if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
                 if (assignmentSearchTerm) {
                   const searchLower = assignmentSearchTerm.toLowerCase();
@@ -1252,7 +1252,7 @@ export default function StudentDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-4xl font-bold">
-                  {Math.round(myTargets.reduce((acc, t) => acc + t.progress, 0) / myTargets.length)}%
+                  {Math.round(myTargets.reduce((acc: any, t: any) => acc + t.progress, 0) / myTargets.length)}%
                 </div>
                 <p className="text-indigo-100 text-sm">Overall Progress</p>
               </div>
@@ -1265,7 +1265,7 @@ export default function StudentDashboard() {
                   <Target className="w-5 h-5" />
                   <span className="text-sm">Active Targets</span>
                 </div>
-                <p className="text-2xl font-bold">{myTargets.filter(t => t.status === 'active').length}</p>
+                <p className="text-2xl font-bold">{myTargets.filter((t: any) => t.status === 'active').length}</p>
               </div>
               <div className="bg-white bg-opacity-20 backdrop-blur rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
@@ -1273,7 +1273,7 @@ export default function StudentDashboard() {
                   <span className="text-sm">Completed</span>
                 </div>
                 <p className="text-2xl font-bold">
-                  {myTargets.reduce((acc, t) => acc + (t.milestones?.filter(m => m.completed).length || 0), 0)}
+                  {myTargets.reduce((acc: any, t: any) => acc + (t.milestones?.filter((m: any) => m.completed).length || 0), 0)}
                 </p>
               </div>
               <div className="bg-white bg-opacity-20 backdrop-blur rounded-xl p-4">
@@ -1496,7 +1496,7 @@ export default function StudentDashboard() {
               <div className="mt-6 pt-6 border-t">
                 <h4 className="font-semibold text-gray-700 mb-3">Daily Platform Activity</h4>
                 <div className="space-y-2">
-                  {studentInfo.classSchedule.map(day => {
+                  {studentInfo.classSchedule.map((day: any) => {
                     // Sample activity data for class days
                     const activityData = {
                       'Monday': { minutes: 45, assignments: 2, quranPages: 3 },
@@ -1773,9 +1773,9 @@ export default function StudentDashboard() {
                     {tab === 'sent' && <Send className="w-4 h-4" />}
                     {tab === 'archive' && <Archive className="w-4 h-4" />}
                     <span>{tab}</span>
-                    {tab === 'inbox' && messages.inbox.filter(m => m.unread).length > 0 && (
+                    {tab === 'inbox' && messages.inbox.filter((m: any) => m.unread).length > 0 && (
                       <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-2">
-                        {messages.inbox.filter(m => m.unread).length}
+                        {messages.inbox.filter((m: any) => m.unread).length}
                       </span>
                     )}
                   </span>
@@ -1799,7 +1799,7 @@ export default function StudentDashboard() {
                       if (message.unread && messageTab === 'inbox') {
                         setMessages((prev: any) => ({
                           ...prev,
-                          inbox: prev.inbox.map(m =>
+                          inbox: prev.inbox.map((m: any) =>
                             m.id === message.id ? { ...m, unread: false } : m
                           )
                         }));
@@ -1857,7 +1857,7 @@ export default function StudentDashboard() {
                                 const messageToArchive = { ...message, unread: false };
                                 setMessages((prev: any) => ({
                                   ...prev,
-                                  [messageTab]: prev[messageTab].filter(m => m.id !== message.id),
+                                  [messageTab]: prev[messageTab].filter((m: any) => m.id !== message.id),
                                   archive: [...prev.archive, messageToArchive]
                                 }));
                               }
@@ -1873,7 +1873,7 @@ export default function StudentDashboard() {
                               // Delete functionality
                               setMessages((prev: any) => ({
                                 ...prev,
-                                [messageTab]: prev[messageTab].filter(m => m.id !== message.id)
+                                [messageTab]: prev[messageTab].filter((m: any) => m.id !== message.id)
                               }));
                             }}
                             className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
@@ -1924,15 +1924,15 @@ export default function StudentDashboard() {
                 <Target className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-600" />
                 <span>My Learning Targets</span>
                 <span className="text-sm font-normal bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1 rounded-full">
-                  {myTargets.filter(t => t.status === 'active').length} Active
+                  {myTargets.filter((t: any) => t.status === 'active').length} Active
                 </span>
               </h2>
               <div className="flex flex-wrap items-center gap-2">
                 <button className="px-3 sm:px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition text-sm">
-                  Individual ({myTargets.filter(t => t.type === 'individual').length})
+                  Individual ({myTargets.filter((t: any) => t.type === 'individual').length})
                 </button>
                 <button className="px-3 sm:px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm">
-                  Class ({myTargets.filter(t => t.type === 'class').length})
+                  Class ({myTargets.filter((t: any) => t.type === 'class').length})
                 </button>
               </div>
             </div>
@@ -1944,7 +1944,7 @@ export default function StudentDashboard() {
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600">Average Progress</p>
                     <p className="text-xl sm:text-2xl font-bold text-green-700">
-                      {Math.round(myTargets.reduce((acc, t) => acc + t.progress, 0) / myTargets.length)}%
+                      {Math.round(myTargets.reduce((acc: any, t: any) => acc + t.progress, 0) / myTargets.length)}%
                     </p>
                   </div>
                   <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
@@ -1955,7 +1955,7 @@ export default function StudentDashboard() {
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600">Active Targets</p>
                     <p className="text-xl sm:text-2xl font-bold text-blue-700">
-                      {myTargets.filter(t => t.status === 'active').length}
+                      {myTargets.filter((t: any) => t.status === 'active').length}
                     </p>
                   </div>
                   <Target className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
@@ -2511,7 +2511,7 @@ export default function StudentDashboard() {
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {studentProfile.name.split(' ').map(n => n[0]).join('')}
+                  {studentProfile.name.split(' ').map((n: any) => n[0]).join('')}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">{studentProfile.name}</h2>

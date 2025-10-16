@@ -134,7 +134,7 @@ export default function AdminDashboard() {
                   <h3 className="font-semibold">Notifications</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {notifications.map(notif => (
+                  {notifications.map((notif: any) => (
                     <div key={notif.id} className="p-4 border-b hover:bg-gray-50">
                       <div className="flex items-start space-x-3">
                         <AlertCircle className={`w-5 h-5 mt-0.5 ${

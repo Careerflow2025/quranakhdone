@@ -196,7 +196,7 @@ export default function ParentDashboard() {
   useEffect(() => {
     const scriptId = selectedScript || 'uthmani-hafs';
     const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = surahList.find(s => s.number === currentSurah);
+    const surahInfo = surahList.find((s: any) => s.number === currentSurah);
     
     if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
       setQuranText({
@@ -211,7 +211,7 @@ export default function ParentDashboard() {
     }
   }, [currentSurah, selectedScript]);
 
-  const allSurahs = surahList.map(s => ({
+  const allSurahs = surahList.map((s: any) => ({
     number: s.number,
     nameArabic: s.nameArabic,
     nameEnglish: s.nameEnglish,
@@ -221,7 +221,7 @@ export default function ParentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    const highlight = highlights.find(h => h.id === highlightId);
+    const highlight = highlights.find((h: any) => h.id === highlightId);
     if (highlight) {
       setShowNoteReply(highlight);
     }
@@ -239,7 +239,7 @@ export default function ParentDashboard() {
       
       // Update the highlights with the new reply
       setHighlights((prevHighlights: any) => 
-        prevHighlights.map(h => 
+        prevHighlights.map((h: any) => 
           h.id === showNoteReply.id 
             ? { ...h, replies: [...h.replies, newReply] }
             : h
@@ -322,7 +322,7 @@ export default function ParentDashboard() {
   const endIdx = startIdx + AYAHS_PER_PAGE;
   const currentAyahs = quranText.ayahs?.slice(startIdx, endIdx) || [];
 
-  const currentSurahInfo = allSurahs.find(s => s.number === currentSurah) || allSurahs[0];
+  const currentSurahInfo = allSurahs.find((s: any) => s.number === currentSurah) || allSurahs[0];
   const scriptStyling = getScriptStyling(selectedScript);
 
   return (
@@ -409,9 +409,9 @@ export default function ParentDashboard() {
                   className="relative p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <Bell className="w-5 h-5" />
-                  {notifications.filter(n => n.unread).length > 0 && (
+                  {notifications.filter((n: any) => n.unread).length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notifications.filter(n => n.unread).length}
+                      {notifications.filter((n: any) => n.unread).length}
                     </span>
                   )}
                 </button>
@@ -422,7 +422,7 @@ export default function ParentDashboard() {
                       <h3 className="font-semibold text-sm">Notifications</h3>
                       <button 
                         onClick={() => {
-                          setNotifications((prev: any) => prev.map(n => ({ ...n, unread: false })));
+                          setNotifications((prev: any) => prev.map((n: any) => ({ ...n, unread: false })));
                         }}
                         className="text-xs text-blue-600 hover:text-blue-700"
                       >
@@ -437,7 +437,7 @@ export default function ParentDashboard() {
                             key={notif.id}
                             onClick={() => {
                               setNotifications((prev: any) => 
-                                prev.map(n => n.id === notif.id ? { ...n, unread: false } : n)
+                                prev.map((n: any) => n.id === notif.id ? { ...n, unread: false } : n)
                               );
                             }}
                             className={`p-3 border-b hover:bg-gray-50 cursor-pointer transition ${
@@ -654,12 +654,12 @@ export default function ParentDashboard() {
                   <div className="text-gray-900">
                     {currentAyahs.map((ayah, displayIndex) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
-                      const ayahHighlights = highlights.filter(h => h.ayahIndex === ayahIndex);
+                      const ayahHighlights = highlights.filter((h: any) => h.ayahIndex === ayahIndex);
                       
                       return (
                         <div key={ayah.number} className="inline-block relative group">
                           {ayah.words.map((word, wordIndex) => {
-                            const wordHighlights = ayahHighlights.filter(h => 
+                            const wordHighlights = ayahHighlights.filter((h: any) => 
                               h.wordIndices.includes(wordIndex)
                             );
                             
@@ -1080,7 +1080,7 @@ export default function ParentDashboard() {
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {parentProfile.name.split(' ').map(n => n[0]).join('')}
+                  {parentProfile.name.split(' ').map((n: any) => n[0]).join('')}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">{parentProfile.name}</h2>

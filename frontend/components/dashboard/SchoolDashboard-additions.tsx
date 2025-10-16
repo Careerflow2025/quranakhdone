@@ -204,7 +204,7 @@
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Classes</option>
-                    {classes.map(cls => (
+                    {classes.map((cls: any) => (
                       <option key={cls.id} value={cls.name}>{cls.name}</option>
                     ))}
                   </select>
@@ -218,7 +218,7 @@
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Students</option>
-                    {students.map(student => (
+                    {students.map((student: any) => (
                       <option key={student.id} value={student.id}>{student.name}</option>
                     ))}
                   </select>
@@ -232,7 +232,7 @@
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Teachers</option>
-                    {teachers.map(teacher => (
+                    {teachers.map((teacher: any) => (
                       <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
                     ))}
                   </select>
@@ -314,7 +314,7 @@
                   <div>
                     <p className="text-sm text-gray-600">Pending</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter(h => h.status === 'pending').length}
+                      {homeworkData.filter((h: any) => h.status === 'pending').length}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-yellow-500" />
@@ -326,7 +326,7 @@
                   <div>
                     <p className="text-sm text-gray-600">In Progress</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter(h => h.status === 'in-progress').length}
+                      {homeworkData.filter((h: any) => h.status === 'in-progress').length}
                     </p>
                   </div>
                   <RefreshCw className="w-8 h-8 text-blue-500" />
@@ -338,7 +338,7 @@
                   <div>
                     <p className="text-sm text-gray-600">Overdue</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter(h => h.status === 'overdue').length}
+                      {homeworkData.filter((h: any) => h.status === 'overdue').length}
                     </p>
                   </div>
                   <AlertCircle className="w-8 h-8 text-red-500" />
@@ -349,7 +349,7 @@
             {/* Homework Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {homeworkData
-                .filter(hw => {
+                .filter((hw: any) => {
                   if (homeworkFilter.class !== 'all' && hw.class !== homeworkFilter.class) return false;
                   if (homeworkFilter.student !== 'all' && hw.studentId !== homeworkFilter.student) return false;
                   if (homeworkFilter.teacher !== 'all' && hw.teacherId !== homeworkFilter.teacher) return false;
@@ -362,7 +362,7 @@
                   }
                   return true;
                 })
-                .map(homework => (
+                .map((homework: any) => (
                   <div key={homework.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
                       <div className="flex items-start justify-between">
@@ -449,7 +449,7 @@
                   <p className="text-purple-100 mt-1">Track all learning goals and milestones across the school</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold">{targetsData.filter(t => t.status === 'active').length}</div>
+                  <div className="text-3xl font-bold">{targetsData.filter((t: any) => t.status === 'active').length}</div>
                   <div className="text-purple-100">Active Targets</div>
                 </div>
               </div>
@@ -480,10 +480,10 @@
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="all">All</option>
-                    {students.map(student => (
+                    {students.map((student: any) => (
                       <option key={student.id} value={student.name}>{student.name}</option>
                     ))}
-                    {classes.map(cls => (
+                    {classes.map((cls: any) => (
                       <option key={cls.id} value={cls.name}>{cls.name}</option>
                     ))}
                   </select>
@@ -497,7 +497,7 @@
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="all">All Teachers</option>
-                    {teachers.map(teacher => (
+                    {teachers.map((teacher: any) => (
                       <option key={teacher.id} value={teacher.name}>{teacher.name}</option>
                     ))}
                   </select>
@@ -547,7 +547,7 @@
             {/* Target Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {targetsData
-                .filter(target => {
+                .filter((target: any) => {
                   if (targetsFilter.type !== 'all' && target.type !== targetsFilter.type) return false;
                   if (targetsFilter.status !== 'all' && target.status !== targetsFilter.status) return false;
                   if (targetsSearchTerm) {
@@ -557,7 +557,7 @@
                   }
                   return true;
                 })
-                .map(target => (
+                .map((target: any) => (
                   <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div className={`h-2 ${
                       target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :

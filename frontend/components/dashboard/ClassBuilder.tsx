@@ -87,14 +87,14 @@ export default function ClassBuilder() {
 
   // Get unassigned students
   const getUnassignedStudents = () => {
-    const assignedIds = classes.flatMap(cls => cls.students.map(s => s.id));
-    return allStudents.filter(s => !assignedIds.includes(s.id));
+    const assignedIds = classes.flatMap(cls => cls.students.map((s: any) => s.id));
+    return allStudents.filter((s: any) => !assignedIds.includes(s.id));
   };
 
   // Get available teachers
   const getAvailableTeachers = () => {
-    const assignedIds = classes.filter(cls => cls.teacher).map(cls => cls.teacher!.id);
-    return availableTeachers.filter(t => !assignedIds.includes(t.id));
+    const assignedIds = classes.filter((cls: any) => cls.teacher).map((cls: any) => cls.teacher!.id);
+    return availableTeachers.filter((t: any) => !assignedIds.includes(t.id));
   };
 
   // Filter students
@@ -102,21 +102,21 @@ export default function ClassBuilder() {
     let students = getUnassignedStudents();
     
     if (searchTerm) {
-      students = students.filter(s => 
+      students = students.filter((s: any) => 
         s.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
     if (filterGrade !== 'all') {
-      students = students.filter(s => s.grade === filterGrade);
+      students = students.filter((s: any) => s.grade === filterGrade);
     }
     
     if (filterGender !== 'all') {
-      students = students.filter(s => s.gender === filterGender);
+      students = students.filter((s: any) => s.gender === filterGender);
     }
     
     if (filterPerformance !== 'all') {
-      students = students.filter(s => s.performance === filterPerformance);
+      students = students.filter((s: any) => s.performance === filterPerformance);
     }
     
     return students;
@@ -126,27 +126,27 @@ export default function ClassBuilder() {
     if (event?.shiftKey && selectedStudents.length > 0) {
       // Shift-click for range selection
       const students = getFilteredStudents();
-      const clickedIndex = students.findIndex(s => s.id === studentId);
-      const lastSelectedIndex = students.findIndex(s => selectedStudents.includes(s.id));
+      const clickedIndex = students.findIndex((s: any) => s.id === studentId);
+      const lastSelectedIndex = students.findIndex((s: any) => selectedStudents.includes(s.id));
       
       if (clickedIndex !== -1 && lastSelectedIndex !== -1) {
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
-        const rangeIds = students.slice(start, end + 1).map(s => s.id);
+        const rangeIds = students.slice(start, end + 1).map((s: any) => s.id);
         setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
       setSelectedStudents((prev: any) => 
         prev.includes(studentId) 
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
       setSelectedStudents((prev: any) => 
         prev.includes(studentId) 
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     }
@@ -163,13 +163,13 @@ export default function ClassBuilder() {
     if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(filteredStudents.map(s => s.id));
+      setSelectedStudents(filteredStudents.map((s: any) => s.id));
     }
   };
 
   const handleDragStart = (e: React.DragEvent) => {
     if (selectedStudents.length > 0) {
-      const students = allStudents.filter(s => selectedStudents.includes(s.id));
+      const students = allStudents.filter((s: any) => selectedStudents.includes(s.id));
       setDraggedItems(students);
       
       // Create custom drag image
@@ -180,7 +180,7 @@ export default function ClassBuilder() {
               Moving ${students.length} student${students.length > 1 ? 's' : ''}
             </div>
             <div style="font-size: 12px; color: #6B7280;">
-              ${students.slice(0, 3).map(s => s.name).join(', ')}${students.length > 3 ? '...' : ''}
+              ${students.slice(0, 3).map((s: any) => s.name).join(', ')}${students.length > 3 ? '...' : ''}
             </div>
           </div>
         `;
@@ -207,7 +207,7 @@ export default function ClassBuilder() {
     setDragOverClass(null);
 
     if (draggedItems && draggedItems.length > 0) {
-      setClasses((prev: any) => prev.map(cls => {
+      setClasses((prev: any) => prev.map((cls: any) => {
         if (cls.id === classId) {
           const availableSpace = cls.capacity - cls.students.length;
           const studentsToAdd = draggedItems.slice(0, availableSpace);
@@ -215,7 +215,7 @@ export default function ClassBuilder() {
           if (studentsToAdd.length > 0) {
             // Remove added students from selection
             setSelectedStudents((prev: any) => 
-              prev.filter(id => !studentsToAdd.map(s => s.id).includes(id))
+              prev.filter((id: any) => !studentsToAdd.map((s: any) => s.id).includes(id))
             );
             
             return { ...cls, students: [...cls.students, ...studentsToAdd] };
@@ -224,7 +224,7 @@ export default function ClassBuilder() {
         return cls;
       }));
     } else if (draggedTeacher) {
-      setClasses((prev: any) => prev.map(cls => {
+      setClasses((prev: any) => prev.map((cls: any) => {
         if (cls.id === classId) {
           return { ...cls, teacher: draggedTeacher };
         }
@@ -237,16 +237,16 @@ export default function ClassBuilder() {
   };
 
   const removeStudentsFromClass = (classId: string, studentIds: string[]) => {
-    setClasses((prev: any) => prev.map(cls => {
+    setClasses((prev: any) => prev.map((cls: any) => {
       if (cls.id === classId) {
-        return { ...cls, students: cls.students.filter(s => !studentIds.includes(s.id)) };
+        return { ...cls, students: cls.students.filter((s: any) => !studentIds.includes(s.id)) };
       }
       return cls;
     }));
   };
 
   const removeTeacherFromClass = (classId: string) => {
-    setClasses((prev: any) => prev.map(cls => {
+    setClasses((prev: any) => prev.map((cls: any) => {
       if (cls.id === classId) {
         return { ...cls, teacher: null };
       }
@@ -261,9 +261,9 @@ export default function ClassBuilder() {
     setClasses((prev: any) => {
       const updated = [...prev];
       
-      sorted.forEach(student => {
+      sorted.forEach((student: any) => {
         // Find the class with matching grade and available space
-        const targetClass = updated.find(cls => 
+        const targetClass = updated.find((cls: any) => 
           cls.grade === student.grade && cls.students.length < cls.capacity
         );
         
@@ -280,7 +280,7 @@ export default function ClassBuilder() {
     // Group students by grade
     const studentsByGrade: { [key: string]: Student[] } = {};
     
-    classes.forEach(cls => {
+    classes.forEach((cls: any) => {
       if (!studentsByGrade[cls.grade]) {
         studentsByGrade[cls.grade] = [];
       }
@@ -292,14 +292,14 @@ export default function ClassBuilder() {
       const updated = [...prev];
       
       // Clear all students
-      updated.forEach(cls => cls.students = []);
+      updated.forEach((cls: any) => cls.students = []);
       
       // Redistribute by grade
       Object.entries(studentsByGrade).forEach(([grade, students]) => {
-        const gradeClasses = updated.filter(cls => cls.grade === grade);
+        const gradeClasses = updated.filter((cls: any) => cls.grade === grade);
         let classIndex = 0;
         
-        students.forEach(student => {
+        students.forEach((student: any) => {
           if (gradeClasses[classIndex].students.length < gradeClasses[classIndex].capacity) {
             gradeClasses[classIndex].students.push(student);
           }
@@ -333,7 +333,7 @@ export default function ClassBuilder() {
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 className="px-4 py-3 pr-10 bg-white bg-opacity-20 backdrop-blur text-white rounded-lg border border-white border-opacity-30 hover:bg-opacity-30 transition-all appearance-none cursor-pointer min-w-[200px] font-semibold"
               >
-                {classes.map(cls => (
+                {classes.map((cls: any) => (
                   <option key={cls.id} value={cls.id} className="bg-gray-800 text-white">
                     {cls.name} - {cls.grade} Grade
                   </option>
@@ -345,7 +345,7 @@ export default function ClassBuilder() {
           
           <div className="flex items-center space-x-6">
             <div className="text-center">
-              <p className="text-4xl font-bold">{classes.reduce((acc, cls) => acc + cls.students.length, 0)}</p>
+              <p className="text-4xl font-bold">{classes.reduce((acc: any, cls: any) => acc + cls.students.length, 0)}</p>
               <p className="text-sm text-blue-100">Total Assigned</p>
             </div>
             <div className="text-center">
@@ -353,7 +353,7 @@ export default function ClassBuilder() {
               <p className="text-sm text-blue-100">Unassigned</p>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-bold">{classes.filter(cls => cls.teacher).length}/{classes.length}</p>
+              <p className="text-4xl font-bold">{classes.filter((cls: any) => cls.teacher).length}/{classes.length}</p>
               <p className="text-sm text-blue-100">Teachers</p>
             </div>
           </div>
@@ -373,7 +373,7 @@ export default function ClassBuilder() {
           </div>
         </div>
         <div className="grid grid-cols-5 gap-3 mt-4">
-          {classes.map(cls => {
+          {classes.map((cls: any) => {
             const isSelected = cls.id === selectedClassId;
             const fillPercentage = (cls.students.length / cls.capacity) * 100;
             return (
@@ -431,10 +431,10 @@ export default function ClassBuilder() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
-                  const firstClass = classes.find(cls => cls.students.length < cls.capacity);
+                  const firstClass = classes.find((cls: any) => cls.students.length < cls.capacity);
                   if (firstClass) {
-                    const students = allStudents.filter(s => selectedStudents.includes(s.id));
-                    setClasses((prev: any) => prev.map(cls => {
+                    const students = allStudents.filter((s: any) => selectedStudents.includes(s.id));
+                    setClasses((prev: any) => prev.map((cls: any) => {
                       if (cls.id === firstClass.id) {
                         const availableSpace = cls.capacity - cls.students.length;
                         const studentsToAdd = students.slice(0, availableSpace);
@@ -550,7 +550,7 @@ export default function ClassBuilder() {
               draggable={selectedStudents.length > 0}
               onDragStart={handleDragStart}
             >
-              {getFilteredStudents().map(student => (
+              {getFilteredStudents().map((student: any) => (
                 <div
                   key={student.id}
                   onClick={(e) => handleSelectStudent(student.id, e)}
@@ -575,7 +575,7 @@ export default function ClassBuilder() {
                         <span className={`text-xs font-semibold ${
                           student.gender === 'male' ? 'text-blue-600' : 'text-pink-600'
                         }`}>
-                          {student.name.split(' ').map(n => n[0]).join('')}
+                          {student.name.split(' ').map((n: any) => n[0]).join('')}
                         </span>
                       </div>
                       <div>
@@ -617,7 +617,7 @@ export default function ClassBuilder() {
               </h3>
             </div>
             <div className="p-4 space-y-2">
-              {getAvailableTeachers().map(teacher => (
+              {getAvailableTeachers().map((teacher: any) => (
                 <div
                   key={teacher.id}
                   draggable
@@ -651,7 +651,7 @@ export default function ClassBuilder() {
         {/* Right Panel - Selected Class */}
         <div className="lg:col-span-2">
           {(() => {
-            const cls = classes.find(c => c.id === selectedClassId);
+            const cls = classes.find((c: any) => c.id === selectedClassId);
             if (!cls) return null;
             return (
             <div
@@ -731,7 +731,7 @@ export default function ClassBuilder() {
                   </p>
                   {cls.students.length > 0 && (
                     <button
-                      onClick={() => removeStudentsFromClass(cls.id, cls.students.map(s => s.id))}
+                      onClick={() => removeStudentsFromClass(cls.id, cls.students.map((s: any) => s.id))}
                       className="text-xs text-red-600 hover:text-red-700"
                     >
                       Clear All
@@ -740,7 +740,7 @@ export default function ClassBuilder() {
                 </div>
                 {cls.students.length > 0 ? (
                   <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
-                    {cls.students.map(student => (
+                    {cls.students.map((student: any) => (
                       <div key={student.id} className="p-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg flex items-center justify-between group hover:shadow-md transition">
                         <div className="flex items-center space-x-2">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
@@ -749,7 +749,7 @@ export default function ClassBuilder() {
                             <span className={`text-xs font-semibold ${
                               student.gender === 'male' ? 'text-blue-600' : 'text-pink-600'
                             }`}>
-                              {student.name.split(' ').map(n => n[0]).join('')}
+                              {student.name.split(' ').map((n: any) => n[0]).join('')}
                             </span>
                           </div>
                           <div>
@@ -801,8 +801,8 @@ export default function ClassBuilder() {
         <button 
           onClick={() => {
             // Save all class configurations
-            const totalStudents = classes.reduce((sum, cls) => sum + cls.students.length, 0);
-            const totalTeachers = classes.filter(cls => cls.teacher).length;
+            const totalStudents = classes.reduce((sum: any, cls: any) => sum + cls.students.length, 0);
+            const totalTeachers = classes.filter((cls: any) => cls.teacher).length;
             alert(`Successfully saved ${classes.length} classes with ${totalStudents} students and ${totalTeachers} teachers assigned!`);
           }}
           className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105 flex items-center space-x-2 font-semibold">

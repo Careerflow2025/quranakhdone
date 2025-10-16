@@ -28,7 +28,7 @@ export default function AdvancedScheduler({
 
   const handleDayToggle = (day: string) => {
     if (scheduleDays.includes(day)) {
-      onScheduleDaysChange(scheduleDays.filter(d => d !== day));
+      onScheduleDaysChange(scheduleDays.filter((d: any) => d !== day));
       const newSlots = { ...scheduleSlots };
       delete newSlots[day];
       onScheduleSlotsChange(newSlots);
@@ -45,7 +45,7 @@ export default function AdvancedScheduler({
 
   const handleRegularTimeChange = (field: 'start' | 'end', value: string) => {
     const newSlots: Record<string, ScheduleSlot[]> = {};
-    scheduleDays.forEach(day => {
+    scheduleDays.forEach((day: any) => {
       newSlots[day] = [{
         start: field === 'start' ? value : scheduleSlots[day]?.[0]?.start || '',
         end: field === 'end' ? value : scheduleSlots[day]?.[0]?.end || ''
@@ -143,7 +143,7 @@ export default function AdvancedScheduler({
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-2">Select Days</label>
             <div className="grid grid-cols-7 gap-1">
-              {DAYS_OF_WEEK.map(day => (
+              {DAYS_OF_WEEK.map((day: any) => (
                 <button
                   key={day}
                   type="button"
@@ -199,7 +199,7 @@ export default function AdvancedScheduler({
             Configure different times for each day
           </p>
           <div className="max-h-96 overflow-y-auto space-y-2">
-            {DAYS_OF_WEEK.map(day => (
+            {DAYS_OF_WEEK.map((day: any) => (
               <div
                 key={day}
                 className={`border rounded-lg p-3 transition-all ${
@@ -281,7 +281,7 @@ export default function AdvancedScheduler({
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-2">Typical Days (Optional)</label>
             <div className="grid grid-cols-7 gap-1">
-              {DAYS_OF_WEEK.map(day => (
+              {DAYS_OF_WEEK.map((day: any) => (
                 <button
                   key={day}
                   type="button"
@@ -311,9 +311,9 @@ export default function AdvancedScheduler({
             {scheduleType === 'custom' && (
               <div>
                 <p className="font-medium mb-1">Custom schedule:</p>
-                {scheduleDays.map(day => (
+                {scheduleDays.map((day: any) => (
                   <p key={day} className="ml-2">
-                    • {day}: {(scheduleSlots[day] || []).map(slot =>
+                    • {day}: {(scheduleSlots[day] || []).map((slot: any) =>
                       `${slot.start || 'TBD'}-${slot.end || 'TBD'}`
                     ).join(', ')}
                   </p>

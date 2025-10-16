@@ -169,14 +169,14 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
   // Get unassigned students
   const getUnassignedStudents = () => {
-    const assignedIds = classes.flatMap(cls => cls.students.map(s => s.id));
-    return allStudents.filter(s => !assignedIds.includes(s.id));
+    const assignedIds = classes.flatMap(cls => cls.students.map((s: any) => s.id));
+    return allStudents.filter((s: any) => !assignedIds.includes(s.id));
   };
 
   // Get unassigned teachers
   const getUnassignedTeachers = () => {
-    const assignedIds = classes.filter(cls => cls.teacher).map(cls => cls.teacher!.id);
-    return allTeachers.filter(t => !assignedIds.includes(t.id));
+    const assignedIds = classes.filter((cls: any) => cls.teacher).map((cls: any) => cls.teacher!.id);
+    return allTeachers.filter((t: any) => !assignedIds.includes(t.id));
   };
 
   // Filter students
@@ -184,18 +184,18 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
     let students = showOnlyUnassigned ? getUnassignedStudents() : allStudents;
 
     if (searchTerm) {
-      students = students.filter(s =>
+      students = students.filter((s: any) =>
         s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (filterGrade !== 'all') {
-      students = students.filter(s => s.grade === filterGrade);
+      students = students.filter((s: any) => s.grade === filterGrade);
     }
 
     if (filterGender !== 'all') {
-      students = students.filter(s => s.gender === filterGender);
+      students = students.filter((s: any) => s.gender === filterGender);
     }
 
     return students;
@@ -206,7 +206,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
     let teachers = getUnassignedTeachers();
 
     if (teacherSearchTerm) {
-      teachers = teachers.filter(t =>
+      teachers = teachers.filter((t: any) =>
         t.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
         (t.subject && t.subject.toLowerCase().includes(teacherSearchTerm.toLowerCase()))
       );
@@ -220,27 +220,27 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
     if (event?.shiftKey && selectedStudents.length > 0) {
       // Shift-click for range selection
       const students = getFilteredStudents();
-      const clickedIndex = students.findIndex(s => s.id === studentId);
-      const lastSelectedIndex = students.findIndex(s => selectedStudents.includes(s.id));
+      const clickedIndex = students.findIndex((s: any) => s.id === studentId);
+      const lastSelectedIndex = students.findIndex((s: any) => selectedStudents.includes(s.id));
 
       if (clickedIndex !== -1 && lastSelectedIndex !== -1) {
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
-        const rangeIds = students.slice(start, end + 1).map(s => s.id);
+        const rangeIds = students.slice(start, end + 1).map((s: any) => s.id);
         setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
       setSelectedStudents((prev: any) =>
         prev.includes(studentId)
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
       setSelectedStudents((prev: any) =>
         prev.includes(studentId)
-          ? prev.filter(id => id !== studentId)
+          ? prev.filter((id: any) => id !== studentId)
           : [...prev, studentId]
       );
     }
@@ -252,14 +252,14 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
     if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(filteredStudents.map(s => s.id));
+      setSelectedStudents(filteredStudents.map((s: any) => s.id));
     }
   };
 
   // Drag and Drop Handlers
   const handleDragStart = (e: React.DragEvent) => {
     if (selectedStudents.length > 0) {
-      const students = allStudents.filter(s => selectedStudents.includes(s.id));
+      const students = allStudents.filter((s: any) => selectedStudents.includes(s.id));
       setDraggedItems(students);
       e.dataTransfer.effectAllowed = 'move';
     }
@@ -282,7 +282,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
     // Handle student drop
     if (draggedItems && draggedItems.length > 0) {
-      setClasses((prev: any) => prev.map(cls => {
+      setClasses((prev: any) => prev.map((cls: any) => {
         if (cls.id === classId) {
           const availableSpace = cls.capacity - cls.students.length;
           const studentsToAdd = draggedItems.slice(0, availableSpace);
@@ -302,7 +302,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
     // Handle teacher drop
     if (draggedTeacher) {
-      setClasses((prev: any) => prev.map(cls => {
+      setClasses((prev: any) => prev.map((cls: any) => {
         if (cls.id === classId) {
           return {
             ...cls,
@@ -317,11 +317,11 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
   // Remove student from class
   const removeStudentFromClass = (classId: string, studentId: string) => {
-    setClasses((prev: any) => prev.map(cls => {
+    setClasses((prev: any) => prev.map((cls: any) => {
       if (cls.id === classId) {
         return {
           ...cls,
-          students: cls.students.filter(s => s.id !== studentId)
+          students: cls.students.filter((s: any) => s.id !== studentId)
         };
       }
       return cls;
@@ -330,7 +330,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
   // Remove teacher from class
   const removeTeacherFromClass = (classId: string) => {
-    setClasses((prev: any) => prev.map(cls => {
+    setClasses((prev: any) => prev.map((cls: any) => {
       if (cls.id === classId) {
         return {
           ...cls,
@@ -368,7 +368,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
           .eq('class_id', cls.id);
 
         if (cls.students.length > 0) {
-          const enrollments = cls.students.map(student => ({
+          const enrollments = cls.students.map((student: any) => ({
             class_id: cls.id,
             student_id: student.id
           }));
@@ -460,7 +460,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
             {/* Teacher List */}
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {filteredTeachers.map(teacher => (
+              {filteredTeachers.map((teacher: any) => (
                 <div
                   key={teacher.id}
                   draggable
@@ -569,7 +569,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
               draggable={selectedStudents.length > 0}
               onDragStart={handleDragStart}
             >
-              {filteredStudents.map(student => (
+              {filteredStudents.map((student: any) => (
                 <div
                   key={student.id}
                   onClick={(e) => handleSelectStudent(student.id, e)}
@@ -604,7 +604,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
         {/* Right Panel - Classes */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {classes.map(cls => {
+            {classes.map((cls: any) => {
               const isOverCapacity = cls.students.length > cls.capacity;
               const utilization = (cls.students.length / cls.capacity) * 100;
 
@@ -679,7 +679,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
                     </p>
                     {cls.students.length > 0 ? (
                       <div className="space-y-1 max-h-48 overflow-y-auto">
-                        {cls.students.map(student => (
+                        {cls.students.map((student: any) => (
                           <div
                             key={student.id}
                             className="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100"

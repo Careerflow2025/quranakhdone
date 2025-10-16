@@ -214,7 +214,7 @@ export default function SchoolDashboard() {
   // Helper Functions
   const handleDeleteStudents = (studentIds: any) => {
     if (confirm(`Are you sure you want to delete ${studentIds.length} student(s)?`)) {
-      setStudents((prev: any) => prev.filter(s => !studentIds.includes(s.id)));
+      setStudents((prev: any) => prev.filter((s: any) => !studentIds.includes(s.id)));
       setSelectedUsers([]);
       alert(`Successfully deleted ${studentIds.length} student(s)`);
     }
@@ -223,7 +223,7 @@ export default function SchoolDashboard() {
   const handleExportStudents = () => {
     const csv = [
       'ID,Name,Age,Grade,Class,Email,Phone,Parent,Progress,Attendance,Memorized',
-      ...students.map(s => 
+      ...students.map((s: any) => 
         `${s.id},${s.name},${s.age},${s.grade},${s.class},${s.email},${s.phone},${s.parent},${s.progress},${s.attendance},${s.memorized}`
       )
     ].join('\n');
@@ -237,20 +237,20 @@ export default function SchoolDashboard() {
   };
 
   const handleSendEmail = (studentIds) => {
-    const selectedStudents = students.filter(s => studentIds.includes(s.id));
-    const emails = selectedStudents.map(s => s.email).join(', ');
+    const selectedStudents = students.filter((s: any) => studentIds.includes(s.id));
+    const emails = selectedStudents.map((s: any) => s.email).join(', ');
     window.location.href = `mailto:${emails}`;
   };
 
   const handleBulkUpload = (csvContent) => {
     const lines = csvContent.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
+    const headers = lines[0].split(',').map((h: any) => h.trim());
     const data = [];
     
     // Parse CSV data
     for (let i = 1; i < lines.length; i++) {
       if (lines[i].trim()) {
-        const values = lines[i].split(',').map(v => v.trim());
+        const values = lines[i].split(',').map((v: any) => v.trim());
         const row = {};
         headers.forEach((header, index) => {
           row[header] = values[index] || '';
@@ -261,8 +261,8 @@ export default function SchoolDashboard() {
     
     // Validate required columns (Name, Email, Age, Gender)
     const requiredColumns = ['Name', 'Email', 'Age', 'Gender'];
-    const hasRequiredColumns = requiredColumns.every(col => 
-      headers.some(h => h.toLowerCase() === col.toLowerCase())
+    const hasRequiredColumns = requiredColumns.every((col: any) => 
+      headers.some((h: any) => h.toLowerCase() === col.toLowerCase())
     );
     
     if (!hasRequiredColumns) {
@@ -288,7 +288,7 @@ export default function SchoolDashboard() {
     });
     
     // Check for duplicates against existing students
-    const existingEmails = new Set(students.map(s => s.email.toLowerCase()));
+    const existingEmails = new Set(students.map((s: any) => s.email.toLowerCase()));
     const systemDuplicates = [];
     
     data.forEach((row, index) => {
@@ -297,7 +297,7 @@ export default function SchoolDashboard() {
         systemDuplicates.push({ 
           ...row, 
           rowIndex: index + 2,
-          existingStudent: students.find(s => s.email.toLowerCase() === email.toLowerCase())
+          existingStudent: students.find((s: any) => s.email.toLowerCase() === email.toLowerCase())
         });
       }
     });
@@ -362,14 +362,14 @@ export default function SchoolDashboard() {
     { id: 10, studentName: 'Maryam Ahmed', studentId: 'STU005', title: 'Advanced Tajweed Rules', mistakeType: 'tajweed', teacher: 'Ustadha Sarah Ahmed', subject: 'Tajweed', dueDate: '2025-01-24', status: 'in-progress', surah: 'Ar-Rahman', ayahRange: '1-15' },
   ];
 
-  const filteredAssignments = allAssignments.filter(assignment => {
+  const filteredAssignments = allAssignments.filter((assignment: any) => {
     if (teacherFilter !== 'all' && assignment.teacher !== teacherFilter) return false;
     if (subjectFilter !== 'all' && assignment.subject !== subjectFilter) return false;
     if (statusFilter !== 'all' && assignment.status !== statusFilter) return false;
     return true;
   });
 
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = students.filter((student: any) => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -409,7 +409,7 @@ export default function SchoolDashboard() {
                       <h3 className="font-semibold">Notifications</h3>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
-                      {recentActivities.map(activity => (
+                      {recentActivities.map((activity: any) => (
                         <div key={activity.id} className="p-4 hover:bg-gray-50 border-b">
                           <div className="flex items-start space-x-3">
                             <div className={`p-2 rounded-lg ${activity.color}`}>
@@ -685,7 +685,7 @@ export default function SchoolDashboard() {
                   <Activity className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="space-y-4">
-                  {recentActivities.map(activity => (
+                  {recentActivities.map((activity: any) => (
                     <div key={activity.id} className="flex items-start space-x-3 group cursor-pointer">
                       <div className={`p-2.5 rounded-xl ${activity.color} group-hover:scale-110 transition-transform`}>
                         <activity.icon className="w-4 h-4" />
@@ -837,8 +837,8 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Active Students</p>
-                    <p className="text-3xl font-bold mt-1">{students.filter(s => s.status === 'active').length}</p>
-                    <p className="text-green-100 text-xs mt-2">{Math.round((students.filter(s => s.status === 'active').length / students.length) * 100)}% active</p>
+                    <p className="text-3xl font-bold mt-1">{students.filter((s: any) => s.status === 'active').length}</p>
+                    <p className="text-green-100 text-xs mt-2">{Math.round((students.filter((s: any) => s.status === 'active').length / students.length) * 100)}% active</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                     <Activity className="w-6 h-6" />
@@ -850,7 +850,7 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-100 text-sm">Avg. Progress</p>
-                    <p className="text-3xl font-bold mt-1">{Math.round(students.reduce((acc, s) => acc + s.progress, 0) / students.length)}%</p>
+                    <p className="text-3xl font-bold mt-1">{Math.round(students.reduce((acc: any, s: any) => acc + s.progress, 0) / students.length)}%</p>
                     <p className="text-purple-100 text-xs mt-2">Across all students</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -863,7 +863,7 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-orange-100 text-sm">Avg. Attendance</p>
-                    <p className="text-3xl font-bold mt-1">{Math.round(students.reduce((acc, s) => acc + s.attendance, 0) / students.length)}%</p>
+                    <p className="text-3xl font-bold mt-1">{Math.round(students.reduce((acc: any, s: any) => acc + s.attendance, 0) / students.length)}%</p>
                     <p className="text-orange-100 text-xs mt-2">This month</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -927,7 +927,7 @@ export default function SchoolDashboard() {
                     
                     <select className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
                       <option value="">All Classes</option>
-                      {classes.map(cls => (
+                      {classes.map((cls: any) => (
                         <option key={cls.id} value={cls.id}>{cls.name}</option>
                       ))}
                     </select>
@@ -1011,7 +1011,7 @@ export default function SchoolDashboard() {
                                 if (selectedUsers.length === filteredStudents.length) {
                                   setSelectedUsers([]);
                                 } else {
-                                  setSelectedUsers(filteredStudents.map(s => s.id));
+                                  setSelectedUsers(filteredStudents.map((s: any) => s.id));
                                 }
                               }}
                             />
@@ -1026,7 +1026,7 @@ export default function SchoolDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
-                        {filteredStudents.map(student => (
+                        {filteredStudents.map((student: any) => (
                           <tr key={student.id} className="hover:bg-gray-50 transition">
                             <td className="px-6 py-4">
                               <input 
@@ -1035,7 +1035,7 @@ export default function SchoolDashboard() {
                                 checked={selectedUsers.includes(student.id)}
                                 onChange={() => {
                                   if (selectedUsers.includes(student.id)) {
-                                    setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
+                                    setSelectedUsers((prev: any) => prev.filter((id: any) => id !== student.id));
                                   } else {
                                     setSelectedUsers((prev: any) => [...prev, student.id]);
                                   }
@@ -1045,7 +1045,7 @@ export default function SchoolDashboard() {
                             <td className="px-6 py-4">
                               <div className="flex items-center">
                                 <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                  {student.name.split(' ').map(n => n[0]).join('')}
+                                  {student.name.split(' ').map((n: any) => n[0]).join('')}
                                 </div>
                                 <div className="ml-3">
                                   <p className="text-sm font-semibold text-gray-900">{student.name}</p>
@@ -1129,12 +1129,12 @@ export default function SchoolDashboard() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredStudents.map(student => (
+                    {filteredStudents.map((student: any) => (
                       <div key={student.id} className="bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all duration-300 overflow-hidden group">
                         <div className="p-5">
                           <div className="flex items-start justify-between mb-4">
                             <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                              {student.name.split(' ').map(n => n[0]).join('')}
+                              {student.name.split(' ').map((n: any) => n[0]).join('')}
                             </div>
                             <input 
                               type="checkbox"
@@ -1142,7 +1142,7 @@ export default function SchoolDashboard() {
                               checked={selectedUsers.includes(student.id)}
                               onChange={() => {
                                 if (selectedUsers.includes(student.id)) {
-                                  setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
+                                  setSelectedUsers((prev: any) => prev.filter((id: any) => id !== student.id));
                                 } else {
                                   setSelectedUsers((prev: any) => [...prev, student.id]);
                                 }
@@ -1303,12 +1303,12 @@ export default function SchoolDashboard() {
             {/* Teachers Grid View */}
             {teacherViewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teachers.filter(teacher => 
+                {teachers.filter((teacher: any) => 
                   !teacherSearchTerm || 
                   teacher.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
                   teacher.subject.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
                   teacher.email.toLowerCase().includes(teacherSearchTerm.toLowerCase())
-                ).map(teacher => (
+                ).map((teacher: any) => (
                   <div key={teacher.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
                     {/* Teacher Card Header */}
                     <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white">
@@ -1414,12 +1414,12 @@ export default function SchoolDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {teachers.filter(teacher => 
+                    {teachers.filter((teacher: any) => 
                       !teacherSearchTerm || 
                       teacher.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
                       teacher.subject.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
                       teacher.email.toLowerCase().includes(teacherSearchTerm.toLowerCase())
-                    ).map(teacher => (
+                    ).map((teacher: any) => (
                       <tr key={teacher.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
@@ -1493,7 +1493,7 @@ export default function SchoolDashboard() {
             )}
             
             {/* No Results */}
-            {teachers.filter(teacher => 
+            {teachers.filter((teacher: any) => 
               !teacherSearchTerm || 
               teacher.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
               teacher.subject.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
@@ -1559,16 +1559,16 @@ export default function SchoolDashboard() {
             {/* Parents Display */}
             {parentViewMode === 'grid' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {parents.filter(parent => 
+                {parents.filter((parent: any) => 
                   parent.name.toLowerCase().includes(parentSearchTerm.toLowerCase()) ||
                   parent.email.toLowerCase().includes(parentSearchTerm.toLowerCase())
-                ).map(parent => (
+                ).map((parent: any) => (
                   <div key={parent.id} className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-lg transition">
                     <div className="bg-gradient-to-r from-green-500 to-teal-500 p-4">
                       <div className="flex items-center justify-between">
                         <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                           <span className="text-xl font-bold text-white">
-                            {parent.name.split(' ').map(n => n[0]).join('')}
+                            {parent.name.split(' ').map((n: any) => n[0]).join('')}
                           </span>
                         </div>
                         <span className="px-2 py-1 bg-white bg-opacity-20 rounded text-xs text-white">
@@ -1637,10 +1637,10 @@ export default function SchoolDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {parents.filter(parent => 
+                    {parents.filter((parent: any) => 
                       parent.name.toLowerCase().includes(parentSearchTerm.toLowerCase()) ||
                       parent.email.toLowerCase().includes(parentSearchTerm.toLowerCase())
-                    ).map(parent => (
+                    ).map((parent: any) => (
                       <tr key={parent.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div>
@@ -1707,7 +1707,7 @@ export default function SchoolDashboard() {
               <div className="bg-white rounded-lg border p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{parents.filter(p => p.status === 'active').length}</p>
+                    <p className="text-2xl font-bold text-gray-900">{parents.filter((p: any) => p.status === 'active').length}</p>
                     <p className="text-sm text-gray-500">Active Accounts</p>
                   </div>
                   <CheckCircle className="w-8 h-8 text-blue-500" />
@@ -1716,7 +1716,7 @@ export default function SchoolDashboard() {
               <div className="bg-white rounded-lg border p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{parents.reduce((sum, p) => sum + p.children.length, 0)}</p>
+                    <p className="text-2xl font-bold text-gray-900">{parents.reduce((sum: any, p: any) => sum + p.children.length, 0)}</p>
                     <p className="text-sm text-gray-500">Total Children</p>
                   </div>
                   <GraduationCap className="w-8 h-8 text-purple-500" />
@@ -1753,12 +1753,12 @@ export default function SchoolDashboard() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {classes.map(cls => (
+                {classes.map((cls: any) => (
                   <div key={cls.id} className="border rounded-lg overflow-hidden hover:shadow-lg transition">
                     <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-white">
                       <h3 className="font-semibold text-lg">{cls.name}</h3>
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {cls.subjects?.slice(0, 2).map(subject => (
+                        {cls.subjects?.slice(0, 2).map((subject: any) => (
                           <span key={subject} className="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded">
                             {subject}
                           </span>
@@ -1879,7 +1879,7 @@ export default function SchoolDashboard() {
                 onChange={(e) => setTeacherFilter(e.target.value)}
               >
                 <option value="all">All Teachers</option>
-                {Array.from(new Set(allAssignments.map(a => a.teacher))).map(teacher => (
+                {Array.from(new Set(allAssignments.map((a: any) => a.teacher))).map((teacher: any) => (
                   <option key={teacher} value={teacher}>{teacher}</option>
                 ))}
               </select>
@@ -1889,7 +1889,7 @@ export default function SchoolDashboard() {
                 onChange={(e) => setSubjectFilter(e.target.value)}
               >
                 <option value="all">All Subjects</option>
-                {Array.from(new Set(allAssignments.map(a => a.subject))).map(subject => (
+                {Array.from(new Set(allAssignments.map((a: any) => a.subject))).map((subject: any) => (
                   <option key={subject} value={subject}>{subject}</option>
                 ))}
               </select>
@@ -1909,8 +1909,8 @@ export default function SchoolDashboard() {
             {/* Assignments Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAssignments
-                .filter(a => searchTerm === '' || a.studentName.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map(assignment => (
+                .filter((a: any) => searchTerm === '' || a.studentName.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((assignment: any) => (
                 <div key={assignment.id} className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-lg transition">
                   {/* Color stripe based on mistake type */}
                   <div className={`h-2 ${
@@ -1977,7 +1977,7 @@ export default function SchoolDashboard() {
               ))}
             </div>
             
-            {filteredAssignments.filter(a => searchTerm === '' || a.studentName.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+            {filteredAssignments.filter((a: any) => searchTerm === '' || a.studentName.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
               <div className="text-center py-12 bg-gray-50 rounded-xl">
                 <p className="text-gray-500">No assignments found matching your filters</p>
               </div>
@@ -2049,11 +2049,11 @@ export default function SchoolDashboard() {
                 </div>
                 
                 {/* Time Slots */}
-                {['8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM'].map(time => {
+                {['8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM'].map((time: any) => {
                   // Get classes scheduled for this time
                   const getClassesForTimeAndDay = (timeSlot, dayIndex) => {
                     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                    return classes.filter(cls => {
+                    return classes.filter((cls: any) => {
                       const scheduleTime = cls.schedule.split(' ').slice(-2).join(' ');
                       const scheduleDays = cls.schedule.split(' ').slice(0, -2).join(' ');
                       
@@ -2072,7 +2072,7 @@ export default function SchoolDashboard() {
                   
                   const colors = ['blue', 'purple', 'green', 'orange', 'pink', 'teal', 'indigo', 'red'];
                   const getColorForClass = (classId) => {
-                    const index = classes.findIndex(c => c.id === classId);
+                    const index = classes.findIndex((c: any) => c.id === classId);
                     return colors[index % colors.length];
                   };
                   
@@ -2083,7 +2083,7 @@ export default function SchoolDashboard() {
                       </div>
                       
                       {/* Days of the week */}
-                      {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => {
+                      {[0, 1, 2, 3, 4, 5, 6].map((dayIndex: any) => {
                         const dayClasses = getClassesForTimeAndDay(time, dayIndex);
                         
                         return (
@@ -2286,7 +2286,7 @@ export default function SchoolDashboard() {
                     { id: 3, from: 'System Notification', subject: 'Monthly Report Ready', preview: 'The monthly performance report for January is now available...', time: '5 hours ago', unread: true, type: 'system' },
                     { id: 4, from: 'Omar Khan (Parent)', subject: 'Re: Parent-Teacher Meeting', preview: 'Thank you for scheduling the meeting. I confirm my attendance...', time: 'Yesterday', unread: false, type: 'parent' },
                     { id: 5, from: 'Ustadha Sarah Ahmed (Teacher)', subject: 'Tajweed Test Results', preview: 'Please find attached the results of last week\'s Tajweed test...', time: '2 days ago', unread: false, type: 'teacher' },
-                  ].map(message => (
+                  ].map((message: any) => (
                     <div key={message.id} className={`p-4 hover:bg-gray-50 cursor-pointer ${message.unread ? 'bg-blue-50' : ''}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
@@ -2815,8 +2815,8 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Active Accounts</p>
-                    <p className="text-3xl font-bold mt-1">{credentials.filter(c => c.status === 'active').length}</p>
-                    <p className="text-green-100 text-xs mt-2">{Math.round((credentials.filter(c => c.status === 'active').length / credentials.length) * 100)}% active</p>
+                    <p className="text-3xl font-bold mt-1">{credentials.filter((c: any) => c.status === 'active').length}</p>
+                    <p className="text-green-100 text-xs mt-2">{Math.round((credentials.filter((c: any) => c.status === 'active').length / credentials.length) * 100)}% active</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                     <Shield className="w-6 h-6" />
@@ -2828,7 +2828,7 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-100 text-sm">Student Accounts</p>
-                    <p className="text-3xl font-bold mt-1">{credentials.filter(c => c.userType === 'student').length}</p>
+                    <p className="text-3xl font-bold mt-1">{credentials.filter((c: any) => c.userType === 'student').length}</p>
                     <p className="text-blue-100 text-xs mt-2">Student logins</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -2841,7 +2841,7 @@ export default function SchoolDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-100 text-sm">Parent Accounts</p>
-                    <p className="text-3xl font-bold mt-1">{credentials.filter(c => c.userType === 'parent').length}</p>
+                    <p className="text-3xl font-bold mt-1">{credentials.filter((c: any) => c.userType === 'parent').length}</p>
                     <p className="text-purple-100 text-xs mt-2">Parent logins</p>
                   </div>
                   <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -2864,10 +2864,10 @@ export default function SchoolDashboard() {
                       onClick={() => {
                         const csvContent = [
                           ['User ID', 'Name', 'Type', 'Email', 'Password', 'Status', 'Created', 'Last Modified'],
-                          ...credentials.map(c => [
+                          ...credentials.map((c: any) => [
                             c.userId, c.userName, c.userType, c.email, c.password, c.status, c.created, c.lastModified
                           ])
-                        ].map(row => row.join(',')).join('\n');
+                        ].map((row: any) => row.join(',')).join('\n');
                         
                         const blob = new Blob([csvContent], { type: 'text/csv' });
                         const url = window.URL.createObjectURL(blob);
@@ -2938,7 +2938,7 @@ export default function SchoolDashboard() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
                       {credentials
-                        .filter(cred => {
+                        .filter((cred: any) => {
                           const matchesSearch = !credentialSearch || 
                             cred.userName.toLowerCase().includes(credentialSearch.toLowerCase()) ||
                             cred.email.toLowerCase().includes(credentialSearch.toLowerCase()) ||
@@ -2951,7 +2951,7 @@ export default function SchoolDashboard() {
                           
                           return matchesSearch && matchesFilter;
                         })
-                        .map(credential => (
+                        .map((credential: any) => (
                           <tr key={credential.id} className="hover:bg-gray-50 transition">
                             <td className="px-6 py-4">
                               <div className="flex items-center">
@@ -2960,7 +2960,7 @@ export default function SchoolDashboard() {
                                   credential.userType === 'teacher' ? 'bg-gradient-to-br from-green-400 to-green-600' :
                                   'bg-gradient-to-br from-purple-400 to-purple-600'
                                 }`}>
-                                  {credential.userName.split(' ').map(n => n[0]).join('')}
+                                  {credential.userName.split(' ').map((n: any) => n[0]).join('')}
                                 </div>
                                 <div className="ml-3">
                                   <p className="text-sm font-semibold text-gray-900">{credential.userName}</p>
@@ -3031,7 +3031,7 @@ export default function SchoolDashboard() {
                                 <button 
                                   onClick={() => {
                                     const newStatus = credential.status === 'active' ? 'inactive' : 'active';
-                                    setCredentials((prev: any) => prev.map(c => 
+                                    setCredentials((prev: any) => prev.map((c: any) => 
                                       c.id === credential.id ? { ...c, status: newStatus, lastModified: new Date().toISOString().split('T')[0] } : c
                                     ));
                                   }}
@@ -3047,7 +3047,7 @@ export default function SchoolDashboard() {
                                 <button 
                                   onClick={() => {
                                     if (confirm(`Are you sure you want to delete credentials for ${credential.userName}?`)) {
-                                      setCredentials((prev: any) => prev.filter(c => c.id !== credential.id));
+                                      setCredentials((prev: any) => prev.filter((c: any) => c.id !== credential.id));
                                     }
                                   }}
                                   className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -3062,7 +3062,7 @@ export default function SchoolDashboard() {
                     </tbody>
                   </table>
                   
-                  {credentials.filter(cred => {
+                  {credentials.filter((cred: any) => {
                     const matchesSearch = !credentialSearch || 
                       cred.userName.toLowerCase().includes(credentialSearch.toLowerCase()) ||
                       cred.email.toLowerCase().includes(credentialSearch.toLowerCase()) ||
@@ -3461,7 +3461,7 @@ export default function SchoolDashboard() {
                             ['Example Student', 'student@example.com', '13', 'Male']
                           ];
                           
-                          const csvContent = templateData.map(row => row.join(',')).join('\n');
+                          const csvContent = templateData.map((row: any) => row.join(',')).join('\n');
                           const blob = new Blob([csvContent], { type: 'text/csv' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
@@ -3638,8 +3638,8 @@ export default function SchoolDashboard() {
                       
                       if (action === 'skip') {
                         // Upload only non-duplicates
-                        const nonDuplicates = uploadedData.filter(row => 
-                          !duplicates.some(dup => (dup.Email || dup.email) === (row.Email || row.email))
+                        const nonDuplicates = uploadedData.filter((row: any) => 
+                          !duplicates.some((dup: any) => (dup.Email || dup.email) === (row.Email || row.email))
                         );
                         confirmUpload(nonDuplicates, []);
                       } else if (action === 'override') {
@@ -3695,7 +3695,7 @@ export default function SchoolDashboard() {
                 };
                 
                 // Check for duplicate email
-                if (students.some(s => s.email.toLowerCase() === newStudent.email.toLowerCase())) {
+                if (students.some((s: any) => s.email.toLowerCase() === newStudent.email.toLowerCase())) {
                   alert('A student with this email already exists!');
                   return;
                 }
@@ -3852,7 +3852,7 @@ export default function SchoolDashboard() {
                 e.preventDefault();
                 
                 // Check for duplicate email (excluding current student)
-                const emailExists = students.some(s => 
+                const emailExists = students.some((s: any) => 
                   s.id !== editingStudent.id && 
                   s.email.toLowerCase() === editingStudent.email.toLowerCase()
                 );
@@ -3863,7 +3863,7 @@ export default function SchoolDashboard() {
                 }
                 
                 // Update student
-                setStudents((prev: any) => prev.map(s => 
+                setStudents((prev: any) => prev.map((s: any) => 
                   s.id === editingStudent.id ? editingStudent : s
                 ));
                 setEditingStudent(null);
@@ -4073,7 +4073,7 @@ export default function SchoolDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Assign Teacher/Host</label>
                   <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                     <option value="">Select Teacher/Host</option>
-                    {teachers.map(teacher => (
+                    {teachers.map((teacher: any) => (
                       <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
                     ))}
                   </select>
@@ -4097,7 +4097,7 @@ export default function SchoolDashboard() {
                   </div>
                   <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                     <option>All Students</option>
-                    {classes.map(cls => (
+                    {classes.map((cls: any) => (
                       <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
                   </select>
@@ -4239,12 +4239,12 @@ export default function SchoolDashboard() {
                         <div className="flex flex-wrap gap-1">
                           {selectedRecipients.map((email, index) => {
                             const allRecipients = [...parents, ...teachers, ...students];
-                            const recipient = allRecipients.find(r => r.email === email);
+                            const recipient = allRecipients.find((r: any) => r.email === email);
                             return (
                               <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                                 {recipient?.name || email}
                                 <button 
-                                  onClick={() => setSelectedRecipients(selectedRecipients.filter(r => r !== email))}
+                                  onClick={() => setSelectedRecipients(selectedRecipients.filter((r: any) => r !== email))}
                                   className="ml-1 hover:text-blue-900"
                                 >
                                   <X className="w-3 h-3" />
@@ -4261,7 +4261,7 @@ export default function SchoolDashboard() {
                       <div className="space-y-2">
                         {/* Parents Section */}
                         {(() => {
-                          const filteredParents = parents.filter(parent => 
+                          const filteredParents = parents.filter((parent: any) => 
                             !recipientSearch || 
                             parent.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
                             parent.email.toLowerCase().includes(recipientSearch.toLowerCase())
@@ -4271,7 +4271,7 @@ export default function SchoolDashboard() {
                             return (
                               <>
                                 <p className="text-xs text-gray-500 mb-2 font-semibold">Parents ({filteredParents.length})</p>
-                                {filteredParents.map(parent => (
+                                {filteredParents.map((parent: any) => (
                                   <label key={parent.id} className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input 
                                       type="checkbox"
@@ -4281,7 +4281,7 @@ export default function SchoolDashboard() {
                                         if (e.target.checked) {
                                           setSelectedRecipients([...selectedRecipients, parent.email]);
                                         } else {
-                                          setSelectedRecipients(selectedRecipients.filter(r => r !== parent.email));
+                                          setSelectedRecipients(selectedRecipients.filter((r: any) => r !== parent.email));
                                         }
                                       }}
                                     />
@@ -4300,7 +4300,7 @@ export default function SchoolDashboard() {
                         
                         {/* Teachers Section */}
                         {(() => {
-                          const filteredTeachers = teachers.filter(teacher => 
+                          const filteredTeachers = teachers.filter((teacher: any) => 
                             !recipientSearch || 
                             teacher.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
                             teacher.email.toLowerCase().includes(recipientSearch.toLowerCase()) ||
@@ -4311,7 +4311,7 @@ export default function SchoolDashboard() {
                             return (
                               <>
                                 <p className="text-xs text-gray-500 mb-2 mt-4 font-semibold">Teachers ({filteredTeachers.length})</p>
-                                {filteredTeachers.map(teacher => (
+                                {filteredTeachers.map((teacher: any) => (
                                   <label key={teacher.id} className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input 
                                       type="checkbox"
@@ -4321,7 +4321,7 @@ export default function SchoolDashboard() {
                                         if (e.target.checked) {
                                           setSelectedRecipients([...selectedRecipients, teacher.email]);
                                         } else {
-                                          setSelectedRecipients(selectedRecipients.filter(r => r !== teacher.email));
+                                          setSelectedRecipients(selectedRecipients.filter((r: any) => r !== teacher.email));
                                         }
                                       }}
                                     />
@@ -4340,7 +4340,7 @@ export default function SchoolDashboard() {
                         
                         {/* Students Section */}
                         {(() => {
-                          const filteredStudents = students.filter(student => 
+                          const filteredStudents = students.filter((student: any) => 
                             !recipientSearch || 
                             student.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
                             student.email.toLowerCase().includes(recipientSearch.toLowerCase()) ||
@@ -4351,7 +4351,7 @@ export default function SchoolDashboard() {
                             return (
                               <>
                                 <p className="text-xs text-gray-500 mb-2 mt-4 font-semibold">Students ({filteredStudents.length})</p>
-                                {filteredStudents.map(student => (
+                                {filteredStudents.map((student: any) => (
                                   <label key={student.id} className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input 
                                       type="checkbox"
@@ -4361,7 +4361,7 @@ export default function SchoolDashboard() {
                                         if (e.target.checked) {
                                           setSelectedRecipients([...selectedRecipients, student.email]);
                                         } else {
-                                          setSelectedRecipients(selectedRecipients.filter(r => r !== student.email));
+                                          setSelectedRecipients(selectedRecipients.filter((r: any) => r !== student.email));
                                         }
                                       }}
                                     />
@@ -4380,9 +4380,9 @@ export default function SchoolDashboard() {
                         
                         {/* No Results Message */}
                         {recipientSearch && 
-                         parents.filter(p => p.name.toLowerCase().includes(recipientSearch.toLowerCase()) || p.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 &&
-                         teachers.filter(t => t.name.toLowerCase().includes(recipientSearch.toLowerCase()) || t.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 &&
-                         students.filter(s => s.name.toLowerCase().includes(recipientSearch.toLowerCase()) || s.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 && (
+                         parents.filter((p: any) => p.name.toLowerCase().includes(recipientSearch.toLowerCase()) || p.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 &&
+                         teachers.filter((t: any) => t.name.toLowerCase().includes(recipientSearch.toLowerCase()) || t.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 &&
+                         students.filter((s: any) => s.name.toLowerCase().includes(recipientSearch.toLowerCase()) || s.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 && (
                           <div className="text-center py-8 text-gray-500">
                             <p className="text-sm">No recipients found matching "{recipientSearch}"</p>
                           </div>
@@ -4396,7 +4396,7 @@ export default function SchoolDashboard() {
                         <button 
                           type="button"
                           onClick={() => {
-                            const allEmails = [...parents, ...teachers, ...students].map(r => r.email);
+                            const allEmails = [...parents, ...teachers, ...students].map((r: any) => r.email);
                             setSelectedRecipients(allEmails);
                           }}
                           className="text-xs text-blue-600 hover:text-blue-700"
@@ -4667,7 +4667,7 @@ export default function SchoolDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Additional Subjects (Optional)</label>
                     <p className="text-xs text-gray-500 mb-2">Select other subjects this teacher can teach</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic Language', 'Fiqh', 'Hadith', 'Aqeedah', 'Seerah'].map(subject => (
+                      {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic Language', 'Fiqh', 'Hadith', 'Aqeedah', 'Seerah'].map((subject: any) => (
                         <label key={subject} className="flex items-center p-2 border rounded hover:bg-gray-50">
                           <input type="checkbox" className="mr-2" />
                           <span className="text-sm">{subject}</span>
@@ -4811,7 +4811,7 @@ export default function SchoolDashboard() {
               <div className="mt-6">
                 <h3 className="font-semibold text-gray-900 border-b pb-2 mb-3">Classes Teaching</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {classes.filter(cls => cls.teacher === selectedTeacher.name).map(cls => (
+                  {classes.filter((cls: any) => cls.teacher === selectedTeacher.name).map((cls: any) => (
                     <div key={cls.id} className="border rounded-lg p-3">
                       <p className="font-medium text-sm">{cls.name}</p>
                       <p className="text-xs text-gray-500">{cls.schedule} • {cls.room}</p>
@@ -5057,13 +5057,13 @@ export default function SchoolDashboard() {
                       <p className="text-xs text-blue-700 mb-2">Selected: {selectedChildren.length} child(ren)</p>
                       <div className="flex flex-wrap gap-1">
                         {selectedChildren.map((childId) => {
-                          const child = students.find(s => s.id === childId);
+                          const child = students.find((s: any) => s.id === childId);
                           return child ? (
                             <span key={childId} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                               {child.name}
                               <button 
                                 type="button"
-                                onClick={() => setSelectedChildren(selectedChildren.filter(id => id !== childId))}
+                                onClick={() => setSelectedChildren(selectedChildren.filter((id: any) => id !== childId))}
                                 className="ml-1 hover:text-blue-900"
                               >
                                 <X className="w-3 h-3" />
@@ -5079,7 +5079,7 @@ export default function SchoolDashboard() {
                   <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
                     <div className="space-y-2">
                       {(() => {
-                        const filteredStudents = students.filter(student => 
+                        const filteredStudents = students.filter((student: any) => 
                           !childrenSearchTerm || 
                           student.name.toLowerCase().includes(childrenSearchTerm.toLowerCase()) ||
                           student.id.toLowerCase().includes(childrenSearchTerm.toLowerCase()) ||
@@ -5094,7 +5094,7 @@ export default function SchoolDashboard() {
                           );
                         }
                         
-                        return filteredStudents.map(student => (
+                        return filteredStudents.map((student: any) => (
                           <label key={student.id} className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                             <input 
                               type="checkbox" 
@@ -5103,7 +5103,7 @@ export default function SchoolDashboard() {
                                 if (e.target.checked) {
                                   setSelectedChildren([...selectedChildren, student.id]);
                                 } else {
-                                  setSelectedChildren(selectedChildren.filter(id => id !== student.id));
+                                  setSelectedChildren(selectedChildren.filter((id: any) => id !== student.id));
                                 }
                               }}
                               className="mr-3" 
@@ -5125,7 +5125,7 @@ export default function SchoolDashboard() {
                   {/* Quick Actions */}
                   <div className="flex items-center justify-between mt-2">
                     <p className="text-xs text-gray-500">
-                      Showing {students.filter(s => 
+                      Showing {students.filter((s: any) => 
                         !childrenSearchTerm || 
                         s.name.toLowerCase().includes(childrenSearchTerm.toLowerCase()) ||
                         s.id.toLowerCase().includes(childrenSearchTerm.toLowerCase()) ||
@@ -5237,7 +5237,7 @@ export default function SchoolDashboard() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Days *</label>
                   <div className="flex items-center space-x-3">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day: any) => (
                       <label key={day} className="flex items-center">
                         <input 
                           type="checkbox" 
@@ -5247,7 +5247,7 @@ export default function SchoolDashboard() {
                             if (e.target.checked) {
                               setNewClass({...newClass, schedule: [...currentDays, day].join('-')});
                             } else {
-                              setNewClass({...newClass, schedule: currentDays.filter(d => d !== day).join('-')});
+                              setNewClass({...newClass, schedule: currentDays.filter((d: any) => d !== day).join('-')});
                             }
                           }}
                         />
@@ -5283,7 +5283,7 @@ export default function SchoolDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Subjects to Teach *</label>
                   <p className="text-xs text-gray-500 mb-2">Select all subjects that will be taught in this class</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic Language', 'Fiqh', 'Hadith', 'Aqeedah', 'Seerah'].map(subject => (
+                    {['Quran Memorization', 'Tajweed', 'Islamic Studies', 'Arabic Language', 'Fiqh', 'Hadith', 'Aqeedah', 'Seerah'].map((subject: any) => (
                       <label key={subject} className="flex items-center p-2 border rounded hover:bg-gray-50">
                         <input 
                           type="checkbox" 
@@ -5292,7 +5292,7 @@ export default function SchoolDashboard() {
                             if (e.target.checked) {
                               setNewClass({...newClass, subjects: [...(newClass.subjects || []), subject]});
                             } else {
-                              setNewClass({...newClass, subjects: (newClass.subjects || []).filter(s => s !== subject)});
+                              setNewClass({...newClass, subjects: (newClass.subjects || []).filter((s: any) => s !== subject)});
                             }
                           }}
                         />
@@ -5581,7 +5581,7 @@ export default function SchoolDashboard() {
                           
                           const filteredUsers = !credUserSearch 
                             ? users.slice(0, 10)
-                            : users.filter(user =>
+                            : users.filter((user: any) =>
                                 user.name.toLowerCase().includes(credUserSearch.toLowerCase()) ||
                                 user.id.toLowerCase().includes(credUserSearch.toLowerCase()) ||
                                 (user.email && user.email.toLowerCase().includes(credUserSearch.toLowerCase()))
@@ -5599,7 +5599,7 @@ export default function SchoolDashboard() {
                                       {credUserSearch ? `Showing ${filteredUsers.length} results` : `Showing first 10 ${credUserType}s`}
                                     </p>
                                   </div>
-                                  {filteredUsers.map(user => (
+                                  {filteredUsers.map((user: any) => (
                                     <button
                                       key={user.id}
                                       type="button"
@@ -5740,7 +5740,7 @@ export default function SchoolDashboard() {
               <form className="space-y-4" onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                setCredentials((prev: any) => prev.map(c => 
+                setCredentials((prev: any) => prev.map((c: any) => 
                   c.id === editingCredential.id 
                     ? { 
                         ...c, 

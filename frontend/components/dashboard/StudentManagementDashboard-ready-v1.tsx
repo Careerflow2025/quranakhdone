@@ -104,7 +104,7 @@ export default function StudentManagementDashboard() {
   useEffect(() => {
     const scriptId = selectedScript || 'uthmani-hafs';
     const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = allSurahs.find(s => s.number === currentSurah);
+    const surahInfo = allSurahs.find((s: any) => s.number === currentSurah);
     
     if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
       // Use the actual Quran data
@@ -134,7 +134,7 @@ export default function StudentManagementDashboard() {
   }, [currentSurah, selectedScript]);
   
   // Get all 114 Surahs from data file
-  const allSurahs = surahList.map(s => ({
+  const allSurahs = surahList.map((s: any) => ({
     number: s.number,
     nameArabic: s.nameArabic,
     nameEnglish: s.nameEnglish,
@@ -372,7 +372,7 @@ export default function StudentManagementDashboard() {
   const lockScriptSelection = () => {
     if (selectedScript) {
       setScriptLocked(true);
-      alert(`Script locked to: ${quranScripts.find(s => s.id === selectedScript)?.name}`);
+      alert(`Script locked to: ${quranScripts.find((s: any) => s.id === selectedScript)?.name}`);
     }
   };
 
@@ -418,7 +418,7 @@ export default function StudentManagementDashboard() {
     
     if (existingHighlight) {
       // Remove only this specific color highlight
-      setHighlights(highlights.filter(h => h.id !== existingHighlight.id));
+      setHighlights(highlights.filter((h: any) => h.id !== existingHighlight.id));
     } else {
       // Add new highlight (allows multiple colors on same word)
       const newHighlight = {
@@ -426,7 +426,7 @@ export default function StudentManagementDashboard() {
         ayahIndex,
         wordIndex,
         mistakeType: selectedMistakeType,
-        color: mistakeTypes.find(m => m.id === selectedMistakeType)?.color,
+        color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color,
         timestamp: new Date().toISOString()
       };
       setHighlights([...highlights, newHighlight]);
@@ -456,7 +456,7 @@ export default function StudentManagementDashboard() {
             ayahIndex: ayahIdx,
             wordIndex: wordIdx,
             mistakeType: selectedMistakeType,
-            color: mistakeTypes.find(m => m.id === selectedMistakeType)?.color,
+            color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color,
             timestamp: new Date().toISOString()
           });
         }
@@ -483,7 +483,7 @@ export default function StudentManagementDashboard() {
             ayahIndex,
             wordIndex: wordIdx,
             mistakeType: selectedMistakeType,
-            color: mistakeTypes.find(m => m.id === selectedMistakeType)?.color,
+            color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color,
             timestamp: new Date().toISOString()
           });
         }
@@ -493,7 +493,7 @@ export default function StudentManagementDashboard() {
         setHighlights([...highlights, ...newHighlights]);
       } else {
         // If all words are already highlighted, remove them all
-        setHighlights(highlights.filter(h => !(h.ayahIndex === ayahIndex && h.mistakeType === selectedMistakeType)));
+        setHighlights(highlights.filter((h: any) => !(h.ayahIndex === ayahIndex && h.mistakeType === selectedMistakeType)));
       }
     }
   };
@@ -555,7 +555,7 @@ export default function StudentManagementDashboard() {
     } else {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        mediaRecorder.stream.getTracks().forEach((track: any) => track.stop());
         setIsRecording(false);
       }
     }
@@ -566,18 +566,18 @@ export default function StudentManagementDashboard() {
     if (noteMode) {
       // In note mode, select/deselect highlights for note
       // If wordHighlights provided (multiple colors on same word), handle all of them
-      const highlightsToProcess = wordHighlights || [highlights.find(h => h.id === highlightId)].filter(Boolean);
+      const highlightsToProcess = wordHighlights || [highlights.find((h: any) => h.id === highlightId)].filter(Boolean);
       
       if (highlightsToProcess.length === 0) return;
       
       // Process each color separately
       const allGroupIds = [];
       
-      highlightsToProcess.forEach(clickedHighlight => {
+      highlightsToProcess.forEach((clickedHighlight: any) => {
         if (!clickedHighlight) return;
         
         // Find all consecutive highlights of the same color
-        const sameColorHighlights = highlights.filter(h => 
+        const sameColorHighlights = highlights.filter((h: any) => 
           h.mistakeType === clickedHighlight.mistakeType && 
           h.ayahIndex === clickedHighlight.ayahIndex
         ).sort((a, b) => a.wordIndex - b.wordIndex);
@@ -588,7 +588,7 @@ export default function StudentManagementDashboard() {
         
         // Expand backwards
         for (let i = clickedHighlight.wordIndex - 1; i >= 0; i--) {
-          if (sameColorHighlights.some(h => h.wordIndex === i)) {
+          if (sameColorHighlights.some((h: any) => h.wordIndex === i)) {
             groupStart = i;
           } else {
             break;
@@ -597,7 +597,7 @@ export default function StudentManagementDashboard() {
         
         // Expand forwards
         for (let i = clickedHighlight.wordIndex + 1; i < 100; i++) {
-          if (sameColorHighlights.some(h => h.wordIndex === i)) {
+          if (sameColorHighlights.some((h: any) => h.wordIndex === i)) {
             groupEnd = i;
           } else {
             break;
@@ -605,25 +605,25 @@ export default function StudentManagementDashboard() {
         }
         
         // Get all highlights in this consecutive group
-        const groupHighlightIds = highlights.filter(h => 
+        const groupHighlightIds = highlights.filter((h: any) => 
           h.mistakeType === clickedHighlight.mistakeType &&
           h.ayahIndex === clickedHighlight.ayahIndex &&
           h.wordIndex >= groupStart &&
           h.wordIndex <= groupEnd
-        ).map(h => h.id);
+        ).map((h: any) => h.id);
         
         allGroupIds.push(...groupHighlightIds);
       });
       
       // Toggle the entire group
-      const allSelected = allGroupIds.every(id => selectedHighlightsForNote.includes(id));
+      const allSelected = allGroupIds.every((id: any) => selectedHighlightsForNote.includes(id));
       if (allSelected) {
         // Deselect all in group
-        setSelectedHighlightsForNote(selectedHighlightsForNote.filter(id => !allGroupIds.includes(id)));
+        setSelectedHighlightsForNote(selectedHighlightsForNote.filter((id: any) => !allGroupIds.includes(id)));
       } else {
         // Select all in group
         const newSelection = [...selectedHighlightsForNote];
-        allGroupIds.forEach(id => {
+        allGroupIds.forEach((id: any) => {
           if (!newSelection.includes(id)) {
             newSelection.push(id);
           }
@@ -632,7 +632,7 @@ export default function StudentManagementDashboard() {
       }
     } else {
       // Normal mode, show notes popup if notes exist
-      const relatedNotes = notes.filter(note => note.highlightIds.includes(highlightId));
+      const relatedNotes = notes.filter((note: any) => note.highlightIds.includes(highlightId));
       if (relatedNotes.length > 0) {
         setShowNotePopup({ highlightId, notes: relatedNotes });
       }
@@ -641,7 +641,7 @@ export default function StudentManagementDashboard() {
 
   // Remove Highlight
   const removeHighlight = (highlightId) => {
-    setHighlights(highlights.filter(h => h.id !== highlightId));
+    setHighlights(highlights.filter((h: any) => h.id !== highlightId));
   };
 
   // Canvas Drawing Functions
@@ -744,7 +744,7 @@ export default function StudentManagementDashboard() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-    setDrawings(drawings.filter(d => 
+    setDrawings(drawings.filter((d: any) => 
       !(d.page === currentPage && d.surah === currentSurah)
     ));
   };
@@ -776,11 +776,11 @@ export default function StudentManagementDashboard() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Redraw all drawings for current page
-    const pageDrawings = drawings.filter(d => 
+    const pageDrawings = drawings.filter((d: any) => 
       d.page === currentPage && d.surah === currentSurah
     );
     
-    pageDrawings.forEach(drawing => {
+    pageDrawings.forEach((drawing: any) => {
       // Set composite operation based on whether it's an eraser stroke
       if (drawing.isEraser) {
         ctx.globalCompositeOperation = 'destination-out';
@@ -837,9 +837,9 @@ export default function StudentManagementDashboard() {
               <div className="text-center">
                 <h1 className="text-3xl font-arabic text-green-800">سُورَةُ {quranText.surah}</h1>
                 <p className="text-sm text-gray-600">
-                  {allSurahs.find(s => s.number === currentSurah)?.nameEnglish || ''} • 
-                  {allSurahs.find(s => s.number === currentSurah)?.type || 'Meccan'} • 
-                  {allSurahs.find(s => s.number === currentSurah)?.verses || '7'} Verses
+                  {allSurahs.find((s: any) => s.number === currentSurah)?.nameEnglish || ''} • 
+                  {allSurahs.find((s: any) => s.number === currentSurah)?.type || 'Meccan'} • 
+                  {allSurahs.find((s: any) => s.number === currentSurah)?.verses || '7'} Verses
                 </p>
               </div>
             </div>
@@ -1038,7 +1038,7 @@ export default function StudentManagementDashboard() {
                 </h3>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {mistakeTypes.map((type) => {
-                    const typeHighlights = highlights.filter(h => h.mistakeType === type.id);
+                    const typeHighlights = highlights.filter((h: any) => h.mistakeType === type.id);
                     if (typeHighlights.length === 0) return null;
                     return (
                       <div key={type.id} className={`p-1.5 rounded-md ${type.bgColor} text-xs`}>
@@ -1047,7 +1047,7 @@ export default function StudentManagementDashboard() {
                             {type.name} ({typeHighlights.length})
                           </span>
                           <button
-                            onClick={() => setHighlights(highlights.filter(h => h.mistakeType !== type.id))}
+                            onClick={() => setHighlights(highlights.filter((h: any) => h.mistakeType !== type.id))}
                             className="text-gray-500 hover:text-red-600"
                             title="Clear all"
                           >
@@ -1281,7 +1281,7 @@ export default function StudentManagementDashboard() {
                           const wordHighlights = highlights.filter(
                             h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                           );
-                          const mistakes = wordHighlights.map(h => mistakeTypes.find(m => m.id === h.mistakeType)).filter(Boolean);
+                          const mistakes = wordHighlights.map((h: any) => mistakeTypes.find((m: any) => m.id === h.mistakeType)).filter(Boolean);
                           
                           // Check if word is in selection range
                           let isInSelection = false;
@@ -1330,11 +1330,11 @@ export default function StudentManagementDashboard() {
                               } ${
                                 highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-gray-100' : ''
                               } ${
-                                wordHighlights.some(h => notes.some(n => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-400' : ''
+                                wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-400' : ''
                               } ${
-                                noteMode && wordHighlights.some(h => selectedHighlightsForNote.includes(h.id)) ? 'ring-4 ring-green-500 shadow-lg transform scale-110' : ''
+                                noteMode && wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'ring-4 ring-green-500 shadow-lg transform scale-110' : ''
                               } ${
-                                noteMode && wordHighlights.length > 0 && !wordHighlights.some(h => selectedHighlightsForNote.includes(h.id)) ? 'opacity-70 hover:opacity-100' : ''
+                                noteMode && wordHighlights.length > 0 && !wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'opacity-70 hover:opacity-100' : ''
                               }`}
                               style={{
                                 position: 'relative',
@@ -1359,7 +1359,7 @@ export default function StudentManagementDashboard() {
                               }}
                             >
                               {word}
-                              {wordHighlights.some(h => notes.some(n => n.highlightIds.includes(h.id))) && (
+                              {wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) && (
                                 <sup className="text-blue-500 ml-1" style={{ fontSize: '0.6em' }}>
                                   <MessageSquare className="w-3 h-3 inline" />
                                 </sup>
@@ -1486,7 +1486,7 @@ export default function StudentManagementDashboard() {
                             </p>
                           </div>
                           <button
-                            onClick={() => setNotes(notes.filter(n => n.id !== note.id))}
+                            onClick={() => setNotes(notes.filter((n: any) => n.id !== note.id))}
                             className="text-gray-400 hover:text-red-600"
                           >
                             <X className="w-2.5 h-2.5" />
@@ -1723,7 +1723,7 @@ export default function StudentManagementDashboard() {
                         setTimeout(() => {
                           if (recorder.state !== 'inactive') {
                             recorder.stop();
-                            recorder.stream.getTracks().forEach(track => track.stop());
+                            recorder.stream.getTracks().forEach((track: any) => track.stop());
                             setIsRecording(false);
                           }
                         }, 60000);
@@ -1734,7 +1734,7 @@ export default function StudentManagementDashboard() {
                     } else {
                       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                         mediaRecorder.stop();
-                        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                        mediaRecorder.stream.getTracks().forEach((track: any) => track.stop());
                         setIsRecording(false);
                       }
                     }
@@ -1835,9 +1835,9 @@ export default function StudentManagementDashboard() {
                   Adding note to {selectedHighlightsForNote.length} selected highlight{selectedHighlightsForNote.length > 1 ? 's' : ''}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedHighlightsForNote.map(id => {
-                    const highlight = highlights.find(h => h.id === id);
-                    const mistake = mistakeTypes.find(m => m.id === highlight?.mistakeType);
+                  {selectedHighlightsForNote.map((id: any) => {
+                    const highlight = highlights.find((h: any) => h.id === id);
+                    const mistake = mistakeTypes.find((m: any) => m.id === highlight?.mistakeType);
                     return highlight ? (
                       <span key={id} className={`px-2 py-1 rounded text-xs ${mistake?.bgColor} ${mistake?.textColor}`}>
                         {mistake?.name} - A{highlight.ayahIndex + 1}:W{highlight.wordIndex + 1}
