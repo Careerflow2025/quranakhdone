@@ -4,7 +4,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function TestDatabase() {
-  const [testResults, setTestResults] = useState({
+  const [testResults, setTestResults] = useState<{
+    connection: string;
+    profiles: any[] | null;
+    classes: any[] | null;
+    homework: any[] | null;
+    error: string | null;
+  }>({
     connection: 'Testing...',
     profiles: null,
     classes: null,
@@ -47,11 +53,11 @@ export default function TestDatabase() {
         error: null
       });
 
-    } catch (error) {
+    } catch (error: any) {
       setTestResults(prev => ({
         ...prev,
         connection: '❌ Connection failed',
-        error: error.message
+        error: error?.message || 'Unknown error'
       }));
     }
   };
@@ -69,8 +75,8 @@ export default function TestDatabase() {
       } else {
         alert('❌ User not found');
       }
-    } catch (error) {
-      alert(`Error: ${error.message}`);
+    } catch (error: any) {
+      alert(`Error: ${error?.message || 'Unknown error'}`);
     }
   };
 
