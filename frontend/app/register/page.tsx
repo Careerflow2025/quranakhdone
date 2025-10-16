@@ -124,7 +124,7 @@ export default function RegisterPage() {
           .from('profiles')
           .select('school_id')
           .eq('user_id', signInData.user.id)
-          .single();
+          .single() as { data: any; error: any };
 
         if (existingProfile?.school_id) {
           throw new Error('This account already has a school associated. Please login instead.');
