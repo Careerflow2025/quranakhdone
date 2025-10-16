@@ -1,4 +1,77 @@
-// Add this data after the classes array (around line 214):
+'use client';
+
+import React, { useState } from 'react';
+import {
+  BookOpen,
+  Clock,
+  RefreshCw,
+  AlertCircle,
+  Search,
+  MessageSquare,
+  Book,
+  Target,
+  CheckCircle
+} from 'lucide-react';
+
+// Define types for better type safety
+interface HomeworkFilter {
+  class: string;
+  student: string;
+  teacher: string;
+  status: string;
+  dateRange: string;
+}
+
+interface TargetsFilter {
+  type: string;
+  student: string;
+  teacher: string;
+  status: string;
+  category: string;
+}
+
+export default function SchoolDashboardAdditions() {
+  // State management
+  const [activeTab, setActiveTab] = useState<string>('homework');
+  const [homeworkFilter, setHomeworkFilter] = useState<HomeworkFilter>({
+    class: 'all',
+    student: 'all',
+    teacher: 'all',
+    status: 'all',
+    dateRange: '7days'
+  });
+  const [homeworkSearchTerm, setHomeworkSearchTerm] = useState<string>('');
+  const [targetsFilter, setTargetsFilter] = useState<TargetsFilter>({
+    type: 'all',
+    student: 'all',
+    teacher: 'all',
+    status: 'all',
+    category: 'all'
+  });
+  const [targetsSearchTerm, setTargetsSearchTerm] = useState<string>('');
+
+  // Sample data for classes, students, and teachers
+  const classes = [
+    { id: 'CLS001', name: 'Class 4A' },
+    { id: 'CLS002', name: 'Class 5B' },
+    { id: 'CLS003', name: 'Class 6A' },
+    { id: 'CLS004', name: 'Class 7A' },
+    { id: 'CLS005', name: 'Class 8B' }
+  ];
+
+  const students = [
+    { id: 'STU001', name: 'Fatima Al-Zahra' },
+    { id: 'STU002', name: 'Abdullah Khan' },
+    { id: 'STU003', name: 'Aisha Ibrahim' },
+    { id: 'STU004', name: 'Omar Hassan' },
+    { id: 'STU005', name: 'Maryam Ahmed' }
+  ];
+
+  const teachers = [
+    { id: 'TCH001', name: 'Sheikh Muhammad Ali' },
+    { id: 'TCH002', name: 'Ustadha Sarah Ahmed' },
+    { id: 'TCH003', name: 'Imam Abdul Rahman' }
+  ];
 
   // Homework Data (Green Highlights)
   const homeworkData = [
@@ -171,523 +244,545 @@
     }
   ];
 
-// Add these sections after the assignments section (after line 2004):
+  return (
+    <div className="w-full">
+      {/* Tab Navigation */}
+      <div className="flex space-x-4 mb-6 border-b">
+        <button
+          onClick={() => setActiveTab('homework')}
+          className={`pb-2 px-4 ${activeTab === 'homework' ? 'border-b-2 border-green-500 text-green-600' : 'text-gray-600'}`}
+        >
+          Homework
+        </button>
+        <button
+          onClick={() => setActiveTab('targets')}
+          className={`pb-2 px-4 ${activeTab === 'targets' ? 'border-b-2 border-purple-500 text-purple-600' : 'text-gray-600'}`}
+        >
+          Targets
+        </button>
+      </div>
 
-        {/* Homework Section */}
-        {activeTab === 'homework' && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+      {/* Homework Section */}
+      {activeTab === 'homework' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center">
+                  <BookOpen className="w-7 h-7 mr-3" />
+                  School Homework Overview
+                </h2>
+                <p className="text-green-100 mt-1">All green highlights (homework) assigned by teachers across the school</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">{homeworkData.length}</div>
+                <div className="text-green-100">Total Assignments</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                <select
+                  value={homeworkFilter.class}
+                  onChange={(e) => setHomeworkFilter({...homeworkFilter, class: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="all">All Classes</option>
+                  {classes.map((cls: any) => (
+                    <option key={cls.id} value={cls.name}>{cls.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Student</label>
+                <select
+                  value={homeworkFilter.student}
+                  onChange={(e) => setHomeworkFilter({...homeworkFilter, student: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="all">All Students</option>
+                  {students.map((student: any) => (
+                    <option key={student.id} value={student.id}>{student.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
+                <select
+                  value={homeworkFilter.teacher}
+                  onChange={(e) => setHomeworkFilter({...homeworkFilter, teacher: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="all">All Teachers</option>
+                  {teachers.map((teacher: any) => (
+                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  value={homeworkFilter.status}
+                  onChange={(e) => setHomeworkFilter({...homeworkFilter, status: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <select
+                  value={homeworkFilter.dateRange}
+                  onChange={(e) => setHomeworkFilter({...homeworkFilter, dateRange: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="7days">Last 7 Days</option>
+                  <option value="30days">Last 30 Days</option>
+                  <option value="3months">Last 3 Months</option>
+                  <option value="all">All Time</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center space-x-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by student name, surah, or note..."
+                  value={homeworkSearchTerm}
+                  onChange={(e) => setHomeworkSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  setHomeworkFilter({
+                    class: 'all',
+                    student: 'all',
+                    teacher: 'all',
+                    status: 'all',
+                    dateRange: '7days'
+                  });
+                  setHomeworkSearchTerm('');
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <BookOpen className="w-7 h-7 mr-3" />
-                    School Homework Overview
-                  </h2>
-                  <p className="text-green-100 mt-1">All green highlights (homework) assigned by teachers across the school</p>
+                  <p className="text-sm text-gray-600">Total Homework</p>
+                  <p className="text-2xl font-bold text-gray-900">{homeworkData.length}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">{homeworkData.length}</div>
-                  <div className="text-green-100">Total Assignments</div>
-                </div>
+                <BookOpen className="w-8 h-8 text-green-500" />
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
+              <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
-                  <select
-                    value={homeworkFilter.class}
-                    onChange={(e) => setHomeworkFilter({...homeworkFilter, class: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Classes</option>
-                    {classes.map((cls: any) => (
-                      <option key={cls.id} value={cls.name}>{cls.name}</option>
-                    ))}
-                  </select>
+                  <p className="text-sm text-gray-600">Pending</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {homeworkData.filter((h: any) => h.status === 'pending').length}
+                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Student</label>
-                  <select
-                    value={homeworkFilter.student}
-                    onChange={(e) => setHomeworkFilter({...homeworkFilter, student: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Students</option>
-                    {students.map((student: any) => (
-                      <option key={student.id} value={student.id}>{student.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
-                  <select
-                    value={homeworkFilter.teacher}
-                    onChange={(e) => setHomeworkFilter({...homeworkFilter, teacher: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Teachers</option>
-                    {teachers.map((teacher: any) => (
-                      <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    value={homeworkFilter.status}
-                    onChange={(e) => setHomeworkFilter({...homeworkFilter, status: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="overdue">Overdue</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <select
-                    value={homeworkFilter.dateRange}
-                    onChange={(e) => setHomeworkFilter({...homeworkFilter, dateRange: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="7days">Last 7 Days</option>
-                    <option value="30days">Last 30 Days</option>
-                    <option value="3months">Last 3 Months</option>
-                    <option value="all">All Time</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center space-x-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search by student name, surah, or note..."
-                    value={homeworkSearchTerm}
-                    onChange={(e) => setHomeworkSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    setHomeworkFilter({
-                      class: 'all',
-                      student: 'all',
-                      teacher: 'all',
-                      status: 'all',
-                      dateRange: '7days'
-                    });
-                    setHomeworkSearchTerm('');
-                  }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
-                >
-                  Clear Filters
-                </button>
+                <Clock className="w-8 h-8 text-yellow-500" />
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Total Homework</p>
-                    <p className="text-2xl font-bold text-gray-900">{homeworkData.length}</p>
-                  </div>
-                  <BookOpen className="w-8 h-8 text-green-500" />
+            <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">In Progress</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {homeworkData.filter((h: any) => h.status === 'in-progress').length}
+                  </p>
                 </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Pending</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter((h: any) => h.status === 'pending').length}
-                    </p>
-                  </div>
-                  <Clock className="w-8 h-8 text-yellow-500" />
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">In Progress</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter((h: any) => h.status === 'in-progress').length}
-                    </p>
-                  </div>
-                  <RefreshCw className="w-8 h-8 text-blue-500" />
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Overdue</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {homeworkData.filter((h: any) => h.status === 'overdue').length}
-                    </p>
-                  </div>
-                  <AlertCircle className="w-8 h-8 text-red-500" />
-                </div>
+                <RefreshCw className="w-8 h-8 text-blue-500" />
               </div>
             </div>
 
-            {/* Homework Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {homeworkData
-                .filter((hw: any) => {
-                  if (homeworkFilter.class !== 'all' && hw.class !== homeworkFilter.class) return false;
-                  if (homeworkFilter.student !== 'all' && hw.studentId !== homeworkFilter.student) return false;
-                  if (homeworkFilter.teacher !== 'all' && hw.teacherId !== homeworkFilter.teacher) return false;
-                  if (homeworkFilter.status !== 'all' && hw.status !== homeworkFilter.status) return false;
-                  if (homeworkSearchTerm) {
-                    const search = homeworkSearchTerm.toLowerCase();
-                    return hw.studentName.toLowerCase().includes(search) ||
-                           hw.surah.toLowerCase().includes(search) ||
-                           hw.note.toLowerCase().includes(search);
-                  }
-                  return true;
-                })
-                .map((homework: any) => (
-                  <div key={homework.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold text-white text-lg">{homework.studentName}</h3>
-                          <p className="text-green-100 text-sm">{homework.class}</p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          homework.status === 'completed' ? 'bg-white text-green-600' :
-                          homework.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                          homework.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
+            <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Overdue</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {homeworkData.filter((h: any) => h.status === 'overdue').length}
+                  </p>
+                </div>
+                <AlertCircle className="w-8 h-8 text-red-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Homework Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {homeworkData
+              .filter((hw: any) => {
+                if (homeworkFilter.class !== 'all' && hw.class !== homeworkFilter.class) return false;
+                if (homeworkFilter.student !== 'all' && hw.studentId !== homeworkFilter.student) return false;
+                if (homeworkFilter.teacher !== 'all' && hw.teacherId !== homeworkFilter.teacher) return false;
+                if (homeworkFilter.status !== 'all' && hw.status !== homeworkFilter.status) return false;
+                if (homeworkSearchTerm) {
+                  const search = homeworkSearchTerm.toLowerCase();
+                  return hw.studentName.toLowerCase().includes(search) ||
+                         hw.surah.toLowerCase().includes(search) ||
+                         hw.note.toLowerCase().includes(search);
+                }
+                return true;
+              })
+              .map((homework: any) => (
+                <div key={homework.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-bold text-white text-lg">{homework.studentName}</h3>
+                        <p className="text-green-100 text-sm">{homework.class}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        homework.status === 'completed' ? 'bg-white text-green-600' :
+                        homework.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                        homework.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {homework.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="mb-4">
+                      <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <Book className="w-4 h-4 mr-2" />
+                        <span className="font-medium">Surah {homework.surah}</span>
+                        <span className="mx-2">•</span>
+                        <span>Ayah {homework.ayahRange}</span>
+                      </div>
+                      <p className="text-gray-700">{homework.note}</p>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Teacher:</span>
+                        <span className="text-gray-700 font-medium">{homework.teacherName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Assigned:</span>
+                        <span className="text-gray-700">{homework.assignedDate}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Due Date:</span>
+                        <span className={`font-medium ${
+                          homework.status === 'overdue' ? 'text-red-600' : 'text-gray-700'
                         }`}>
-                          {homework.status}
+                          {homework.dueDate}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-5">
-                      <div className="mb-4">
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <Book className="w-4 h-4 mr-2" />
-                          <span className="font-medium">Surah {homework.surah}</span>
-                          <span className="mx-2">•</span>
-                          <span>Ayah {homework.ayahRange}</span>
-                        </div>
-                        <p className="text-gray-700">{homework.note}</p>
+                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <MessageSquare className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">{homework.replies} replies</span>
                       </div>
-
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Teacher:</span>
-                          <span className="text-gray-700 font-medium">{homework.teacherName}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Assigned:</span>
-                          <span className="text-gray-700">{homework.assignedDate}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Due Date:</span>
-                          <span className={`font-medium ${
-                            homework.status === 'overdue' ? 'text-red-600' : 'text-gray-700'
-                          }`}>
-                            {homework.dueDate}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <MessageSquare className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm text-gray-600">{homework.replies} replies</span>
-                        </div>
-                        <button className="text-green-600 hover:text-green-700 font-medium text-sm">
-                          View Details →
-                        </button>
-                      </div>
+                      <button className="text-green-600 hover:text-green-700 font-medium text-sm">
+                        View Details →
+                      </button>
                     </div>
                   </div>
-                ))}
-            </div>
-
-            {homeworkData.length === 0 && (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No homework found</p>
-                <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
-              </div>
-            )}
+                </div>
+              ))}
           </div>
-        )}
 
-        {/* Targets Section */}
-        {activeTab === 'targets' && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <Target className="w-7 h-7 mr-3" />
-                    School-wide Learning Targets
-                  </h2>
-                  <p className="text-purple-100 mt-1">Track all learning goals and milestones across the school</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">{targetsData.filter((t: any) => t.status === 'active').length}</div>
-                  <div className="text-purple-100">Active Targets</div>
-                </div>
+          {homeworkData.length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
+              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No homework found</p>
+              <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Targets Section */}
+      {activeTab === 'targets' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center">
+                  <Target className="w-7 h-7 mr-3" />
+                  School-wide Learning Targets
+                </h2>
+                <p className="text-purple-100 mt-1">Track all learning goals and milestones across the school</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">{targetsData.filter((t: any) => t.status === 'active').length}</div>
+                <div className="text-purple-100">Active Targets</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select
+                  value={targetsFilter.type}
+                  onChange={(e) => setTargetsFilter({...targetsFilter, type: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Types</option>
+                  <option value="individual">Individual</option>
+                  <option value="class">Class</option>
+                  <option value="school">School-wide</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+                <select
+                  value={targetsFilter.student}
+                  onChange={(e) => setTargetsFilter({...targetsFilter, student: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All</option>
+                  {students.map((student: any) => (
+                    <option key={student.id} value={student.name}>{student.name}</option>
+                  ))}
+                  {classes.map((cls: any) => (
+                    <option key={cls.id} value={cls.name}>{cls.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
+                <select
+                  value={targetsFilter.teacher}
+                  onChange={(e) => setTargetsFilter({...targetsFilter, teacher: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Teachers</option>
+                  {teachers.map((teacher: any) => (
+                    <option key={teacher.id} value={teacher.name}>{teacher.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  value={targetsFilter.status}
+                  onChange={(e) => setTargetsFilter({...targetsFilter, status: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="paused">Paused</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select
+                  value={targetsFilter.category}
+                  onChange={(e) => setTargetsFilter({...targetsFilter, category: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="memorization">Memorization</option>
+                  <option value="tajweed">Tajweed</option>
+                  <option value="competition">Competition</option>
+                </select>
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                  <select
-                    value={targetsFilter.type}
-                    onChange={(e) => setTargetsFilter({...targetsFilter, type: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="individual">Individual</option>
-                    <option value="class">Class</option>
-                    <option value="school">School-wide</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
-                  <select
-                    value={targetsFilter.student}
-                    onChange={(e) => setTargetsFilter({...targetsFilter, student: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="all">All</option>
-                    {students.map((student: any) => (
-                      <option key={student.id} value={student.name}>{student.name}</option>
-                    ))}
-                    {classes.map((cls: any) => (
-                      <option key={cls.id} value={cls.name}>{cls.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
-                  <select
-                    value={targetsFilter.teacher}
-                    onChange={(e) => setTargetsFilter({...targetsFilter, teacher: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="all">All Teachers</option>
-                    {teachers.map((teacher: any) => (
-                      <option key={teacher.id} value={teacher.name}>{teacher.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    value={targetsFilter.status}
-                    onChange={(e) => setTargetsFilter({...targetsFilter, status: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="paused">Paused</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="memorization">Memorization</option>
-                    <option value="tajweed">Tajweed</option>
-                    <option value="competition">Competition</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search targets by title or description..."
-                    value={targetsSearchTerm}
-                    onChange={(e) => setTargetsSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
+            <div className="mt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search targets by title or description..."
+                  value={targetsSearchTerm}
+                  onChange={(e) => setTargetsSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
               </div>
             </div>
+          </div>
 
-            {/* Target Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {targetsData
-                .filter((target: any) => {
-                  if (targetsFilter.type !== 'all' && target.type !== targetsFilter.type) return false;
-                  if (targetsFilter.status !== 'all' && target.status !== targetsFilter.status) return false;
-                  if (targetsSearchTerm) {
-                    const search = targetsSearchTerm.toLowerCase();
-                    return target.title.toLowerCase().includes(search) ||
-                           target.description.toLowerCase().includes(search);
-                  }
-                  return true;
-                })
-                .map((target: any) => (
-                  <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div className={`h-2 ${
-                      target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
-                      target.type === 'class' ? 'bg-gradient-to-r from-green-500 to-green-600' :
-                      'bg-gradient-to-r from-purple-500 to-purple-600'
-                    }`}></div>
+          {/* Target Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {targetsData
+              .filter((target: any) => {
+                if (targetsFilter.type !== 'all' && target.type !== targetsFilter.type) return false;
+                if (targetsFilter.status !== 'all' && target.status !== targetsFilter.status) return false;
+                if (targetsFilter.category !== 'all' && target.category !== targetsFilter.category) return false;
+                if (targetsSearchTerm) {
+                  const search = targetsSearchTerm.toLowerCase();
+                  return target.title.toLowerCase().includes(search) ||
+                         target.description.toLowerCase().includes(search);
+                }
+                return true;
+              })
+              .map((target: any) => (
+                <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className={`h-2 ${
+                    target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+                    target.type === 'class' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                    'bg-gradient-to-r from-purple-500 to-purple-600'
+                  }`}></div>
 
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">{target.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{target.description}</p>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            target.type === 'individual' ? 'bg-blue-100 text-blue-700' :
-                            target.type === 'class' ? 'bg-green-100 text-green-700' :
-                            'bg-purple-100 text-purple-700'
-                          }`}>
-                            {target.type}
-                          </span>
-                          <span className="mt-2 text-xs text-gray-500">
-                            {target.status === 'active' && '🟢 Active'}
-                          </span>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{target.title}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{target.description}</p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          target.type === 'individual' ? 'bg-blue-100 text-blue-700' :
+                          target.type === 'class' ? 'bg-green-100 text-green-700' :
+                          'bg-purple-100 text-purple-700'
+                        }`}>
+                          {target.type}
+                        </span>
+                        <span className="mt-2 text-xs text-gray-500">
+                          {target.status === 'active' && '🟢 Active'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-xs text-gray-500">Assigned By</p>
+                        <p className="text-sm font-medium text-gray-700">{target.assignedBy}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Assigned To</p>
+                        <p className="text-sm font-medium text-gray-700">{target.assignedTo}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Start Date</p>
+                        <p className="text-sm font-medium text-gray-700">{target.startDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Due Date</p>
+                        <p className="text-sm font-medium text-gray-700">{target.dueDate}</p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-bold text-gray-900">{target.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full ${
+                            target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+                            target.type === 'class' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                            'bg-gradient-to-r from-purple-500 to-purple-600'
+                          }`}
+                          style={{width: `${target.progress}%`}}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Milestones or Stats */}
+                    {target.milestones && (
+                      <div className="border-t pt-4">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
+                        <div className="space-y-1">
+                          {target.milestones.map((milestone: any, index: any) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              {milestone.completed ? (
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
+                              )}
+                              <span className={`text-sm ${milestone.completed ? 'text-gray-700' : 'text-gray-500'}`}>
+                                {milestone.name}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
+                    )}
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Additional Stats */}
+                    {target.category === 'memorization' && target.totalAyahs && (
+                      <div className="border-t pt-4 flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-gray-500">Assigned By</p>
-                          <p className="text-sm font-medium text-gray-700">{target.assignedBy}</p>
+                          <p className="text-xs text-gray-500">Ayahs Completed</p>
+                          <p className="text-lg font-bold text-gray-900">
+                            {target.completedAyahs} / {target.totalAyahs}
+                          </p>
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Assigned To</p>
-                          <p className="text-sm font-medium text-gray-700">{target.assignedTo}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Start Date</p>
-                          <p className="text-sm font-medium text-gray-700">{target.startDate}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Due Date</p>
-                          <p className="text-sm font-medium text-gray-700">{target.dueDate}</p>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-gray-600">Progress</span>
-                          <span className="font-bold text-gray-900">{target.progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div
-                            className={`h-3 rounded-full ${
-                              target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
-                              target.type === 'class' ? 'bg-gradient-to-r from-green-500 to-green-600' :
-                              'bg-gradient-to-r from-purple-500 to-purple-600'
-                            }`}
-                            style={{width: `${target.progress}%`}}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Milestones or Stats */}
-                      {target.milestones && (
-                        <div className="border-t pt-4">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
-                          <div className="space-y-1">
-                            {target.milestones.map((milestone: any, index: any) => (
-                              <div key={index} className="flex items-center space-x-2">
-                                {milestone.completed ? (
-                                  <CheckCircle className="w-4 h-4 text-green-500" />
-                                ) : (
-                                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />
-                                )}
-                                <span className={`text-sm ${milestone.completed ? 'text-gray-700' : 'text-gray-500'}`}>
-                                  {milestone.name}
-                                </span>
-                              </div>
-                            ))}
+                        {target.dailyTarget && (
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">Daily Target</p>
+                            <p className="text-lg font-bold text-gray-900">{target.dailyTarget} Ayahs</p>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    )}
 
-                      {/* Additional Stats */}
-                      {target.category === 'memorization' && target.totalAyahs && (
-                        <div className="border-t pt-4 flex items-center justify-between">
+                    {target.category === 'tajweed' && target.averageScore !== undefined && (
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-xs text-gray-500">Ayahs Completed</p>
+                            <p className="text-xs text-gray-500">Lessons</p>
                             <p className="text-lg font-bold text-gray-900">
-                              {target.completedAyahs} / {target.totalAyahs}
+                              {target.completedLessons} / {target.totalLessons}
                             </p>
                           </div>
-                          {target.dailyTarget && (
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">Daily Target</p>
-                              <p className="text-lg font-bold text-gray-900">{target.dailyTarget} Ayahs</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {target.category === 'tajweed' && target.averageScore !== undefined && (
-                        <div className="border-t pt-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs text-gray-500">Lessons</p>
-                              <p className="text-lg font-bold text-gray-900">
-                                {target.completedLessons} / {target.totalLessons}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">Average Score</p>
-                              <p className="text-lg font-bold text-gray-900">{target.averageScore}%</p>
-                            </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">Average Score</p>
+                            <p className="text-lg font-bold text-gray-900">{target.averageScore}%</p>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                ))}
-            </div>
-
-            {targetsData.length === 0 && (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No targets found</p>
-                <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
-              </div>
-            )}
+                </div>
+              ))}
           </div>
-        )}
+
+          {targetsData.length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
+              <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No targets found</p>
+              <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

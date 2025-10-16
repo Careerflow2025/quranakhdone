@@ -5,7 +5,13 @@
       "Read(//c//**)",
       "Bash(./fix_build24_syntax.sh)",
       "Bash(./fix_audioprogressobject.sh:*)",
-      "Bash(./fix_numeric_attrs.sh:*)"
+      "Bash(./fix_numeric_attrs.sh:*)",
+      "Bash(chmod:*)",
+      "Bash(C:/quranakhfinalproduction/fix_dynamic_indexing_build27.sh)",
+      "Bash(C:/quranakhfinalproduction/comprehensive_ts_check.sh)",
+      "Bash(C:/quranakhfinalproduction/fix_untyped_usestate.sh)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
