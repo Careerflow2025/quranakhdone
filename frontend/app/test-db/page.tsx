@@ -64,14 +64,19 @@ export default function TestDatabase() {
 
   const testLogin = async (email: string, password: string) => {
     try {
-      const result = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('email', email)
         .single();
 
-      if (result.data) {
-        alert(`✅ User found: ${result.data.full_name} (${result.data.role})`);
+      if (error) {
+        alert(`Error: ${error.message}`);
+        return;
+      }
+
+      if (data) {
+        alert(`✅ User found: ${data.full_name} (${data.role})`);
       } else {
         alert('❌ User not found');
       }
