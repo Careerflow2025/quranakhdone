@@ -163,7 +163,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
         if (!profileStudentResult.error && profileStudentResult.data) {
           // Filter by school_id manually if needed
-          const filteredStudents = profileStudentResult.data.filter(s =>
+          const filteredStudents = profileStudentResult.data.filter((s: any) =>
             s.school_id === schoolId || s.profiles?.school_id === schoolId
           );
 
@@ -218,7 +218,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
         if (!profileTeacherResult.error && profileTeacherResult.data) {
           // Filter by school_id manually if needed
-          const filteredTeachers = profileTeacherResult.data.filter(t =>
+          const filteredTeachers = profileTeacherResult.data.filter((t: any) =>
             t.school_id === schoolId || t.profiles?.school_id === schoolId
           );
 
