@@ -142,18 +142,18 @@ export default function RegisterPage() {
       if (!authenticatedUser) throw new Error('Failed to create user account');
 
       // Step 2: Now we're authenticated, create the school
-      const { data: schoolInsertData, error: schoolError } = await supabase
+      const { data: schoolInsertData, error: schoolError } = (await supabase
         .from('schools')
-        .insert([{
+        .insert({
           name: schoolData.name,
           email: schoolData.email,
           phone: schoolData.phone || null,
           address: schoolData.address || null,
           timezone: 'Africa/Casablanca',
           subscription_status: 'active'
-        } as any])
+        } as any)
         .select()
-        .single() as { data: any; error: any };
+        .single()) as { data: any; error: any };
 
       if (schoolError) {
         console.error('School creation error:', schoolError);
@@ -167,7 +167,7 @@ export default function RegisterPage() {
       // Step 3: Create/update profile linking user to school
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert([{
+        .upsert({
           user_id: authenticatedUser.id,
           school_id: schoolInsertData.id,
           role: 'school',
@@ -175,7 +175,7 @@ export default function RegisterPage() {
           email: adminData.email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        } as any], {
+        } as any, {
           onConflict: 'user_id'
         });
 
@@ -201,7 +201,7 @@ export default function RegisterPage() {
       // Step 4: Store credentials
       await supabase
         .from('user_credentials')
-        .upsert([{
+        .upsert({
           user_id: authenticatedUser.id,
           school_id: schoolInsertData.id,
           username: adminData.email,
@@ -210,7 +210,7 @@ export default function RegisterPage() {
           password_changed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        } as any], {
+        } as any, {
           onConflict: 'user_id'
         });
 
