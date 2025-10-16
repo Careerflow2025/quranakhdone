@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         display_name: studentName,
         role: 'student',
         school_id: schoolId
-      });
+      } as any);
 
     // Create student record
     const { data: student, error: studentError } = await supabaseAdmin

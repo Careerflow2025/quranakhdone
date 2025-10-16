@@ -90,14 +90,14 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
       // Step 2: Create profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert<Database['public']['Tables']['profiles']['Insert']>({
+        .insert({
           user_id: authData.user.id,
           school_id: adminProfile.school_id,
           email: formData.email,
           display_name: formData.fullName,
           role: formData.role,
           phone: formData.phone
-        });
+        } as any);
 
       if (profileError) throw profileError;
 
