@@ -11,7 +11,8 @@
       "Bash(C:/quranakhfinalproduction/comprehensive_ts_check.sh)",
       "Bash(C:/quranakhfinalproduction/fix_untyped_usestate.sh)",
       "Bash(find:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(./fix_build29_arrays.sh)"
     ],
     "deny": [],
     "ask": []

@@ -671,7 +671,7 @@ export default function SchoolDashboard() {
     const processCsvData = (csvText: string) => {
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map((h: any) => h.trim());
-      const data = [];
+      const data: any[] = [];
       
       for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim()) {
@@ -699,8 +699,8 @@ export default function SchoolDashboard() {
       
       // FIRST: Check for duplicates WITHIN the CSV file itself
       const csvEmailMap = new Map();
-      const csvInternalDuplicates = [];
-      const uniqueInCsv = [];
+      const csvInternalDuplicates: any[] = [];
+      const uniqueInCsv: any[] = [];
       
       data.forEach((row: any) => {
         const email = (row.Email || row.email || '').toLowerCase();
@@ -726,8 +726,8 @@ export default function SchoolDashboard() {
       
       // SECOND: Check the unique CSV records against existing students
       const existingEmails = students.map((s: any) => s.email.toLowerCase());
-      const systemDuplicates = [];
-      const newRows = [];
+      const systemDuplicates: any[] = [];
+      const newRows: any[] = [];
       
       uniqueInCsv.forEach((row: any) => {
         const email = (row.Email || row.email || '').toLowerCase();
