@@ -718,12 +718,12 @@ export default function StudentDashboard() {
     ctx.lineTo(x, y);
     ctx.stroke();
     
-    setCurrentPath(prev => [...prev, { x, y }]);
+    setCurrentPath((prev: any) => [...prev, { x, y }]);
   };
 
   const stopDrawing = () => {
     if (isDrawing && currentPath.length > 0) {
-      setDrawings(prev => [...prev, {
+      setDrawings((prev: any) => [...prev, {
         path: currentPath,
         color: eraserMode ? 'eraser' : penColor,
         thickness: eraserMode ? penThickness * 3 : penThickness,
@@ -1401,7 +1401,7 @@ export default function StudentDashboard() {
                 {/* Page Navigation */}
                 <div className="mt-8 flex items-center justify-between border-t pt-6" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
                   <button 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => setCurrentPage((prev: any) => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                     className={`px-6 py-3 ${currentPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-lg flex items-center space-x-2 shadow-md transition`}>
                     <ChevronLeft className="w-5 h-5" />
@@ -1416,7 +1416,7 @@ export default function StudentDashboard() {
                     </p>
                   </div>
                   <button 
-                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(quranText.ayahs.length / AYAHS_PER_PAGE), prev + 1))}
+                    onClick={() => setCurrentPage((prev: any) => Math.min(Math.ceil(quranText.ayahs.length / AYAHS_PER_PAGE), prev + 1))}
                     disabled={currentPage >= Math.ceil(quranText.ayahs.length / AYAHS_PER_PAGE)}
                     className={`px-6 py-3 ${currentPage >= Math.ceil(quranText.ayahs.length / AYAHS_PER_PAGE) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-lg flex items-center space-x-2 shadow-md transition`}>
                     <span>Next Page</span>

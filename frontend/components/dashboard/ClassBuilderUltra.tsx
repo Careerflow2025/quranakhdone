@@ -451,18 +451,18 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
         const rangeIds = students.slice(start, end + 1).map(s => s.id);
-        setSelectedStudents(prev => [...new Set([...prev, ...rangeIds])]);
+        setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
-      setSelectedStudents(prev =>
+      setSelectedStudents((prev: any) =>
         prev.includes(studentId)
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
-      setSelectedStudents(prev =>
+      setSelectedStudents((prev: any) =>
         prev.includes(studentId)
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
@@ -544,7 +544,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           students: [...selectedClass.students, ...studentsToAdd].sort((a: any, b: any) => a.name.localeCompare(b.name))
         };
 
-        setClasses(prev => prev.map(cls =>
+        setClasses((prev: any) => prev.map(cls =>
           cls.id === selectedClass.id ? updatedClass : cls
         ));
         setSelectedClass(updatedClass);
@@ -569,7 +569,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           teacher: draggedTeacher
         };
 
-        setClasses(prev => prev.map(cls =>
+        setClasses((prev: any) => prev.map(cls =>
           cls.id === selectedClass.id ? updatedClass : cls
         ));
         setSelectedClass(updatedClass);
@@ -589,7 +589,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       students: selectedClass.students.filter(s => s.id !== studentId)
     };
 
-    setClasses(prev => prev.map(cls =>
+    setClasses((prev: any) => prev.map(cls =>
       cls.id === selectedClass.id ? updatedClass : cls
     ));
     setSelectedClass(updatedClass);
@@ -605,7 +605,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       teacher: null
     };
 
-    setClasses(prev => prev.map(cls =>
+    setClasses((prev: any) => prev.map(cls =>
       cls.id === selectedClass.id ? updatedClass : cls
     ));
     setSelectedClass(updatedClass);
@@ -1028,7 +1028,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                         onClick={() => {
                           if (confirm(`Remove all ${selectedClass.students.length} students from this class?`)) {
                             const updatedClass = { ...selectedClass, students: [] };
-                            setClasses(prev => prev.map(cls =>
+                            setClasses((prev: any) => prev.map(cls =>
                               cls.id === selectedClass.id ? updatedClass : cls
                             ));
                             setSelectedClass(updatedClass);

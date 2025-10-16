@@ -202,7 +202,7 @@ export default function StudentManagementDashboard() {
       const now = new Date();
       const duration = (now.getTime() - currentPageViewStart.getTime()) / 1000; // seconds
 
-      setPageViews(prev => {
+      setPageViews((prev: any) => {
         const lastView = prev[prev.length - 1];
         if (lastView && !lastView.endTime) {
           return [...prev.slice(0, -1), {
@@ -216,7 +216,7 @@ export default function StudentManagementDashboard() {
 
       // Start new page view
       setCurrentPageViewStart(now);
-      setPageViews(prev => [...prev, {
+      setPageViews((prev: any) => [...prev, {
         page: currentMushafPage,
         surah: currentSurah,
         startTime: now
@@ -862,12 +862,12 @@ export default function StudentManagementDashboard() {
     ctx.lineTo(x, y);
     ctx.stroke();
     
-    setCurrentPath(prev => [...prev, { x, y }]);
+    setCurrentPath((prev: any) => [...prev, { x, y }]);
   };
 
   const stopDrawing = () => {
     if (isDrawing && currentPath.length > 0) {
-      setDrawings(prev => [...prev, {
+      setDrawings((prev: any) => [...prev, {
         path: currentPath,
         color: eraserMode ? 'eraser' : penColor,
         thickness: eraserMode ? penThickness * 3 : penThickness,
@@ -1643,7 +1643,7 @@ export default function StudentManagementDashboard() {
                 {/* Page Navigation */}
                 <div className="mt-8 flex items-center justify-between border-t pt-6" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
                   <button 
-                    onClick={() => setCurrentMushafPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
                     disabled={currentMushafPage === 1}
                     className={`px-6 py-3 ${currentMushafPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-lg flex items-center space-x-2 shadow-md transition`}>
                     <ChevronLeft className="w-5 h-5" />
@@ -1658,7 +1658,7 @@ export default function StudentManagementDashboard() {
                     </p>
                   </div>
                   <button 
-                    onClick={() => setCurrentMushafPage(prev => Math.min(TOTAL_MUSHAF_PAGES, prev + 1))}
+                    onClick={() => setCurrentMushafPage((prev: any) => Math.min(TOTAL_MUSHAF_PAGES, prev + 1))}
                     disabled={currentMushafPage >= TOTAL_MUSHAF_PAGES}
                     className={`px-6 py-3 ${currentMushafPage >= TOTAL_MUSHAF_PAGES ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-lg flex items-center space-x-2 shadow-md transition`}>
                     <span>Next Page</span>

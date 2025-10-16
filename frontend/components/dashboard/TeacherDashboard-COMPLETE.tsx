@@ -140,7 +140,7 @@ export default function TeacherDashboard() {
 
   // Function to mark homework as complete (turns green to gold)
   const markHomeworkComplete = (homeworkId) => {
-    setHomeworkList(prev => prev.map(hw =>
+    setHomeworkList((prev: any) => prev.map(hw =>
       hw.id === homeworkId
         ? { ...hw, status: 'completed', color: 'gold' }
         : hw
@@ -157,7 +157,7 @@ export default function TeacherDashboard() {
       progress: 0,
       createdBy: 'Current Teacher'
     };
-    setTargets(prev => [...prev, newTarget]);
+    setTargets((prev: any) => [...prev, newTarget]);
     setShowCreateTarget(false);
     setTargetForm({
       title: '',
@@ -172,7 +172,7 @@ export default function TeacherDashboard() {
 
   // Add milestone to target
   const addMilestone = () => {
-    setTargetForm(prev => ({
+    setTargetForm((prev: any) => ({
       ...prev,
       milestones: [...prev.milestones, { name: '', date: '', completed: false }]
     }));

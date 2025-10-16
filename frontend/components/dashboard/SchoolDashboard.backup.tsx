@@ -151,7 +151,7 @@ export default function SchoolDashboard() {
   ];
 
   const handleSelectUser = (userId: string) => {
-    setSelectedUsers(prev => 
+    setSelectedUsers((prev: any) => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId)
         : [...prev, userId]
@@ -169,7 +169,7 @@ export default function SchoolDashboard() {
   // Student Actions
   const handleDeleteStudents = (studentIds: string[]) => {
     if (confirm(`Are you sure you want to delete ${studentIds.length} student(s)?`)) {
-      setStudents(prev => prev.filter(s => !studentIds.includes(s.id)));
+      setStudents((prev: any) => prev.filter(s => !studentIds.includes(s.id)));
       setSelectedUsers([]);
       alert(`Successfully deleted ${studentIds.length} student(s)`);
     }
@@ -203,7 +203,7 @@ export default function SchoolDashboard() {
 
   const handleSaveStudent = () => {
     if (editingStudent) {
-      setStudents(prev => prev.map(s => 
+      setStudents((prev: any) => prev.map(s => 
         s.id === editingStudent.id ? editingStudent : s
       ));
       setEditingStudent(null);
@@ -464,7 +464,7 @@ export default function SchoolDashboard() {
         memorized: row.memorized || `${Math.floor(Math.random() * 10) + 1} Juz`
       }));
       
-      setStudents(prev => [...prev, ...formattedStudents]);
+      setStudents((prev: any) => [...prev, ...formattedStudents]);
       
       // Show success message
       alert(`Successfully uploaded ${allRowsToAdd.length} students!${duplicatesToAdd.length > 0 ? ` (Including ${duplicatesToAdd.length} updated duplicates)` : ''}`);

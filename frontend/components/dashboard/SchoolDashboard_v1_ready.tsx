@@ -214,7 +214,7 @@ export default function SchoolDashboard() {
   // Helper Functions
   const handleDeleteStudents = (studentIds: any) => {
     if (confirm(`Are you sure you want to delete ${studentIds.length} student(s)?`)) {
-      setStudents(prev => prev.filter(s => !studentIds.includes(s.id)));
+      setStudents((prev: any) => prev.filter(s => !studentIds.includes(s.id)));
       setSelectedUsers([]);
       alert(`Successfully deleted ${studentIds.length} student(s)`);
     }
@@ -336,7 +336,7 @@ export default function SchoolDashboard() {
       memorized: `${Math.floor(Math.random() * 10) + 1} Juz`
     }));
     
-    setStudents(prev => [...prev, ...formattedStudents]);
+    setStudents((prev: any) => [...prev, ...formattedStudents]);
     
     // Show success message
     alert(`Successfully uploaded ${allRowsToAdd.length} students!${duplicatesToAdd.length > 0 ? ` (Including ${duplicatesToAdd.length} updated duplicates)` : ''}`);
@@ -1035,9 +1035,9 @@ export default function SchoolDashboard() {
                                 checked={selectedUsers.includes(student.id)}
                                 onChange={() => {
                                   if (selectedUsers.includes(student.id)) {
-                                    setSelectedUsers(prev => prev.filter(id => id !== student.id));
+                                    setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
                                   } else {
-                                    setSelectedUsers(prev => [...prev, student.id]);
+                                    setSelectedUsers((prev: any) => [...prev, student.id]);
                                   }
                                 }}
                               />
@@ -1142,9 +1142,9 @@ export default function SchoolDashboard() {
                               checked={selectedUsers.includes(student.id)}
                               onChange={() => {
                                 if (selectedUsers.includes(student.id)) {
-                                  setSelectedUsers(prev => prev.filter(id => id !== student.id));
+                                  setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
                                 } else {
-                                  setSelectedUsers(prev => [...prev, student.id]);
+                                  setSelectedUsers((prev: any) => [...prev, student.id]);
                                 }
                               }}
                             />
@@ -2986,7 +2986,7 @@ export default function SchoolDashboard() {
                                   {showPassword[credential.id] ? credential.password : '••••••••'}
                                 </span>
                                 <button
-                                  onClick={() => setShowPassword(prev => ({ ...prev, [credential.id]: !prev[credential.id] }))}
+                                  onClick={() => setShowPassword((prev: any) => ({ ...prev, [credential.id]: !prev[credential.id] }))}
                                   className="p-1 text-gray-400 hover:text-gray-600"
                                   title={showPassword[credential.id] ? 'Hide password' : 'Show password'}
                                 >
@@ -3031,7 +3031,7 @@ export default function SchoolDashboard() {
                                 <button 
                                   onClick={() => {
                                     const newStatus = credential.status === 'active' ? 'inactive' : 'active';
-                                    setCredentials(prev => prev.map(c => 
+                                    setCredentials((prev: any) => prev.map(c => 
                                       c.id === credential.id ? { ...c, status: newStatus, lastModified: new Date().toISOString().split('T')[0] } : c
                                     ));
                                   }}
@@ -3047,7 +3047,7 @@ export default function SchoolDashboard() {
                                 <button 
                                   onClick={() => {
                                     if (confirm(`Are you sure you want to delete credentials for ${credential.userName}?`)) {
-                                      setCredentials(prev => prev.filter(c => c.id !== credential.id));
+                                      setCredentials((prev: any) => prev.filter(c => c.id !== credential.id));
                                     }
                                   }}
                                   className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -3700,7 +3700,7 @@ export default function SchoolDashboard() {
                   return;
                 }
                 
-                setStudents(prev => [...prev, newStudent]);
+                setStudents((prev: any) => [...prev, newStudent]);
                 alert(`Student ${newStudent.name} added successfully!`);
                 setShowAddModal(false);
                 e.target.reset();
@@ -3863,7 +3863,7 @@ export default function SchoolDashboard() {
                 }
                 
                 // Update student
-                setStudents(prev => prev.map(s => 
+                setStudents((prev: any) => prev.map(s => 
                   s.id === editingStudent.id ? editingStudent : s
                 ));
                 setEditingStudent(null);
@@ -5740,7 +5740,7 @@ export default function SchoolDashboard() {
               <form className="space-y-4" onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                setCredentials(prev => prev.map(c => 
+                setCredentials((prev: any) => prev.map(c => 
                   c.id === editingCredential.id 
                     ? { 
                         ...c, 

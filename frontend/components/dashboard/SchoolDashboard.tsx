@@ -187,7 +187,7 @@ export default function SchoolDashboard() {
   // Professional Notification Function
   const showNotification = (message, type = 'success', duration = 5000, details = null) => {
     const id = notificationIdCounter;
-    setNotificationIdCounter(prev => prev + 1);
+    setNotificationIdCounter((prev: any) => prev + 1);
 
     const notification = {
       id,
@@ -197,17 +197,17 @@ export default function SchoolDashboard() {
       timestamp: new Date(),
     };
 
-    setNotifications(prev => [...prev, notification]);
+    setNotifications((prev: any) => [...prev, notification]);
 
     // Auto-remove after duration
     setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications((prev: any) => prev.filter(n => n.id !== id));
     }, duration);
   };
 
   // Remove notification manually
   const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev: any) => prev.filter(n => n.id !== id));
   };
 
   const [newClass, setNewClass] = useState({
@@ -724,7 +724,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Update local state immediately
-      setClasses(prev => [...prev, data]);
+      setClasses((prev: any) => [...prev, data]);
       refreshData();
       setShowCreateClass(false);
       setClassSchedules([]);
@@ -794,7 +794,7 @@ export default function SchoolDashboard() {
         late: new Date(homeworkData.dueDate) < new Date()
       };
 
-      setHomeworkList(prev => [...prev, newHomework]);
+      setHomeworkList((prev: any) => [...prev, newHomework]);
       showNotification('Quran homework created successfully', 'success');
       setShowAddModal(false);
 
@@ -852,7 +852,7 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      setAssignments(prev => [...prev, data]);
+      setAssignments((prev: any) => [...prev, data]);
       showNotification('Assignment created successfully', 'success');
       setShowAddModal(false);
 
@@ -912,7 +912,7 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      setAssignments(prev => prev.filter(a => a.id !== assignmentId));
+      setAssignments((prev: any) => prev.filter(a => a.id !== assignmentId));
       showNotification('Assignment deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting assignment:', error);
@@ -925,7 +925,7 @@ export default function SchoolDashboard() {
 
     try {
       // For now, targets will be stored locally or in a different table
-      setTargets(prev => prev.filter(t => t.id !== targetId));
+      setTargets((prev: any) => prev.filter(t => t.id !== targetId));
       showNotification('Target deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting target:', error);
@@ -940,7 +940,7 @@ export default function SchoolDashboard() {
       const newProgress = prompt(`Update progress for "${target.title}" (0-100):`, target.progress);
       if (newProgress !== null) {
         const progress = Math.max(0, Math.min(100, parseInt(newProgress) || 0));
-        setTargets(prev => prev.map(t =>
+        setTargets((prev: any) => prev.map(t =>
           t.id === targetId ? { ...t, progress } : t
         ));
         showNotification('Target progress updated', 'success');
@@ -1085,7 +1085,7 @@ export default function SchoolDashboard() {
 
   // Send credential email
   const sendCredentialEmail = async (credentialId) => {
-    setSendingEmail(prev => ({ ...prev, [credentialId]: true }));
+    setSendingEmail((prev: any) => ({ ...prev, [credentialId]: true }));
 
     try {
       const credential = credentials.find(c => c.id === credentialId);
@@ -1135,7 +1135,7 @@ export default function SchoolDashboard() {
       console.error('Error sending credential email:', error);
       showNotification('Failed to send credential email', 'error');
     } finally {
-      setSendingEmail(prev => ({ ...prev, [credentialId]: false }));
+      setSendingEmail((prev: any) => ({ ...prev, [credentialId]: false }));
     }
   };
 
@@ -1378,7 +1378,7 @@ export default function SchoolDashboard() {
       });
 
       // Update local state
-      setMessages(prev => prev.map(msg =>
+      setMessages((prev: any) => prev.map(msg =>
         msg.id === messageId ? { ...msg, unread: false } : msg
       ));
     } catch (error) {
@@ -1519,7 +1519,7 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      setClasses(prev => prev.filter(c => c.id !== classId));
+      setClasses((prev: any) => prev.filter(c => c.id !== classId));
       refreshData();
 
       showNotification(
@@ -1685,7 +1685,7 @@ export default function SchoolDashboard() {
       const student = students[i];
 
       // Update progress
-      setBulkProgress(prev => ({
+      setBulkProgress((prev: any) => ({
         ...prev,
         processed: i + 1,
         current: `Processing ${student.name} (${i + 1}/${students.length})...`
@@ -1700,7 +1700,7 @@ export default function SchoolDashboard() {
           password: result.tempPassword
         });
 
-        setBulkProgress(prev => ({
+        setBulkProgress((prev: any) => ({
           ...prev,
           success: successCount,
           credentials: [...prev.credentials, {
@@ -1717,7 +1717,7 @@ export default function SchoolDashboard() {
               email: student.email,
               reason: 'Duplicate email'
             });
-            setBulkProgress(prev => ({ ...prev, skipped: prev.skipped + 1 }));
+            setBulkProgress((prev: any) => ({ ...prev, skipped: prev.skipped + 1 }));
           } else if (duplicateAction === 'update') {
             // Update existing student data
             try {
@@ -1741,7 +1741,7 @@ export default function SchoolDashboard() {
                   .eq('user_id', existingProfile.user_id);
 
                 successCount++;
-                setBulkProgress(prev => ({ ...prev, success: successCount }));
+                setBulkProgress((prev: any) => ({ ...prev, success: successCount }));
               }
             } catch (updateError) {
               failedStudents.push({
@@ -1749,7 +1749,7 @@ export default function SchoolDashboard() {
                 email: student.email,
                 error: 'Failed to update existing student'
               });
-              setBulkProgress(prev => ({ ...prev, failed: prev.failed + 1 }));
+              setBulkProgress((prev: any) => ({ ...prev, failed: prev.failed + 1 }));
             }
           }
         } else {
@@ -1758,7 +1758,7 @@ export default function SchoolDashboard() {
             email: student.email,
             error: error.message
           });
-          setBulkProgress(prev => ({ ...prev, failed: prev.failed + 1 }));
+          setBulkProgress((prev: any) => ({ ...prev, failed: prev.failed + 1 }));
         }
       }
 
@@ -1769,7 +1769,7 @@ export default function SchoolDashboard() {
     }
 
     // Final update
-    setBulkProgress(prev => ({
+    setBulkProgress((prev: any) => ({
       ...prev,
       current: 'Upload complete!',
       isComplete: true
@@ -2705,9 +2705,9 @@ export default function SchoolDashboard() {
                                   checked={selectedUsers.includes(student.id)}
                                   onChange={() => {
                                     if (selectedUsers.includes(student.id)) {
-                                      setSelectedUsers(prev => prev.filter(id => id !== student.id));
+                                      setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
                                     } else {
-                                      setSelectedUsers(prev => [...prev, student.id]);
+                                      setSelectedUsers((prev: any) => [...prev, student.id]);
                                     }
                                   }}
                                 />
@@ -2808,9 +2808,9 @@ export default function SchoolDashboard() {
                                 checked={selectedUsers.includes(student.id)}
                                 onChange={() => {
                                   if (selectedUsers.includes(student.id)) {
-                                    setSelectedUsers(prev => prev.filter(id => id !== student.id));
+                                    setSelectedUsers((prev: any) => prev.filter(id => id !== student.id));
                                   } else {
-                                    setSelectedUsers(prev => [...prev, student.id]);
+                                    setSelectedUsers((prev: any) => [...prev, student.id]);
                                   }
                                 }}
                               />
@@ -5315,7 +5315,7 @@ export default function SchoolDashboard() {
                               {student.name}
                               <button
                                 type="button"
-                                onClick={() => setSelectedStudentsForParent(prev =>
+                                onClick={() => setSelectedStudentsForParent((prev: any) =>
                                   prev.filter(s => s.id !== student.id)
                                 )}
                                 className="hover:text-blue-900"
@@ -5350,9 +5350,9 @@ export default function SchoolDashboard() {
                                 checked={isSelected}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedStudentsForParent(prev => [...prev, student]);
+                                    setSelectedStudentsForParent((prev: any) => [...prev, student]);
                                   } else {
-                                    setSelectedStudentsForParent(prev =>
+                                    setSelectedStudentsForParent((prev: any) =>
                                       prev.filter(s => s.id !== student.id)
                                     );
                                   }
@@ -5794,7 +5794,7 @@ export default function SchoolDashboard() {
                 progress: 0
               };
 
-              setTargets(prev => [...prev, targetData]);
+              setTargets((prev: any) => [...prev, targetData]);
               showNotification('Learning target created successfully', 'success');
               setShowAddModal(false);
             }}>
@@ -6116,7 +6116,7 @@ export default function SchoolDashboard() {
                               {student.name}
                               <button
                                 type="button"
-                                onClick={() => setSelectedStudentsForParent(prev =>
+                                onClick={() => setSelectedStudentsForParent((prev: any) =>
                                   prev.filter(s => s.id !== student.id)
                                 )}
                                 className="hover:text-blue-900"
@@ -6151,9 +6151,9 @@ export default function SchoolDashboard() {
                                 checked={isSelected}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedStudentsForParent(prev => [...prev, student]);
+                                    setSelectedStudentsForParent((prev: any) => [...prev, student]);
                                   } else {
-                                    setSelectedStudentsForParent(prev =>
+                                    setSelectedStudentsForParent((prev: any) =>
                                       prev.filter(s => s.id !== student.id)
                                     );
                                   }
@@ -7580,7 +7580,7 @@ export default function SchoolDashboard() {
                             <div
                               key={person.id}
                               onClick={() => {
-                                setSelectedRecipients(prev => {
+                                setSelectedRecipients((prev: any) => {
                                   const exists = prev.find(r => r.id === person.id);
                                   if (exists) return prev.filter(r => r.id !== person.id);
                                   return [...prev, person];
@@ -7604,7 +7604,7 @@ export default function SchoolDashboard() {
                             <span key={person.id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                               {person.name}
                               <button
-                                onClick={() => setSelectedRecipients(prev => prev.filter(r => r.id !== person.id))}
+                                onClick={() => setSelectedRecipients((prev: any) => prev.filter(r => r.id !== person.id))}
                                 className="ml-1 text-blue-500 hover:text-blue-700"
                               >
                                 ×

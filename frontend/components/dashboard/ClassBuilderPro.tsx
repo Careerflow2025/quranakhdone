@@ -227,18 +227,18 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
         const rangeIds = students.slice(start, end + 1).map(s => s.id);
-        setSelectedStudents(prev => [...new Set([...prev, ...rangeIds])]);
+        setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
-      setSelectedStudents(prev =>
+      setSelectedStudents((prev: any) =>
         prev.includes(studentId)
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
-      setSelectedStudents(prev =>
+      setSelectedStudents((prev: any) =>
         prev.includes(studentId)
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
@@ -282,7 +282,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
     // Handle student drop
     if (draggedItems && draggedItems.length > 0) {
-      setClasses(prev => prev.map(cls => {
+      setClasses((prev: any) => prev.map(cls => {
         if (cls.id === classId) {
           const availableSpace = cls.capacity - cls.students.length;
           const studentsToAdd = draggedItems.slice(0, availableSpace);
@@ -302,7 +302,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
     // Handle teacher drop
     if (draggedTeacher) {
-      setClasses(prev => prev.map(cls => {
+      setClasses((prev: any) => prev.map(cls => {
         if (cls.id === classId) {
           return {
             ...cls,
@@ -317,7 +317,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
   // Remove student from class
   const removeStudentFromClass = (classId: string, studentId: string) => {
-    setClasses(prev => prev.map(cls => {
+    setClasses((prev: any) => prev.map(cls => {
       if (cls.id === classId) {
         return {
           ...cls,
@@ -330,7 +330,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
   // Remove teacher from class
   const removeTeacherFromClass = (classId: string) => {
-    setClasses(prev => prev.map(cls => {
+    setClasses((prev: any) => prev.map(cls => {
       if (cls.id === classId) {
         return {
           ...cls,

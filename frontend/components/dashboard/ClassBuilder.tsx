@@ -133,18 +133,18 @@ export default function ClassBuilder() {
         const start = Math.min(clickedIndex, lastSelectedIndex);
         const end = Math.max(clickedIndex, lastSelectedIndex);
         const rangeIds = students.slice(start, end + 1).map(s => s.id);
-        setSelectedStudents(prev => [...new Set([...prev, ...rangeIds])]);
+        setSelectedStudents((prev: any) => [...new Set([...prev, ...rangeIds])]);
       }
     } else if (event?.ctrlKey || event?.metaKey) {
       // Ctrl/Cmd-click for toggle selection
-      setSelectedStudents(prev => 
+      setSelectedStudents((prev: any) => 
         prev.includes(studentId) 
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
       );
     } else {
       // Regular click
-      setSelectedStudents(prev => 
+      setSelectedStudents((prev: any) => 
         prev.includes(studentId) 
           ? prev.filter(id => id !== studentId)
           : [...prev, studentId]
@@ -207,14 +207,14 @@ export default function ClassBuilder() {
     setDragOverClass(null);
 
     if (draggedItems && draggedItems.length > 0) {
-      setClasses(prev => prev.map(cls => {
+      setClasses((prev: any) => prev.map(cls => {
         if (cls.id === classId) {
           const availableSpace = cls.capacity - cls.students.length;
           const studentsToAdd = draggedItems.slice(0, availableSpace);
           
           if (studentsToAdd.length > 0) {
             // Remove added students from selection
-            setSelectedStudents(prev => 
+            setSelectedStudents((prev: any) => 
               prev.filter(id => !studentsToAdd.map(s => s.id).includes(id))
             );
             
@@ -224,7 +224,7 @@ export default function ClassBuilder() {
         return cls;
       }));
     } else if (draggedTeacher) {
-      setClasses(prev => prev.map(cls => {
+      setClasses((prev: any) => prev.map(cls => {
         if (cls.id === classId) {
           return { ...cls, teacher: draggedTeacher };
         }
@@ -237,7 +237,7 @@ export default function ClassBuilder() {
   };
 
   const removeStudentsFromClass = (classId: string, studentIds: string[]) => {
-    setClasses(prev => prev.map(cls => {
+    setClasses((prev: any) => prev.map(cls => {
       if (cls.id === classId) {
         return { ...cls, students: cls.students.filter(s => !studentIds.includes(s.id)) };
       }
@@ -246,7 +246,7 @@ export default function ClassBuilder() {
   };
 
   const removeTeacherFromClass = (classId: string) => {
-    setClasses(prev => prev.map(cls => {
+    setClasses((prev: any) => prev.map(cls => {
       if (cls.id === classId) {
         return { ...cls, teacher: null };
       }
@@ -258,7 +258,7 @@ export default function ClassBuilder() {
     const unassigned = getUnassignedStudents();
     const sorted = [...unassigned].sort((a, b) => b.progress - a.progress);
     
-    setClasses(prev => {
+    setClasses((prev: any) => {
       const updated = [...prev];
       
       sorted.forEach(student => {
@@ -288,7 +288,7 @@ export default function ClassBuilder() {
     });
     
     // Redistribute evenly
-    setClasses(prev => {
+    setClasses((prev: any) => {
       const updated = [...prev];
       
       // Clear all students
@@ -434,7 +434,7 @@ export default function ClassBuilder() {
                   const firstClass = classes.find(cls => cls.students.length < cls.capacity);
                   if (firstClass) {
                     const students = allStudents.filter(s => selectedStudents.includes(s.id));
-                    setClasses(prev => prev.map(cls => {
+                    setClasses((prev: any) => prev.map(cls => {
                       if (cls.id === firstClass.id) {
                         const availableSpace = cls.capacity - cls.students.length;
                         const studentsToAdd = students.slice(0, availableSpace);

@@ -354,7 +354,7 @@ export default function ParentDashboard() {
         time: 'Just now'
       };
 
-      setMessages(prev => ({
+      setMessages((prev: any) => ({
         ...prev,
         sent: [newMessage, ...prev.sent]
       }));

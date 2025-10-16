@@ -238,7 +238,7 @@ export default function ParentDashboard() {
       };
       
       // Update the highlights with the new reply
-      setHighlights(prevHighlights => 
+      setHighlights((prevHighlights: any) => 
         prevHighlights.map(h => 
           h.id === showNoteReply.id 
             ? { ...h, replies: [...h.replies, newReply] }
@@ -247,7 +247,7 @@ export default function ParentDashboard() {
       );
       
       // Update the current modal state
-      setShowNoteReply(prev => ({
+      setShowNoteReply((prev: any) => ({
         ...prev,
         replies: [...prev.replies, newReply]
       }));
@@ -279,7 +279,7 @@ export default function ParentDashboard() {
       };
       
       // Add to sent messages
-      setMessages(prev => ({
+      setMessages((prev: any) => ({
         ...prev,
         sent: [newMessage, ...prev.sent]
       }));
@@ -297,7 +297,7 @@ export default function ParentDashboard() {
     if (playingAudioId === replyId) {
       // Stop playing
       setPlayingAudioId(null);
-      setAudioProgress(prev => ({ ...prev, [replyId]: 0 }));
+      setAudioProgress((prev: any) => ({ ...prev, [replyId]: 0 }));
     } else {
       // Start playing
       setPlayingAudioId(replyId);
@@ -309,9 +309,9 @@ export default function ParentDashboard() {
         if (progress >= 100) {
           clearInterval(interval);
           setPlayingAudioId(null);
-          setAudioProgress(prev => ({ ...prev, [replyId]: 0 }));
+          setAudioProgress((prev: any) => ({ ...prev, [replyId]: 0 }));
         } else {
-          setAudioProgress(prev => ({ ...prev, [replyId]: progress }));
+          setAudioProgress((prev: any) => ({ ...prev, [replyId]: progress }));
         }
       }, 150); // 15 seconds total (150ms * 100 = 15s)
     }
@@ -422,7 +422,7 @@ export default function ParentDashboard() {
                       <h3 className="font-semibold text-sm">Notifications</h3>
                       <button 
                         onClick={() => {
-                          setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+                          setNotifications((prev: any) => prev.map(n => ({ ...n, unread: false })));
                         }}
                         className="text-xs text-blue-600 hover:text-blue-700"
                       >
@@ -436,7 +436,7 @@ export default function ParentDashboard() {
                           <div 
                             key={notif.id}
                             onClick={() => {
-                              setNotifications(prev => 
+                              setNotifications((prev: any) => 
                                 prev.map(n => n.id === notif.id ? { ...n, unread: false } : n)
                               );
                             }}
@@ -712,7 +712,7 @@ export default function ParentDashboard() {
                 {/* Pagination */}
                 <div className="mt-8 flex items-center justify-between border-t pt-6">
                   <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={() => setCurrentPage((p: any) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                     className={`px-6 py-3 ${
                       currentPage === 1 
@@ -731,7 +731,7 @@ export default function ParentDashboard() {
                   </div>
 
                   <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    onClick={() => setCurrentPage((p: any) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
                     className={`px-6 py-3 ${
                       currentPage === totalPages 
