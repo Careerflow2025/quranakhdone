@@ -1787,8 +1787,8 @@ export default function StudentDashboard() {
           {/* Messages List */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-200">
-              {messages[messageTab].length > 0 ? (
-                messages[messageTab].map((message) => (
+              {messages[messageTab as keyof typeof messages].length > 0 ? (
+                messages[messageTab as keyof typeof messages].map((message) => (
                   <div
                     key={message.id}
                     className={`p-6 hover:bg-gray-50 transition cursor-pointer ${

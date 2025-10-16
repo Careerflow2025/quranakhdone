@@ -1939,8 +1939,8 @@ export default function ParentDashboard() {
             {/* Messages List */}
             <div className="bg-white rounded-xl shadow-sm">
               <div className="divide-y divide-gray-200">
-                {messages[messageTab].length > 0 ? (
-                  messages[messageTab].map((message) => (
+                {messages[messageTab as keyof typeof messages].length > 0 ? (
+                  messages[messageTab as keyof typeof messages].map((message) => (
                     <div key={message.id} className={`p-6 hover:bg-gray-50 ${
                       message.unread ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                     }`}>

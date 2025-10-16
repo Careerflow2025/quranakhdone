@@ -595,7 +595,7 @@ export default function ParentDashboard() {
 
               {/* Messages List */}
               <div className="space-y-1 max-h-96 overflow-y-auto">
-                {messages[messageTab].map((msg) => (
+                {messages[messageTab as keyof typeof messages].map((msg) => (
                   <div 
                     key={msg.id} 
                     className={`p-2 rounded cursor-pointer hover:bg-gray-50 ${
