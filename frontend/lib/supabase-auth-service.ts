@@ -51,7 +51,7 @@ export async function createSchoolWithAdmin(data: {
     const adminLastName = nameParts.slice(1).join(' ');
 
     // 1. Create the school record with all fields
-    const { data: school, error: schoolError } = await supabase
+    const { data: school, error: schoolError } = (await supabase
       .from('schools')
       .insert({
         name: data.schoolName,
@@ -75,9 +75,9 @@ export async function createSchoolWithAdmin(data: {
         admin_last_name: adminLastName,
         admin_phone: data.schoolPhone,
         admin_role: 'principal'
-      })
+      } as any)
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (schoolError) throw schoolError;
 
@@ -112,7 +112,7 @@ export async function createSchoolWithAdmin(data: {
         display_name: data.adminName,
         role: 'school_admin',
         school_id: school.id
-      });
+      } as any);
 
     // If profile creation fails, don't throw - the trigger might have created it
     if (profileError) {
@@ -167,12 +167,12 @@ export async function createTeacherAccount(data: {
         display_name: data.name,
         role: 'teacher',
         school_id: data.schoolId
-      });
+      } as any);
 
     if (profileError) throw profileError;
 
     // 3. Create teacher record
-    const { data: teacher, error: teacherError } = await supabase
+    const { data: teacher, error: teacherError} = (await supabase
       .from('teachers')
       .insert({
         user_id: authUser.user.id,
@@ -183,9 +183,9 @@ export async function createTeacherAccount(data: {
         qualifications: data.qualifications,
         experience: data.experience,
         status: 'active'
-      })
+      } as any)
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (teacherError) throw teacherError;
 
@@ -198,7 +198,7 @@ export async function createTeacherAccount(data: {
 
       const { error: assignError } = await supabase
         .from('teacher_classes')
-        .insert(classAssignments);
+        .insert(classAssignments as any);
 
       if (assignError) throw assignError;
 
@@ -267,12 +267,12 @@ export async function createStudentWithParent(data: {
         display_name: data.parentName,
         role: 'parent',
         school_id: null // Parents don't belong to a specific school
-      });
+      } as any);
 
     if (profileError) throw profileError;
 
     // 3. Create parent record
-    const { data: parent, error: parentError } = await supabase
+    const { data: parent, error: parentError } = (await supabase
       .from('parents')
       .insert({
         user_id: authUser.user.id,
@@ -280,14 +280,14 @@ export async function createStudentWithParent(data: {
         email: data.parentEmail,
         phone: data.parentPhone,
         relationship: data.relationship
-      })
+      } as any)
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (parentError) throw parentError;
 
     // 4. Create student record
-    const { data: student, error: studentError } = await supabase
+    const { data: student, error: studentError } = (await supabase
       .from('students')
       .insert({
         school_id: data.schoolId,
@@ -298,9 +298,9 @@ export async function createStudentWithParent(data: {
         parent_name: data.parentName,
         parent_email: data.parentEmail,
         parent_phone: data.parentPhone
-      })
+      } as any)
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (studentError) throw studentError;
 
@@ -310,7 +310,7 @@ export async function createStudentWithParent(data: {
       .insert({
         parent_id: parent.id,
         student_id: student.id
-      });
+      } as any);
 
     if (linkError) throw linkError;
 
@@ -323,7 +323,7 @@ export async function createStudentWithParent(data: {
         current_surah: 'Al-Fatiha',
         current_page: 1,
         pages_memorized: 0
-      });
+      } as any);
 
     if (progressError) throw progressError;
 
