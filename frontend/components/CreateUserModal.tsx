@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
 import { X, User, Mail, Phone, Users, GraduationCap, UserPlus } from 'lucide-react';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -50,7 +53,7 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
         .from('profiles')
         .select('school_id')
         .eq('id', currentUser.user.id)
-        .single();
+        .single<Pick<Profile, 'school_id'>>();
 
       if (!adminProfile?.school_id) {
         throw new Error('School ID not found');
