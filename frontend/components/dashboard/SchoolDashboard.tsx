@@ -963,7 +963,7 @@ export default function SchoolDashboard() {
         `)
         .eq('school_id', user?.schoolId)
         .eq('mistake_type', 'recap') // Green highlights for memorization
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -1002,7 +1002,7 @@ export default function SchoolDashboard() {
           assignment_submissions(count)
         `)
         .eq('school_id', user?.schoolId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -1030,7 +1030,7 @@ export default function SchoolDashboard() {
           students(name, email),
           quran_ayahs(surah, ayah)
         `)
-        .order('last_updated', { ascending: false });
+        .order('last_updated', { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -1070,7 +1070,7 @@ export default function SchoolDashboard() {
           )
         `)
         .eq('school_id', user.schoolId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
 
@@ -1442,12 +1442,12 @@ export default function SchoolDashboard() {
       const { data: teachers } = await supabase
         .from('class_teachers')
         .select('teacher_id, teachers(name, subject)')
-        .eq('class_id', classId);
+        .eq('class_id', classId) as any;
 
       const { data: students } = await supabase
         .from('class_enrollments')
         .select('student_id, students(name, email, grade)')
-        .eq('class_id', classId);
+        .eq('class_id', classId) as any;
 
       setViewingClass({
         ...cls,
@@ -3059,7 +3059,7 @@ export default function SchoolDashboard() {
                                       )
                                     )
                                   `)
-                                  .eq('parent_id', parent.id);
+                                  .eq('parent_id', parent.id) as any;
 
                                 const formattedStudents = linkedStudents?.map(link => ({
                                   id: link.students.id,
@@ -3079,7 +3079,7 @@ export default function SchoolDashboard() {
                               onClick={() => {
                                 setShowEditParent(parent);
                                 // Pre-populate selected students for edit
-                                supabase
+                                (supabase
                                   .from('parent_students')
                                   .select(`
                                     students!inner (
@@ -3090,7 +3090,7 @@ export default function SchoolDashboard() {
                                       )
                                     )
                                   `)
-                                  .eq('parent_id', parent.id)
+                                  .eq('parent_id', parent.id) as any)
                                   .then(({ data }) => {
                                     const linkedStudents = data?.map(link => ({
                                       id: link.students.id,
