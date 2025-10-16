@@ -51,6 +51,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verify admin was created
+    if (!result.admin) {
+      return NextResponse.json(
+        { error: 'Admin account creation failed' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       school: result.school,
