@@ -116,8 +116,8 @@ export const notificationApi = {
   },
 
   // Subscribe to notifications
-  subscribeToNotifications(callback: (payload: any) => void) {
-    const { data: user } = supabase.auth.getUser()
+  async subscribeToNotifications(callback: (payload: any) => void) {
+    const { data: user } = await supabase.auth.getUser()
     if (!user.user) return null
 
     return supabase

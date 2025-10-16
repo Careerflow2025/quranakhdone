@@ -25,7 +25,7 @@ export default function StudentQuranPage() {
   };
 
   // In a real app, you'd get the student ID from the user profile
-  const studentId = user?.user.id;
+  const studentId = user?.id;
 
   return (
     <div className="space-y-6">
