@@ -660,7 +660,7 @@ export default function SchoolDashboard() {
       const file = e.target.files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (event: ProgressEvent<FileReader>) => {
           const text = event.target?.result as string;
           processCsvData(text);
         };
@@ -2833,7 +2833,7 @@ TOP PERFORMERS
                           : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                         
                         // Color schemes based on performance level
-                        const getBarColor = (value, index) => {
+                        const getBarColor = (value: any, index: any) => {
                           if (performanceFilter === 'top10') {
                             return 'from-emerald-500 via-green-500 to-teal-500';
                           } else if (performanceFilter === 'bottom10') {

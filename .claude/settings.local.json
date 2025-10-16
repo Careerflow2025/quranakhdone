@@ -12,7 +12,8 @@
       "Bash(C:/quranakhfinalproduction/fix_untyped_usestate.sh)",
       "Bash(find:*)",
       "Bash(npm run build:*)",
-      "Bash(./fix_build29_arrays.sh)"
+      "Bash(./fix_build29_arrays.sh)",
+      "Bash(./fix_build30_params.sh:*)"
     ],
     "deny": [],
     "ask": []
