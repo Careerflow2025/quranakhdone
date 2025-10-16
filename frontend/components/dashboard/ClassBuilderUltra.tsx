@@ -249,7 +249,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
       // Transform classes data
       if (classesData) {
-        const transformedClasses = await Promise.all(classesData.map(async (cls) => {
+        const transformedClasses = await Promise.all(classesData.map(async (cls: any) => {
           // Get teacher details
           let teacher = null;
           if (cls.class_teachers?.length > 0) {
@@ -262,8 +262,8 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           }
 
           // Get student details
-          const studentIds = cls.class_enrollments?.map(e => e.student_id) || [];
-          const students = studentsData?.filter(s => studentIds.includes(s.id)) || [];
+          const studentIds = cls.class_enrollments?.map((e: any) => e.student_id) || [];
+          const students = studentsData?.filter((s: any) => studentIds.includes(s.id)) || [];
 
           return {
             id: cls.id,
@@ -286,7 +286,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       }
 
       // Transform students data to include profile info
-      const transformedStudents = (studentsData || []).map(student => {
+      const transformedStudents = (studentsData || []).map((student: any) => {
         // Get name from student table, profile display_name, or profile email
         let studentName = student.name ||
                          student.profiles?.display_name ||
@@ -308,7 +308,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       });
 
       // Transform teachers data to include profile info
-      const transformedTeachers = (teachersData || []).map(teacher => {
+      const transformedTeachers = (teachersData || []).map((teacher: any) => {
         // Get name from teacher table, profile display_name, or profile email
         let teacherName = teacher.name ||
                          teacher.profiles?.display_name ||
