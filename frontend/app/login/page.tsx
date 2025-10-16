@@ -81,7 +81,7 @@ export default function LoginPage() {
         }
       }
 
-      if (userInfo && userInfo.length > 0) {
+      if (userInfo && Array.isArray(userInfo) && userInfo.length > 0) {
         const user = userInfo[0];
         console.log('✅ User info retrieved:', user);
 
