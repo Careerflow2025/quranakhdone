@@ -2939,7 +2939,7 @@ TOP PERFORMERS
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 bg-gradient-to-t from-red-500 to-pink-500 rounded"></div>
-                          <span className="text-sm font-medium text-gray-700">Needs Help (<60%)</span>
+                          <span className="text-sm font-medium text-gray-700">Needs Help (&lt;60%)</span>
                         </div>
                       </div>
                     </div>
