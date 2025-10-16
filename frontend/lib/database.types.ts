@@ -388,6 +388,96 @@ export type Database = {
           expires_at?: string
         }
       }
+      assignments: {
+        Row: {
+          id: string
+          school_id: string
+          created_by_teacher_id: string
+          student_id: string
+          title: string
+          description: string | null
+          status: 'assigned' | 'viewed' | 'submitted' | 'reviewed' | 'completed' | 'reopened'
+          due_at: string
+          late: boolean
+          reopen_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          school_id: string
+          created_by_teacher_id: string
+          student_id: string
+          title: string
+          description?: string | null
+          status?: 'assigned' | 'viewed' | 'submitted' | 'reviewed' | 'completed' | 'reopened'
+          due_at: string
+          late?: boolean
+          reopen_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          school_id?: string
+          created_by_teacher_id?: string
+          student_id?: string
+          title?: string
+          description?: string | null
+          status?: 'assigned' | 'viewed' | 'submitted' | 'reviewed' | 'completed' | 'reopened'
+          due_at?: string
+          late?: boolean
+          reopen_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_credentials: {
+        Row: {
+          id: string
+          user_id: string
+          school_id: string
+          email: string
+          password: string
+          role: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          school_id: string
+          email: string
+          password: string
+          role: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          school_id?: string
+          email?: string
+          password?: string
+          role?: string
+          created_at?: string
+        }
+      }
+      parent_students: {
+        Row: {
+          parent_id: string
+          student_id: string
+          created_at: string
+        }
+        Insert: {
+          parent_id: string
+          student_id: string
+          created_at?: string
+        }
+        Update: {
+          parent_id?: string
+          student_id?: string
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

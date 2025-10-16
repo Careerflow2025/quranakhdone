@@ -14,7 +14,9 @@
       "Bash(npm run build:*)",
       "Bash(./fix_build29_arrays.sh)",
       "Bash(./fix_build30_params.sh:*)",
-      "Bash(./fix_school_dashboard_types.sh)"
+      "Bash(./fix_school_dashboard_types.sh)",
+      "Bash(npm install)",
+      "Bash(timeout 60 npm run build:*)"
     ],
     "deny": [],
     "ask": []

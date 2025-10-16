@@ -86,8 +86,8 @@ export default function SchoolDashboard() {
   const { user, logout } = useAuthStore();
 
   // Refs for dropdown click-outside detection
-  const notificationRef = useRef(null);
-  const settingsRef = useRef(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   // State Management (keeping ALL the beautiful UI states)
   const [activeTab, setActiveTab] = useState('overview');
@@ -284,11 +284,11 @@ export default function SchoolDashboard() {
 
   // Click outside handler
   useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
       }
-      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setShowSettings(false);
       }
     };
@@ -339,7 +339,7 @@ export default function SchoolDashboard() {
   }, [user?.schoolId, refreshData]);
 
   // PRODUCTION: Add Student Function (with skipAlert flag for bulk operations)
-  const handleAddStudent = async (studentData, skipAlert = false) => {
+  const handleAddStudent = async (studentData: any, skipAlert: boolean = false) => {
     try {
       const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
 
@@ -398,7 +398,7 @@ export default function SchoolDashboard() {
         role: 'student',
         display_name: studentData.name,
         email: studentData.email
-      });
+      } as any);
 
       if (profileError) {
         console.error('Profile error:', profileError);
@@ -416,7 +416,7 @@ export default function SchoolDashboard() {
           gender: studentData.gender || null,
           address: studentData.address || null,
           active: true
-        })
+        } as any)
         .select()
         .single();
 
@@ -429,7 +429,7 @@ export default function SchoolDashboard() {
         email: studentData.email,
         password: tempPassword,
         role: 'student'
-      });
+      } as any);
 
       if (credError) {
         console.error('Credentials error:', credError);
@@ -450,14 +450,14 @@ export default function SchoolDashboard() {
 
       // Return success data for bulk operations
       return { success: true, tempPassword, email: cleanEmail };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding student:', error);
       if (!skipAlert) {
         showNotification(
           'Failed to add student',
           'error',
           5000,
-          error.message
+          error?.message || 'An error occurred'
         );
       }
       throw error;
@@ -465,7 +465,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Add Teacher Function
-  const handleAddTeacher = async (teacherData) => {
+  const handleAddTeacher = async (teacherData: any) => {
     try {
       const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
 
@@ -507,7 +507,7 @@ export default function SchoolDashboard() {
         role: 'teacher',
         display_name: teacherData.name,
         email: teacherData.email
-      });
+      } as any);
 
       if (profileError) {
         console.error('Profile error:', profileError);
@@ -533,7 +533,7 @@ export default function SchoolDashboard() {
           address: teacherData.address || null,
           phone: teacherData.phone || null,
           active: true
-        })
+        } as any)
         .select()
         .single();
 
@@ -548,7 +548,7 @@ export default function SchoolDashboard() {
         email: teacherData.email,
         password: tempPassword,
         role: 'teacher'
-      });
+      } as any);
 
       if (credError) {
         console.error('Credentials error:', credError);
@@ -563,7 +563,7 @@ export default function SchoolDashboard() {
         8000,
         `Login: ${teacherData.email} | Password: ${tempPassword}`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding teacher:', error);
       showNotification(
         'Failed to add teacher',
@@ -575,7 +575,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Add Parent Function
-  const handleAddParent = async (parentData) => {
+  const handleAddParent = async (parentData: any) => {
     try {
       const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
 
@@ -617,7 +617,7 @@ export default function SchoolDashboard() {
         role: 'parent',
         display_name: parentData.name,
         email: parentData.email
-      });
+      } as any);
 
       if (profileError) {
         console.error('Profile error:', profileError);
@@ -634,7 +634,7 @@ export default function SchoolDashboard() {
           school_id: user?.schoolId,
           phone: parentData.phone || null,
           address: parentData.address || null
-        }, {
+        } as any, {
           onConflict: 'user_id'
         })
         .select()
@@ -645,7 +645,7 @@ export default function SchoolDashboard() {
       // Link parent to students if provided
       if (parentData.studentIds && parentData.studentIds.length > 0) {
         const parentStudentLinks = parentData.studentIds.map((studentId: any) => ({
-          parent_id: data.id,
+          parent_id: (data as any).id,
           student_id: studentId
         }));
 
@@ -665,7 +665,7 @@ export default function SchoolDashboard() {
         email: parentData.email,
         password: tempPassword,
         role: 'parent'
-      });
+      } as any);
 
       if (credError) {
         console.error('Credentials error:', credError);
@@ -680,7 +680,7 @@ export default function SchoolDashboard() {
         8000,
         `Login: ${parentData.email} | Password: ${tempPassword}`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding parent:', error);
       showNotification(
         'Failed to add parent',
@@ -692,7 +692,7 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Create Class Function - Basic info only (teachers/students assigned in Class Builder)
-  const handleCreateClass = async (classData) => {
+  const handleCreateClass = async (classData: any) => {
     try {
       // Format schedules for storage
       const formattedSchedules = classData.schedules.map((schedule: any) => ({
@@ -717,7 +717,7 @@ export default function SchoolDashboard() {
           },
           created_by: null, // Will be set when teacher is assigned in Class Builder
           created_at: new Date().toISOString()
-        })
+        } as any)
         .select()
         .single();
 
@@ -740,7 +740,7 @@ export default function SchoolDashboard() {
       setTimeout(() => {
         setShowClassBuilder(true);
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating class:', error);
       showNotification(
         'Failed to create class',
@@ -755,13 +755,13 @@ export default function SchoolDashboard() {
   const calculateDuration = (startTime: any, endTime: any) => {
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
-    const diffMs = end - start;
+    const diffMs = end.getTime() - start.getTime();
     return Math.round(diffMs / (1000 * 60)); // Convert to minutes
   };
 
   // PRODUCTION: View Class Function
   // Homework Handlers (Quran Memorization)
-  const handleCreateHomework = async (homeworkData) => {
+  const handleCreateHomework = async (homeworkData: any) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData?.user) return;
@@ -781,7 +781,7 @@ export default function SchoolDashboard() {
       // Create homework with Quran-specific data
       const newHomework = {
         id: Date.now().toString(),
-        teacherId: teacherData.id,
+        teacherId: (teacherData as any).id,
         studentId: homeworkData.student_id,
         studentName: students.find((s: any) => s.id === homeworkData.student_id)?.name || 'Unknown',
         surah: homeworkData.surah,
@@ -800,7 +800,7 @@ export default function SchoolDashboard() {
 
       // Save to database (you can create a separate table for Quran homework)
       // const { data, error } = await supabase.from('quran_homework').insert(...)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating homework:', error);
       showNotification('Failed to create homework', 'error');
     }
@@ -819,7 +819,7 @@ export default function SchoolDashboard() {
   };
 
   // Assignment Handlers (General Tasks)
-  const handleCreateAssignment = async (assignmentData) => {
+  const handleCreateAssignment = async (assignmentData: any) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData?.user) return;
@@ -839,14 +839,14 @@ export default function SchoolDashboard() {
       const { data, error } = await supabase
         .from('assignments')
         .insert({
-          school_id: user.schoolId,
-          created_by_teacher_id: teacherData.id,
+          school_id: user?.schoolId,
+          created_by_teacher_id: (teacherData as any).id,
           student_id: assignmentData.student_id,
           title: assignmentData.title,
           description: assignmentData.description,
           due_at: assignmentData.due_at,
           status: 'assigned'
-        })
+        } as any)
         .select()
         .single();
 
@@ -858,13 +858,13 @@ export default function SchoolDashboard() {
 
       // Refresh data
       loadAssignments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating assignment:', error);
       showNotification('Failed to create assignment', 'error');
     }
   };
 
-  const handleViewAssignment = async (assignmentId) => {
+  const handleViewAssignment = async (assignmentId: any) => {
     const assignment = assignments.find((a: any) => a.id === assignmentId);
     setViewingAssignment(assignment);
   };
@@ -875,7 +875,7 @@ export default function SchoolDashboard() {
     setShowAddModal(true);
   };
 
-  const handleUpdateAssignment = async (assignmentId, assignmentData) => {
+  const handleUpdateAssignment = async (assignmentId: any, assignmentData: any) => {
     try {
       const { error } = await supabase
         .from('assignments')
@@ -884,7 +884,7 @@ export default function SchoolDashboard() {
           description: assignmentData.description,
           student_id: assignmentData.student_id,
           due_at: assignmentData.due_at
-        })
+        } as any)
         .eq('id', assignmentId);
 
       if (error) throw error;
@@ -895,7 +895,7 @@ export default function SchoolDashboard() {
 
       // Refresh data
       loadAssignments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating assignment:', error);
       showNotification('Failed to update assignment', 'error');
     }
@@ -914,7 +914,7 @@ export default function SchoolDashboard() {
 
       setAssignments((prev: any) => prev.filter((a: any) => a.id !== assignmentId));
       showNotification('Assignment deleted successfully', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting assignment:', error);
       showNotification('Failed to delete assignment', 'error');
     }
@@ -927,7 +927,7 @@ export default function SchoolDashboard() {
       // For now, targets will be stored locally or in a different table
       setTargets((prev: any) => prev.filter((t: any) => t.id !== targetId));
       showNotification('Target deleted successfully', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting target:', error);
       showNotification('Failed to delete target', 'error');
     }
@@ -985,7 +985,7 @@ export default function SchoolDashboard() {
       }));
 
       setHomeworkList(transformedHomework);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading homework:', error);
     }
   };
@@ -1015,7 +1015,7 @@ export default function SchoolDashboard() {
       }));
 
       setAssignments(transformedAssignments);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading assignments:', error);
     }
   };
@@ -1048,7 +1048,7 @@ export default function SchoolDashboard() {
       }));
 
       setTargets(transformedTargets);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading targets:', error);
     }
   };
@@ -1075,7 +1075,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       setCredentials(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading credentials:', error);
       showNotification('Failed to load credentials', 'error');
     } finally {
@@ -1131,7 +1131,7 @@ export default function SchoolDashboard() {
 
       showNotification('Credential email sent successfully', 'success');
       loadCredentials(); // Reload to show updated status
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending credential email:', error);
       showNotification('Failed to send credential email', 'error');
     } finally {
@@ -1177,7 +1177,7 @@ export default function SchoolDashboard() {
 
       showNotification('Password reset successfully. Send email to share new password.', 'success');
       loadCredentials();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error resetting password:', error);
       showNotification('Failed to reset password', 'error');
     }
@@ -1273,7 +1273,7 @@ export default function SchoolDashboard() {
       if (unreadCount > 0) {
         showNotification(`You have ${unreadCount} unread message${unreadCount > 1 ? 's' : ''}`, 'info');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading messages:', error);
       showNotification('Failed to load messages', 'error');
     }
@@ -1363,7 +1363,7 @@ export default function SchoolDashboard() {
       setTimeout(() => {
         loadMessages();
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       showNotification('Failed to send message: ' + (error.message || 'Unknown error'), 'error');
     }
@@ -1381,7 +1381,7 @@ export default function SchoolDashboard() {
       setMessages((prev: any) => prev.map((msg: any) =>
         msg.id === messageId ? { ...msg, unread: false } : msg
       ));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking message as read:', error);
     }
   };
@@ -1493,7 +1493,7 @@ export default function SchoolDashboard() {
         'success',
         5000
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating class:', error);
       showNotification(
         'Failed to update class',
@@ -1527,7 +1527,7 @@ export default function SchoolDashboard() {
         'success',
         5000
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting class:', error);
       showNotification(
         'Failed to delete class',
@@ -1652,7 +1652,7 @@ export default function SchoolDashboard() {
           'All teachers uploaded successfully'
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in bulk upload:', error);
       showNotification(
         'Bulk upload failed',
@@ -1709,7 +1709,7 @@ export default function SchoolDashboard() {
             password: result.tempPassword
           }]
         }));
-      } catch (error) {
+      } catch (error: any) {
         if (error.message === 'DUPLICATE_EMAIL') {
           if (duplicateAction === 'skip') {
             skippedStudents.push({
@@ -1839,7 +1839,7 @@ export default function SchoolDashboard() {
           3000,
           'Removed from all systems'
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting student:', error);
         showNotification(
           'Failed to delete student',
@@ -1857,7 +1857,7 @@ export default function SchoolDashboard() {
       await supabase.auth.signOut();
       logout();
       window.location.href = '/login';
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error logging out:', error);
     }
   };
@@ -1994,7 +1994,7 @@ export default function SchoolDashboard() {
           }
 
           deletedCount++;
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to delete student ${studentId}:`, error);
         }
       }
@@ -2007,7 +2007,7 @@ export default function SchoolDashboard() {
         3000,
         'Removed from all systems'
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting students:', error);
       showNotification(
         'Error deleting students',
@@ -2077,7 +2077,7 @@ export default function SchoolDashboard() {
           3000,
           'Removed from all systems'
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting teacher:', error);
         showNotification(
           'Failed to delete teacher',
@@ -3136,7 +3136,7 @@ export default function SchoolDashboard() {
                                       'success'
                                     );
                                     refreshData();
-                                  } catch (error) {
+                                  } catch (error: any) {
                                     showNotification(
                                       'Failed to delete parent',
                                       'error',
@@ -6045,7 +6045,7 @@ export default function SchoolDashboard() {
                 setSelectedStudentsForParent([]);
                 setParentModalStudentSearch('');
                 refreshData();
-              } catch (error) {
+              } catch (error: any) {
                 showNotification(
                   'Failed to update parent',
                   'error',
@@ -6641,7 +6641,7 @@ export default function SchoolDashboard() {
                   'success',
                   3000
                 );
-              } catch (error) {
+              } catch (error: any) {
                 console.error('Error updating student:', error);
                 showNotification(
                   'Failed to update student',
@@ -6832,7 +6832,7 @@ export default function SchoolDashboard() {
                   'success',
                   3000
                 );
-              } catch (error) {
+              } catch (error: any) {
                 console.error('Error updating teacher:', error);
                 showNotification(
                   'Failed to update teacher',
@@ -7751,7 +7751,7 @@ export default function SchoolDashboard() {
                 showNotification('Event added successfully!', 'success');
                 setShowAddEvent(false);
                 refreshData(); // Refresh the calendar data
-              } catch (error) {
+              } catch (error: any) {
                 console.error('Error adding event:', error);
                 showNotification('Failed to add event', 'error');
               }
