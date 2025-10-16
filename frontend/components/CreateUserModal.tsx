@@ -27,12 +27,17 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
   });
 
   // Generate random password
-  const generatePassword = () => {
+  const generatePassword = (): string => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
     let password = '';
     for (let i = 0; i < 10; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    return password;
+  };
+
+  const handleGeneratePassword = () => {
+    const password = generatePassword();
     setFormData({ ...formData, password });
   };
 
@@ -258,7 +263,7 @@ ${formData.sendEmail ? '📧 An email has been sent to the user.' : '📝 Please
               />
               <button
                 type="button"
-                onClick={generatePassword}
+                onClick={handleGeneratePassword}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Generate
