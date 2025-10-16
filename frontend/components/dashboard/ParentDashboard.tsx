@@ -297,7 +297,7 @@ export default function ParentDashboard() {
 
   // Handle click outside to close dropdowns
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       if (showSurahDropdown && !event.target.closest('.surah-dropdown-container')) {
         setShowSurahDropdown(false);
       }
@@ -337,7 +337,7 @@ export default function ParentDashboard() {
     }
   }, [currentSurah, selectedScript]);
 
-  const handleViewHighlight = (highlightId) => {
+  const handleViewHighlight = (highlightId: any) => {
     const highlight = highlights.find(h => h.id === highlightId);
     if (highlight) {
       setShowNoteDetail(highlight);

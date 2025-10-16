@@ -491,7 +491,7 @@ export default function StudentManagementDashboard() {
   });
 
   // Handle Script Selection
-  const handleScriptSelect = (scriptId) => {
+  const handleScriptSelect = (scriptId: any) => {
     if (!scriptLocked) {
       setSelectedScript(scriptId);
     }
@@ -505,7 +505,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Handle Text Selection for Highlighting
-  const handleTextSelection = (ayahIndex, wordIndex, isMouseDown = false, isMouseUp = false) => {
+  const handleTextSelection = (ayahIndex: any, wordIndex: any, isMouseDown: any = false, isMouseUp: any = false) => {
     if (highlightMode && selectedMistakeType) {
       // For all types - simple click to toggle single word
       if (!isMouseDown && !isMouseUp) {

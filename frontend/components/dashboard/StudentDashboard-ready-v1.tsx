@@ -202,14 +202,14 @@ export default function StudentDashboard() {
     type: s.type
   }));
 
-  const handleHighlightClick = (highlightId) => {
+  const handleHighlightClick = (highlightId: any) => {
     const highlight = highlights.find(h => h.id === highlightId);
     if (highlight) {
       setShowNoteReply(highlight);
     }
   };
 
-  const handleSendReply = (type = 'text') => {
+  const handleSendReply = (type: any = 'text') => {
     if ((type === 'text' && replyText.trim()) || (type === 'voice')) {
       const newReply = {
         id: `r${Date.now()}`,
@@ -274,7 +274,7 @@ export default function StudentDashboard() {
     }
   };
   
-  const handlePlayAudio = (replyId) => {
+  const handlePlayAudio = (replyId: any) => {
     if (playingAudioId === replyId) {
       // Stop playing
       setPlayingAudioId(null);

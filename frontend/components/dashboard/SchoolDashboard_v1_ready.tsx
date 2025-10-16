@@ -121,7 +121,7 @@ export default function SchoolDashboard() {
   
   // Click outside handler
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       // Close notifications dropdown if clicking outside
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
@@ -212,7 +212,7 @@ export default function SchoolDashboard() {
   const tabs = ['overview', 'students', 'teachers', 'parents', 'classes', 'class-builder', 'assignments', 'calendar', 'messages', 'reports', 'credentials'];
 
   // Helper Functions
-  const handleDeleteStudents = (studentIds) => {
+  const handleDeleteStudents = (studentIds: any) => {
     if (confirm(`Are you sure you want to delete ${studentIds.length} student(s)?`)) {
       setStudents(prev => prev.filter(s => !studentIds.includes(s.id)));
       setSelectedUsers([]);

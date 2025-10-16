@@ -81,7 +81,7 @@ export default function SchoolProfile() {
   
   const [tempSchoolInfo, setTempSchoolInfo] = useState(schoolInfo);
   
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = (e: any) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();

@@ -102,7 +102,7 @@ export default function TeacherDashboard() {
   
   // Click outside handler
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }

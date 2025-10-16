@@ -284,7 +284,7 @@ export default function SchoolDashboard() {
 
   // Click outside handler
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
@@ -806,7 +806,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  const handleViewHomework = (homeworkId) => {
+  const handleViewHomework = (homeworkId: any) => {
     const homework = homeworkList.find(h => h.id === homeworkId);
     setViewingHomework(homework);
     // Open Quran viewer with highlighting enabled
@@ -2024,7 +2024,7 @@ export default function SchoolDashboard() {
   };
 
   // Edit Student
-  const handleEditStudent = (student) => {
+  const handleEditStudent = (student: any) => {
     setEditingStudent(student);
   };
 

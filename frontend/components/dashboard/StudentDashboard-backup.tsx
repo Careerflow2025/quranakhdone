@@ -363,7 +363,7 @@ export default function StudentManagementDashboard() {
   });
 
   // Handle Script Selection
-  const handleScriptSelect = (scriptId) => {
+  const handleScriptSelect = (scriptId: any) => {
     if (!scriptLocked) {
       setSelectedScript(scriptId);
     }
@@ -377,7 +377,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Handle Text Selection for Highlighting
-  const handleTextSelection = (ayahIndex, wordIndex, isMouseDown = false, isMouseUp = false) => {
+  const handleTextSelection = (ayahIndex: any, wordIndex: any, isMouseDown: any = false, isMouseUp: any = false) => {
     if (highlightMode && selectedMistakeType) {
       // For recap only - support range selection
       if (selectedMistakeType === 'recap') {
