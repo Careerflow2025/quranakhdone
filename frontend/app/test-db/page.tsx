@@ -62,7 +62,7 @@ export default function TestDatabase() {
     }
   };
 
-  const testLogin = async (email, password) => {
+  const testLogin = async (email: string, password: string) => {
     try {
       const result = await supabase
         .from('profiles')
