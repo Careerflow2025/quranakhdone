@@ -151,9 +151,9 @@ export default function RegisterPage() {
           address: schoolData.address || null,
           timezone: 'Africa/Casablanca',
           subscription_status: 'active'
-        }])
+        } as any])
         .select()
-        .single();
+        .single() as { data: any; error: any };
 
       if (schoolError) {
         console.error('School creation error:', schoolError);
@@ -175,7 +175,7 @@ export default function RegisterPage() {
           email: adminData.email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }], {
+        } as any], {
           onConflict: 'user_id'
         });
 
@@ -189,7 +189,7 @@ export default function RegisterPage() {
             role: 'school',
             display_name: adminData.fullName,
             updated_at: new Date().toISOString()
-          })
+          } as any)
           .eq('user_id', authenticatedUser.id);
 
         if (updateError) {
@@ -210,7 +210,7 @@ export default function RegisterPage() {
           password_changed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }], {
+        } as any], {
           onConflict: 'user_id'
         });
 
