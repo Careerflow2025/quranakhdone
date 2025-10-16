@@ -129,7 +129,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           class_enrollments(student_id)
         `)
         .eq('school_id', schoolId)
-        .order('name');
+        .order('name') as any;
 
       if (classesError) {
         console.error('Error loading classes:', classesError);
@@ -146,7 +146,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
         .from('students')
         .select('*')
         .eq('school_id', schoolId)
-        .order('name');
+        .order('name') as any;
 
       if (!directStudentResult.error && directStudentResult.data && directStudentResult.data.length > 0) {
         studentsData = directStudentResult.data;
@@ -159,7 +159,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           .select(`
             *,
             profiles:user_id(school_id, display_name, email)
-          `);
+          `) as any;
 
         if (!profileStudentResult.error && profileStudentResult.data) {
           // Filter by school_id manually if needed
@@ -175,7 +175,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             console.log('Loading all students and filtering...');
             const allStudentsResult = await supabase
               .from('students')
-              .select('*');
+              .select('*') as any;
 
             if (allStudentsResult.data) {
               studentsData = allStudentsResult.data;
@@ -201,7 +201,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
         .from('teachers')
         .select('*')
         .eq('school_id', schoolId)
-        .order('name');
+        .order('name') as any;
 
       if (!directTeacherResult.error && directTeacherResult.data && directTeacherResult.data.length > 0) {
         teachersData = directTeacherResult.data;
@@ -214,7 +214,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           .select(`
             *,
             profiles:user_id(school_id, display_name, email)
-          `);
+          `) as any;
 
         if (!profileTeacherResult.error && profileTeacherResult.data) {
           // Filter by school_id manually if needed
@@ -230,7 +230,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             console.log('Loading all teachers and filtering...');
             const allTeachersResult = await supabase
               .from('teachers')
-              .select('*');
+              .select('*') as any;
 
             if (allTeachersResult.data) {
               teachersData = allTeachersResult.data;
@@ -257,7 +257,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
               .from('teachers')
               .select('*')
               .eq('id', cls.class_teachers[0].teacher_id)
-              .single();
+              .single() as any;
             teacher = teacherData;
           }
 

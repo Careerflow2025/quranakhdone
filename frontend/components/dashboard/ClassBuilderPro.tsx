@@ -112,23 +112,23 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
           class_teachers(teacher_id),
           class_enrollments(student_id)
         `)
-        .eq('school_id', schoolId);
+        .eq('school_id', schoolId) as any;
 
       // Load all students
       const { data: studentsData } = await supabase
         .from('students')
         .select('*')
-        .eq('school_id', schoolId);
+        .eq('school_id', schoolId) as any;
 
       // Load all teachers
       const { data: teachersData } = await supabase
         .from('teachers')
         .select('*')
-        .eq('school_id', schoolId);
+        .eq('school_id', schoolId) as any;
 
       // Transform classes data
       if (classesData) {
-        const transformedClasses = await Promise.all(classesData.map(async (cls) => {
+        const transformedClasses = await Promise.all(classesData.map(async (cls: any) => {
           // Get teacher details
           let teacher = null;
           if (cls.class_teachers?.length > 0) {
@@ -136,13 +136,13 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
               .from('teachers')
               .select('*')
               .eq('id', cls.class_teachers[0].teacher_id)
-              .single();
+              .single() as any;
             teacher = teacherData;
           }
 
           // Get student details
-          const studentIds = cls.class_enrollments?.map(e => e.student_id) || [];
-          const students = studentsData?.filter(s => studentIds.includes(s.id)) || [];
+          const studentIds = cls.class_enrollments?.map((e: any) => e.student_id) || [];
+          const students = studentsData?.filter((s: any) => studentIds.includes(s.id)) || [];
 
           return {
             id: cls.id,
