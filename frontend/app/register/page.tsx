@@ -182,7 +182,7 @@ export default function RegisterPage() {
       if (profileError) {
         console.error('Profile creation error:', profileError);
         // Try to update if insert fails
-        const { error: updateError } = await supabase
+        const { error: updateError } = (await supabase
           .from('profiles')
           .update({
             school_id: schoolInsertData.id,
@@ -190,7 +190,7 @@ export default function RegisterPage() {
             display_name: adminData.fullName,
             updated_at: new Date().toISOString()
           } as any)
-          .eq('user_id', authenticatedUser.id);
+          .eq('user_id', authenticatedUser.id)) as { error: any };
 
         if (updateError) {
           console.error('Profile update error:', updateError);
