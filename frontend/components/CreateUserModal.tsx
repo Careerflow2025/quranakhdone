@@ -4,7 +4,14 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { X, User, Mail, Phone, Users, GraduationCap, UserPlus } from 'lucide-react';
 
-export default function CreateUserModal({ isOpen, onClose, userType, onUserCreated }) {
+interface CreateUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userType?: 'student' | 'teacher' | 'parent';
+  onUserCreated?: (user: any) => void;
+}
+
+export default function CreateUserModal({ isOpen, onClose, userType, onUserCreated }: CreateUserModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -26,7 +33,7 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
     setFormData({ ...formData, password });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -120,9 +127,9 @@ ${formData.sendEmail ? '📧 An email has been sent to the user.' : '📝 Please
       });
 
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating user:', error);
-      setError(error.message || 'Failed to create user. Please try again.');
+      setError(error?.message || 'Failed to create user. Please try again.');
     } finally {
       setLoading(false);
     }
