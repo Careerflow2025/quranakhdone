@@ -115,9 +115,9 @@ export default function RegisterSchool() {
           phone: schoolData.phone || '',
           email: schoolData.email
           // Only use columns that exist in the table
-        })
+        } as any)
         .select()
-        .single();
+        .single() as { data: any; error: any };
 
       if (schoolError) {
         console.error('School creation failed:', schoolError);
@@ -140,7 +140,7 @@ export default function RegisterSchool() {
           role: 'school_admin',
           phone: adminData.phone || '',
           password: adminData.password // Store the actual password for now (not ideal but works)
-        });
+        } as any);
 
       if (profileError) {
         console.error('Profile creation failed:', profileError);
