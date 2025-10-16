@@ -70,8 +70,8 @@ export default function StudentDashboard() {
   const [selectedText, setSelectedText] = useState<any>(null);
   const [highlightMode, setHighlightMode] = useState(false);
   const [selectedMistakeType, setSelectedMistakeType] = useState('');
-  const [highlights, setHighlights] = useState([]);
-  const [notes, setNotes] = useState([]);
+  const [highlights, setHighlights] = useState<any[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -79,7 +79,7 @@ export default function StudentDashboard() {
   const [audioBlob, setAudioBlob] = useState<any>(null);
   const [playingAudioId, setPlayingAudioId] = useState<any>(null);
   const [currentAudio, setCurrentAudio] = useState<any>(null);
-  const [selectedHighlightsForNote, setSelectedHighlightsForNote] = useState([]);
+  const [selectedHighlightsForNote, setSelectedHighlightsForNote] = useState<any[]>([]);
   const [showNotePopup, setShowNotePopup] = useState<any>(null);
   const [noteMode, setNoteMode] = useState(false);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);

@@ -30,14 +30,14 @@ export default function AdvancedScheduler({
     if (scheduleDays.includes(day)) {
       onScheduleDaysChange(scheduleDays.filter((d: any) => d !== day));
       const newSlots = { ...scheduleSlots };
-      delete newSlots[day];
+      delete newSlots[day as string];
       onScheduleSlotsChange(newSlots);
     } else {
       onScheduleDaysChange([...scheduleDays, day]);
       if (scheduleType === 'custom') {
         onScheduleSlotsChange({
           ...scheduleSlots,
-          [day]: [{ start: '', end: '' }]
+          [day as string]: [{ start: '', end: '' }]
         });
       }
     }
@@ -46,9 +46,9 @@ export default function AdvancedScheduler({
   const handleRegularTimeChange = (field: 'start' | 'end', value: string) => {
     const newSlots: Record<string, ScheduleSlot[]> = {};
     scheduleDays.forEach((day: any) => {
-      newSlots[day] = [{
-        start: field === 'start' ? value : scheduleSlots[day]?.[0]?.start || '',
-        end: field === 'end' ? value : scheduleSlots[day]?.[0]?.end || ''
+      newSlots[day as string] = [{
+        start: field === 'start' ? value : scheduleSlots[day as string]?.[0]?.start || '',
+        end: field === 'end' ? value : scheduleSlots[day as string]?.[0]?.end || ''
       }];
     });
     onScheduleSlotsChange(newSlots);
@@ -56,21 +56,21 @@ export default function AdvancedScheduler({
 
   const handleCustomSlotChange = (day: string, index: number, field: 'start' | 'end', value: string) => {
     const newSlots = { ...scheduleSlots };
-    if (!newSlots[day]) newSlots[day] = [{ start: '', end: '' }];
-    newSlots[day][index][field] = value;
+    if (!newSlots[day as string]) newSlots[day as string] = [{ start: '', end: '' }];
+    newSlots[day as string][index][field] = value;
     onScheduleSlotsChange(newSlots);
   };
 
   const addTimeSlot = (day: string) => {
     const newSlots = { ...scheduleSlots };
-    if (!newSlots[day]) newSlots[day] = [];
-    newSlots[day].push({ start: '', end: '' });
+    if (!newSlots[day as string]) newSlots[day as string] = [];
+    newSlots[day as string].push({ start: '', end: '' });
     onScheduleSlotsChange(newSlots);
   };
 
   const removeTimeSlot = (day: string, index: number) => {
     const newSlots = { ...scheduleSlots };
-    newSlots[day].splice(index, 1);
+    newSlots[day as string].splice(index, 1);
     onScheduleSlotsChange(newSlots);
   };
 
@@ -229,7 +229,7 @@ export default function AdvancedScheduler({
 
                 {scheduleDays.includes(day) && (
                   <div className="space-y-2 pl-6">
-                    {(scheduleSlots[day] || [{ start: '', end: '' }]).map((slot: any, index: any) => (
+                    {(scheduleSlots[day as string] || [{ start: '', end: '' }]).map((slot: any, index: any) => (
                       <div key={index} className="flex items-center gap-2">
                         <input
                           type="time"
@@ -246,7 +246,7 @@ export default function AdvancedScheduler({
                           className="px-2 py-1 border rounded text-sm flex-1"
                           placeholder="End"
                         />
-                        {scheduleSlots[day].length > 1 && (
+                        {scheduleSlots[day as string].length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeTimeSlot(day, index)}
@@ -313,7 +313,7 @@ export default function AdvancedScheduler({
                 <p className="font-medium mb-1">Custom schedule:</p>
                 {scheduleDays.map((day: any) => (
                   <p key={day} className="ml-2">
-                    • {day}: {(scheduleSlots[day] || []).map((slot: any) =>
+                    • {day}: {(scheduleSlots[day as string] || []).map((slot: any) =>
                       `${slot.start || 'TBD'}-${slot.end || 'TBD'}`
                     ).join(', ')}
                   </p>

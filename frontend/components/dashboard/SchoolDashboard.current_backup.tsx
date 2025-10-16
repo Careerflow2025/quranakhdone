@@ -12,7 +12,7 @@ export default function SchoolDashboard() {
   const [loading, setLoading] = useState(true);
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
   const { user, logout } = useAuthStore();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [stats, setStats] = useState({
     total_students: 0,
@@ -22,7 +22,7 @@ export default function SchoolDashboard() {
     total_assignments: 0,
     pending_homework: 0
   });
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [studentForm, setStudentForm] = useState({
     email: '',
@@ -31,7 +31,7 @@ export default function SchoolDashboard() {
     dob: '',
     gender: ''
   });
-  const [studentsList, setStudentsList] = useState([]);
+  const [studentsList, setStudentsList] = useState<any[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [creatingStudent, setCreatingStudent] = useState(false);
 
@@ -43,7 +43,7 @@ export default function SchoolDashboard() {
     password: '',
     bio: ''
   });
-  const [teachersList, setTeachersList] = useState([]);
+  const [teachersList, setTeachersList] = useState<any[]>([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
   const [creatingTeacher, setCreatingTeacher] = useState(false);
 
@@ -54,7 +54,7 @@ export default function SchoolDashboard() {
     displayName: '',
     password: ''
   });
-  const [parentsList, setParentsList] = useState([]);
+  const [parentsList, setParentsList] = useState<any[]>([]);
   const [loadingParents, setLoadingParents] = useState(false);
   const [creatingParent, setCreatingParent] = useState(false);
 

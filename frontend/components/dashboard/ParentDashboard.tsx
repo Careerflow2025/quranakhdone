@@ -1711,7 +1711,7 @@ export default function ParentDashboard() {
                         'Thursday': { minutes: 60, assignments: 3, quranPages: 5, homework: 2 },
                         'Saturday': { minutes: 30, assignments: 1, quranPages: 2, homework: 1 }
                       };
-                      const activity = activityData[day] || { minutes: 0, assignments: 0, quranPages: 0, homework: 0 };
+                      const activity = activityData[day as keyof typeof activityData] || { minutes: 0, assignments: 0, quranPages: 0, homework: 0 };
                       const activityPercent = (activity.minutes / 90) * 100;
 
                       return (

@@ -81,8 +81,8 @@ export default function TeacherDashboard() {
   const [showClassDetails, setShowClassDetails] = useState(false);
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedAttendanceClass, setSelectedAttendanceClass] = useState('CLS001');
-  const [attendanceData, setAttendanceData] = useState({});
-  const [attendanceNotes, setAttendanceNotes] = useState({});
+  const [attendanceData, setAttendanceData] = useState<Record<string, any>>({});
+  const [attendanceNotes, setAttendanceNotes] = useState<Record<string, any>>({});
   const [showAttendanceHistory, setShowAttendanceHistory] = useState(false);
   const [selectedStudentHistory, setSelectedStudentHistory] = useState<any>(null);
   const [attendanceSaveMessage, setAttendanceSaveMessage] = useState('');

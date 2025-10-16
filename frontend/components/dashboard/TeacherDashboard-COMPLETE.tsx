@@ -19,12 +19,12 @@ export default function TeacherDashboard() {
   const [showProfile, setShowProfile] = useState(false);
 
   // Homework State
-  const [homeworkList, setHomeworkList] = useState([]);
+  const [homeworkList, setHomeworkList] = useState<any[]>([]);
   const [homeworkFilter, setHomeworkFilter] = useState('all');
   const [showHomeworkDetail, setShowHomeworkDetail] = useState<any>(null);
 
   // Targets State
-  const [targets, setTargets] = useState([]);
+  const [targets, setTargets] = useState<any[]>([]);
   const [showCreateTarget, setShowCreateTarget] = useState(false);
   const [targetForm, setTargetForm] = useState({
     title: '',

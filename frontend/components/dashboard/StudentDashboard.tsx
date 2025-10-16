@@ -1503,7 +1503,7 @@ export default function StudentDashboard() {
                       'Thursday': { minutes: 60, assignments: 3, quranPages: 5 },
                       'Saturday': { minutes: 30, assignments: 1, quranPages: 2 }
                     };
-                    const activity = activityData[day] || { minutes: 0, assignments: 0, quranPages: 0 };
+                    const activity = activityData[day as keyof typeof activityData] || { minutes: 0, assignments: 0, quranPages: 0 };
                     const activityPercent = (activity.minutes / 60) * 100;
 
                     return (
@@ -2325,7 +2325,7 @@ export default function StudentDashboard() {
                                 )}
                                 {/* Waveform */}
                                 <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array(20)].map((_: any, i: any) => {
+                                  {[...Array<any>(20)].map((_: any, i: any) => {
                                     const isPlaying = playingAudioId === reply.id;
                                     const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
                                     return (

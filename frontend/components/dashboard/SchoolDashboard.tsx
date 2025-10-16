@@ -95,7 +95,7 @@ export default function SchoolDashboard() {
   const [viewMode, setViewMode] = useState('list');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalType, setAddModalType] = useState('student');
-  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [bulkUploadType, setBulkUploadType] = useState('students');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -105,8 +105,8 @@ export default function SchoolDashboard() {
 
   // Bulk upload states
   const [showDuplicateReview, setShowDuplicateReview] = useState(false);
-  const [duplicates, setDuplicates] = useState([]);
-  const [uploadedData, setUploadedData] = useState([]);
+  const [duplicates, setDuplicates] = useState<any[]>([]);
+  const [uploadedData, setUploadedData] = useState<any[]>([]);
   const [showBulkProgress, setShowBulkProgress] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({
     total: 0,
@@ -141,33 +141,33 @@ export default function SchoolDashboard() {
   const [showTeacherDetails, setShowTeacherDetails] = useState<any>(null);
   const [editingTeacher, setEditingTeacher] = useState<any>(null);
   const [showCreateClass, setShowCreateClass] = useState(false);
-  const [selectedTeachersForClass, setSelectedTeachersForClass] = useState([]);
-  const [selectedStudentsForClass, setSelectedStudentsForClass] = useState([]);
+  const [selectedTeachersForClass, setSelectedTeachersForClass] = useState<any[]>([]);
+  const [selectedStudentsForClass, setSelectedStudentsForClass] = useState<any[]>([]);
   const [classTeacherSearch, setClassTeacherSearch] = useState('');
-  const [classSchedules, setClassSchedules] = useState([]);
+  const [classSchedules, setClassSchedules] = useState<any[]>([]);
   const [showClassBuilder, setShowClassBuilder] = useState(false);
   const [classStudentSearch, setClassStudentSearch] = useState('');
   const [viewingClass, setViewingClass] = useState<any>(null);
   const [editingClass, setEditingClass] = useState<any>(null);
-  const [editClassSchedules, setEditClassSchedules] = useState([]);
+  const [editClassSchedules, setEditClassSchedules] = useState<any[]>([]);
 
   // Homework, Assignments & Targets State
-  const [homeworkList, setHomeworkList] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [targets, setTargets] = useState([]);
+  const [homeworkList, setHomeworkList] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [targets, setTargets] = useState<any[]>([]);
   const [assignmentFilter, setAssignmentFilter] = useState('all');
   const [editingAssignment, setEditingAssignment] = useState<any>(null);
   const [viewingAssignment, setViewingAssignment] = useState<any>(null);
   const [viewingHomework, setViewingHomework] = useState<any>(null);
 
   // Messaging System State
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [messageFilter, setMessageFilter] = useState('all');
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const [showComposeMessage, setShowComposeMessage] = useState(false);
   const [messageRecipientType, setMessageRecipientType] = useState('all');
-  const [selectedRecipients, setSelectedRecipients] = useState([]);
+  const [selectedRecipients, setSelectedRecipients] = useState<any[]>([]);
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
@@ -175,13 +175,13 @@ export default function SchoolDashboard() {
   const [sendViaEmail, setSendViaEmail] = useState(true);
 
   // Professional Notification System
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [notificationIdCounter, setNotificationIdCounter] = useState(0);
 
   // Credentials Management State (using credentials from useSchoolData)
   const [showPasswords, setShowPasswords] = useState(false);
   const [credentialFilter, setCredentialFilter] = useState('all');
-  const [sendingEmail, setSendingEmail] = useState({});
+  const [sendingEmail, setSendingEmail] = useState<Record<string, any>>({});
   const [loadingCredentials, setLoadingCredentials] = useState(true);
 
   // Professional Notification Function
@@ -224,11 +224,11 @@ export default function SchoolDashboard() {
   const [parentViewMode, setParentViewMode] = useState('grid');
   const [parentSearchTerm, setParentSearchTerm] = useState('');
   const [childrenSearchTerm, setChildrenSearchTerm] = useState('');
-  const [selectedChildren, setSelectedChildren] = useState([]);
+  const [selectedChildren, setSelectedChildren] = useState<any[]>([]);
   const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
   const [parentModalStudentSearch, setParentModalStudentSearch] = useState('');
-  const [selectedStudentsForParent, setSelectedStudentsForParent] = useState([]);
-  const [parentLinkedStudents, setParentLinkedStudents] = useState([]);
+  const [selectedStudentsForParent, setSelectedStudentsForParent] = useState<any[]>([]);
+  const [parentLinkedStudents, setParentLinkedStudents] = useState<any[]>([]);
   const [teacherViewMode, setTeacherViewMode] = useState('grid');
   const [showAddTeacher, setShowAddTeacher] = useState(false);
   const [showViewTeacher, setShowViewTeacher] = useState(false);
@@ -256,7 +256,7 @@ export default function SchoolDashboard() {
   const [showAddCredential, setShowAddCredential] = useState(false);
   const [editingCredential, setEditingCredential] = useState<any>(null);
   const [credentialSearch, setCredentialSearch] = useState('');
-  const [showPassword, setShowPassword] = useState({});
+  const [showPassword, setShowPassword] = useState<Record<string, any>>({});
 
   // Create Credential Form State
   const [credUserType, setCredUserType] = useState('');
@@ -4853,7 +4853,7 @@ export default function SchoolDashboard() {
                   <div className="h-64 flex items-end justify-between gap-2">
                     {(reportData?.assignmentsTrend?.length > 0
                       ? reportData.assignmentsTrend
-                      : Array(7).fill({ count: 0 })
+                      : Array<any>(7).fill({ count: 0 })
                     ).map((item: any, index: any) => {
                       const maxCount = Math.max(...(reportData?.assignmentsTrend?.map((t: any) => t.count) || [1]), 1);
                       const height = item.count ? (item.count / maxCount) * 100 : 0;
@@ -4879,7 +4879,7 @@ export default function SchoolDashboard() {
                   <div className="h-64 flex items-end justify-between gap-2">
                     {(reportData?.attendanceTrend?.length > 0
                       ? reportData.attendanceTrend
-                      : Array(7).fill({ rate: 0 })
+                      : Array<any>(7).fill({ rate: 0 })
                     ).map((item: any, index: any) => (
                       <div key={index} className="flex-1 flex flex-col items-center">
                         <div

@@ -421,7 +421,7 @@ export default function AdminDashboard() {
                   className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t hover:from-blue-600 hover:to-blue-500 transition-all cursor-pointer"
                   style={{ height: `${(value / Math.max(...chartData.values)) * 100}%` }}
                 ></div>
-                <span className="text-xs text-gray-500 mt-2">{chartData.labels[index]}</span>
+                <span className="text-xs text-gray-500 mt-2">{chartData.labels[index as number]}</span>
               </div>
             ))}
           </div>

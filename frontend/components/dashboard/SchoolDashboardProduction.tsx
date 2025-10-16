@@ -49,7 +49,7 @@ export default function SchoolDashboardProduction() {
   const [viewMode, setViewMode] = useState('list');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalType, setAddModalType] = useState('student');
-  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [bulkUploadType, setBulkUploadType] = useState('students');
   const [showNotifications, setShowNotifications] = useState(false);
