@@ -80,10 +80,7 @@ export async function POST(req: NextRequest) {
       .from('teachers')
       .insert({
         user_id: authData.user.id,
-        school_id: schoolId,
-        full_name: name,
-        email,
-        phone
+        school_id: schoolId
       })
       .select()
       .single();

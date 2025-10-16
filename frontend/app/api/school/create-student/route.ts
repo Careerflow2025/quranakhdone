@@ -84,9 +84,7 @@ export async function POST(req: NextRequest) {
         .from('parents')
         .insert({
           user_id: parentUserId,
-          full_name: parentName,
-          email: parentEmail,
-          phone: parentPhone
+          school_id: schoolId
         })
         .select()
         .single();
@@ -111,15 +109,42 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    // 2. Create student record
+    // 2. Create student auth user first
+    const studentPassword = Math.random().toString(36).slice(-8);
+    const studentEmail = `student_${Date.now()}@temp.${schoolId}.local`;
+
+    const { data: studentAuth, error: studentAuthError } = await supabaseAdmin.auth.admin.createUser({
+      email: studentEmail,
+      password: studentPassword,
+      email_confirm: true,
+      user_metadata: {
+        role: 'student',
+        school_id: schoolId
+      }
+    });
+
+    if (studentAuthError) {
+      return NextResponse.json({ error: studentAuthError.message }, { status: 400 });
+    }
+
+    // Create student profile
+    await supabaseAdmin
+      .from('profiles')
+      .insert({
+        user_id: studentAuth.user.id,
+        email: studentEmail,
+        display_name: studentName,
+        role: 'student',
+        school_id: schoolId
+      });
+
+    // Create student record
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
+        user_id: studentAuth.user.id,
         school_id: schoolId,
-        class_id: classId,
-        full_name: studentName,
-        date_of_birth: dateOfBirth,
-        parent_email: parentEmail
+        date_of_birth: dateOfBirth
       })
       .select()
       .single();
