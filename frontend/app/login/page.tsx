@@ -52,7 +52,7 @@ export default function LoginPage() {
       // Step 2: Get user profile and determine dashboard
       // Using RPC function for production reliability
       const { data: userInfo, error: profileError } = await supabase
-        .rpc('get_current_user_info');
+        .rpc('get_current_user_info') as { data: any; error: any };
 
       if (profileError) {
         console.error('Profile fetch error:', profileError);
