@@ -220,7 +220,7 @@ CREATE TABLE assignments (
   description TEXT,
   status assignment_status NOT NULL DEFAULT 'assigned',
   due_at TIMESTAMPTZ NOT NULL,
-  late BOOLEAN GENERATED ALWAYS AS (CASE WHEN NOW() > due_at AND status <> 'completed' THEN TRUE ELSE FALSE END) STORED,
+  late BOOLEAN DEFAULT FALSE,
   reopen_count INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

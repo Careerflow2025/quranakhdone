@@ -7,7 +7,9 @@
       "mcp__supabase__live_dangerously",
       "mcp__supabase__execute_postgresql",
       "Bash(git check-ignore:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
