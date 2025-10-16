@@ -627,7 +627,7 @@
                         <div className="border-t pt-4">
                           <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
                           <div className="space-y-1">
-                            {target.milestones.map((milestone, index) => (
+                            {target.milestones.map((milestone: any, index: any) => (
                               <div key={index} className="flex items-center space-x-2">
                                 {milestone.completed ? (
                                   <CheckCircle className="w-4 h-4 text-green-500" />

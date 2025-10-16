@@ -365,7 +365,7 @@ export default function StudentDashboard() {
                     
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length > 0 ? (
-                        notifications.map((notif) => (
+                        notifications.map((notif: any) => (
                           <div 
                             key={notif.id}
                             onClick={() => {
@@ -465,7 +465,7 @@ export default function StudentDashboard() {
                 {showSurahDropdown && (
                   <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
                     <div className="p-2">
-                      {allSurahs.map((surah) => (
+                      {allSurahs.map((surah: any) => (
                         <button
                           key={surah.number}
                           onClick={() => {
@@ -508,7 +508,7 @@ export default function StudentDashboard() {
               
               {/* Tabs */}
               <div className="flex space-x-1 mb-3">
-                {['inbox', 'sent', 'archive'].map((tab) => (
+                {['inbox', 'sent', 'archive'].map((tab: any) => (
                   <button
                     key={tab}
                     onClick={() => setMessageTab(tab)}
@@ -528,7 +528,7 @@ export default function StudentDashboard() {
 
               {/* Messages List */}
               <div className="space-y-1 max-h-96 overflow-y-auto">
-                {messages[messageTab as keyof typeof messages].map((msg) => (
+                {messages[messageTab as keyof typeof messages].map((msg: any) => (
                   <div 
                     key={msg.id} 
                     className={`p-2 rounded cursor-pointer hover:bg-gray-50 ${
@@ -585,13 +585,13 @@ export default function StudentDashboard() {
               <div className="p-8" style={{ minHeight: '800px' }}>
                 <div className="text-center leading-loose px-16 py-8" style={scriptStyling}>
                   <div className="text-gray-900">
-                    {currentAyahs.map((ayah, displayIndex) => {
+                    {currentAyahs.map((ayah: any, displayIndex: any) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       const ayahHighlights = highlights.filter((h: any) => h.ayahIndex === ayahIndex);
                       
                       return (
                         <div key={ayah.number} className="inline-block relative group">
-                          {ayah.words.map((word, wordIndex) => {
+                          {ayah.words.map((word: any, wordIndex: any) => {
                             const wordHighlights = ayahHighlights.filter((h: any) => 
                               h.wordIndices.includes(wordIndex)
                             );
@@ -689,7 +689,7 @@ export default function StudentDashboard() {
               </h3>
               
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {highlights.map((highlight) => (
+                {highlights.map((highlight: any) => (
                   <div 
                     key={highlight.id} 
                     className="p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-gray-100"
@@ -765,7 +765,7 @@ export default function StudentDashboard() {
                 </div>
 
                 {/* Conversation Messages */}
-                {showNoteReply.replies.map((reply) => (
+                {showNoteReply.replies.map((reply: any) => (
                   <div 
                     key={reply.id} 
                     className={`flex ${reply.isStudent ? 'justify-end' : 'justify-start'}`}
@@ -803,7 +803,7 @@ export default function StudentDashboard() {
                                 )}
                                 {/* Waveform */}
                                 <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array(20)].map((_, i) => {
+                                  {[...Array(_: any)].map((_: any: any, i: any: any) => {
                                     const isPlaying = playingAudioId === reply.id;
                                     const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
                                     return (

@@ -215,7 +215,7 @@ export default function TeacherDashboard() {
         {/* Tab Navigation */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8 overflow-x-auto">
-            {tabs.map((tab) => (
+            {tabs.map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -374,7 +374,7 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {homeworkData
                 .filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter)
-                .map((homework) => (
+                .map((homework: any) => (
                 <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className={`h-2 ${
                     homework.color === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
@@ -612,7 +612,7 @@ export default function TeacherDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Milestones
                       </label>
-                      {targetForm.milestones.map((milestone, index) => (
+                      {targetForm.milestones.map((milestone: any, index: any) => (
                         <div key={index} className="flex items-center space-x-2 mb-2">
                           <input
                             type="text"
@@ -675,7 +675,7 @@ export default function TeacherDashboard() {
 
             {/* Targets List */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {targetsData.map((target) => (
+              {targetsData.map((target: any) => (
                 <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                   <div className={`h-2 ${
                     target.type === 'individual' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
@@ -729,7 +729,7 @@ export default function TeacherDashboard() {
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
                       <div className="space-y-1">
-                        {target.milestones.map((milestone, index) => (
+                        {target.milestones.map((milestone: any, index: any) => (
                           <div key={index} className="flex items-center text-sm">
                             {milestone.completed ? (
                               <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
@@ -779,7 +779,7 @@ export default function TeacherDashboard() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">My Classes</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {myClasses.map((cls) => (
+              {myClasses.map((cls: any) => (
                 <div key={cls.id} className="bg-white rounded-lg shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
                   <p className="text-gray-500 mt-1">Room {cls.room}</p>
@@ -833,7 +833,7 @@ export default function TeacherDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {myStudents.map((student) => (
+                  {myStudents.map((student: any) => (
                     <tr key={student.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{student.name}</div>

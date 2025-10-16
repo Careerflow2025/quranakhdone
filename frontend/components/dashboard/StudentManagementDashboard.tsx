@@ -775,7 +775,7 @@ export default function StudentManagementDashboard() {
     const homeworkHighlights = highlights.filter((h: any) => h.mistakeType === 'homework');
     if (homeworkHighlights.length > 0) {
       // Mark first few homework highlights as completed
-      const updatedHighlights = highlights.map((h, index) => {
+      const updatedHighlights = highlights.map((h: any, index: any) => {
         if (h.mistakeType === 'homework' && index < 2) {
           return { ...h, isCompleted: true };
         }
@@ -1016,7 +1016,7 @@ export default function StudentManagementDashboard() {
                       <h3 className="text-lg font-semibold">Select Surah - اختر السورة</h3>
                     </div>
                     <div className="grid grid-cols-4 gap-1 p-2">
-                      {allSurahs.map((surah) => (
+                      {allSurahs.map((surah: any) => (
                         <button
                           key={surah.number}
                           onClick={() => {
@@ -1083,7 +1083,7 @@ export default function StudentManagementDashboard() {
             </div>
             
             <div className="grid grid-cols-3 gap-4">
-              {quranScripts.map((script) => (
+              {quranScripts.map((script: any) => (
                 <button
                   key={script.id}
                   onClick={() => handleScriptSelect(script.id)}
@@ -1117,7 +1117,7 @@ export default function StudentManagementDashboard() {
                   Highlight
                 </h3>
                 <div className="space-y-1">
-                  {mistakeTypes.map((type) => (
+                  {mistakeTypes.map((type: any) => (
                     <button
                       key={type.id}
                       onClick={() => {
@@ -1200,7 +1200,7 @@ export default function StudentManagementDashboard() {
                   })()}
 
                   {/* Show other highlights by type */}
-                  {mistakeTypes.filter((type: any) => type.id !== 'completed').map((type) => {
+                  {mistakeTypes.filter((type: any) => type.id !== 'completed').map((type: any) => {
                     const typeHighlights = highlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
                     if (typeHighlights.length === 0) return null;
                     return (
@@ -1490,7 +1490,7 @@ export default function StudentManagementDashboard() {
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center'
                         }}>
-                          {pageAyahs.map((ayah, ayahIdx) => {
+                          {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
                             return (
                               <span key={ayah.number} className="inline relative group">
@@ -1517,7 +1517,7 @@ export default function StudentManagementDashboard() {
                             ✓ All Ayah
                           </button>
                         )}
-                        {ayah.words.map((word, wordIndex) => {
+                        {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
                           const wordHighlights = highlights.filter(
                             h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
@@ -1589,7 +1589,7 @@ export default function StudentManagementDashboard() {
                                     mistakes[0].textColor === 'text-yellow-900' ? '#713f12' :
                                     mistakes[0].textColor.replace('text-', '').replace('purple-700', '#6b21a8').replace('green-700', '#15803d').replace('orange-700', '#c2410c').replace('red-700', '#b91c1c')
                                 } : mistakes.length > 1 ? {
-                                  background: `linear-gradient(135deg, ${mistakes.map((m, i) => {
+                                  background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? '#713f12' :
                                       m.bgColor.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('green-100', '#dcfce7').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2');
                                     const percent = (i * 100) / mistakes.length;
@@ -1711,7 +1711,7 @@ export default function StudentManagementDashboard() {
                     </div>
                   )}
                   <div className="max-h-96 overflow-y-auto space-y-2">
-                    {notes.map((note) => (
+                    {notes.map((note: any) => (
                       <div key={note.id} className="p-2 bg-gray-50 rounded-md">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1811,7 +1811,7 @@ export default function StudentManagementDashboard() {
             {/* Messages */}
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto bg-gray-50" 
                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="%23f0f0f0" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E")' }}>
-              {showNotePopup.notes.map((note) => {
+              {showNotePopup.notes.map((note: any) => {
                 const isTeacher = note.author === 'Teacher';
                 return (
                   <div key={note.id} className={`flex ${isTeacher ? 'justify-end' : 'justify-start'}`}>
@@ -1883,7 +1883,7 @@ export default function StudentManagementDashboard() {
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="flex items-center space-x-1">
                                       <Volume2 className="w-4 h-4 text-white animate-pulse mr-2" />
-                                      {[1, 2, 3, 4, 5].map((i) => (
+                                      {[1, 2, 3, 4, 5].map((i: any) => (
                                         <div
                                           key={i}
                                           className="bg-white/90 rounded-full animate-bounce"

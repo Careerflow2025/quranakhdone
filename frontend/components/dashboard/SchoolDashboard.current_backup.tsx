@@ -328,7 +328,7 @@ export default function SchoolDashboard() {
       {/* Navigation Tabs */}
       <div className="bg-white border-b px-6">
         <div className="flex space-x-8 overflow-x-auto">
-          {tabs.map((tab) => {
+          {tabs.map((tab: any) => {
             const Icon = tab.icon;
 
             // All tabs stay within this dashboard

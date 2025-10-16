@@ -113,7 +113,7 @@ export default function SchoolDashboard() {
       <div className="bg-white border-b">
         <div className="px-6">
           <nav className="flex space-x-8">
-            {tabs.map((tab) => (
+            {tabs.map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}

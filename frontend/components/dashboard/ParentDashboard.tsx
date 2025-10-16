@@ -448,7 +448,7 @@ export default function ParentDashboard() {
                       <p className="text-blue-100 text-xs mt-0.5">Click to switch between your children</p>
                     </div>
                     <div className="p-2 max-h-80 overflow-y-auto">
-                      {children.map((child, index) => (
+                      {children.map((child: any, index: any) => (
                         <button
                           key={child.id}
                           onClick={() => {
@@ -553,7 +553,7 @@ export default function ParentDashboard() {
                           <p>No new notifications</p>
                         </div>
                       ) : (
-                        notifications.map((notification) => (
+                        notifications.map((notification: any) => (
                           <div
                             key={notification.id}
                             className={`p-4 hover:bg-gray-50 border-b cursor-pointer ${
@@ -994,7 +994,7 @@ export default function ParentDashboard() {
                                      surah.nameArabic.includes(search) ||
                                      surah.number.toString().includes(search);
                             })
-                            .map((surah) => {
+                            .map((surah: any) => {
                               // Check if this surah has any highlights (homework/assignments)
                               const hasWork = highlights.some((h: any) => h.surah === surah.number);
 
@@ -1084,7 +1084,7 @@ export default function ParentDashboard() {
                     width: 100%;
                   }
                 `}</style>
-              {currentAyahs.map((ayah, displayIndex) => {
+              {currentAyahs.map((ayah: any, displayIndex: any) => {
                 const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                 const ayahHighlights = highlights.filter((h: any) =>
                   h.surah === currentSurah && h.ayahIndex === ayahIndex
@@ -1092,7 +1092,7 @@ export default function ParentDashboard() {
 
                 return (
                   <div key={ayah.number} className="inline-block relative group mb-4">
-                    {ayah.words.map((word, wordIndex) => {
+                    {ayah.words.map((word: any, wordIndex: any) => {
                       const wordHighlights = ayahHighlights.filter((h: any) =>
                         h.wordIndices.includes(wordIndex)
                       );
@@ -1242,7 +1242,7 @@ export default function ParentDashboard() {
                   }
                   return true;
                 })
-                .map((homework) => (
+                .map((homework: any) => (
                   <div key={homework.id} className="bg-white rounded-xl shadow-sm border border-gray-100">
                     <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
                       <h3 className="font-semibold text-white">
@@ -1336,7 +1336,7 @@ export default function ParentDashboard() {
                   }
                   return true;
                 })
-                .map((assignment) => (
+                .map((assignment: any) => (
                   <div key={assignment.id} className="bg-white rounded-xl shadow-sm border border-gray-100">
                     <div className={`p-4 ${
                       assignment.mistakeType === 'tajweed' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
@@ -1619,7 +1619,7 @@ export default function ParentDashboard() {
                 </div>
 
                 <div className="grid grid-cols-7 gap-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day: any, index: any) => {
                     const fullDay = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
                     const hasClass = currentChild.classSchedule?.includes(fullDay) || false;
 
@@ -1825,7 +1825,7 @@ export default function ParentDashboard() {
 
             {/* Targets List */}
             <div className="space-y-4">
-              {childTargets.map((target) => (
+              {childTargets.map((target: any) => (
                 <div key={target.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className={`h-2 ${
                     target.type === 'individual' ? 'bg-gradient-to-r from-yellow-400 to-orange-400' :
@@ -1865,7 +1865,7 @@ export default function ParentDashboard() {
                       <div className="border-t pt-4">
                         <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
                         <div className="space-y-2">
-                          {target.milestones.map((milestone) => (
+                          {target.milestones.map((milestone: any) => (
                             <div key={milestone.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                               <div className="flex items-center space-x-2">
                                 {milestone.completed ? (
@@ -1910,7 +1910,7 @@ export default function ParentDashboard() {
 
               {/* Message Tabs */}
               <div className="flex space-x-2 border-b">
-                {['inbox', 'sent', 'archive'].map((tab) => (
+                {['inbox', 'sent', 'archive'].map((tab: any) => (
                   <button
                     key={tab}
                     onClick={() => setMessageTab(tab)}
@@ -1940,7 +1940,7 @@ export default function ParentDashboard() {
             <div className="bg-white rounded-xl shadow-sm">
               <div className="divide-y divide-gray-200">
                 {messages[messageTab as keyof typeof messages].length > 0 ? (
-                  messages[messageTab as keyof typeof messages].map((message) => (
+                  messages[messageTab as keyof typeof messages].map((message: any) => (
                     <div key={message.id} className={`p-6 hover:bg-gray-50 ${
                       message.unread ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                     }`}>
@@ -2234,7 +2234,7 @@ export default function ParentDashboard() {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {children.map((child) => (
+                    {children.map((child: any) => (
                       <div key={child.id} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-4">

@@ -368,7 +368,7 @@ export default function ParentDashboard() {
                 {showChildSelector && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50">
                     <div className="p-2">
-                      {children.map((child, index) => (
+                      {children.map((child: any, index: any) => (
                         <button
                           key={child.id}
                           onClick={() => {
@@ -432,7 +432,7 @@ export default function ParentDashboard() {
                     
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length > 0 ? (
-                        notifications.map((notif) => (
+                        notifications.map((notif: any) => (
                           <div 
                             key={notif.id}
                             onClick={() => {
@@ -532,7 +532,7 @@ export default function ParentDashboard() {
                 {showSurahDropdown && (
                   <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
                     <div className="p-2">
-                      {allSurahs.map((surah) => (
+                      {allSurahs.map((surah: any) => (
                         <button
                           key={surah.number}
                           onClick={() => {
@@ -575,7 +575,7 @@ export default function ParentDashboard() {
               
               {/* Tabs */}
               <div className="flex space-x-1 mb-3">
-                {['inbox', 'sent', 'archive'].map((tab) => (
+                {['inbox', 'sent', 'archive'].map((tab: any) => (
                   <button
                     key={tab}
                     onClick={() => setMessageTab(tab)}
@@ -595,7 +595,7 @@ export default function ParentDashboard() {
 
               {/* Messages List */}
               <div className="space-y-1 max-h-96 overflow-y-auto">
-                {messages[messageTab as keyof typeof messages].map((msg) => (
+                {messages[messageTab as keyof typeof messages].map((msg: any) => (
                   <div 
                     key={msg.id} 
                     className={`p-2 rounded cursor-pointer hover:bg-gray-50 ${
@@ -756,7 +756,7 @@ export default function ParentDashboard() {
               </h3>
               
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {highlights.map((highlight) => (
+                {highlights.map((highlight: any) => (
                   <div 
                     key={highlight.id} 
                     className="p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-gray-100"
@@ -889,7 +889,7 @@ export default function ParentDashboard() {
                 </div>
 
                 {/* Conversation Messages */}
-                {showNoteReply.replies.map((reply) => (
+                {showNoteReply.replies.map((reply: any) => (
                   <div 
                     key={reply.id} 
                     className={`flex ${reply.isStudent ? 'justify-end' : 'justify-start'}`}
@@ -927,7 +927,7 @@ export default function ParentDashboard() {
                                 )}
                                 {/* Waveform */}
                                 <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array(20)].map((_, i) => {
+                                  {[...Array(_: any)].map((_: any: any, i: any: any) => {
                                     const isPlaying = playingAudioId === reply.id;
                                     const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
                                     return (
@@ -1140,7 +1140,7 @@ export default function ParentDashboard() {
                   <div>
                     <label className="text-xs text-gray-500">Registered Children</label>
                     <div className="space-y-2 mt-1">
-                      {parentProfile.children.map((child, index) => (
+                      {parentProfile.children.map((child: any, index: any) => (
                         <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
                           <User className="w-4 h-4 text-gray-500" />
                           <p className="text-sm font-medium text-gray-800">{child}</p>

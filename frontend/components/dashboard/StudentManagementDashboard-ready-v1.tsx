@@ -872,7 +872,7 @@ export default function StudentManagementDashboard() {
                       <h3 className="text-lg font-semibold">Select Surah - اختر السورة</h3>
                     </div>
                     <div className="grid grid-cols-4 gap-1 p-2">
-                      {allSurahs.map((surah) => (
+                      {allSurahs.map((surah: any) => (
                         <button
                           key={surah.number}
                           onClick={() => {
@@ -939,7 +939,7 @@ export default function StudentManagementDashboard() {
             </div>
             
             <div className="grid grid-cols-3 gap-4">
-              {quranScripts.map((script) => (
+              {quranScripts.map((script: any) => (
                 <button
                   key={script.id}
                   onClick={() => handleScriptSelect(script.id)}
@@ -973,7 +973,7 @@ export default function StudentManagementDashboard() {
                   Highlight
                 </h3>
                 <div className="space-y-1">
-                  {mistakeTypes.map((type) => (
+                  {mistakeTypes.map((type: any) => (
                     <button
                       key={type.id}
                       onClick={() => {
@@ -1037,7 +1037,7 @@ export default function StudentManagementDashboard() {
                   Highlights
                 </h3>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {mistakeTypes.map((type) => {
+                  {mistakeTypes.map((type: any) => {
                     const typeHighlights = highlights.filter((h: any) => h.mistakeType === type.id);
                     if (typeHighlights.length === 0) return null;
                     return (
@@ -1251,7 +1251,7 @@ export default function StudentManagementDashboard() {
                   <div className="text-gray-900" style={{ fontSize: getScriptStyling(selectedScript || 'uthmani-hafs').fontSize }}>
                     {quranText.ayahs
                       .slice((currentPage - 1) * AYAHS_PER_PAGE, currentPage * AYAHS_PER_PAGE)
-                      .map((ayah, displayIndex) => {
+                      .map((ayah: any, displayIndex: any) => {
                         const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                         return (
                       <div key={ayah.number} className="inline-block relative group">
@@ -1276,7 +1276,7 @@ export default function StudentManagementDashboard() {
                             ✓ All Ayah
                           </button>
                         )}
-                        {ayah.words.map((word, wordIndex) => {
+                        {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
                           const wordHighlights = highlights.filter(
                             h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
@@ -1344,7 +1344,7 @@ export default function StudentManagementDashboard() {
                                   color: mistakes[0].textColor === 'text-yellow-100' ? '#fef3c7' :
                                     mistakes[0].textColor.replace('text-', '').replace('purple-700', '#6b21a8').replace('orange-700', '#c2410c').replace('red-700', '#b91c1c')
                                 } : mistakes.length > 1 ? {
-                                  background: `linear-gradient(135deg, ${mistakes.map((m, i) => {
+                                  background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? '#713f12' :
                                       m.bgColor.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2');
                                     const percent = (i * 100) / mistakes.length;
@@ -1366,7 +1366,7 @@ export default function StudentManagementDashboard() {
                               )}
                               {mistakes.length > 1 && (
                                 <div className="absolute -top-2 -right-2 flex space-x-0.5">
-                                  {mistakes.map((m, idx) => (
+                                  {mistakes.map((m: any, idx: any) => (
                                     <div key={idx} className={`w-2 h-2 rounded-full ${m.bgColor} border border-white`} />
                                   ))}
                                 </div>
@@ -1469,7 +1469,7 @@ export default function StudentManagementDashboard() {
                     </div>
                   )}
                   <div className="max-h-96 overflow-y-auto space-y-2">
-                    {notes.map((note) => (
+                    {notes.map((note: any) => (
                       <div key={note.id} className="p-2 bg-gray-50 rounded-md">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1569,7 +1569,7 @@ export default function StudentManagementDashboard() {
             {/* Messages */}
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto bg-gray-50" 
                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="%23f0f0f0" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E")' }}>
-              {showNotePopup.notes.map((note) => {
+              {showNotePopup.notes.map((note: any) => {
                 const isTeacher = note.author === 'Teacher';
                 return (
                   <div key={note.id} className={`flex ${isTeacher ? 'justify-end' : 'justify-start'}`}>
@@ -1641,7 +1641,7 @@ export default function StudentManagementDashboard() {
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="flex items-center space-x-1">
                                       <Volume2 className="w-4 h-4 text-white animate-pulse mr-2" />
-                                      {[1, 2, 3, 4, 5].map((i) => (
+                                      {[1, 2, 3, 4, 5].map((i: any) => (
                                         <div
                                           key={i}
                                           className="bg-white/90 rounded-full animate-bounce"

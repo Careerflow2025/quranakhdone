@@ -1052,7 +1052,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
-                      {selectedClass.students.map((student, index) => (
+                      {selectedClass.students.map((student: any, index: any) => (
                         <div
                           key={student.id}
                           className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all group"

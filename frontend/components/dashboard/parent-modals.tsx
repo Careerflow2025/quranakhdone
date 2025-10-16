@@ -95,7 +95,7 @@ export const ParentDetailsModal = ({ parent, onClose, onEdit, onMessage }: {
               Children ({parent.children.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {parent.children.map((child, index) => (
+              {parent.children.map((child: any, index: any) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-3 flex items-center">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                     <span className="text-purple-600 font-semibold">{index + 1}</span>
@@ -378,7 +378,7 @@ export const MessageParentModal = ({ parent, onClose, onSend }: {
               Regarding Child(ren)
             </label>
             <div className="space-y-2">
-              {parent.children.map((child, index) => (
+              {parent.children.map((child: any, index: any) => (
                 <label key={index} className="flex items-center">
                   <input type="checkbox" defaultChecked className="mr-2" />
                   <span className="text-sm">{child}</span>

@@ -166,7 +166,7 @@ export default function SchoolDashboardProduction() {
             { id: 'reports', label: 'Reports', icon: BarChart3 },
             { id: 'credentials', label: 'Credentials', icon: Key },
             { id: 'settings', label: 'Settings', icon: Settings },
-          ].map((item) => (
+          ].map((item: any) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
@@ -309,7 +309,7 @@ export default function SchoolDashboardProduction() {
                 <div className="bg-white rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
                   <div className="space-y-3">
-                    {recentActivities.map((activity) => (
+                    {recentActivities.map((activity: any) => (
                       <div key={activity.id} className="flex items-start space-x-3">
                         <div className={`p-2 rounded-lg ${activity.color}`}>
                           <activity.icon className="w-5 h-5" />
@@ -329,7 +329,7 @@ export default function SchoolDashboardProduction() {
                 <div className="bg-white rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
                   <div className="space-y-3">
-                    {upcomingEvents.map((event) => (
+                    {upcomingEvents.map((event: any) => (
                       <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <Calendar className="w-5 h-5 text-emerald-600" />

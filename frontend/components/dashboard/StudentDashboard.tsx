@@ -536,7 +536,7 @@ export default function StudentDashboard() {
                     
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length > 0 ? (
-                        notifications.map((notif) => (
+                        notifications.map((notif: any) => (
                           <div 
                             key={notif.id}
                             onClick={() => {
@@ -636,7 +636,7 @@ export default function StudentDashboard() {
                 {showSurahDropdown && (
                   <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
                     <div className="p-2">
-                      {allSurahs.map((surah) => (
+                      {allSurahs.map((surah: any) => (
                         <button
                           key={surah.number}
                           onClick={() => {
@@ -829,7 +829,7 @@ export default function StudentDashboard() {
                     }
                   `}</style>
                   <div className="text-gray-900">
-                    {currentAyahs.map((ayah, displayIndex) => {
+                    {currentAyahs.map((ayah: any, displayIndex: any) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       // Filter highlights for current surah and ayah
                       const ayahHighlights = highlights.filter((h: any) =>
@@ -838,7 +838,7 @@ export default function StudentDashboard() {
 
                       return (
                         <div key={ayah.number} className="inline-block relative group">
-                          {ayah.words.map((word, wordIndex) => {
+                          {ayah.words.map((word: any, wordIndex: any) => {
                             const wordHighlights = ayahHighlights.filter((h: any) =>
                               h.wordIndices.includes(wordIndex)
                             );
@@ -1003,7 +1003,7 @@ export default function StudentDashboard() {
                 }
                 return true;
               })
-              .map((homework) => (
+              .map((homework: any) => (
                 <div
                   key={homework.id}
                   className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
@@ -1153,7 +1153,7 @@ export default function StudentDashboard() {
                 }
                 return true;
               })
-              .map((assignment) => (
+              .map((assignment: any) => (
                 <div
                   key={assignment.id}
                   className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
@@ -1416,7 +1416,7 @@ export default function StudentDashboard() {
               </div>
 
               <div className="grid grid-cols-7 gap-2">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day: any, index: any) => {
                   const fullDay = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
                   const hasClass = studentInfo.classSchedule.includes(fullDay);
 
@@ -1541,7 +1541,7 @@ export default function StudentDashboard() {
 
           {/* Targets Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {myTargets.map((target) => (
+            {myTargets.map((target: any) => (
               <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                 {/* Target Header */}
                 <div className={`p-6 ${
@@ -1627,7 +1627,7 @@ export default function StudentDashboard() {
                         Milestones
                       </h4>
                       <div className="space-y-2">
-                        {target.milestones.map((milestone) => (
+                        {target.milestones.map((milestone: any) => (
                           <div
                             key={milestone.id}
                             className={`flex items-center justify-between p-3 rounded-lg border ${
@@ -1678,7 +1678,7 @@ export default function StudentDashboard() {
               Weekly Study Time
             </h3>
             <div className="flex items-end space-x-2 h-40">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day: any, index: any) => {
                 const height = Math.random() * 100;
                 const isToday = index === 3;
                 return (
@@ -1717,7 +1717,7 @@ export default function StudentDashboard() {
                 { name: 'Early Bird', icon: '🌅', earned: false },
                 { name: 'Perfect Week', icon: '💯', earned: false },
                 { name: 'Speed Reader', icon: '⚡', earned: false }
-              ].map((badge, index) => (
+              ].map((badge: any, index: any) => (
                 <div
                   key={index}
                   className={`flex flex-col items-center p-4 rounded-xl border-2 ${
@@ -1758,7 +1758,7 @@ export default function StudentDashboard() {
 
             {/* Message Tabs */}
             <div className="flex space-x-2 border-b">
-              {['inbox', 'sent', 'archive'].map((tab) => (
+              {['inbox', 'sent', 'archive'].map((tab: any) => (
                 <button
                   key={tab}
                   onClick={() => setMessageTab(tab)}
@@ -1788,7 +1788,7 @@ export default function StudentDashboard() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-200">
               {messages[messageTab as keyof typeof messages].length > 0 ? (
-                messages[messageTab as keyof typeof messages].map((message) => (
+                messages[messageTab as keyof typeof messages].map((message: any) => (
                   <div
                     key={message.id}
                     className={`p-6 hover:bg-gray-50 transition cursor-pointer ${
@@ -1975,7 +1975,7 @@ export default function StudentDashboard() {
 
           {/* Targets List */}
           <div className="space-y-4">
-            {myTargets.map((target) => (
+            {myTargets.map((target: any) => (
               <div
                 key={target.id}
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
@@ -2113,7 +2113,7 @@ export default function StudentDashboard() {
                       <div className="mt-4">
                         <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
                         <div className="space-y-2">
-                          {target.milestones.map((milestone) => (
+                          {target.milestones.map((milestone: any) => (
                             <div key={milestone.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                               <div className="flex items-center space-x-2">
                                 {milestone.completed ? (
@@ -2287,7 +2287,7 @@ export default function StudentDashboard() {
                 </div>
 
                 {/* Conversation Messages */}
-                {showNoteReply.replies.map((reply) => (
+                {showNoteReply.replies.map((reply: any) => (
                   <div 
                     key={reply.id} 
                     className={`flex ${reply.isStudent ? 'justify-end' : 'justify-start'}`}
@@ -2325,7 +2325,7 @@ export default function StudentDashboard() {
                                 )}
                                 {/* Waveform */}
                                 <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array(20)].map((_, i) => {
+                                  {[...Array(_: any)].map((_: any: any, i: any: any) => {
                                     const isPlaying = playingAudioId === reply.id;
                                     const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
                                     return (

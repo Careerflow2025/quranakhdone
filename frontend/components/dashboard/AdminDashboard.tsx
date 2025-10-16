@@ -172,7 +172,7 @@ export default function AdminDashboard() {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="flex space-x-8">
-          {['overview', 'schools', 'users', 'analytics', 'settings'].map((tab) => (
+          {['overview', 'schools', 'users', 'analytics', 'settings'].map((tab: any) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {schools.map((school) => (
+                {schools.map((school: any) => (
                   <tr key={school.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
@@ -388,7 +388,7 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
           </div>
           <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-            {recentActivities.map((activity) => (
+            {recentActivities.map((activity: any) => (
               <div key={activity.id} className="flex items-start space-x-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activity.color}`}>
                   <activity.icon className="w-5 h-5" />
@@ -415,7 +415,7 @@ export default function AdminDashboard() {
             <BarChart3 className="w-5 h-5 text-gray-400" />
           </div>
           <div className="h-64 flex items-end justify-between space-x-2">
-            {chartData.values.map((value, index) => (
+            {chartData.values.map((value: any, index: any) => (
               <div key={index} className="flex-1 flex flex-col items-center">
                 <div 
                   className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t hover:from-blue-600 hover:to-blue-500 transition-all cursor-pointer"
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="p-6 space-y-4">
-            {topPerformers.map((student, index) => (
+            {topPerformers.map((student: any, index: any) => (
               <div key={student.id} className="flex items-center space-x-4">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                   index === 0 ? 'bg-yellow-500' :

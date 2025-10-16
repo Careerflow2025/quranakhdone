@@ -2096,7 +2096,7 @@ export default function SchoolDashboard() {
     <div className="flex h-screen bg-gray-50">
       {/* Professional Notification System */}
       <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
-        {notifications.map((notification) => (
+        {notifications.map((notification: any) => (
           <div
             key={notification.id}
             className={`
@@ -2175,7 +2175,7 @@ export default function SchoolDashboard() {
             { id: 'reports', label: 'Reports', icon: BarChart3 },
             { id: 'credentials', label: 'Credentials', icon: Key },
             { id: 'settings', label: 'Settings', icon: Settings },
-          ].map((item) => (
+          ].map((item: any) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
@@ -2246,7 +2246,7 @@ export default function SchoolDashboard() {
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {recentActivities.length > 0 ? (
-                        recentActivities.map((activity) => (
+                        recentActivities.map((activity: any) => (
                           <div key={activity.id} className="p-4 border-b hover:bg-gray-50">
                             <div className="flex items-start space-x-3">
                               <div className={`p-2 rounded-lg ${activity.color}`}>
@@ -2452,7 +2452,7 @@ export default function SchoolDashboard() {
                 <div className="bg-white rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
                   <div className="space-y-3">
-                    {recentActivities.map((activity) => (
+                    {recentActivities.map((activity: any) => (
                       <div key={activity.id} className="flex items-start space-x-3">
                         <div className={`p-2 rounded-lg ${activity.color}`}>
                           <activity.icon className="w-5 h-5" />
@@ -3317,7 +3317,7 @@ export default function SchoolDashboard() {
                                     <div className="flex items-center space-x-1">
                                       {/* Student Avatar Circles */}
                                       <div className="flex -space-x-2">
-                                        {[...Array(Math.min(cls.student_count, 5))].map((_, i) => (
+                                        {[...Array(Math.min(cls.student_count, 5))].map((_: any, i: any) => (
                                           <div
                                             key={i}
                                             className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full border-2 border-white flex items-center justify-center"
@@ -3438,7 +3438,7 @@ export default function SchoolDashboard() {
                         </p>
                       </div>
                     ) : (
-                      homeworkList.map((homework) => (
+                      homeworkList.map((homework: any) => (
                         <div
                           key={homework.id}
                           className="border border-green-200 rounded-lg p-4 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-md transition-all"
@@ -3532,7 +3532,7 @@ export default function SchoolDashboard() {
 
                   {/* Filter Tabs */}
                   <div className="flex items-center space-x-4 mt-6">
-                    {['all', 'pending', 'submitted', 'reviewed', 'completed'].map((status) => (
+                    {['all', 'pending', 'submitted', 'reviewed', 'completed'].map((status: any) => (
                       <button
                         key={status}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -3568,7 +3568,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredAssignments.map((assignment) => (
+                      {filteredAssignments.map((assignment: any) => (
                         <div
                           key={assignment.id}
                           className="border rounded-lg p-4 hover:shadow-md transition-all"
@@ -3678,7 +3678,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {targets.map((target) => (
+                      {targets.map((target: any) => (
                         <div
                           key={target.id}
                           className="border rounded-lg p-4 hover:shadow-md transition-all"
@@ -4005,7 +4005,7 @@ export default function SchoolDashboard() {
                       {/* Message Body */}
                       <div className="flex-1 p-6 overflow-y-auto">
                         <div className="prose max-w-none">
-                          {selectedMessage.body.split('\n').map((paragraph, i) => (
+                          {selectedMessage.body.split('\n').map((paragraph: any, i: any) => (
                             <p key={i} className="mb-4 text-gray-700">
                               {paragraph}
                             </p>
@@ -4019,7 +4019,7 @@ export default function SchoolDashboard() {
                               Attachments ({selectedMessage.attachments.length})
                             </h4>
                             <div className="space-y-2">
-                              {selectedMessage.attachments.map((attachment, i) => (
+                              {selectedMessage.attachments.map((attachment: any, i: any) => (
                                 <div key={i} className="flex items-center space-x-2">
                                   <Paperclip className="w-4 h-4 text-gray-500" />
                                   <a
@@ -4092,7 +4092,7 @@ export default function SchoolDashboard() {
                   <div className="flex items-center gap-3">
                     {/* View Toggle */}
                     <div className="flex bg-gray-100 rounded-lg p-1">
-                      {['month', 'week', 'day'].map((view) => (
+                      {['month', 'week', 'day'].map((view: any) => (
                         <button
                           key={view}
                           onClick={() => setCalendarView(view)}
@@ -4155,7 +4155,7 @@ export default function SchoolDashboard() {
                 <div className="border rounded-lg overflow-hidden">
                   {/* Calendar Header - Days of Week */}
                   <div className="grid grid-cols-7 bg-gray-50 border-b">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day: any) => (
                       <div key={day} className="p-3 text-center text-sm font-semibold text-gray-700 border-r last:border-r-0">
                         {day}
                       </div>
@@ -4202,7 +4202,7 @@ export default function SchoolDashboard() {
                             </div>
                             {/* Show events */}
                             <div className="mt-1 space-y-1">
-                              {dayEvents.slice(0, 3).map((event, idx) => (
+                              {dayEvents.slice(0, 3).map((event: any, idx: any) => (
                                 <div
                                   key={idx}
                                   className="text-xs p-1 rounded truncate"
@@ -4229,7 +4229,7 @@ export default function SchoolDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
                   <div className="space-y-3">
                     {upcomingEvents && upcomingEvents.length > 0 ? (
-                      upcomingEvents.slice(0, 5).map((event) => (
+                      upcomingEvents.slice(0, 5).map((event: any) => (
                         <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <div
@@ -4373,7 +4373,7 @@ export default function SchoolDashboard() {
 
                     {/* Filter Tabs */}
                     <div className="flex gap-2">
-                      {['all', 'student', 'teacher', 'parent'].map((filter) => (
+                      {['all', 'student', 'teacher', 'parent'].map((filter: any) => (
                         <button
                           key={filter}
                           onClick={() => setCredentialFilter(filter)}
@@ -4418,7 +4418,7 @@ export default function SchoolDashboard() {
                       {(credentialFilter === 'all'
                         ? credentials
                         : credentials.filter((c: any) => c.profiles?.role === credentialFilter)
-                      ).map((credential) => (
+                      ).map((credential: any) => (
                         <tr key={credential.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
@@ -4616,7 +4616,7 @@ export default function SchoolDashboard() {
 
                 {/* Date Filter Tabs */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {['today', 'week', 'month', 'year', 'custom'].map((period) => (
+                  {['today', 'week', 'month', 'year', 'custom'].map((period: any) => (
                     <button
                       key={period}
                       onClick={() => setReportPeriod(period)}
@@ -4815,7 +4815,7 @@ export default function SchoolDashboard() {
 
                   <div className="space-y-3">
                     {classes.length > 0 ? (
-                      classes.slice(0, 5).map((cls, index) => (
+                      classes.slice(0, 5).map((cls: any, index: any) => (
                         <div key={cls.id} className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <p className="font-medium text-gray-900">{cls.name}</p>
@@ -4854,7 +4854,7 @@ export default function SchoolDashboard() {
                     {(reportData?.assignmentsTrend?.length > 0
                       ? reportData.assignmentsTrend
                       : Array(7).fill({ count: 0 })
-                    ).map((item, index) => {
+                    ).map((item: any, index: any) => {
                       const maxCount = Math.max(...(reportData?.assignmentsTrend?.map((t: any) => t.count) || [1]), 1);
                       const height = item.count ? (item.count / maxCount) * 100 : 0;
                       return (
@@ -4880,7 +4880,7 @@ export default function SchoolDashboard() {
                     {(reportData?.attendanceTrend?.length > 0
                       ? reportData.attendanceTrend
                       : Array(7).fill({ rate: 0 })
-                    ).map((item, index) => (
+                    ).map((item: any, index: any) => (
                       <div key={index} className="flex-1 flex flex-col items-center">
                         <div
                           className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t-lg transition-all duration-300 hover:from-green-600 hover:to-green-500"
@@ -4914,7 +4914,7 @@ export default function SchoolDashboard() {
                     </thead>
                     <tbody>
                       {teachers.length > 0 ? (
-                        teachers.slice(0, 5).map((teacher) => (
+                        teachers.slice(0, 5).map((teacher: any) => (
                           <tr key={teacher.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
@@ -5938,7 +5938,7 @@ export default function SchoolDashboard() {
               </h3>
               {parentLinkedStudents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {parentLinkedStudents.map((student) => (
+                  {parentLinkedStudents.map((student: any) => (
                     <div key={student.id} className="bg-gray-50 rounded-lg p-3 flex items-center">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                         <User className="w-5 h-5 text-blue-600" />
@@ -6427,7 +6427,7 @@ export default function SchoolDashboard() {
                     </tr>
                   </thead>
                   <tbody className="text-gray-700">
-                    {duplicates.map((student, index) => (
+                    {duplicates.map((student: any, index: any) => (
                       <tr key={index} className="border-t border-gray-200">
                         <td className="py-2">{student.name}</td>
                         <td className="py-2">{student.email}</td>
@@ -7047,7 +7047,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {classSchedules.map((schedule, index) => (
+                      {classSchedules.map((schedule: any, index: any) => (
                         <div key={schedule.id} className="bg-white rounded-lg p-3 border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex-1 grid grid-cols-3 gap-2">
@@ -7190,7 +7190,7 @@ export default function SchoolDashboard() {
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Schedule</h3>
                 {viewingClass.schedule_json?.schedules?.length > 0 ? (
                   <div className="space-y-2">
-                    {viewingClass.schedule_json.schedules.map((schedule, idx) => (
+                    {viewingClass.schedule_json.schedules.map((schedule: any, idx: any) => (
                       <div key={idx} className="flex items-center space-x-4 text-sm">
                         <span className="font-medium w-24">{schedule.day}</span>
                         <span>{schedule.startTime} - {schedule.endTime}</span>
@@ -7210,7 +7210,7 @@ export default function SchoolDashboard() {
                 </h3>
                 {viewingClass.assigned_teachers?.length > 0 ? (
                   <div className="space-y-2">
-                    {viewingClass.assigned_teachers.map((t, idx) => (
+                    {viewingClass.assigned_teachers.map((t: any, idx: any) => (
                       <div key={idx} className="flex items-center justify-between text-sm">
                         <span>{t.teachers?.name}</span>
                         <span className="text-gray-500">{t.teachers?.subject}</span>
@@ -7229,7 +7229,7 @@ export default function SchoolDashboard() {
                 </h3>
                 {viewingClass.enrolled_students?.length > 0 ? (
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                    {viewingClass.enrolled_students.map((s, idx) => (
+                    {viewingClass.enrolled_students.map((s: any, idx: any) => (
                       <div key={idx} className="text-sm">
                         <span>{s.students?.name}</span>
                         <span className="text-gray-500 ml-2">({s.students?.grade || 'N/A'})</span>
@@ -7381,7 +7381,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {editClassSchedules.map((schedule, index) => (
+                      {editClassSchedules.map((schedule: any, index: any) => (
                         <div key={schedule.id || index} className="bg-white rounded-lg p-3 border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex-1 grid grid-cols-3 gap-2">

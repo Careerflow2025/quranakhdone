@@ -229,7 +229,7 @@ export default function AdvancedScheduler({
 
                 {scheduleDays.includes(day) && (
                   <div className="space-y-2 pl-6">
-                    {(scheduleSlots[day] || [{ start: '', end: '' }]).map((slot, index) => (
+                    {(scheduleSlots[day] || [{ start: '', end: '' }]).map((slot: any, index: any) => (
                       <div key={index} className="flex items-center gap-2">
                         <input
                           type="time"

@@ -448,7 +448,7 @@ export default function SchoolDashboard() {
     const allRowsToAdd = [...newRows, ...duplicatesToAdd];
     
     if (bulkUploadType === 'students') {
-      const formattedStudents = allRowsToAdd.map((row, index) => ({
+      const formattedStudents = allRowsToAdd.map((row: any, index: any) => ({
         id: row.id || `STU${String(students.length + index + 1).padStart(3, '0')}`,
         name: row.Name || row.name,
         age: parseInt(row.Age) || 0,
@@ -504,7 +504,7 @@ export default function SchoolDashboard() {
                 <p className="text-sm text-gray-600">These records will be added to the system.</p>
                 {uploadedData.length > 0 && (
                   <div className="mt-3 max-h-32 overflow-y-auto">
-                    {uploadedData.slice(0, 3).map((row, idx) => (
+                    {uploadedData.slice(0, 3).map((row: any, idx: any) => (
                       <div key={idx} className="text-sm text-gray-700 py-1">
                         • {row.Name || row.name} - {row.Email || row.email}
                       </div>
@@ -532,7 +532,7 @@ export default function SchoolDashboard() {
                         ⚠️ Duplicates within your CSV file:
                       </p>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {duplicates.filter((d: any) => d.duplicateType === 'csv').map((row, idx) => (
+                        {duplicates.filter((d: any) => d.duplicateType === 'csv').map((row: any, idx: any) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-300">
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-900">
@@ -561,7 +561,7 @@ export default function SchoolDashboard() {
                         ⚠️ Already exist in the system:
                       </p>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {duplicates.filter((d: any) => d.duplicateType === 'system').map((row, idx) => (
+                        {duplicates.filter((d: any) => d.duplicateType === 'system').map((row: any, idx: any) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-yellow-50 rounded border border-yellow-300">
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-900">
@@ -677,7 +677,7 @@ export default function SchoolDashboard() {
         if (lines[i].trim()) {
           const values = lines[i].split(',').map((v: any) => v.trim());
           const row: any = {};
-          headers.forEach((header, index) => {
+          headers.forEach((header: any, index: any) => {
             row[header] = values[index] || '';
           });
           
@@ -1680,7 +1680,7 @@ export default function SchoolDashboard() {
       <div className="bg-white border-b">
         <div className="px-6">
           <nav className="flex space-x-8">
-            {['overview', 'students', 'teachers', 'parents', 'classes', 'class-builder', 'assignments', 'reports'].map((tab) => (
+            {['overview', 'students', 'teachers', 'parents', 'classes', 'class-builder', 'assignments', 'reports'].map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -1764,7 +1764,7 @@ export default function SchoolDashboard() {
                   <h2 className="text-lg font-semibold">Recent Activity</h2>
                 </div>
                 <div className="p-6 space-y-4">
-                  {recentActivities.map((activity) => (
+                  {recentActivities.map((activity: any) => (
                     <div key={activity.id} className="flex items-start space-x-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activity.color}`}>
                         <activity.icon className="w-5 h-5" />
@@ -1784,7 +1784,7 @@ export default function SchoolDashboard() {
                   <h2 className="text-lg font-semibold">Upcoming Events</h2>
                 </div>
                 <div className="p-6 space-y-4">
-                  {upcomingEvents.map((event) => (
+                  {upcomingEvents.map((event: any) => (
                     <div key={event.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -1945,7 +1945,7 @@ export default function SchoolDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {students.map((student) => (
+                    {students.map((student: any) => (
                       <tr key={student.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <input 
@@ -2026,7 +2026,7 @@ export default function SchoolDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {students.map((student) => (
+                {students.map((student: any) => (
                   <div key={student.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -2107,7 +2107,7 @@ export default function SchoolDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teachers.map((teacher) => (
+              {teachers.map((teacher: any) => (
                 <div key={teacher.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -2188,7 +2188,7 @@ export default function SchoolDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {parents.map((parent) => (
+                  {parents.map((parent: any) => (
                     <tr key={parent.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
@@ -2242,7 +2242,7 @@ export default function SchoolDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {classes.map((cls) => (
+              {classes.map((cls: any) => (
                 <div key={cls.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
@@ -2274,7 +2274,7 @@ export default function SchoolDashboard() {
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-xs text-gray-500 mb-2">Subjects:</p>
                     <div className="flex flex-wrap gap-1">
-                      {cls.subjects.map((subject, idx) => (
+                      {cls.subjects.map((subject: any, idx: any) => (
                         <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded">
                           {subject}
                         </span>
@@ -2456,7 +2456,7 @@ export default function SchoolDashboard() {
             {/* Assignments Grid */}
             {filteredAssignments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAssignments.map((assignment) => (
+              {filteredAssignments.map((assignment: any) => (
                 <div key={assignment.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-1">
                   <div className={`h-2 ${
                     assignment.status === 'completed' ? 'bg-green-500' :
@@ -2788,7 +2788,7 @@ TOP PERFORMERS
                     
                     {/* Horizontal grid lines */}
                     <div className="absolute inset-0 h-72 flex flex-col justify-between pointer-events-none pt-4 pb-4">
-                      {[100, 80, 60, 40, 20, 0].map((line) => (
+                      {[100, 80, 60, 40, 20, 0].map((line: any) => (
                         <div key={line} className="w-full border-b border-gray-100 border-dashed"></div>
                       ))}
                     </div>
@@ -2857,7 +2857,7 @@ TOP PERFORMERS
                           }
                         };
                         
-                        return monthlyData.map((value, index) => {
+                        return monthlyData.map((value: any, index: any) => {
                           const isHighest = value === Math.max(...monthlyData);
                           const isLowest = value === Math.min(...monthlyData);
                           
@@ -2987,7 +2987,7 @@ TOP PERFORMERS
                     { subject: 'Islamic Studies', percentage: 85, color: 'bg-purple-500' },
                     { subject: 'Arabic Language', percentage: 78, color: 'bg-orange-500' },
                     { subject: 'Hadith Studies', percentage: 82, color: 'bg-pink-500' },
-                  ].map((item, index) => (
+                  ].map((item: any, index: any) => (
                     <div key={index}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm text-gray-700">{item.subject}</span>
@@ -3030,7 +3030,7 @@ TOP PERFORMERS
                       { rank: 3, name: 'Aisha Ibrahim', class: 'Class 7A', progress: 89, score: 94, attendance: 99 },
                       { rank: 4, name: 'Omar Hassan', class: 'Class 6A', progress: 87, score: 92, attendance: 97 },
                       { rank: 5, name: 'Maryam Ahmed', class: 'Class 8B', progress: 85, score: 90, attendance: 96 },
-                    ].map((student) => (
+                    ].map((student: any) => (
                       <tr key={student.rank} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${

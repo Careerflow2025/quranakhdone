@@ -252,7 +252,7 @@ export default function SchoolDashboard() {
       if (lines[i].trim()) {
         const values = lines[i].split(',').map((v: any) => v.trim());
         const row = {};
-        headers.forEach((header, index) => {
+        headers.forEach((header: any, index: any) => {
           row[header] = values[index] || '';
         });
         data.push(row);
@@ -274,7 +274,7 @@ export default function SchoolDashboard() {
     const csvEmailMap = new Map();
     const csvInternalDuplicates = [];
     
-    data.forEach((row, index) => {
+    data.forEach((row: any, index: any) => {
       const email = row.Email || row.email || '';
       if (email && csvEmailMap.has(email.toLowerCase())) {
         csvInternalDuplicates.push({ 
@@ -291,7 +291,7 @@ export default function SchoolDashboard() {
     const existingEmails = new Set(students.map((s: any) => s.email.toLowerCase()));
     const systemDuplicates = [];
     
-    data.forEach((row, index) => {
+    data.forEach((row: any, index: any) => {
       const email = row.Email || row.email || '';
       if (email && existingEmails.has(email.toLowerCase())) {
         systemDuplicates.push({ 
@@ -319,7 +319,7 @@ export default function SchoolDashboard() {
   const confirmUpload = (newRows, duplicatesToAdd) => {
     const allRowsToAdd = [...newRows, ...duplicatesToAdd];
     
-    const formattedStudents = allRowsToAdd.map((row, index) => ({
+    const formattedStudents = allRowsToAdd.map((row: any, index: any) => ({
       id: `STU${String(students.length + index + 1).padStart(3, '0')}`,
       name: row.Name || row.name || '',
       email: row.Email || row.email || '',
@@ -480,7 +480,7 @@ export default function SchoolDashboard() {
       <div className="bg-white border-b shadow-sm">
         <div className="flex justify-center">
           <nav className="flex space-x-2 py-1">
-            {tabs.map((tab) => (
+            {tabs.map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -758,7 +758,7 @@ export default function SchoolDashboard() {
                   <Calendar className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="space-y-3">
-                  {upcomingEvents.map((event, index) => (
+                  {upcomingEvents.map((event: any, index: any) => (
                     <div key={event.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-blue-50 hover:to-blue-100 transition-all cursor-pointer group">
                       <div className="flex items-start space-x-3">
                         <div className={`w-2 h-2 rounded-full mt-2 ${
@@ -788,7 +788,7 @@ export default function SchoolDashboard() {
                 <Clock className="w-5 h-5 text-gray-400" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {classes.slice(0, 3).map((cls, index) => (
+                {classes.slice(0, 3).map((cls: any, index: any) => (
                   <div key={cls.id} className="border border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all">
                     <div className="flex items-start justify-between mb-3">
                       <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
@@ -1598,7 +1598,7 @@ export default function SchoolDashboard() {
                       <div className="mt-4 pt-4 border-t">
                         <p className="text-xs font-medium text-gray-500 mb-2">CHILDREN ({parent.children.length})</p>
                         <div className="flex flex-wrap gap-1">
-                          {parent.children.map((child, index) => (
+                          {parent.children.map((child: any, index: any) => (
                             <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
                               {child}
                             </span>
@@ -1656,7 +1656,7 @@ export default function SchoolDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
-                            {parent.children.map((child, index) => (
+                            {parent.children.map((child: any, index: any) => (
                               <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
                                 {child}
                               </span>
@@ -2040,7 +2040,7 @@ export default function SchoolDashboard() {
                   <div className="p-4 bg-gray-50 border-r">
                     <p className="text-xs font-medium text-gray-500">TIME</p>
                   </div>
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day: any, index: any) => (
                     <div key={day} className="p-4 bg-gray-50 border-r last:border-r-0">
                       <p className="text-sm font-medium text-gray-700">{day}</p>
                       <p className="text-xs text-gray-500">Jan {15 + index}</p>
@@ -2098,7 +2098,7 @@ export default function SchoolDashboard() {
                             
                             {dayClasses.length === 2 && (
                               <div className="absolute inset-x-1 top-1 bottom-1 flex space-x-1">
-                                {dayClasses.map((cls, idx) => (
+                                {dayClasses.map((cls: any, idx: any) => (
                                   <div key={idx} className={`flex-1 bg-gradient-to-r from-${getColorForClass(cls.id)}-500 to-${getColorForClass(cls.id)}-600 rounded-lg p-1 text-white cursor-pointer hover:shadow-lg transition`}>
                                     <p className="text-[10px] font-semibold truncate">{cls.name}</p>
                                     <p className="text-[9px] opacity-90">{cls.room}</p>
@@ -2110,7 +2110,7 @@ export default function SchoolDashboard() {
                             
                             {dayClasses.length > 2 && (
                               <div className="absolute inset-x-1 top-1 bottom-1 flex space-x-1">
-                                {dayClasses.slice(0, 2).map((cls, idx) => (
+                                {dayClasses.slice(0, 2).map((cls: any, idx: any) => (
                                   <div key={idx} className={`flex-1 bg-gradient-to-r from-${getColorForClass(cls.id)}-500 to-${getColorForClass(cls.id)}-600 rounded-lg p-1 text-white cursor-pointer hover:shadow-lg transition`}>
                                     <p className="text-[10px] font-semibold truncate">{cls.name}</p>
                                     <p className="text-[9px] opacity-90">{cls.room}</p>
@@ -2120,7 +2120,7 @@ export default function SchoolDashboard() {
                                   <p className="text-[10px] font-semibold">+{dayClasses.length - 2}</p>
                                   <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-20">
                                     <div className="bg-gray-900 text-white p-2 rounded-lg shadow-lg whitespace-nowrap">
-                                      {dayClasses.slice(2).map((cls, idx) => (
+                                      {dayClasses.slice(2).map((cls: any, idx: any) => (
                                         <div key={idx} className="mb-1">
                                           <p className="text-xs font-semibold">{cls.name}</p>
                                           <p className="text-xs opacity-90">{cls.room} • {cls.students} students</p>
@@ -2218,7 +2218,7 @@ export default function SchoolDashboard() {
                   { date: 'Sun, Jan 21', time: '10:00 AM', title: 'Parent-Teacher Meeting', type: 'meeting', location: 'Conference Room', color: 'cyan' },
                   { date: 'Mon, Jan 22', time: '2:00 PM', title: 'Science Fair', type: 'event', location: 'Main Hall', color: 'purple' },
                   { date: 'Wed, Jan 24', time: '11:00 AM', title: 'Field Trip', type: 'trip', location: 'Islamic Museum', color: 'green' },
-                ].map((event, index) => (
+                ].map((event: any, index: any) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center space-x-4">
                       <div className={`w-2 h-12 bg-${event.color}-500 rounded-full`}></div>
@@ -2257,7 +2257,7 @@ export default function SchoolDashboard() {
               
               {/* Message Tabs */}
               <div className="flex space-x-6 border-b">
-                {['inbox', 'sent', 'drafts', 'scheduled'].map((tab) => (
+                {['inbox', 'sent', 'drafts', 'scheduled'].map((tab: any) => (
                   <button
                     key={tab}
                     onClick={() => setActiveMessageTab(tab)}
@@ -2618,7 +2618,7 @@ export default function SchoolDashboard() {
                       { month: 'January', score: 87, students: 245 }
                     ];
 
-                    return monthlyData.map((data, index) => (
+                    return monthlyData.map((data: any, index: any) => (
                       <div key={index} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium text-gray-700 w-24">{data.month}</span>
@@ -2687,7 +2687,7 @@ export default function SchoolDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Class Performance</h3>
                 <div className="space-y-3">
-                  {classes.slice(0, 5).map((cls, index) => (
+                  {classes.slice(0, 5).map((cls: any, index: any) => (
                     <div key={cls.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold ${
@@ -2720,7 +2720,7 @@ export default function SchoolDashboard() {
                     { subject: 'Islamic Studies', score: 92, progress: 92 },
                     { subject: 'Arabic Language', score: 78, progress: 78 },
                     { subject: 'Hadith', score: 83, progress: 83 }
-                  ].map((item) => (
+                  ].map((item: any) => (
                     <div key={item.subject}>
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-sm font-medium">{item.subject}</p>
@@ -3530,7 +3530,7 @@ export default function SchoolDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {uploadedData.map((row, index) => (
+                      {uploadedData.map((row: any, index: any) => (
                         <tr key={index}>
                           <td className="px-3 py-2">{row.Name || row.name}</td>
                           <td className="px-3 py-2">{row.Email || row.email}</td>
@@ -3610,7 +3610,7 @@ export default function SchoolDashboard() {
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-h-48 overflow-y-auto mb-4">
                   <p className="text-sm font-medium text-yellow-900 mb-2">Duplicate Students:</p>
                   <div className="space-y-2">
-                    {duplicates.map((dup, index) => (
+                    {duplicates.map((dup: any, index: any) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <div>
                           <span className="font-medium">{dup.Name || dup.name}</span>
@@ -4237,7 +4237,7 @@ export default function SchoolDashboard() {
                       <div className="mb-3 p-2 bg-blue-50 rounded-lg">
                         <p className="text-xs text-blue-700 mb-2">Selected: {selectedRecipients.length} recipient(s)</p>
                         <div className="flex flex-wrap gap-1">
-                          {selectedRecipients.map((email, index) => {
+                          {selectedRecipients.map((email: any, index: any) => {
                             const allRecipients = [...parents, ...teachers, ...students];
                             const recipient = allRecipients.find((r: any) => r.email === email);
                             return (
@@ -5056,7 +5056,7 @@ export default function SchoolDashboard() {
                     <div className="mb-3 p-2 bg-blue-50 rounded-lg">
                       <p className="text-xs text-blue-700 mb-2">Selected: {selectedChildren.length} child(ren)</p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedChildren.map((childId) => {
+                        {selectedChildren.map((childId: any) => {
                           const child = students.find((s: any) => s.id === childId);
                           return child ? (
                             <span key={childId} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
