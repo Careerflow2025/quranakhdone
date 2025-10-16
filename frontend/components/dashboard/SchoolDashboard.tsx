@@ -651,7 +651,7 @@ export default function SchoolDashboard() {
 
         const { error: linkError } = await supabase
           .from('parent_students')
-          .insert(parentStudentLinks) as any;
+          .insert(parentStudentLinks as any);
 
         if (linkError) {
           console.error('Error linking parent to students:', linkError);
@@ -6033,7 +6033,7 @@ export default function SchoolDashboard() {
 
                   await supabase
                     .from('parent_students')
-                    .insert(parentStudentLinks) as any;
+                    .insert(parentStudentLinks as any);
                 }
 
                 showNotification(

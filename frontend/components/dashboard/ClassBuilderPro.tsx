@@ -375,7 +375,7 @@ export default function ClassBuilderPro({ schoolId, onClose }: ClassBuilderProPr
 
           await supabase
             .from('class_enrollments')
-            .insert(enrollments) as any;
+            .insert(enrollments as any);
         }
       }
 

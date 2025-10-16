@@ -630,7 +630,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             .insert({
               class_id: cls.id,
               teacher_id: cls.teacher.id
-            }) as any;
+            } as any);
         }
 
         // Update student enrollments
@@ -647,7 +647,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
           await supabase
             .from('class_enrollments')
-            .insert(enrollments) as any;
+            .insert(enrollments as any);
         }
       }
 
