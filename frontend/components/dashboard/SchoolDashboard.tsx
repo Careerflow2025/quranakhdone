@@ -185,7 +185,7 @@ export default function SchoolDashboard() {
   const [loadingCredentials, setLoadingCredentials] = useState(true);
 
   // Professional Notification Function
-  const showNotification = (message, type = 'success', duration = 5000, details = null) => {
+  const showNotification = (message: string, type: string = 'success', duration: number = 5000, details: any = null) => {
     const id = notificationIdCounter;
     setNotificationIdCounter((prev: any) => prev + 1);
 
@@ -206,7 +206,7 @@ export default function SchoolDashboard() {
   };
 
   // Remove notification manually
-  const removeNotification = (id) => {
+  const removeNotification = (id: number) => {
     setNotifications((prev: any) => prev.filter((n: any) => n.id !== id));
   };
 
@@ -752,7 +752,7 @@ export default function SchoolDashboard() {
   };
 
   // Helper function to calculate duration between two times
-  const calculateDuration = (startTime, endTime) => {
+  const calculateDuration = (startTime: any, endTime: any) => {
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
     const diffMs = end - start;
@@ -812,7 +812,7 @@ export default function SchoolDashboard() {
     // Open Quran viewer with highlighting enabled
   };
 
-  const handleGradeHomework = (homeworkId) => {
+  const handleGradeHomework = (homeworkId: any) => {
     const homework = homeworkList.find((h: any) => h.id === homeworkId);
     // Open grading interface for Quran homework
     showNotification('Opening grading interface...', 'info');
@@ -869,7 +869,7 @@ export default function SchoolDashboard() {
     setViewingAssignment(assignment);
   };
 
-  const handleEditAssignment = (assignment) => {
+  const handleEditAssignment = (assignment: any) => {
     setEditingAssignment(assignment);
     setAddModalType('assignment');
     setShowAddModal(true);
@@ -933,7 +933,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  const handleUpdateTargetProgress = (targetId) => {
+  const handleUpdateTargetProgress = (targetId: any) => {
     // Open a modal to update progress
     const target = targets.find((t: any) => t.id === targetId);
     if (target) {
@@ -1924,7 +1924,7 @@ export default function SchoolDashboard() {
   });
 
   // Helper functions for UI interactions
-  const handleSendEmail = (userIds) => {
+  const handleSendEmail = (userIds: string[]) => {
     console.log('Sending email to:', userIds);
     showNotification(
       'Coming Soon',
@@ -2019,7 +2019,7 @@ export default function SchoolDashboard() {
   };
 
   // View Student Details
-  const handleViewStudent = (student) => {
+  const handleViewStudent = (student: any) => {
     setShowStudentDetails(student);
   };
 
