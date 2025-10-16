@@ -236,7 +236,7 @@ ${formData.sendEmail ? '📧 An email has been sent to the user.' : '📝 Please
             </label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'student' | 'teacher' | 'parent' })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="student">Student</option>
