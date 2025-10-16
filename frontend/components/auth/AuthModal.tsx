@@ -69,8 +69,17 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
     setError('');
 
     try {
-      const { login } = await import('@/lib/api');
-      const data = await login(loginData.email, loginData.password);
+      const { authApi } = await import('@/lib/api');
+      const result = await authApi.login({
+        email: loginData.email,
+        password: loginData.password
+      });
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Login failed');
+      }
+
+      const data = result.data as any;
 
       // Store auth data in the auth store
       const { useAuthStore } = await import('@/store/authStore');
@@ -110,25 +119,18 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
     setError('');
 
     try {
-      const { register } = await import('@/lib/api');
-      const registrationData = {
+      const { authApi } = await import('@/lib/api');
+      const result = await authApi.register({
         email: schoolData.adminEmail,
         password: schoolData.password,
-        displayName: schoolData.adminName,
-        phone: schoolData.adminPhone,
+        display_name: schoolData.adminName,
         role: 'owner',
-        schoolName: schoolData.schoolName,
-        schoolId: schoolData.schoolId,
-        schoolType: schoolData.schoolType,
-        address: schoolData.address,
-        city: schoolData.city,
-        state: schoolData.state,
-        country: schoolData.country,
-        zipCode: schoolData.zipCode,
-        timezone: schoolData.timezone
-      };
+        school_id: schoolData.schoolId
+      });
 
-      const data = await register(registrationData);
+      if (!result.success) {
+        throw new Error(result.error || 'Registration failed');
+      }
 
       setSuccess('Registration successful! You can now log in.');
       setTimeout(() => {
