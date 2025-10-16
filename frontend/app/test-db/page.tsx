@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export default function TestDatabase() {
   const [testResults, setTestResults] = useState<{
@@ -68,7 +71,7 @@ export default function TestDatabase() {
         .from('profiles')
         .select('*')
         .eq('email', email)
-        .single();
+        .single<Profile>();
 
       if (error) {
         alert(`Error: ${error.message}`);
@@ -76,7 +79,7 @@ export default function TestDatabase() {
       }
 
       if (data) {
-        alert(`✅ User found: ${data.full_name} (${data.role})`);
+        alert(`✅ User found: ${data.display_name || data.email} (${data.role})`);
       } else {
         alert('❌ User not found');
       }
@@ -150,11 +153,11 @@ export default function TestDatabase() {
                 <tbody>
                   {testResults.profiles.map((profile, idx) => (
                     <tr key={idx} className="border-t">
-                      <td className="px-4 py-2">{profile.full_name}</td>
+                      <td className="px-4 py-2">{profile.display_name || profile.email}</td>
                       <td className="px-4 py-2">{profile.email}</td>
                       <td className="px-4 py-2">
                         <span className={`px-2 py-1 rounded text-sm ${
-                          profile.role === 'school_admin' ? 'bg-blue-100 text-blue-600' :
+                          profile.role === 'school' ? 'bg-blue-100 text-blue-600' :
                           profile.role === 'teacher' ? 'bg-green-100 text-green-600' :
                           profile.role === 'student' ? 'bg-yellow-100 text-yellow-600' :
                           'bg-purple-100 text-purple-600'
