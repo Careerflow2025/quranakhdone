@@ -605,7 +605,7 @@ export default function ParentDashboard() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">
-                          {msg.from || msg.to}
+                          {('from' in msg ? msg.from : 'to' in msg ? msg.to : '')}
                         </p>
                         <p className="text-xs text-gray-600 truncate">{msg.subject}</p>
                       </div>
