@@ -29,7 +29,7 @@ export default function RegisterSchool() {
     phone: ''
   });
 
-  const handleSchoolSubmit = async (e) => {
+  const handleSchoolSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!schoolData.schoolName || !schoolData.email) {
@@ -41,7 +41,7 @@ export default function RegisterSchool() {
     setError('');
   };
 
-  const handleCompleteRegistration = async (e) => {
+  const handleCompleteRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -164,7 +164,7 @@ export default function RegisterSchool() {
         router.push('/login');
       }, 3000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
       console.error('Full error details:', error);
 

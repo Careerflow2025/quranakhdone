@@ -30,7 +30,7 @@ export default function ConfirmPage() {
     }
   }, []);
 
-  const handleSetPassword = async (e) => {
+  const handleSetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -60,7 +60,7 @@ export default function ConfirmPage() {
         router.push('/login');
       }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error setting password:', error);
       alert(`Error: ${error.message}`);
       setIsLoading(false);
