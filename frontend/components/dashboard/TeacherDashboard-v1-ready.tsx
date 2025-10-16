@@ -1653,11 +1653,11 @@ export default function TeacherDashboard() {
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">No students found</h3>
                     <p className="text-gray-500 mb-6">
                       {selectedClass !== 'all' && searchTerm 
-                        ? `No students matching "${searchTerm}" in ${myClasses.find((c: any) => c.id === selectedClass)?.name}`
+                        ? `No students matching "${searchTerm} in ${myClasses.find((c: any) => c.id === selectedClass)?.name}`
                         : selectedClass !== 'all' 
                         ? `No students in ${myClasses.find((c: any) => c.id === selectedClass)?.name}`
                         : searchTerm 
-                        ? `No students matching "${searchTerm}"`
+                        ? `No students matching "${searchTerm}`
                         : 'No students available'}
                     </p>
                     {(selectedClass !== 'all' || searchTerm) && (

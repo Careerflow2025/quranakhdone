@@ -441,7 +441,7 @@ export default function SchoolDashboard() {
       if (!skipAlert) {
         setShowAddModal(false);
         showNotification(
-          `Student "${studentData.name}" added successfully!`,
+          `Student "${studentData.name} added successfully!`,
           'success',
           8000,
           `Login: ${studentData.email} | Password: ${tempPassword}`
@@ -558,7 +558,7 @@ export default function SchoolDashboard() {
       setShowAddModal(false);
 
       showNotification(
-        `Teacher "${teacherData.name}" added successfully!`,
+        `Teacher "${teacherData.name} added successfully!`,
         'success',
         8000,
         `Login: ${teacherData.email} | Password: ${tempPassword}`
@@ -675,7 +675,7 @@ export default function SchoolDashboard() {
       setShowAddParent(false);
 
       showNotification(
-        `Parent "${parentData.name}" added successfully!`,
+        `Parent "${parentData.name} added successfully!`,
         'success',
         8000,
         `Login: ${parentData.email} | Password: ${tempPassword}`
@@ -730,7 +730,7 @@ export default function SchoolDashboard() {
       setClassSchedules([]);
 
       showNotification(
-        `Class "${classData.name}" created successfully!`,
+        `Class "${classData.name} created successfully!`,
         'success',
         5000,
         `${formattedSchedules.length} schedule${formattedSchedules.length > 1 ? 's' : ''} added. Use Class Builder to assign teachers and students.`
@@ -902,7 +902,7 @@ export default function SchoolDashboard() {
   };
 
   const handleDeleteAssignment = async (assignmentId, title) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to delete "${title}?`)) return;
 
     try {
       const { error } = await supabase
@@ -921,7 +921,7 @@ export default function SchoolDashboard() {
   };
 
   const handleDeleteTarget = async (targetId, title) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to delete "${title}?`)) return;
 
     try {
       // For now, targets will be stored locally or in a different table
@@ -937,7 +937,7 @@ export default function SchoolDashboard() {
     // Open a modal to update progress
     const target = targets.find((t: any) => t.id === targetId);
     if (target) {
-      const newProgress = prompt(`Update progress for "${target.title}" (0-100):`, target.progress);
+      const newProgress = prompt(`Update progress for "${target.title} (0-100):`, target.progress);
       if (newProgress !== null) {
         const progress = Math.max(0, Math.min(100, parseInt(newProgress) || 0));
         setTargets((prev: any) => prev.map((t: any) =>
@@ -1489,7 +1489,7 @@ export default function SchoolDashboard() {
       setEditClassSchedules([]);
 
       showNotification(
-        `Class "${classData.name}" updated successfully!`,
+        `Class "${classData.name} updated successfully!`,
         'success',
         5000
       );
@@ -1506,7 +1506,7 @@ export default function SchoolDashboard() {
 
   // PRODUCTION: Delete Class Function
   const handleDeleteClass = async (classId, className) => {
-    if (!confirm(`Are you sure you want to delete "${className}"? This will remove all enrollments and teacher assignments.`)) {
+    if (!confirm(`Are you sure you want to delete "${className}? This will remove all enrollments and teacher assignments.`)) {
       return;
     }
 
@@ -1523,7 +1523,7 @@ export default function SchoolDashboard() {
       refreshData();
 
       showNotification(
-        `Class "${className}" deleted successfully!`,
+        `Class "${className} deleted successfully!`,
         'success',
         5000
       );
@@ -1571,7 +1571,7 @@ export default function SchoolDashboard() {
                 'Invalid email format in CSV',
                 'error',
                 5000,
-                `Check email: "${cols[1]}"`
+                `Check email: "${cols[1]}`
               );
               return;
             }
@@ -3107,7 +3107,7 @@ export default function SchoolDashboard() {
                             </button>
                             <button
                               onClick={async () => {
-                                if (confirm(`Are you sure you want to delete parent "${parent.name}"?`)) {
+                                if (confirm(`Are you sure you want to delete parent "${parent.name}?`)) {
                                   try {
                                     // Delete parent (cascades to parent_students)
                                     const { error } = await supabase
@@ -3132,7 +3132,7 @@ export default function SchoolDashboard() {
                                     // Note: Cannot delete from auth.users directly from frontend
 
                                     showNotification(
-                                      `Parent "${parent.name}" deleted successfully`,
+                                      `Parent "${parent.name} deleted successfully`,
                                       'success'
                                     );
                                     refreshData();
@@ -4046,7 +4046,7 @@ export default function SchoolDashboard() {
                               onChange={(e) => setReplyMessage(e.target.value)}
                               placeholder="Type your reply..."
                               className="flex-1 px-3 py-2 border rounded-lg text-sm resize-none"
-                              rows="3"
+                              rows={3}
                             />
                             <div className="flex flex-col space-y-2">
                               <button
@@ -5091,7 +5091,7 @@ export default function SchoolDashboard() {
                   name="address"
                   placeholder="Address (Optional)"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                 />
                 <input
                   name="phone"
@@ -5200,7 +5200,7 @@ export default function SchoolDashboard() {
                   name="address"
                   placeholder="Address"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                   required
                 />
                 <input
@@ -5282,7 +5282,7 @@ export default function SchoolDashboard() {
                   name="address"
                   placeholder="Address"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                 />
 
                 {/* Enhanced Student Selection with Search */}
@@ -5644,7 +5644,7 @@ export default function SchoolDashboard() {
                     name="description"
                     placeholder="Describe the assignment requirements..."
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    rows="3"
+                    rows={3}
                     defaultValue={editingAssignment?.description}
                     required
                   />
@@ -5820,7 +5820,7 @@ export default function SchoolDashboard() {
                     name="description"
                     placeholder="Describe the learning goal..."
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                    rows="3"
+                    rows={3}
                     required
                   />
                 </div>
@@ -6037,7 +6037,7 @@ export default function SchoolDashboard() {
                 }
 
                 showNotification(
-                  `Parent "${formData.get('name')}" updated successfully!`,
+                  `Parent "${formData.get('name')} updated successfully!`,
                   'success'
                 );
 
@@ -6083,7 +6083,7 @@ export default function SchoolDashboard() {
                   defaultValue={showEditParent.address}
                   placeholder="Address"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                 />
 
                 {/* Student Selection with Search */}
@@ -6688,7 +6688,7 @@ export default function SchoolDashboard() {
                   defaultValue={editingStudent.address || ''}
                   placeholder="Address (Optional)"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                 />
               </div>
               <div className="flex space-x-3 mt-6">
@@ -6870,7 +6870,7 @@ export default function SchoolDashboard() {
                   defaultValue={editingTeacher.address || ''}
                   placeholder="Address"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows="2"
+                  rows={2}
                 />
                 <input
                   name="qualification"

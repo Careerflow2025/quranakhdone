@@ -4384,7 +4384,7 @@ export default function SchoolDashboard() {
                          teachers.filter((t: any) => t.name.toLowerCase().includes(recipientSearch.toLowerCase()) || t.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 &&
                          students.filter((s: any) => s.name.toLowerCase().includes(recipientSearch.toLowerCase()) || s.email.toLowerCase().includes(recipientSearch.toLowerCase())).length === 0 && (
                           <div className="text-center py-8 text-gray-500">
-                            <p className="text-sm">No recipients found matching "{recipientSearch}"</p>
+                            <p className="text-sm">No recipients found matching "{recipientSearch}</p>
                           </div>
                         )}
                       </div>
@@ -5089,7 +5089,7 @@ export default function SchoolDashboard() {
                         if (filteredStudents.length === 0) {
                           return (
                             <div className="text-center py-4 text-gray-500">
-                              <p className="text-sm">No students found matching "{childrenSearchTerm}"</p>
+                              <p className="text-sm">No students found matching "{childrenSearchTerm}</p>
                             </div>
                           );
                         }
@@ -5339,7 +5339,7 @@ export default function SchoolDashboard() {
                       capacity: newClass.capacity
                     };
                     classes.push(newClassData);
-                    alert(`Class "${newClass.name}" created successfully! Now go to Class Builder to assign teachers and students.`);
+                    alert(`Class "${newClass.name} created successfully! Now go to Class Builder to assign teachers and students.`);
                     setShowCreateClass(false);
                     setNewClass({ name: '', room: '', schedule: '', time: '', capacity: 25, subjects: [] });
                   }}

@@ -952,7 +952,7 @@ export default function StudentDashboard() {
                   onChange={(e) => setComposeMessage(e.target.value)}
                   placeholder="Type your message..."
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
-                  rows="6"
+                  rows={6}
                 />
               </div>
 

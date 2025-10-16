@@ -382,7 +382,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             if ((targetStart >= existingStart && targetStart < existingEnd) ||
                 (targetEnd > existingStart && targetEnd <= existingEnd) ||
                 (targetStart <= existingStart && targetEnd >= existingEnd)) {
-              return `⚠️ Conflict: ${entityType === 'student' ? 'Student' : 'Teacher'} already has "${existingClass.name}" on ${existingSchedule.day} at ${existingSchedule.startTime}`;
+              return `⚠️ Conflict: ${entityType === 'student' ? 'Student' : 'Teacher'} already has "${existingClass.name} on ${existingSchedule.day} at ${existingSchedule.startTime}`;
             }
           }
         }

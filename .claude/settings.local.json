@@ -4,7 +4,8 @@
       "Bash(./fix_implicit_any_build23.sh)",
       "Read(//c//**)",
       "Bash(./fix_build24_syntax.sh)",
-      "Bash(./fix_audioprogressobject.sh:*)"
+      "Bash(./fix_audioprogressobject.sh:*)",
+      "Bash(./fix_numeric_attrs.sh:*)"
     ],
     "deny": [],
     "ask": []
