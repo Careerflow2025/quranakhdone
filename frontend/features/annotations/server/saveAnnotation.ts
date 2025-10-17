@@ -9,7 +9,7 @@ async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
   return response.blob();
 }
 
-export async function saveAnnotation({ schoolId, studentId, classId, page, toolType, canvas, userId, flattenedPngDataUrl }:{ schoolId:string; studentId:string; classId?:string; page:number; toolType:string; canvas:fabric.Canvas; userId:string; flattenedPngDataUrl?:string; }){
+export async function saveAnnotation({ schoolId, studentId, classId, page, toolType, canvas, userId, flattenedPngDataUrl }:{ schoolId:string; studentId:string; classId?:string; page:number; toolType:string; canvas:any; userId:string; flattenedPngDataUrl?:string; }){
   const sb = createSb();
   // 1. Serialize JSON
   const layerJson = serializeFabric(canvas);
