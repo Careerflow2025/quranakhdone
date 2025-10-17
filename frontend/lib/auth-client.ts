@@ -35,14 +35,15 @@ export async function loginWithRole(email: string, password: string) {
     let redirectPath = '/';
 
     switch (profile.role) {
-      case 'school_admin':
+      case 'owner':  // Fixed: use 'owner' not 'school_admin'
+      case 'admin':
         const { data: school } = await supabase
           .from('schools')
           .select('*')
           .eq('id', profile.school_id)
           .single();
         additionalData = school;
-        redirectPath = '/school/dashboard';
+        redirectPath = '/school-dashboard';  // Fixed: use actual route with -dashboard suffix
         break;
 
       case 'teacher':
@@ -58,7 +59,7 @@ export async function loginWithRole(email: string, password: string) {
           .eq('user_id', authData.user.id)
           .single();
         additionalData = teacher;
-        redirectPath = '/teacher/dashboard';
+        redirectPath = '/teacher-dashboard';  // Fixed: use actual route with -dashboard suffix
         break;
 
       case 'parent':
@@ -80,7 +81,7 @@ export async function loginWithRole(email: string, password: string) {
           .eq('user_id', authData.user.id)
           .single();
         additionalData = parent;
-        redirectPath = '/parent/dashboard';
+        redirectPath = '/parent-dashboard';  // Fixed: use actual route with -dashboard suffix
         break;
     }
 

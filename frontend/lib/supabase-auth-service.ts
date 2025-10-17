@@ -380,7 +380,7 @@ export async function loginWithRole(email: string, password: string) {
           .eq('id', profile.school_id)
           .single();
         additionalData = school;
-        redirectPath = '/school/dashboard';
+        redirectPath = '/school-dashboard';  // Using actual route with -dashboard suffix
         break;
 
       case 'teacher':
@@ -396,7 +396,7 @@ export async function loginWithRole(email: string, password: string) {
           .eq('user_id', authData.user.id)
           .single();
         additionalData = teacher;
-        redirectPath = '/teacher/dashboard';
+        redirectPath = '/teacher-dashboard';  // Using actual route with -dashboard suffix
         break;
 
       case 'parent':
@@ -418,7 +418,7 @@ export async function loginWithRole(email: string, password: string) {
           .eq('user_id', authData.user.id)
           .single();
         additionalData = parent;
-        redirectPath = '/parent/dashboard';
+        redirectPath = '/parent-dashboard';  // Using actual route with -dashboard suffix
         break;
     }
 
