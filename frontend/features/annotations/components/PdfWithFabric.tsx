@@ -27,7 +27,7 @@ type Props = { pdfUrl: string };
 export default function PdfWithFabric({ pdfUrl }: Props){
   const containerRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<fabric.Canvas| null>(null);
+  const fabricRef = useRef<any>(null);
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);

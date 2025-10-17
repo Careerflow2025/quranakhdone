@@ -67,7 +67,7 @@ export default function EnterpriseQuranViewer({
   
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const canvasRef = useRef<fabric.Canvas | null>(null);
+  const canvasRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Annotation state from store

@@ -62,7 +62,7 @@ export default function MushafQuranViewer({
   
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const canvasRef = useRef<fabric.Canvas | null>(null);
+  const canvasRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   

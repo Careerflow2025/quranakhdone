@@ -15,7 +15,7 @@ export default function QuranAnnotator({ pdfUrl }: Props) {
   // Refs for canvases
   const containerRef = useRef<HTMLDivElement>(null);
   const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<fabric.Canvas | null>(null);
+  const fabricRef = useRef<any>(null);
   
   // State
   const [pdfDoc, setPdfDoc] = useState<any>(null);
@@ -154,7 +154,7 @@ export default function QuranAnnotator({ pdfUrl }: Props) {
 
       // Add event listeners
       if (fabricRef.current) {
-        fabricRef.current.on('path:created', (e) => {
+        fabricRef.current.on('path:created', (e: any) => {
           console.log('Path created');
         });
       }
@@ -192,7 +192,7 @@ export default function QuranAnnotator({ pdfUrl }: Props) {
       // Eraser mode - allow selection and deletion
       canvas.isDrawingMode = false;
       canvas.selection = true;
-      canvas.forEachObject((obj) => {
+      canvas.forEachObject((obj: any) => {
         obj.selectable = true;
       });
       
