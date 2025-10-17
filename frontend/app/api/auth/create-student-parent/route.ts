@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       .eq('user_id', user.id)
       .single();
 
-    if (profile?.role !== 'school_admin') {
+    if (profile?.role !== 'owner' && profile?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Only school administrators can create student accounts' },
         { status: 403 }
