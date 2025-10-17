@@ -69,11 +69,12 @@ export default function LoginPage() {
           // Update auth store
           await storeLogin(email, password);
 
-          // Redirect based on role
-          const dashboardRoute = (profile as any).role === 'school' ? '/school-dashboard' :
-                                (profile as any).role === 'teacher' ? '/teacher' :
-                                (profile as any).role === 'student' ? '/student' :
-                                (profile as any).role === 'parent' ? '/parent' : '/';
+          // Redirect based on role - FIXED: 'owner' not 'school', correct dashboard routes
+          const dashboardRoute = (profile as any).role === 'owner' ? '/school/dashboard' :
+                                (profile as any).role === 'admin' ? '/school/dashboard' :
+                                (profile as any).role === 'teacher' ? '/teacher/dashboard' :
+                                (profile as any).role === 'student' ? '/student/dashboard' :
+                                (profile as any).role === 'parent' ? '/parent/dashboard' : '/';
 
           console.log('🚀 Redirecting to:', dashboardRoute);
           router.push(dashboardRoute);
@@ -89,7 +90,7 @@ export default function LoginPage() {
         const userData = {
           id: authData.user.id,
           email: user.email || authData.user.email,
-          role: user.role || 'school',
+          role: user.role || 'owner',  // FIXED: default should be 'owner' not 'school'
           fullName: user.display_name || '',
           schoolId: user.school_id || ''
         };
@@ -106,9 +107,13 @@ export default function LoginPage() {
           isLoading: false
         });
 
-        // Redirect to appropriate dashboard
+        // Redirect to appropriate dashboard - FIXED: correct routes for all roles
         const dashboardRoute = user.dashboard_route ||
-                              (user.role === 'school' ? '/school-dashboard' : '/');
+                              (user.role === 'owner' ? '/school/dashboard' :
+                               user.role === 'admin' ? '/school/dashboard' :
+                               user.role === 'teacher' ? '/teacher/dashboard' :
+                               user.role === 'student' ? '/student/dashboard' :
+                               user.role === 'parent' ? '/parent/dashboard' : '/');
 
         console.log('🚀 Redirecting to dashboard:', dashboardRoute);
 
