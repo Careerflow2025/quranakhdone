@@ -50,31 +50,12 @@ export async function createSchoolWithAdmin(data: {
     const adminFirstName = nameParts[0];
     const adminLastName = nameParts.slice(1).join(' ');
 
-    // 1. Create the school record with all fields
+    // 1. Create the school record (only fields that exist in schema)
     const { data: school, error: schoolError } = (await supabase
       .from('schools')
       .insert({
         name: data.schoolName,
-        email: data.schoolEmail || data.adminEmail,
-        phone: data.schoolPhone,
-        address: data.schoolAddress,
-        type: data.schoolType || 'Islamic School',
-        city: data.city,
-        state: data.state,
-        country: data.country,
-        postal_code: data.postalCode,
-        website: data.website,
-        student_capacity: data.studentCapacity,
-        number_of_teachers: data.numberOfTeachers,
-        established_year: data.establishedYear,
-        school_registration_id: data.schoolId,
-        timezone: data.timezone || 'UTC',
-        subscription_plan: data.subscriptionPlan || 'professional',
-        admin_email: data.adminEmail,
-        admin_first_name: adminFirstName,
-        admin_last_name: adminLastName,
-        admin_phone: data.schoolPhone,
-        admin_role: 'principal'
+        timezone: data.timezone || 'Africa/Casablanca'
       } as any)
       .select()
       .single()) as { data: any; error: any };
@@ -95,22 +76,14 @@ export async function createSchoolWithAdmin(data: {
 
     if (authError) throw authError;
 
-    // 3. Update the school record with admin_id
-    const { error: updateError } = (await supabase
-      .from('schools')
-      .update({ admin_id: authUser.user.id } as any)
-      .eq('id', school.id)) as { error: any };
-
-    if (updateError) throw updateError;
-    
-    // 4. Create user profile using admin client to bypass RLS
+    // 3. Create user profile using admin client to bypass RLS
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert({
         user_id: authUser.user.id,
         email: data.adminEmail,
         display_name: data.adminName,
-        role: 'school_admin',
+        role: 'owner',
         school_id: school.id
       } as any);
 
