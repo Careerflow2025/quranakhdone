@@ -55,12 +55,11 @@ export async function createTeacher(data: {
       .insert({
         user_id: teacherId,
         school_id: data.schoolId,
+        full_name: data.name,
+        email: data.email,
         phone: data.phone,
-        address: '',  // Add empty address field
-        subject: data.subject,
-        qualification: data.qualification,
-        experience: data.experience,
-        active: true
+        qualifications: data.qualification || '',
+        experience: data.experience || ''
       })
       .select()
       .single();
@@ -76,8 +75,7 @@ export async function createTeacher(data: {
         password: password, // Store plaintext (as per your system)
         role: 'teacher',
         user_type: 'teacher',
-        user_id: teacherId,
-        created_at: new Date().toISOString()
+        user_id: teacherId
       });
 
     if (credError) throw credError;
@@ -145,13 +143,9 @@ export async function createStudent(data: {
   classId: string;
   schoolId: string;
   dateOfBirth?: string;
-  gender?: string;
-  parentName?: string;
   parentEmail?: string;
-  parentPhone?: string;
 }) {
   try {
-    // Generate unique ID for student
     const studentId = crypto.randomUUID();
 
     // 1. Create profile first (if student has email)
@@ -169,19 +163,15 @@ export async function createStudent(data: {
       if (profileError) throw profileError;
     }
 
-    // 2. Create student record in database (NO auth account)
+    // 2. Create student record in database (NO auth account, NO user_id in students table)
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
-        user_id: studentId,
         school_id: data.schoolId,
         class_id: data.classId,
+        full_name: data.name,
         date_of_birth: data.dateOfBirth,
-        gender: data.gender,
-        parent_name: data.parentName,
-        parent_email: data.parentEmail,
-        parent_phone: data.parentPhone,
-        active: true
+        parent_email: data.parentEmail
       })
       .select()
       .single();
@@ -200,8 +190,7 @@ export async function createStudent(data: {
           password: password,
           role: 'student',
           user_type: 'student',
-          user_id: studentId,
-          created_at: new Date().toISOString()
+          user_id: studentId
         });
 
       if (credError) throw credError;
@@ -264,7 +253,7 @@ export async function createParent(data: {
   name: string;
   email: string;
   phone?: string;
-  relationship: 'father' | 'mother' | 'guardian' | 'parent';
+  relationship?: 'father' | 'mother' | 'guardian' | 'parent';
   studentIds: string[]; // IDs of children to link
   schoolId: string;
 }) {
@@ -285,23 +274,25 @@ export async function createParent(data: {
 
     if (profileError) throw profileError;
 
-    // 2. Create parent record
+    // 2. Create parent record (full_name and email required in parents table)
     const { data: parent, error: parentError } = await supabaseAdmin
       .from('parents')
       .insert({
         user_id: parentId,
-        phone: data.phone,
-        relationship: data.relationship
+        full_name: data.name,
+        email: data.email,
+        phone: data.phone
       })
       .select()
       .single();
 
     if (parentError) throw parentError;
 
-    // 3. Link parent to students
+    // 3. Link parent to students (relationship goes in junction table)
     const links = data.studentIds.map(studentId => ({
       parent_id: parent.id,
-      student_id: studentId
+      student_id: studentId,
+      relationship: data.relationship || 'parent'
     }));
 
     const { error: linkError } = await supabaseAdmin
@@ -319,8 +310,7 @@ export async function createParent(data: {
         password: password,
         role: 'parent',
         user_type: 'parent',
-        user_id: parentId,
-        created_at: new Date().toISOString()
+        user_id: parentId
       });
 
     if (credError) throw credError;
