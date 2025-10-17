@@ -50,14 +50,13 @@ export async function createSchoolWithAdmin(data: {
     const adminFirstName = nameParts[0];
     const adminLastName = nameParts.slice(1).join(' ');
 
-    // 1. Create the school record (matching 001_FINAL_COMPLETE_SCHEMA.sql)
+    // 1. Create the school record (matching NEW production schema 20251016000001)
     const { data: school, error: schoolError } = (await supabase
       .from('schools')
       .insert({
         name: data.schoolName,
-        email: data.schoolEmail || data.adminEmail,
-        phone: data.schoolPhone,
-        address: data.schoolAddress
+        timezone: data.timezone || 'Africa/Casablanca'
+        // Note: logo_url can be added later via school settings
       } as any)
       .select()
       .single()) as { data: any; error: any };
