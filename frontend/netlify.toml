@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm rebuild canvas --build-from-source && npm run build"
   publish = ".next"
 
 [[plugins]]
@@ -7,3 +7,4 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  CANVAS_PREBUILT = "false"
