@@ -82,29 +82,55 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
           setAuthType('login');
         }
       } else {
-        // Sign in existing user
-        const { user, role, error } = await signInWithRole(formData.email, formData.password);
+        // Sign in existing user - use new credential system
+        const response = await fetch('/api/auth/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            role: selectedRole
+          })
+        });
 
-        if (error) {
-          setError('Invalid email or password');
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          setError(result.error || 'Invalid email or password');
           setLoading(false);
           return;
         }
 
-        if (user) {
-          // Get role from localStorage (in production, fetch from database)
-          const storedRole = localStorage.getItem('userRole') || selectedRole || 'school';
-          
+        if (result.user) {
+          // Store user data in localStorage
+          localStorage.setItem('userData', JSON.stringify(result.user));
+          localStorage.setItem('userRole', result.user.role);
+          localStorage.setItem('userEmail', result.user.email);
+
+          // For school owners, also store Supabase session
+          if (result.session) {
+            // Session is already managed by Supabase client
+            console.log('Supabase session established for school owner');
+          }
+
           // Route to appropriate dashboard based on role
           const roleRoutes: Record<string, string> = {
+            owner: '/school/dashboard',
+            admin: '/school/dashboard',
             school: '/school/dashboard',
             teacher: '/teacher/dashboard',
+            student: '/student/dashboard',
             parent: '/parent/dashboard'
           };
 
-          if (roleRoutes[storedRole]) {
-            router.push(roleRoutes[storedRole]);
+          const dashboardRoute = roleRoutes[result.user.role];
+          if (dashboardRoute) {
+            router.push(dashboardRoute);
             onClose();
+          } else {
+            setError('Invalid user role');
           }
         }
       }
@@ -131,6 +157,12 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
           icon: '👨‍🏫',
           title: 'Teacher Account',
           description: 'Access your classes and students'
+        };
+      case 'student':
+        return {
+          icon: '👨‍🎓',
+          title: 'Student Account',
+          description: 'Track your Quran learning progress'
         };
       case 'parent':
         return {
@@ -178,14 +210,15 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
             </p>
           </div>
 
-          {/* Role Selection (for signup) */}
-          {authType === 'signup' && !selectedRole && (
+          {/* Role Selection (for both login and signup) */}
+          {!selectedRole && (
             <div className="space-y-3 mb-6">
               <p className="text-sm font-medium text-gray-700 mb-3">I am a:</p>
-              {['school', 'teacher', 'parent'].map((r) => {
+              {['school', 'teacher', 'student', 'parent'].map((r) => {
                 const info = {
                   school: { icon: '🏫', label: 'School Administrator' },
                   teacher: { icon: '👨‍🏫', label: 'Teacher' },
+                  student: { icon: '👨‍🎓', label: 'Student' },
                   parent: { icon: '👨‍👩‍👧', label: 'Parent' }
                 }[r];
 
@@ -193,7 +226,7 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
                   <button
                     key={r}
                     onClick={() => {
-                      if (r === 'school') {
+                      if (authType === 'signup' && r === 'school') {
                         // Redirect to full school registration form
                         router.push('/auth/school-register');
                         onClose();
