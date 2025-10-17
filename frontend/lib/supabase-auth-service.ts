@@ -70,7 +70,7 @@ export async function createSchoolWithAdmin(data: {
       email_confirm: true, // Auto-confirm for production
       user_metadata: {
         name: data.adminName,
-        role: 'school_admin',
+        role: 'owner',
         school_id: school.id
       }
     });
@@ -372,7 +372,8 @@ export async function loginWithRole(email: string, password: string) {
     let redirectPath = '/';
 
     switch (profile.role) {
-      case 'school_admin':
+      case 'owner':
+      case 'admin':
         const { data: school } = await supabase
           .from('schools')
           .select('id, name, logo_url, timezone, created_at, updated_at')
