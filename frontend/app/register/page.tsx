@@ -101,7 +101,7 @@ export default function RegisterPage() {
           data: {
             full_name: adminData.fullName,
             display_name: adminData.fullName,
-            role: 'school',
+            role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
             school_id: null // Will be set after school creation
           }
         }
@@ -142,15 +142,12 @@ export default function RegisterPage() {
       if (!authenticatedUser) throw new Error('Failed to create user account');
 
       // Step 2: Now we're authenticated, create the school
+      // NEW SCHEMA: schools table only has: id, name, logo_url, timezone, created_at, updated_at
       const { data: schoolInsertData, error: schoolError } = (await supabase
         .from('schools')
         .insert({
           name: schoolData.name,
-          email: schoolData.email,
-          phone: schoolData.phone || null,
-          address: schoolData.address || null,
-          timezone: 'Africa/Casablanca',
-          subscription_status: 'active'
+          timezone: 'Africa/Casablanca'
         } as any)
         .select()
         .single()) as { data: any; error: any };
@@ -170,7 +167,7 @@ export default function RegisterPage() {
         .upsert({
           user_id: authenticatedUser.id,
           school_id: schoolInsertData.id,
-          role: 'school',
+          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
           display_name: adminData.fullName,
           email: adminData.email,
           created_at: new Date().toISOString(),
@@ -184,7 +181,7 @@ export default function RegisterPage() {
         // Try to update if insert fails
         const updateData = {
           school_id: schoolInsertData.id,
-          role: 'school',
+          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
           display_name: adminData.fullName,
           updated_at: new Date().toISOString()
         };
@@ -206,7 +203,7 @@ export default function RegisterPage() {
           school_id: schoolInsertData.id,
           username: adminData.email,
           password: adminData.password,
-          role: 'school',
+          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
           password_changed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
