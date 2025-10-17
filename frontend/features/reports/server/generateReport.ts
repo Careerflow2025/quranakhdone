@@ -81,7 +81,7 @@ export async function generateReport(studentId: string) {
       page2.setFont(font);
       page2.setFontSize(12);
 
-      notes.slice(0, 15).forEach((note, index) => { // Limit to 15 notes to fit on page
+      notes.slice(0, 15).forEach((note: any, index: number) => { // Limit to 15 notes to fit on page
         if (notesY < 100) return; // Stop if running out of space
 
         const date = new Date(note.created_at).toLocaleDateString();
@@ -92,7 +92,7 @@ export async function generateReport(studentId: string) {
         const noteText = note.content || 'No content';
         const wrappedText = wrapText(noteText, 70, page2, font, 11);
         
-        wrappedText.forEach((line, lineIndex) => {
+        wrappedText.forEach((line: string, lineIndex: number) => {
           if (notesY - 20 - (lineIndex * 15) > 50) {
             page2.drawText(line, { x: 70, y: notesY - 20 - (lineIndex * 15) });
           }
@@ -119,7 +119,7 @@ export async function generateReport(studentId: string) {
       page3.setFont(font);
       page3.setFontSize(12);
 
-      tajweed.slice(0, 8).forEach((analysis, index) => { // Limit to fit on page
+      tajweed.slice(0, 8).forEach((analysis: any, index: number) => { // Limit to fit on page
         if (tajweedY < 100) return;
 
         const date = new Date(analysis.created_at).toLocaleDateString();
@@ -136,7 +136,7 @@ export async function generateReport(studentId: string) {
 
         if (issues.length > 0) {
           page3.drawText('Common Issues:', { x: 70, y: tajweedY - 60 });
-          issues.slice(0, 3).forEach((issue, issueIndex) => {
+          issues.slice(0, 3).forEach((issue: any, issueIndex: number) => {
             const severity = issue.severity === 'critical' ? '🔴' : issue.severity === 'major' ? '🔶' : '⚠️';
             page3.drawText(`${severity} ${issue.word}: ${issue.error}`, { 
               x: 90, 

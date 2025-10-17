@@ -505,7 +505,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Handle Text Selection for Highlighting
-  const handleTextSelection = (ayahIndex: any, wordIndex: any, isMouseDown: any = false, isMouseUp: any = false) => {
+  const handleTextSelection = (ayahIndex: number, wordIndex: number, isMouseDown: boolean = false, isMouseUp: boolean = false) => {
     if (highlightMode && selectedMistakeType) {
       // For all types - simple click to toggle single word
       if (!isMouseDown && !isMouseUp) {
@@ -515,7 +515,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Toggle single word highlight - allows multiple colors on same word
-  const toggleSingleWord = (ayahIndex, wordIndex) => {
+  const toggleSingleWord = (ayahIndex: number, wordIndex: number) => {
     const existingHighlight = highlights.find(
       h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex && h.mistakeType === selectedMistakeType
     );
@@ -539,11 +539,11 @@ export default function StudentManagementDashboard() {
   };
 
   // Highlight range of words
-  const highlightRange = (start, end) => {
+  const highlightRange = (start: { ayahIndex: number; wordIndex: number }, end: { ayahIndex: number; wordIndex: number }) => {
     const newHighlights = [];
     const startAyah = Math.min(start.ayahIndex, end.ayahIndex);
     const endAyah = Math.max(start.ayahIndex, end.ayahIndex);
-    
+
     for (let ayahIdx = startAyah; ayahIdx <= endAyah; ayahIdx++) {
       const ayahWords = quranText.ayahs[ayahIdx]?.words?.length || 0;
       const startWord = ayahIdx === start.ayahIndex ? Math.min(start.wordIndex, end.wordIndex) : 0;
@@ -573,7 +573,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Highlight entire ayah (for recap and tajweed)
-  const highlightEntireAyah = (ayahIndex) => {
+  const highlightEntireAyah = (ayahIndex: number) => {
     if (highlightMode && (selectedMistakeType === 'recap' || selectedMistakeType === 'homework' || selectedMistakeType === 'tajweed')) {
       const ayahWords = quranText.ayahs[ayahIndex]?.words?.length || 0;
       const newHighlights = [];
@@ -644,9 +644,9 @@ export default function StudentManagementDashboard() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
-        const chunks = [];
-        
-        recorder.ondataavailable = (e) => chunks.push(e.data);
+        const chunks: Blob[] = [];
+
+        recorder.ondataavailable = (e: BlobEvent) => chunks.push(e.data);
         recorder.onstop = () => {
           const blob = new Blob(chunks, { type: 'audio/webm' });
           setAudioBlob(blob);
@@ -669,7 +669,7 @@ export default function StudentManagementDashboard() {
   };
 
   // Handle clicking on highlighted text - now handles multiple highlights per word
-  const handleHighlightClick = (highlightId, wordHighlights = null) => {
+  const handleHighlightClick = (highlightId: number, wordHighlights: any = null) => {
     if (noteMode) {
       // In note mode, select/deselect highlights for note
       // If wordHighlights provided (multiple colors on same word), handle all of them
@@ -678,8 +678,8 @@ export default function StudentManagementDashboard() {
       if (highlightsToProcess.length === 0) return;
       
       // Process each color separately
-      const allGroupIds = [];
-      
+      const allGroupIds: number[] = [];
+
       highlightsToProcess.forEach((clickedHighlight: any) => {
         if (!clickedHighlight) return;
         
@@ -747,19 +747,19 @@ export default function StudentManagementDashboard() {
   };
 
   // Remove Highlight
-  const removeHighlight = (highlightId) => {
+  const removeHighlight = (highlightId: number) => {
     setHighlights(highlights.filter((h: any) => h.id !== highlightId));
   };
 
   // Mark Highlight as Completed (called when teacher marks homework/assignment as complete)
-  const markHighlightAsCompleted = (highlightId) => {
+  const markHighlightAsCompleted = (highlightId: number) => {
     setHighlights(highlights.map((h: any) =>
       h.id === highlightId ? { ...h, isCompleted: true } : h
     ));
   };
 
   // Mark all highlights of a type as completed
-  const markTypeAsCompleted = (mistakeType) => {
+  const markTypeAsCompleted = (mistakeType: string) => {
     setHighlights(highlights.map((h: any) =>
       h.mistakeType === mistakeType ? { ...h, isCompleted: true } : h
     ));
@@ -888,8 +888,8 @@ export default function StudentManagementDashboard() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-    setDrawings(drawings.filter((d: any) => 
-      !(d.page === currentPage && d.surah === currentSurah)
+    setDrawings(drawings.filter((d: any) =>
+      !(d.page === currentMushafPage && d.surah === currentSurah)
     ));
   };
 
@@ -1454,19 +1454,19 @@ export default function StudentManagementDashboard() {
                       // Check if current surah is on this page
                       if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
                         // Single surah on this page - show ayahs from start to end
-                        pageAyahs = quranText.ayahs.filter((ayah, idx) => {
+                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
                           const ayahNumber = idx + 1;
                           return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
                         });
                       } else if (pageData.surahStart === currentSurah) {
                         // Current surah starts on this page
-                        pageAyahs = quranText.ayahs.filter((ayah, idx) => {
+                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
                           const ayahNumber = idx + 1;
                           return ayahNumber >= pageData.ayahStart;
                         });
                       } else if (pageData.surahEnd === currentSurah) {
                         // Current surah ends on this page
-                        pageAyahs = quranText.ayahs.filter((ayah, idx) => {
+                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
                           const ayahNumber = idx + 1;
                           return ayahNumber <= pageData.ayahEnd;
                         });
@@ -1582,12 +1582,12 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 ...(mistakes.length === 1 ? {
-                                  backgroundColor: mistakes[0].bgColor === 'bg-yellow-900' ? '#713f12' :
-                                    mistakes[0].bgColor === 'bg-yellow-400' ? '#facc15' :
-                                    mistakes[0].bgColor.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('green-100', '#dcfce7').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2'),
-                                  color: mistakes[0].textColor === 'text-yellow-100' ? '#fef3c7' :
-                                    mistakes[0].textColor === 'text-yellow-900' ? '#713f12' :
-                                    mistakes[0].textColor.replace('text-', '').replace('purple-700', '#6b21a8').replace('green-700', '#15803d').replace('orange-700', '#c2410c').replace('red-700', '#b91c1c')
+                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? '#713f12' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? '#facc15' :
+                                    mistakes[0]?.bgColor?.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('green-100', '#dcfce7').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2'),
+                                  color: mistakes[0]?.textColor === 'text-yellow-100' ? '#fef3c7' :
+                                    mistakes[0]?.textColor === 'text-yellow-900' ? '#713f12' :
+                                    mistakes[0]?.textColor?.replace('text-', '').replace('purple-700', '#6b21a8').replace('green-700', '#15803d').replace('orange-700', '#c2410c').replace('red-700', '#b91c1c')
                                 } : mistakes.length > 1 ? {
                                   background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? '#713f12' :
@@ -1934,9 +1934,9 @@ export default function StudentManagementDashboard() {
                       try {
                         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         const recorder = new MediaRecorder(stream);
-                        const chunks = [];
+                        const chunks: Blob[] = [];
                         
-                        recorder.ondataavailable = (e) => chunks.push(e.data);
+                        recorder.ondataavailable = (e: BlobEvent) => chunks.push(e.data);
                         recorder.onstop = () => {
                           const blob = new Blob(chunks, { type: 'audio/webm' });
                           const audioUrl = URL.createObjectURL(blob);
@@ -2003,13 +2003,14 @@ export default function StudentManagementDashboard() {
                   className={`flex-1 px-3 py-2 border rounded-full text-sm ${
                     isRecording ? 'bg-gray-100 text-gray-400' : ''
                   }`}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && e.target.value.trim() && !isRecording) {
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    const target = e.target as HTMLInputElement;
+                    if (e.key === 'Enter' && target.value.trim() && !isRecording) {
                       const newNote = {
                         id: Date.now(),
                         highlightIds: [showNotePopup.highlightId],
                         type: 'text',
-                        content: e.target.value,
+                        content: target.value,
                         timestamp: new Date().toISOString(),
                         author: 'Teacher'
                       };
@@ -2018,7 +2019,7 @@ export default function StudentManagementDashboard() {
                         ...showNotePopup,
                         notes: [...showNotePopup.notes, newNote]
                       });
-                      e.target.value = '';
+                      target.value = '';
                     }
                   }}
                 />
@@ -2027,7 +2028,7 @@ export default function StudentManagementDashboard() {
                 <button 
                   className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
                   onClick={(e) => {
-                    const input = e.currentTarget.previousElementSibling;
+                    const input = e.currentTarget.previousElementSibling as HTMLInputElement | null;
                     if (input && input.value && input.value.trim() && !isRecording) {
                       const newNote = {
                         id: Date.now(),

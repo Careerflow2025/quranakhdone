@@ -308,7 +308,7 @@ export default function FinalWorkingViewer({ pdfUrl, studentId = 'demo' }: Props
         points: currentStroke,
         color: getToolColor(),
         width: getToolWidth(),
-        tool: tool,
+        tool: tool || 'green_pen',
         pageNumber: currentDrawingPage
       };
       

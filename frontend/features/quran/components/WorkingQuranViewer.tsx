@@ -22,8 +22,9 @@ import {
   VolumeX,
   Loader
 } from 'lucide-react';
-import quranMetadata from '@/data/fullQuranData.json';
-import completeQuranData from '@/data/completeQuran.json';
+// Using existing Quran data files
+import quranMetadata from '@/data/quran/simple.json';
+import completeQuranData from '@/data/quran/uthmani-hafs-full.json';
 
 interface WorkingQuranViewerProps {
   studentId: string;
@@ -82,9 +83,9 @@ export default function WorkingQuranViewer({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const tajweedRef = useRef<HTMLDivElement>(null);
-  const currentSurahData = quranMetadata.surahs.find(s => s.number === currentSurah);
-  const currentFullSurah = completeQuranData.surahs.find(s => s.number === currentSurah);
-  const totalVerses = currentSurahData?.numberOfAyahs || 7;
+  const currentSurahData = quranMetadata.data.surahs.find(s => s.number === currentSurah);
+  const currentFullSurah = completeQuranData.data.surahs.find(s => s.number === currentSurah);
+  const totalVerses = currentSurahData?.ayahs?.length || 7;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -261,7 +262,7 @@ export default function WorkingQuranViewer({
   };
 
   // Play verse recitation
-  const playVerseRecitation = (verse: any, autoPlay = false, versesForPlayback = null) => {
+  const playVerseRecitation = (verse: any, autoPlay = false, versesForPlayback: any[] | null = null) => {
     if (!showRecitationOnClick && !autoPlay) return;
     
     // Determine if we should continue playing based on current state
@@ -447,7 +448,7 @@ export default function WorkingQuranViewer({
                   <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-[700px] max-h-[500px] overflow-y-auto bg-white rounded-lg shadow-2xl border border-emerald-200" 
                        style={{ zIndex: 9999 }}>
                     <div className="grid grid-cols-3 gap-0 p-2">
-                      {quranMetadata.surahs.map((surah) => (
+                      {quranMetadata.data.surahs.map((surah) => (
                         <button
                           key={surah.number}
                           onClick={() => handleSurahSelect(surah.number)}
@@ -463,7 +464,7 @@ export default function WorkingQuranViewer({
                             </div>
                           </div>
                           <div className="text-xs text-gray-400 text-right">
-                            <div>{surah.numberOfAyahs} verses</div>
+                            <div>{surah.ayahs?.length || 0} verses</div>
                             <div className="text-xs">{surah.revelationType}</div>
                           </div>
                         </button>
@@ -600,7 +601,7 @@ export default function WorkingQuranViewer({
                   {currentSurahData?.englishName} • {currentSurahData?.englishNameTranslation}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {currentSurahData?.numberOfAyahs} Verses • {currentSurahData?.revelationType}
+                  {currentSurahData?.ayahs?.length || 0} Verses • {currentSurahData?.revelationType}
                 </p>
               </div>
               
@@ -663,7 +664,7 @@ export default function WorkingQuranViewer({
                               Verse {verse.numberInSurah}
                             </div>
                             <div className="text-sm leading-relaxed">
-                              {verse.translation}
+                              Translation will be available soon
                             </div>
                             <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
                               <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-gray-900"></div>

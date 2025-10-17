@@ -1,8 +1,23 @@
 import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/database.types'
 
-type PracticeSession = Database['public']['Tables']['practice_sessions']['Row']
-type PageView = Database['public']['Tables']['page_views']['Row']
+// Define types locally since they're not in database.types yet
+type PracticeSession = {
+  id?: string
+  student_id: string
+  date: string
+  duration_seconds?: number
+  created_at?: string
+  updated_at?: string
+}
+
+type PageView = {
+  id?: string
+  student_id: string
+  page_number: number
+  surah: number
+  view_duration_seconds: number
+  created_at?: string
+}
 
 export const practiceApi = {
   // Start or update practice session
@@ -18,11 +33,11 @@ export const practiceApi = {
           student_id: data.student_id,
           date: data.date,
           duration_seconds: data.duration_seconds || 0
-        },
+        } as any,
         {
           onConflict: 'student_id,date',
           ignoreDuplicates: false
-        }
+        } as any
       )
       .select()
       .single()
@@ -45,7 +60,7 @@ export const practiceApi = {
         page_number: data.page_number,
         surah: data.surah,
         view_duration_seconds: data.view_duration_seconds
-      })
+      } as any)
 
     if (error) throw error
   },
@@ -72,7 +87,7 @@ export const practiceApi = {
     if (error) throw error
 
     // Calculate statistics
-    const totalSeconds = sessions?.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) || 0
+    const totalSeconds = sessions?.reduce((sum: number, s: any) => sum + (s.duration_seconds || 0), 0) || 0
     const avgSeconds = sessions?.length ? totalSeconds / sessions.length : 0
     const streak = calculateStreak(sessions || [])
 
@@ -95,7 +110,7 @@ export const practiceApi = {
       .rpc('get_most_viewed_pages', {
         p_student_id: studentId,
         p_limit: limit
-      })
+      } as any)
 
     if (error) throw error
     return data || []

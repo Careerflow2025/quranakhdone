@@ -40,7 +40,7 @@ export async function createUserWithRole({
       user_id: authData.user.id,
       user_role: role,
       user_school_id: schoolId
-    });
+    } as any);
 
     if (updateError) console.error('Error updating user role:', updateError);
 
@@ -83,7 +83,7 @@ export async function createTeacherAccount(
         email: teacherData.email,
         phone: teacherData.phone,
         status: 'active'
-      })
+      } as any)
       .select()
       .single();
 
@@ -92,11 +92,11 @@ export async function createTeacherAccount(
     // 3. Assign to classes
     if (teacherData.assignedClasses && teacherData.assignedClasses.length > 0) {
       const classAssignments = teacherData.assignedClasses.map(classId => ({
-        teacher_id: teacher.id,
+        teacher_id: (teacher as any).id,
         class_id: classId
       }));
 
-      await supabase.from('teacher_classes').insert(classAssignments);
+      await supabase.from('teacher_classes').insert(classAssignments as any);
     }
 
     return { teacher, error: null };
@@ -136,7 +136,7 @@ export async function createParentAccount(
         email: parentData.email,
         phone: parentData.phone,
         relationship: parentData.relationship || 'parent'
-      })
+      } as any)
       .select()
       .single();
 
@@ -144,9 +144,9 @@ export async function createParentAccount(
 
     // 3. Link to student
     await supabase.from('parent_students').insert({
-      parent_id: parent.id,
+      parent_id: (parent as any).id,
       student_id: parentData.studentId
-    });
+    } as any);
 
     return { parent, error: null };
   } catch (error: any) {
@@ -312,7 +312,7 @@ export async function getSchoolData(schoolId: string) {
 
   return {
     data: {
-      ...school,
+      ...(school as any),
       stats: {
         teachers: teacherCount || 0,
         students: studentCount || 0,

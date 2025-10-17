@@ -20,21 +20,21 @@ export const highlightApi = {
       .from('profiles')
       .select('school_id, user_id')
       .single()
-    
+
     if (!profile) throw new Error('User not found')
 
     // Get teacher_id if user is a teacher
     const { data: teacher } = await supabase
       .from('teachers')
       .select('id')
-      .eq('user_id', profile.user_id)
+      .eq('user_id', (profile as any).user_id)
       .single()
 
     const { data: highlight, error } = await supabase
       .from('highlights')
       .insert({
-        school_id: profile.school_id,
-        teacher_id: teacher?.id,
+        school_id: (profile as any).school_id,
+        teacher_id: (teacher as any)?.id,
         student_id: data.student_id,
         surah: data.surah,
         ayah_start: data.ayah_start,
@@ -43,7 +43,7 @@ export const highlightApi = {
         color: data.color,
         type: data.type,
         note: data.note
-      })
+      } as any)
       .select()
       .single()
 
@@ -61,15 +61,16 @@ export const highlightApi = {
 
     if (!highlight) throw new Error('Highlight not found')
 
-    const { error } = (await supabase
-      .from('highlights')
+    const user = await supabase.auth.getUser()
+    const { error } = await (supabase
+      .from('highlights') as any)
       .update({
-        previous_color: highlight.color,
+        previous_color: (highlight as any).color,
         color: 'gold',
         completed_at: new Date().toISOString(),
-        completed_by: (await supabase.auth.getUser()).data.user?.id
-      } as any)
-      .eq('id', highlightId)) as { error: any }
+        completed_by: user.data.user?.id
+      })
+      .eq('id', highlightId)
 
     if (error) throw error
   },
@@ -106,7 +107,7 @@ export const highlightApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('user_id', user.user?.id)
+      .eq('user_id', user.user?.id!)
       .single()
 
     if (!profile) throw new Error('User profile not found')
@@ -119,12 +120,12 @@ export const highlightApi = {
       .insert({
         highlight_id: data.highlight_id,
         author_id: user.user?.id!,
-        author_role: profile.role,
+        author_role: (profile as any).role,
         content: data.content,
         voice_url: data.voice_url,
         voice_duration: data.voice_duration,
         can_delete_until: data.voice_url ? canDeleteUntil.toISOString() : null
-      })
+      } as any)
       .select()
       .single()
 
@@ -161,31 +162,31 @@ export const highlightApi = {
     if (!note) throw new Error('Note not found')
 
     const { data: user } = await supabase.auth.getUser()
-    if (note.author_id !== user.user?.id) {
+    if ((note as any).author_id !== user.user?.id) {
       throw new Error('You can only delete your own notes')
     }
 
-    if (!note.voice_url) {
+    if (!(note as any).voice_url) {
       throw new Error('This is not a voice note')
     }
 
-    if (note.can_delete_until && new Date() > new Date(note.can_delete_until)) {
+    if ((note as any).can_delete_until && new Date() > new Date((note as any).can_delete_until)) {
       throw new Error('Deletion time expired (5 minutes)')
     }
 
     // Delete from storage
-    if (note.voice_url) {
-      const path = note.voice_url.split('/').pop()
+    if ((note as any).voice_url) {
+      const path = (note as any).voice_url.split('/').pop()
       if (path) {
         await supabase.storage.from('voice-notes').remove([path])
       }
     }
 
     // Delete the note
-    const { error } = (await supabase
-      .from('highlight_notes')
+    const { error } = await (supabase
+      .from('highlight_notes') as any)
       .delete()
-      .eq('id', noteId)) as { error: any }
+      .eq('id', noteId)
 
     if (error) throw error
   },
@@ -206,7 +207,7 @@ export const highlightApi = {
       return { isComplete: false, totalHighlights: 0, completedHighlights: 0 }
     }
 
-    const completedHighlights = highlights.filter(h => h.color === 'gold').length
+    const completedHighlights = highlights.filter((h: any) => h.color === 'gold').length
     const isComplete = completedHighlights === highlights.length
 
     return {

@@ -2,7 +2,7 @@
 // QuranAkh Production - Multi-tenant Quran Education Platform
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from './database.types';
+import { Database } from '../database.types';
 
 // Environment variables validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

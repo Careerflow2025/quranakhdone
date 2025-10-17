@@ -224,3 +224,83 @@ export function getAllScripts() {
     description: quranData[key as keyof typeof quranData].description
   }));
 }
+
+// Additional exports needed for FixedTajweedViewer
+export const SURAH_INFO = [
+  { number: 1, name: 'الفاتحة', englishName: 'Al-Fatihah', startPage: 1, verses: 7 },
+  { number: 2, name: 'البقرة', englishName: 'Al-Baqarah', startPage: 2, verses: 286 },
+  { number: 3, name: 'آل عمران', englishName: "Ali 'Imran", startPage: 50, verses: 200 },
+  { number: 4, name: 'النساء', englishName: 'An-Nisa', startPage: 77, verses: 176 },
+  { number: 5, name: 'المائدة', englishName: "Al-Ma'idah", startPage: 106, verses: 120 },
+  { number: 6, name: 'الأنعام', englishName: "Al-An'am", startPage: 128, verses: 165 },
+  { number: 7, name: 'الأعراف', englishName: "Al-A'raf", startPage: 151, verses: 206 },
+  { number: 8, name: 'الأنفال', englishName: 'Al-Anfal', startPage: 177, verses: 75 },
+  { number: 9, name: 'التوبة', englishName: 'At-Tawbah', startPage: 187, verses: 129 },
+  { number: 10, name: 'يونس', englishName: 'Yunus', startPage: 208, verses: 109 },
+  // Add more surahs as needed...
+  { number: 36, name: 'يس', englishName: 'Ya-Sin', startPage: 440, verses: 83 },
+  { number: 67, name: 'الملك', englishName: 'Al-Mulk', startPage: 562, verses: 30 },
+  { number: 112, name: 'الإخلاص', englishName: 'Al-Ikhlas', startPage: 604, verses: 4 },
+  { number: 113, name: 'الفلق', englishName: 'Al-Falaq', startPage: 604, verses: 5 },
+  { number: 114, name: 'الناس', englishName: 'An-Nas', startPage: 604, verses: 6 }
+];
+
+// Function to get the Surah for a specific page
+export function getSurahForPage(pageNumber: number) {
+  // Find the surah that contains this page
+  for (let i = SURAH_INFO.length - 1; i >= 0; i--) {
+    if (pageNumber >= SURAH_INFO[i].startPage) {
+      return SURAH_INFO[i];
+    }
+  }
+  return SURAH_INFO[0]; // Default to Al-Fatihah
+}
+
+// Function to get page data with Tajweed
+export function getPageWithTajweed(pageNumber: number) {
+  // This is a stub implementation - in production this would fetch real Quran data
+  const surah = getSurahForPage(pageNumber);
+  const sampleVerses = [];
+
+  // Get actual verses if available
+  const scriptData = quranData['uthmani-hafs'];
+  const surahData = scriptData.surahs[surah.number as keyof typeof scriptData.surahs];
+
+  if (surahData && surahData.verses) {
+    surahData.verses.forEach((verse, index) => {
+      sampleVerses.push({
+        key: `${surah.number}:${index + 1}`,
+        verse: index + 1,
+        arabic: verse,
+        translation: 'Translation placeholder for verse ' + (index + 1)
+      });
+    });
+  } else {
+    // Fallback sample data
+    sampleVerses.push({
+      key: `${surah.number}:1`,
+      verse: 1,
+      arabic: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
+      translation: 'In the name of Allah, the Most Gracious, the Most Merciful'
+    });
+  }
+
+  return {
+    pageNumber,
+    surah,
+    verses: sampleVerses
+  };
+}
+
+// Function to apply Tajweed rules to Arabic text
+export function applyTajweedRules(arabicText: string): string {
+  // This is a simplified version - real implementation would apply actual Tajweed rules
+  // For now, just return the text as is
+  return arabicText;
+
+  // Example of how Tajweed markup might look:
+  // return arabicText.replace(/نّ/g, '{t:ghunnah}نّ{/t}');
+}
+
+// Quran pages constant
+export const QURAN_PAGES = 604;

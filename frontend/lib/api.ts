@@ -1,6 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AuthService } from './auth';
-import { ApiResponse } from '@/types';
+
+// Define ApiResponse type locally to avoid import issues
+type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
 
 class ApiClient {
   private client: AxiosInstance;

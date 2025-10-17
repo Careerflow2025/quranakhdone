@@ -107,17 +107,17 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
         { count: parentsCount },
         { count: classesCount }
       ] = await Promise.all([
-        supabase.from('students').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId),
-        supabase.from('teachers').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId),
-        supabase.from('parents').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId),
-        supabase.from('classes').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId)
+        supabase.from('students').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId!),
+        supabase.from('teachers').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId!),
+        supabase.from('parents').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId!),
+        supabase.from('classes').select('*', { count: 'exact', head: true }).eq('school_id', user.schoolId!)
       ]);
 
       // Fetch assignments data with date filter
       let assignmentsQuery = supabase
         .from('assignments')
         .select('*')
-        .eq('school_id', user.schoolId);
+        .eq('school_id', user.schoolId!);
 
       if (startDate && endDate) {
         assignmentsQuery = assignmentsQuery
@@ -129,15 +129,15 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
 
       // Calculate assignment metrics
       const totalAssignments = assignments?.length || 0;
-      const completedAssignments = assignments?.filter(a => a.status === 'completed').length || 0;
-      const pendingAssignments = assignments?.filter(a => ['assigned', 'viewed', 'submitted'].includes(a.status)).length || 0;
-      const overdueAssignments = assignments?.filter(a => a.late === true).length || 0;
+      const completedAssignments = assignments?.filter((a: any) => a.status === 'completed').length || 0;
+      const pendingAssignments = assignments?.filter((a: any) => ['assigned', 'viewed', 'submitted'].includes(a.status)).length || 0;
+      const overdueAssignments = assignments?.filter((a: any) => a.late === true).length || 0;
 
       // Fetch attendance data
       let attendanceQuery = supabase
         .from('attendance')
         .select('*')
-        .eq('school_id', user.schoolId);
+        .eq('school_id', user.schoolId!);
 
       if (startDate && endDate) {
         attendanceQuery = attendanceQuery
@@ -148,8 +148,8 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       const { data: attendance } = await attendanceQuery;
 
       const totalAttendanceRecords = attendance?.length || 0;
-      const presentCount = attendance?.filter(a => a.status === 'present').length || 0;
-      const absentCount = attendance?.filter(a => a.status === 'absent').length || 0;
+      const presentCount = attendance?.filter((a: any) => a.status === 'present').length || 0;
+      const absentCount = attendance?.filter((a: any) => a.status === 'absent').length || 0;
       const attendanceRate = totalAttendanceRecords > 0
         ? Math.round((presentCount / totalAttendanceRecords) * 100)
         : 0;
@@ -163,11 +163,11 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       const { data: grades } = await supabase
         .from('grades')
         .select('score, max_score')
-        .eq('school_id', user.schoolId);
+        .eq('school_id', user.schoolId!);
 
       const averageGrade = grades && grades.length > 0
         ? Math.round(
-            grades.reduce((acc, g) => acc + (g.score / g.max_score) * 100, 0) / grades.length
+            grades.reduce((acc: number, g: any) => acc + (g.score / g.max_score) * 100, 0) / grades.length
           )
         : 0;
 
@@ -184,7 +184,7 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
           const { count } = await supabase
             .from('assignments')
             .select('*', { count: 'exact', head: true })
-            .eq('school_id', user.schoolId)
+            .eq('school_id', user.schoolId!)
             .gte('created_at', `${date}T00:00:00`)
             .lt('created_at', `${date}T23:59:59`);
           return { date, count: count || 0 };
@@ -197,10 +197,10 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
           const { data } = await supabase
             .from('attendance')
             .select('status')
-            .eq('school_id', user.schoolId)
+            .eq('school_id', user.schoolId!)
             .eq('session_date', date);
 
-          const present = data?.filter(a => a.status === 'present').length || 0;
+          const present = data?.filter((a: any) => a.status === 'present').length || 0;
           const total = data?.length || 0;
           const rate = total > 0 ? Math.round((present / total) * 100) : 0;
 
@@ -212,10 +212,10 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       const { data: classes } = await supabase
         .from('classes')
         .select('id, name')
-        .eq('school_id', user.schoolId);
+        .eq('school_id', user.schoolId!);
 
       const classwiseData = await Promise.all(
-        (classes || []).map(async (cls) => {
+        (classes || []).map(async (cls: any) => {
           const { count: studentCount } = await supabase
             .from('class_enrollments')
             .select('*', { count: 'exact', head: true })
@@ -238,10 +238,10 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       const { data: teachers } = await supabase
         .from('teachers')
         .select('id, profiles(display_name)')
-        .eq('school_id', user.schoolId);
+        .eq('school_id', user.schoolId!);
 
       const teacherPerformance = await Promise.all(
-        (teachers || []).map(async (teacher) => {
+        (teachers || []).map(async (teacher: any) => {
           // Get actual class count for this teacher
           const { count: classCount } = await supabase
             .from('class_teachers')
@@ -260,7 +260,7 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
             .select('status')
             .eq('created_by_teacher_id', teacher.id);
 
-          const completed = assignments?.filter(a => a.status === 'completed').length || 0;
+          const completed = assignments?.filter((a: any) => a.status === 'completed').length || 0;
           const total = assignments?.length || 0;
           const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 

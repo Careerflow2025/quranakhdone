@@ -223,7 +223,7 @@ export default function CompleteQuranViewer({ pdfUrl, studentId = 'demo' }: Prop
         points: currentPath,
         color: getToolColor(),
         width: getToolWidth(),
-        tool: tool,
+        tool: tool || 'green_pen',
         pageNumber: currentPageDrawing
       };
       setAllStrokes(prev => [...prev, newStroke]);

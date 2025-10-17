@@ -13,8 +13,8 @@ export const schoolApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('school_id')
-      .single()
-    
+      .single() as { data: { school_id: string } | null }
+
     if (!profile?.school_id) return null
     
     const { data, error } = await supabase
@@ -38,8 +38,8 @@ export const schoolApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('school_id, role')
-      .single()
-    
+      .single() as { data: { school_id: string; role: string } | null }
+
     if (!profile || profile.role !== 'school') {
       throw new Error('Only school admins can create users')
     }
@@ -63,7 +63,7 @@ export const schoolApi = {
         display_name: userData.display_name,
         email: userData.email,
         phone: userData.phone
-      })
+      } as any)
 
     if (profileError) throw profileError
 
@@ -73,19 +73,19 @@ export const schoolApi = {
         await supabase.from('teachers').insert({
           user_id: authData.user.id,
           school_id: profile.school_id
-        })
+        } as any)
         break
       case 'student':
         await supabase.from('students').insert({
           user_id: authData.user.id,
           school_id: profile.school_id
-        })
+        } as any)
         break
       case 'parent':
         await supabase.from('parents').insert({
           user_id: authData.user.id,
           school_id: profile.school_id
-        })
+        } as any)
         break
     }
 
@@ -97,8 +97,8 @@ export const schoolApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .single()
-    
+      .single() as { data: { role: string } | null }
+
     if (!profile || profile.role !== 'school') {
       throw new Error('Only school admins can update passwords')
     }
@@ -116,8 +116,8 @@ export const schoolApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('school_id')
-      .single()
-    
+      .single() as { data: { school_id: string } | null }
+
     if (!profile?.school_id) return []
 
     const { data, error } = await supabase
@@ -139,8 +139,8 @@ export const schoolApi = {
     const { data: profile } = await supabase
       .from('profiles')
       .select('school_id')
-      .single()
-    
+      .single() as { data: { school_id: string } | null }
+
     if (!profile?.school_id) return null
 
     const [teachers, students, classes, highlights] = await Promise.all([

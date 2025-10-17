@@ -2,7 +2,7 @@
 
 import { Bell, Search, Settings, User, LogOut, BookOpen, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
-import { signOut } from '@/lib/supabase-client';
+import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 
 interface Props {

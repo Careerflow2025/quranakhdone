@@ -195,7 +195,7 @@ export default function ProfessionalQuranViewer({ pdfUrl }: Props) {
         points: currentStroke,
         color: getToolColor(),
         width: getToolWidth(),
-        tool: tool,
+        tool: tool || 'green_pen',
       };
       
       const updatedStrokes = [...strokes, newStroke];
@@ -470,7 +470,7 @@ export default function ProfessionalQuranViewer({ pdfUrl }: Props) {
           <div className="text-sm text-gray-600">
             <span className="font-medium">Active Tool:</span>{' '}
             <span className="text-gray-800 font-semibold">
-              {tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {tool ? tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'None'}
             </span>
             {' • '}
             <span className="font-medium">Width:</span>{' '}

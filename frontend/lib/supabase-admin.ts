@@ -41,7 +41,7 @@ export const adminHelpers = {
           role,
           school_id: schoolId,
           display_name: email.split('@')[0]
-        })
+        } as any)
 
       if (profileError) throw profileError
     }

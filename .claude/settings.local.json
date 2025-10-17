@@ -16,7 +16,19 @@
       "Bash(./fix_build30_params.sh:*)",
       "Bash(./fix_school_dashboard_types.sh)",
       "Bash(npm install)",
-      "Bash(timeout 60 npm run build:*)"
+      "Bash(timeout 60 npm run build:*)",
+      "Bash(git pull:*)",
+      "Bash(python fix_missing_functions.py:*)",
+      "Bash(python add_handleSendReply.py:*)",
+      "Bash(python fix_formdata_types.py:*)",
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(tee:*)",
+      "Bash(timeout 120 npm run build:*)",
+      "Bash(1)",
+      "Bash(timeout 180 npm run build:*)",
+      "Bash(timeout 300 npm run build:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

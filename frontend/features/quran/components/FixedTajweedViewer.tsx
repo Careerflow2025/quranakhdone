@@ -14,13 +14,13 @@ import {
   EyeOff,
   Languages
 } from 'lucide-react';
-import { 
-  SURAH_INFO, 
-  getSurahForPage, 
-  getPageWithTajweed, 
+import {
+  SURAH_INFO,
+  getSurahForPage,
+  getPageWithTajweed,
   applyTajweedRules,
-  QURAN_PAGES 
-} from '@/data/completeQuranData';
+  QURAN_PAGES
+} from '@/data/quran/completeQuranData';
 
 interface TajweedViewerProps {
   studentId: string;

@@ -363,7 +363,7 @@ export default function SchoolDashboard() {
       }
 
       // Create user account for student
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
         email: cleanEmail,
         password: tempPassword,
         options: {
@@ -397,7 +397,7 @@ export default function SchoolDashboard() {
       }
 
       // Create profile first
-      const { error: profileError } = await supabase.from('profiles').insert({
+      const { error: profileError } = await (supabase as any).from('profiles').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'student',
@@ -411,7 +411,7 @@ export default function SchoolDashboard() {
       }
 
       // Add to students table (without email, name, phone fields as they don't exist)
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('students')
         .insert({
           user_id: authData.user.id,
@@ -428,7 +428,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Create credentials record
-      const { error: credError } = await supabase.from('user_credentials').insert({
+      const { error: credError } = await (supabase as any).from('user_credentials').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         email: studentData.email,
@@ -475,7 +475,7 @@ export default function SchoolDashboard() {
       const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
 
       // Create user account for teacher
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
         email: teacherData.email,
         password: tempPassword,
         options: {
@@ -506,7 +506,7 @@ export default function SchoolDashboard() {
       }
 
       // Create profile first
-      const { error: profileError } = await supabase.from('profiles').insert({
+      const { error: profileError } = await (supabase as any).from('profiles').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'teacher',
@@ -525,7 +525,7 @@ export default function SchoolDashboard() {
         subject: teacherData.subject
       });
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('teachers')
         .insert({
           user_id: authData.user.id,
@@ -547,7 +547,7 @@ export default function SchoolDashboard() {
       if (error) throw error;
 
       // Create credentials record for teacher
-      const { error: credError } = await supabase.from('user_credentials').insert({
+      const { error: credError } = await (supabase as any).from('user_credentials').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         email: teacherData.email,
@@ -585,7 +585,7 @@ export default function SchoolDashboard() {
       const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
 
       // Create user account for parent
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
         email: parentData.email,
         password: tempPassword,
         options: {
@@ -616,7 +616,7 @@ export default function SchoolDashboard() {
       }
 
       // Create profile first (in case trigger didn't fire)
-      const { error: profileError } = await supabase.from('profiles').upsert({
+      const { error: profileError } = await (supabase as any).from('profiles').upsert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'parent',
@@ -632,7 +632,7 @@ export default function SchoolDashboard() {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Upsert to parents table (insert or update if exists)
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('parents')
         .upsert({
           user_id: authData.user.id,
@@ -654,7 +654,7 @@ export default function SchoolDashboard() {
           student_id: studentId
         }));
 
-        const { error: linkError } = await supabase
+        const { error: linkError } = await (supabase as any)
           .from('parent_students')
           .insert(parentStudentLinks as any);
 
@@ -664,7 +664,7 @@ export default function SchoolDashboard() {
       }
 
       // Create credentials record
-      const { error: credError } = await supabase.from('user_credentials').insert({
+      const { error: credError } = await (supabase as any).from('user_credentials').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         email: parentData.email,
@@ -770,11 +770,11 @@ export default function SchoolDashboard() {
   // Homework Handlers (Quran Memorization)
   const handleCreateHomework = async (homeworkData: any) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await (supabase as any).auth.getUser();
       if (!userData?.user) return;
 
       // Get teacher ID
-      const { data: teacherData } = await supabase
+      const { data: teacherData } = await (supabase as any)
         .from('teachers')
         .select('id')
         .eq('user_id', userData.user.id)
@@ -806,7 +806,7 @@ export default function SchoolDashboard() {
       setShowAddModal(false);
 
       // Save to database (you can create a separate table for Quran homework)
-      // const { data, error } = await supabase.from('quran_homework').insert(...)
+      // const { data, error } = await (supabase as any).from('quran_homework').insert(...)
     } catch (error: any) {
       console.error('Error creating homework:', error);
       showNotification('Failed to create homework', 'error');
@@ -828,11 +828,11 @@ export default function SchoolDashboard() {
   // Assignment Handlers (General Tasks)
   const handleCreateAssignment = async (assignmentData: any) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await (supabase as any).auth.getUser();
       if (!userData?.user) return;
 
       // Get teacher ID
-      const { data: teacherData } = await supabase
+      const { data: teacherData } = await (supabase as any)
         .from('teachers')
         .select('id')
         .eq('user_id', userData.user.id)
@@ -916,7 +916,7 @@ export default function SchoolDashboard() {
     if (!confirm(`Are you sure you want to delete "${title}?`)) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('assignments')
         .delete()
         .eq('id', assignmentId);
@@ -963,7 +963,7 @@ export default function SchoolDashboard() {
   const loadHomework = async () => {
     try {
       // Homework comes from highlights where teachers mark Quran verses
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('highlights')
         .select(`
           *,
@@ -1004,7 +1004,7 @@ export default function SchoolDashboard() {
   // Load assignments from database
   const loadAssignments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('assignments')
         .select(`
           *,
@@ -1034,7 +1034,7 @@ export default function SchoolDashboard() {
   // Load learning targets from ayah_mastery
   const loadTargets = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ayah_mastery')
         .select(`
           *,
@@ -1070,7 +1070,7 @@ export default function SchoolDashboard() {
 
     setLoadingCredentials(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_credentials')
         .select(`
           *,
@@ -1103,7 +1103,7 @@ export default function SchoolDashboard() {
       if (!credential) throw new Error('Credential not found');
 
       // Get school name
-      const { data: schoolData } = await supabase
+      const { data: schoolData } = await (supabase as any)
         .from('schools')
         .select('name')
         .eq('id', user?.schoolId || '')
@@ -1215,7 +1215,7 @@ export default function SchoolDashboard() {
       let sentWithProfiles = [];
       if (sentMessages && !sentError) {
         const senderIds = [...new Set(sentMessages.map((m: any) => m.sender_id))];
-        const { data: senderProfiles } = await supabase
+        const { data: senderProfiles } = await (supabase as any)
           .from('profiles')
           .select('user_id, display_name, email, role')
           .in('user_id', senderIds);
@@ -1243,7 +1243,7 @@ export default function SchoolDashboard() {
 
         if (messages) {
           const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
-          const { data: senderProfiles } = await supabase
+          const { data: senderProfiles } = await (supabase as any)
             .from('profiles')
             .select('user_id, display_name, email, role')
             .in('user_id', senderIds);
@@ -1386,6 +1386,48 @@ export default function SchoolDashboard() {
     }
   };
 
+  // Handle reply to message - TODO: Implement full functionality
+  const handleReplyMessage = (message: any) => {
+    console.log('Reply to message:', message);
+    // TODO: Implement reply functionality
+    // This should:
+    // 1. Open compose modal with recipient pre-filled
+    // 2. Add "Re: " to subject
+    // 3. Include original message in body
+    showNotification('Reply functionality coming soon', 'info');
+  };
+
+  // Handle delete message - TODO: Implement full functionality
+  const handleDeleteMessage = async (messageId: any) => {
+    console.log('Delete message:', messageId);
+    // TODO: Implement delete functionality
+    // This should:
+    // 1. Show confirmation dialog
+    // 2. Delete from database
+    // 3. Update UI
+    showNotification('Delete functionality coming soon', 'info');
+  };
+
+  // Handle star/unstar message - TODO: Implement full functionality
+  const handleStarMessage = async (messageId: any) => {
+    console.log('Star/unstar message:', messageId);
+    // TODO: Implement star functionality
+    // This should:
+    // 1. Toggle star status in database
+    // 2. Update UI immediately
+    showNotification('Star functionality coming soon', 'info');
+  };
+  // Handle send reply - TODO: Implement full functionality
+  const handleSendReply = async () => {
+    console.log('Send reply');
+    // TODO: Implement send reply functionality
+    // This should:
+    // 1. Get reply content from state
+    // 2. Send as new message with reference to original
+    // 3. Update UI and close reply modal
+    showNotification('Send reply functionality coming soon', 'info');
+  };
+
   // Mark message as read
   const markMessageAsRead = async (messageId: any) => {
     try {
@@ -1456,12 +1498,12 @@ export default function SchoolDashboard() {
     const cls = classes.find((c: any) => c.id === classId);
     if (cls) {
       // Fetch additional details like enrolled students and assigned teachers
-      const { data: teachers } = await supabase
+      const { data: teachers } = await (supabase as any)
         .from('class_teachers')
         .select('teacher_id, teachers(name, subject)')
         .eq('class_id', classId) as any;
 
-      const { data: students } = await supabase
+      const { data: students } = await (supabase as any)
         .from('class_enrollments')
         .select('student_id, students(name, email, grade)')
         .eq('class_id', classId) as any;
@@ -1531,7 +1573,7 @@ export default function SchoolDashboard() {
 
     try {
       // Delete will cascade to class_teachers and class_enrollments
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('classes')
         .delete()
         .eq('id', classId);
@@ -1613,7 +1655,7 @@ export default function SchoolDashboard() {
         }
 
         // Check for duplicates in database
-        const { data: existingProfiles, error: checkError } = await supabase
+        const { data: existingProfiles, error: checkError } = await (supabase as any)
           .from('profiles')
           .select('email')
           .in('email', csvEmails);
@@ -1742,7 +1784,7 @@ export default function SchoolDashboard() {
             // Update existing student data
             try {
               // Find existing user
-              const { data: existingProfile } = await supabase
+              const { data: existingProfile } = await (supabase as any)
                 .from('profiles')
                 .select('user_id')
                 .eq('email', student.email.toLowerCase())
@@ -1811,7 +1853,7 @@ export default function SchoolDashboard() {
     if (confirm('Are you sure you want to delete this student? This will completely remove them from the system.')) {
       try {
         // First, get the student's user_id
-        const { data: studentData, error: fetchError } = await supabase
+        const { data: studentData, error: fetchError } = await (supabase as any)
           .from('students')
           .select('user_id')
           .eq('id', studentId)
@@ -1830,7 +1872,7 @@ export default function SchoolDashboard() {
           console.warn('RPC deletion failed, using fallback method:', rpcError);
 
           // Delete from students table
-          const { error: studentError } = await supabase
+          const { error: studentError } = await (supabase as any)
             .from('students')
             .delete()
             .eq('id', studentId);
@@ -1838,13 +1880,13 @@ export default function SchoolDashboard() {
           if (studentError) throw studentError;
 
           // Delete from user_credentials table
-          await supabase
+          await (supabase as any)
             .from('user_credentials')
             .delete()
             .eq('user_id', userId);
 
           // Delete from profiles table
-          const { error: profileError } = await supabase
+          const { error: profileError } = await (supabase as any)
             .from('profiles')
             .delete()
             .eq('user_id', userId);
@@ -1874,7 +1916,7 @@ export default function SchoolDashboard() {
   // PRODUCTION: Logout Function
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await (supabase as any).auth.signOut();
       logout();
       window.location.href = '/login';
     } catch (error: any) {
@@ -1973,7 +2015,7 @@ export default function SchoolDashboard() {
       for (const studentId of studentIds) {
         try {
           // First, get the student's user_id
-          const { data: studentData, error: fetchError } = await supabase
+          const { data: studentData, error: fetchError } = await (supabase as any)
             .from('students')
             .select('user_id')
             .eq('id', studentId)
@@ -1995,19 +2037,19 @@ export default function SchoolDashboard() {
             console.warn('RPC deletion failed for student, using fallback:', rpcError);
 
             // Delete from students table
-            await supabase
+            await (supabase as any)
               .from('students')
               .delete()
               .eq('id', studentId);
 
             // Delete from user_credentials table
-            await supabase
+            await (supabase as any)
               .from('user_credentials')
               .delete()
               .eq('user_id', userId);
 
             // Delete from profiles table
-            await supabase
+            await (supabase as any)
               .from('profiles')
               .delete()
               .eq('user_id', userId);
@@ -2053,7 +2095,7 @@ export default function SchoolDashboard() {
     if (confirm('Are you sure you want to delete this teacher? This will completely remove them from the system.')) {
       try {
         // First, get the teacher's user_id
-        const { data: teacherData, error: fetchError } = await supabase
+        const { data: teacherData, error: fetchError } = await (supabase as any)
           .from('teachers')
           .select('user_id')
           .eq('id', teacherId)
@@ -2072,19 +2114,19 @@ export default function SchoolDashboard() {
           console.warn('RPC deletion failed, using fallback method:', rpcError);
 
           // Delete from teachers table
-          await supabase
+          await (supabase as any)
             .from('teachers')
             .delete()
             .eq('id', teacherId);
 
           // Delete from user_credentials table
-          await supabase
+          await (supabase as any)
             .from('user_credentials')
             .delete()
             .eq('user_id', userId);
 
           // Delete from profiles table
-          await supabase
+          await (supabase as any)
             .from('profiles')
             .delete()
             .eq('user_id', userId);
@@ -3066,7 +3108,7 @@ export default function SchoolDashboard() {
                             <button
                               onClick={async () => {
                                 // Fetch linked students
-                                const { data: linkedStudents } = await supabase
+                                const { data: linkedStudents } = await (supabase as any)
                                   .from('parent_students')
                                   .select(`
                                     student_id,
@@ -3130,7 +3172,7 @@ export default function SchoolDashboard() {
                                 if (confirm(`Are you sure you want to delete parent "${parent.name}?`)) {
                                   try {
                                     // Delete parent (cascades to parent_students)
-                                    const { error } = await supabase
+                                    const { error } = await (supabase as any)
                                       .from('parents')
                                       .delete()
                                       .eq('id', parent.id);
@@ -3138,13 +3180,13 @@ export default function SchoolDashboard() {
                                     if (error) throw error;
 
                                     // Delete user credentials
-                                    await supabase
+                                    await (supabase as any)
                                       .from('user_credentials')
                                       .delete()
                                       .eq('user_id', parent.user_id);
 
                                     // Delete profile
-                                    await supabase
+                                    await (supabase as any)
                                       .from('profiles')
                                       .delete()
                                       .eq('user_id', parent.user_id);
@@ -5055,7 +5097,7 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Student</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
               handleAddStudent({
                 name: formData.get('name'),
                 email: formData.get('email'),
@@ -5153,7 +5195,7 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Teacher</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
               handleAddTeacher({
                 name: formData.get('name'),
                 email: formData.get('email'),
@@ -5263,7 +5305,7 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Parent</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               handleAddParent({
                 name: formData.get('name'),
@@ -5442,7 +5484,7 @@ export default function SchoolDashboard() {
 
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               const homeworkData = {
                 student_id: formData.get('student_id'),
@@ -5624,7 +5666,7 @@ export default function SchoolDashboard() {
             </h2>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               const assignmentData = {
                 title: formData.get('title'),
@@ -5802,7 +5844,7 @@ export default function SchoolDashboard() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Set Learning Target</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               const targetData = {
                 id: Date.now().toString(),
@@ -6012,11 +6054,11 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Parent</h2>
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               try {
                 // Update parent record
-                const { error: parentError } = await supabase
+                const { error: parentError } = await (supabase as any)
                   .from('parents')
                   .update({
                     phone: formData.get('phone') || null,
@@ -6027,7 +6069,7 @@ export default function SchoolDashboard() {
                 if (parentError) throw parentError;
 
                 // Update profile
-                const { error: profileError } = await supabase
+                const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
                     display_name: formData.get('name'),
@@ -6039,7 +6081,7 @@ export default function SchoolDashboard() {
 
                 // Update parent-student links
                 // First, remove all existing links
-                await supabase
+                await (supabase as any)
                   .from('parent_students')
                   .delete()
                   .eq('parent_id', showEditParent.id);
@@ -6051,7 +6093,7 @@ export default function SchoolDashboard() {
                     student_id: student.id
                   }));
 
-                  await supabase
+                  await (supabase as any)
                     .from('parent_students')
                     .insert(parentStudentLinks as any);
                 }
@@ -6268,7 +6310,7 @@ export default function SchoolDashboard() {
                 type="file"
                 accept=".csv"
                 onChange={(e) => {
-                  const file = e.target.files[0];
+                  const file = e.target.files?.[0];
                   if (file) {
                     handleBulkUpload(file, bulkUploadType);
                   }
@@ -6628,14 +6670,14 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Student</h2>
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               try {
                 // Update student data
-                const { error: studentError } = await supabase
+                const { error: studentError } = await (supabase as any)
                   .from('students')
                   .update({
-                    age: parseInt(formData.get('age')) || null,
+                    age: parseInt(formData.get('age') as string) || null,
                     grade: formData.get('grade'),
                     gender: formData.get('gender'),
                     address: formData.get('address')
@@ -6645,7 +6687,7 @@ export default function SchoolDashboard() {
                 if (studentError) throw studentError;
 
                 // Update profile data
-                const { error: profileError } = await supabase
+                const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
                     display_name: formData.get('name')
@@ -6818,11 +6860,11 @@ export default function SchoolDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Teacher</h2>
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               try {
                 // Update teacher data
-                const { error: teacherError } = await supabase
+                const { error: teacherError } = await (supabase as any)
                   .from('teachers')
                   .update({
                     subject: formData.get('subject'),
@@ -6836,7 +6878,7 @@ export default function SchoolDashboard() {
                 if (teacherError) throw teacherError;
 
                 // Update profile data
-                const { error: profileError } = await supabase
+                const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
                     display_name: formData.get('name')
@@ -6947,13 +6989,13 @@ export default function SchoolDashboard() {
 
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               handleCreateClass({
                 name: formData.get('name'),
                 room: formData.get('room'),
                 grade: formData.get('grade'),
-                capacity: parseInt(formData.get('capacity')) || 30,
+                capacity: parseInt(formData.get('capacity') as string) || 30,
                 schedules: classSchedules
               });
 
@@ -7293,14 +7335,14 @@ export default function SchoolDashboard() {
 
             <form onSubmit={(e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
+              const formData = new FormData(e.target as HTMLFormElement);
 
               handleEditClass({
                 id: editingClass.id,
                 name: formData.get('name'),
                 room: formData.get('room'),
                 grade: formData.get('grade'),
-                capacity: parseInt(formData.get('capacity')) || 30,
+                capacity: parseInt(formData.get('capacity') as string) || 30,
                 schedules: editClassSchedules
               });
             }}>
@@ -7512,7 +7554,7 @@ export default function SchoolDashboard() {
                 </div>
               }>
                 <ClassBuilderUltra
-                  schoolId={user?.schoolId}
+                  schoolId={user?.schoolId || ''}
                   onClose={() => {
                     setShowClassBuilder(false);
                     // Refresh data when closing Class Builder
@@ -7751,7 +7793,7 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                   .from('calendar_events')
                   .insert({
                     school_id: user?.schoolId,

@@ -98,8 +98,10 @@ export default function PdfViewerImproved({ pdfUrl }: Props) {
       });
       
       // Set initial brush
-      const brush = new fabric.PencilBrush(fabricInstanceRef.current);
-      fabricInstanceRef.current.freeDrawingBrush = brush;
+      if (fabricInstanceRef.current) {
+        const brush = new fabric.PencilBrush(fabricInstanceRef.current);
+        fabricInstanceRef.current.freeDrawingBrush = brush;
+      }
       
       console.log('Fabric canvas initialized');
     } else {
@@ -340,7 +342,7 @@ export default function PdfViewerImproved({ pdfUrl }: Props) {
       <div className="bg-gray-50 border-t px-4 py-2 text-sm text-gray-600">
         <div className="flex justify-between items-center">
           <span>
-            Tool: <strong className="text-gray-800">{tool.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong> | 
+            Tool: <strong className="text-gray-800">{tool ? tool.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'None'}</strong> |
             Width: <strong className="text-gray-800">{strokeWidth}px</strong>
           </span>
           <span>

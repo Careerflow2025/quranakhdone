@@ -3,7 +3,7 @@
 import { Bell, Search, Settings, User, LogOut, School } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { signOut } from '@/lib/supabase-client';
+import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 
 interface Props {

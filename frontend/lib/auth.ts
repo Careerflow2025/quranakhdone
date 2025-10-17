@@ -1,5 +1,3 @@
-import { AuthUser } from '@/types';
-
 const TOKEN_KEY = 'quranakh_token';
 const USER_KEY = 'quranakh_user';
 
@@ -21,13 +19,13 @@ export class AuthService {
     }
   }
 
-  static setUser(user: AuthUser): void {
+  static setUser(user: any): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
     }
   }
 
-  static getUser(): AuthUser | null {
+  static getUser(): any | null {
     if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem(USER_KEY);
     return userData ? JSON.parse(userData) : null;

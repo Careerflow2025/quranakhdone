@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, signUp, signOut } from '@/lib/supabase-client';
+import { signOut } from '@/lib/auth-client';
+import { signInWithRole, createUserWithRole } from '@/lib/auth-helpers';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -50,15 +51,29 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
         }
 
         // Sign up new user
-        const { data, error } = await signUp(formData.email, formData.password);
-        
+        const roleMapping: Record<string, any> = {
+          'school': 'school_admin',
+          'teacher': 'teacher',
+          'parent': 'parent'
+        };
+
+        const { user, error } = await createUserWithRole({
+          email: formData.email,
+          password: formData.password,
+          role: roleMapping[selectedRole] || 'school_admin',
+          metadata: {
+            name: formData.fullName,
+            schoolName: formData.schoolName
+          }
+        });
+
         if (error) {
-          setError(error.message);
+          setError(error);
           setLoading(false);
           return;
         }
 
-        if (data.user) {
+        if (user) {
           // Store role in localStorage for now (in production, store in database)
           localStorage.setItem('userRole', selectedRole);
           localStorage.setItem('userEmail', formData.email);
@@ -68,15 +83,15 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
         }
       } else {
         // Sign in existing user
-        const { data, error } = await signIn(formData.email, formData.password);
-        
+        const { user, role, error } = await signInWithRole(formData.email, formData.password);
+
         if (error) {
           setError('Invalid email or password');
           setLoading(false);
           return;
         }
 
-        if (data.user) {
+        if (user) {
           // Get role from localStorage (in production, fetch from database)
           const storedRole = localStorage.getItem('userRole') || selectedRole || 'school';
           

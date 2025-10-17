@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@/lib/supabase-client';
+import { signOut } from '@/lib/auth-client';
 import { useParentStore } from '@/features/parent/state/useParentStore';
 
 export default function ParentHeader() {

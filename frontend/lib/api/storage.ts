@@ -60,10 +60,12 @@ export const storageApi = {
       .getPublicUrl(fileName)
 
     // Update profile
-    await supabase
-      .from('profiles')
-      .update({ avatar_url: publicUrl } as any)
+    const { error: updateError } = await (supabase
+      .from('profiles') as any)
+      .update({ avatar_url: publicUrl })
       .eq('user_id', userId)
+
+    if (updateError) throw updateError
 
     return publicUrl
   },
@@ -88,10 +90,12 @@ export const storageApi = {
       .getPublicUrl(fileName)
 
     // Update school
-    await supabase
-      .from('schools')
-      .update({ logo_url: publicUrl } as any)
+    const { error: updateError } = await (supabase
+      .from('schools') as any)
+      .update({ logo_url: publicUrl })
       .eq('id', schoolId)
+
+    if (updateError) throw updateError
 
     return publicUrl
   },

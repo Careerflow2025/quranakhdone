@@ -26,7 +26,15 @@ export default function TeacherDashboard() {
   // Targets State
   const [targets, setTargets] = useState<any[]>([]);
   const [showCreateTarget, setShowCreateTarget] = useState(false);
-  const [targetForm, setTargetForm] = useState({
+  const [targetForm, setTargetForm] = useState<{
+    title: string;
+    description: string;
+    type: string;
+    assignedTo: string;
+    category: string;
+    dueDate: string;
+    milestones: { name: string; date: string; completed: boolean }[];
+  }>({
     title: '',
     description: '',
     type: 'individual', // 'individual', 'class', 'school'
@@ -139,7 +147,7 @@ export default function TeacherDashboard() {
   const tabs = ['overview', 'my classes', 'students', 'assignments', 'homework', 'targets', 'attendance', 'messages', 'events'];
 
   // Function to mark homework as complete (turns green to gold)
-  const markHomeworkComplete = (homeworkId) => {
+  const markHomeworkComplete = (homeworkId: string) => {
     setHomeworkList((prev: any) => prev.map((hw: any) =>
       hw.id === homeworkId
         ? { ...hw, status: 'completed', color: 'gold' }
@@ -166,7 +174,7 @@ export default function TeacherDashboard() {
       assignedTo: '',
       category: 'memorization',
       dueDate: '',
-      milestones: []
+      milestones: [] as { name: string; date: string; completed: boolean }[]
     });
   };
 

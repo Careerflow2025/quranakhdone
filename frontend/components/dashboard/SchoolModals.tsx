@@ -3,7 +3,7 @@ import {
   X, User, Mail, Phone, Calendar, MapPin, Users,
   BookOpen, Clock, Award, FileText, Edit, Trash,
   Plus, Save, Upload, Download, AlertCircle, Check,
-  GraduationCap, Building, Target, ChevronRight
+  GraduationCap, Building, Target, ChevronRight, BarChart3
 } from 'lucide-react';
 
 // ============= STUDENT MODALS =============

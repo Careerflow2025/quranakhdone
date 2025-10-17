@@ -289,7 +289,7 @@ export default function OptimizedQuranViewer({ pdfUrl }: Props) {
         points: currentStroke.points,
         color: getToolColor(),
         width: getToolWidth(),
-        tool: tool,
+        tool: tool || 'green_pen',
         pageNumber: currentStroke.pageNumber
       };
       

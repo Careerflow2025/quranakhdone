@@ -40,8 +40,8 @@ export default function SchoolDashboardProduction() {
   } = useSchoolData();
 
   // Refs for dropdown click-outside detection
-  const notificationRef = useRef(null);
-  const settingsRef = useRef(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   // State Management
   const [activeTab, setActiveTab] = useState('overview');
@@ -61,10 +61,10 @@ export default function SchoolDashboardProduction() {
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: any) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
       }
-      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setShowSettings(false);
       }
     };
@@ -110,7 +110,7 @@ export default function SchoolDashboardProduction() {
   }
 
   // Empty state for new schools
-  const EmptyState = ({ type }) => (
+  const EmptyState = ({ type }: { type: string }) => (
     <div className="bg-white rounded-xl p-12 text-center">
       <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
         {type === 'students' && <GraduationCap className="w-10 h-10 text-emerald-600" />}

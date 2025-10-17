@@ -79,13 +79,13 @@ export default function MushafPageDisplay({
         h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
       );
       if (highlight) {
-        const mistakeColors = {
+        const mistakeColors: Record<string, string> = {
           recap: 'bg-purple-200 border-purple-400',
           tajweed: 'bg-orange-200 border-orange-400',
           haraka: 'bg-red-200 border-red-400',
           letter: 'bg-yellow-200 border-yellow-400'
         };
-        return mistakeColors[highlight.mistakeType] || '';
+        return mistakeColors[highlight.mistakeType as string] || '';
       }
       return '';
     };

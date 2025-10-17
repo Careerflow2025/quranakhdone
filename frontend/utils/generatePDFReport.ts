@@ -34,10 +34,10 @@ export function generatePDFReport(data: ReportData) {
   });
 
   // Colors
-  const primaryColor = [16, 185, 129]; // Emerald-600
-  const secondaryColor = [59, 130, 246]; // Blue-600
-  const textColor = [31, 41, 55]; // Gray-800
-  const lightGray = [243, 244, 246]; // Gray-100
+  const primaryColor: [number, number, number] = [16, 185, 129]; // Emerald-600
+  const secondaryColor: [number, number, number] = [59, 130, 246]; // Blue-600
+  const textColor: [number, number, number] = [31, 41, 55]; // Gray-800
+  const lightGray: [number, number, number] = [243, 244, 246]; // Gray-100
 
   // Fonts
   doc.setFont('helvetica');
@@ -93,10 +93,10 @@ export function generatePDFReport(data: ReportData) {
   doc.setFont('helvetica', 'normal');
 
   // Metric cards
-  const metrics = [
+  const metrics: Array<{label: string; value: number | string; color: [number, number, number]}> = [
     { label: 'Total Students', value: data.metrics.totalStudents, color: secondaryColor },
-    { label: 'Total Teachers', value: data.metrics.totalTeachers, color: [147, 51, 234] },
-    { label: 'Total Classes', value: data.metrics.totalClasses, color: [236, 72, 153] },
+    { label: 'Total Teachers', value: data.metrics.totalTeachers, color: [147, 51, 234] as [number, number, number] },
+    { label: 'Total Classes', value: data.metrics.totalClasses, color: [236, 72, 153] as [number, number, number] },
     { label: 'Attendance Rate', value: `${data.metrics.attendanceRate}%`, color: primaryColor }
   ];
 

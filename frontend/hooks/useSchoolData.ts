@@ -60,15 +60,15 @@ export function useSchoolData() {
       if (schoolError) throw schoolError;
 
       setSchoolInfo({
-        name: school?.name || 'My School',
-        id: school?.id || '',
-        location: school?.address || 'Not specified',
-        established: school?.created_at ? new Date(school.created_at).getFullYear().toString() : new Date().getFullYear().toString(),
+        name: (school as any)?.name || 'My School',
+        id: (school as any)?.id || '',
+        location: (school as any)?.address || 'Not specified',
+        established: (school as any)?.created_at ? new Date((school as any).created_at).getFullYear().toString() : new Date().getFullYear().toString(),
         principal: user?.fullName || 'School Administrator',
-        subscription: school?.subscription_status || 'active',
-        validUntil: school?.subscription_end || '2025-12-31',
-        email: school?.email || '',
-        phone: school?.phone || ''
+        subscription: (school as any)?.subscription_status || 'active',
+        validUntil: (school as any)?.subscription_end || '2025-12-31',
+        email: (school as any)?.email || '',
+        phone: (school as any)?.phone || ''
       });
 
       // Fetch students (without join for now to avoid errors)
@@ -78,16 +78,16 @@ export function useSchoolData() {
         .eq('school_id', user.schoolId);
 
       // Fetch profiles for students separately
-      let studentsWithProfiles = [];
+      let studentsWithProfiles: any[] = [];
       if (!studentsError && studentsData) {
-        const studentUserIds = studentsData.map(s => s.user_id);
+        const studentUserIds = studentsData.map((s: any) => s.user_id);
         const { data: studentProfiles } = await supabase
           .from('profiles')
           .select('user_id, display_name, email')
           .in('user_id', studentUserIds);
 
-        studentsWithProfiles = studentsData.map(student => {
-          const profile = studentProfiles?.find(p => p.user_id === student.user_id);
+        studentsWithProfiles = studentsData.map((student: any) => {
+          const profile = studentProfiles?.find((p: any) => p.user_id === student.user_id);
           return {
             ...student,
             profiles: profile || { display_name: 'Unknown', email: '' }
@@ -97,7 +97,7 @@ export function useSchoolData() {
 
       if (!studentsError) {
         // Transform data to include name and email at top level
-        const transformedStudents = studentsWithProfiles.map(student => ({
+        const transformedStudents = studentsWithProfiles.map((student: any) => ({
           ...student,
           name: student.profiles?.display_name || 'Unknown',
           email: student.profiles?.email || '',
@@ -116,16 +116,16 @@ export function useSchoolData() {
         .eq('school_id', user.schoolId);
 
       // Fetch profiles for teachers separately
-      let teachersWithProfiles = [];
+      let teachersWithProfiles: any[] = [];
       if (!teachersError && teachersData) {
-        const teacherUserIds = teachersData.map(t => t.user_id);
+        const teacherUserIds = teachersData.map((t: any) => t.user_id);
         const { data: teacherProfiles } = await supabase
           .from('profiles')
           .select('user_id, display_name, email')
           .in('user_id', teacherUserIds);
 
-        teachersWithProfiles = teachersData.map(teacher => {
-          const profile = teacherProfiles?.find(p => p.user_id === teacher.user_id);
+        teachersWithProfiles = teachersData.map((teacher: any) => {
+          const profile = teacherProfiles?.find((p: any) => p.user_id === teacher.user_id);
           return {
             ...teacher,
             profiles: profile || { display_name: 'Unknown', email: '' }
@@ -135,7 +135,7 @@ export function useSchoolData() {
 
       if (!teachersError) {
         // Transform data to include name and email at top level
-        const transformedTeachers = teachersWithProfiles.map(teacher => ({
+        const transformedTeachers = teachersWithProfiles.map((teacher: any) => ({
           ...teacher,
           name: teacher.profiles?.display_name || 'Unknown',
           email: teacher.profiles?.email || '',
@@ -153,16 +153,16 @@ export function useSchoolData() {
         .eq('school_id', user.schoolId);
 
       // Fetch profiles for parents separately
-      let parentsWithProfiles = [];
+      let parentsWithProfiles: any[] = [];
       if (!parentsError && parentsData) {
-        const parentUserIds = parentsData.map(p => p.user_id);
+        const parentUserIds = parentsData.map((p: any) => p.user_id);
         const { data: parentProfiles } = await supabase
           .from('profiles')
           .select('user_id, display_name, email')
           .in('user_id', parentUserIds);
 
-        parentsWithProfiles = parentsData.map(parent => {
-          const profile = parentProfiles?.find(p => p.user_id === parent.user_id);
+        parentsWithProfiles = parentsData.map((parent: any) => {
+          const profile = parentProfiles?.find((p: any) => p.user_id === parent.user_id);
           return {
             ...parent,
             profiles: profile || { display_name: 'Unknown', email: '' }
@@ -175,16 +175,16 @@ export function useSchoolData() {
         const { data: parentStudentCounts } = await supabase
           .from('parent_students')
           .select('parent_id')
-          .in('parent_id', parentsWithProfiles.map(p => p.id));
+          .in('parent_id', parentsWithProfiles.map((p: any) => p.id));
 
         // Count children per parent
-        const childrenCounts = {};
-        parentStudentCounts?.forEach(ps => {
+        const childrenCounts: any = {};
+        parentStudentCounts?.forEach((ps: any) => {
           childrenCounts[ps.parent_id] = (childrenCounts[ps.parent_id] || 0) + 1;
         });
 
         // Transform data to include name, email, and children count at top level
-        const transformedParents = parentsWithProfiles.map(parent => ({
+        const transformedParents = parentsWithProfiles.map((parent: any) => ({
           ...parent,
           name: parent.profiles?.display_name || 'Unknown',
           email: parent.profiles?.email || '',
@@ -203,7 +203,7 @@ export function useSchoolData() {
       if (!classesError && classesData) {
         // Fetch teacher and student counts for each class
         const classesWithCounts = await Promise.all(
-          classesData.map(async (cls) => {
+          classesData.map(async (cls: any) => {
             // Get teacher details (not just count)
             const { data: teacherData } = await supabase
               .from('class_teachers')
@@ -219,7 +219,7 @@ export function useSchoolData() {
             return {
               ...cls,
               teacher_count: teacherData?.length || 0,
-              teachers: teacherData?.map(t => t.teachers) || [],
+              teachers: teacherData?.map((t: any) => t.teachers) || [],
               student_count: studentCount || 0
             };
           })
@@ -271,15 +271,15 @@ export function useSchoolData() {
 
       // Fetch profiles separately for credentials
       if (!credsError && credsData) {
-        const userIds = credsData.map(c => c.user_id);
+        const userIds = credsData.map((c: any) => c.user_id);
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('user_id, display_name, email, role')
           .in('user_id', userIds);
 
         // Merge profiles with credentials
-        const mergedCreds = credsData.map(cred => {
-          const profile = profilesData?.find(p => p.user_id === cred.user_id);
+        const mergedCreds = credsData.map((cred: any) => {
+          const profile = profilesData?.find((p: any) => p.user_id === cred.user_id);
           return {
             ...cred,
             profiles: profile || null

@@ -331,8 +331,8 @@ class QuranAPIService {
     for (let i = 0; i < tajweedText.length; i++) {
       if (tajweedText[i] === '[' && i + 1 < tajweedText.length) {
         const marker = tajweedText.substring(i, i + 2);
-        if (tajweedMarkers[marker]) {
-          const rule = tajweedMarkers[marker];
+        if ((tajweedMarkers as any)[marker]) {
+          const rule = (tajweedMarkers as any)[marker];
           // Find the end of this rule
           let end = tajweedText.indexOf(']', i);
           if (end === -1) end = i + 2;

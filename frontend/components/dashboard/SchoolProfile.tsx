@@ -86,7 +86,9 @@ export default function SchoolProfile() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result);
+        if (reader.result && typeof reader.result === 'string') {
+          setLogoPreview(reader.result);
+        }
       };
       reader.readAsDataURL(file);
     }

@@ -4,7 +4,8 @@ import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import { Role } from '@/types';
+// Define Role type locally to avoid import issues
+type Role = 'owner' | 'admin' | 'teacher' | 'student' | 'parent' | 'school';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 

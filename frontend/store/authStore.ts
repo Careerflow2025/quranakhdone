@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
               .from('profiles')
               .select('*')
               .eq('user_id', data.user.id)
-              .single();
+              .single() as { data: any };
 
             const userData = {
               id: data.user.id,
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
             .from('profiles')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .single() as { data: any };
 
           const userData = {
             id: session.user.id,

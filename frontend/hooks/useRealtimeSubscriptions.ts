@@ -123,7 +123,7 @@ export function useNotificationSubscription() {
       }
 
       // Subscribe to new notifications
-      channel = notificationApi.subscribeToNotifications((payload) => {
+      channel = await notificationApi.subscribeToNotifications((payload) => {
         if (payload.eventType === 'INSERT') {
           setNotifications(prev => [payload.new, ...prev])
           setUnreadCount(prev => prev + 1)

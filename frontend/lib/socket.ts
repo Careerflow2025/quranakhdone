@@ -1,6 +1,5 @@
 import { io, Socket } from 'socket.io-client';
 import { AuthService } from './auth';
-import { SocketEvents } from '@/types';
 
 class SocketService {
   private socket: Socket | null = null;
@@ -100,11 +99,11 @@ class SocketService {
   }
 
   // Generic event listener
-  on<K extends keyof SocketEvents>(event: K, callback: SocketEvents[K]): void {
+  on(event: string, callback: any): void {
     this.socket?.on(event, callback);
   }
 
-  off<K extends keyof SocketEvents>(event: K, callback?: SocketEvents[K]): void {
+  off(event: string, callback?: any): void {
     this.socket?.off(event, callback);
   }
 

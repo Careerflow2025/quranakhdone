@@ -145,33 +145,39 @@ export default function QuranAnnotator({ pdfUrl }: Props) {
       });
       
       // Set up pencil brush for smooth drawing
-      const brush = new fabric.PencilBrush(fabricRef.current);
-      fabricRef.current.freeDrawingBrush = brush;
+      if (fabricRef.current) {
+        const brush = new fabric.PencilBrush(fabricRef.current);
+        fabricRef.current.freeDrawingBrush = brush;
+      }
       
       console.log('Fabric.js canvas initialized');
-      
+
       // Add event listeners
-      fabricRef.current.on('path:created', (e) => {
-        console.log('Path created');
-      });
+      if (fabricRef.current) {
+        fabricRef.current.on('path:created', (e) => {
+          console.log('Path created');
+        });
+      }
     } else {
       // Update dimensions
-      fabricRef.current.setWidth(width);
-      fabricRef.current.setHeight(height);
+      if (fabricRef.current) {
+        fabricRef.current.setWidth(width);
+        fabricRef.current.setHeight(height);
+      }
       fabricCanvas.width = width;
       fabricCanvas.height = height;
     }
-    
+
     // Apply tool settings
     applyToolSettings();
-    
+
     // Restore annotations for this page if they exist
-    if (pageAnnotations.has(page)) {
+    if (pageAnnotations.has(page) && fabricRef.current) {
       fabricRef.current.loadFromJSON(pageAnnotations.get(page), () => {
         fabricRef.current?.renderAll();
         console.log(`Restored annotations for page ${page}`);
       });
-    } else {
+    } else if (fabricRef.current) {
       fabricRef.current.clear();
     }
   };
@@ -421,7 +427,7 @@ export default function QuranAnnotator({ pdfUrl }: Props) {
         <div className="flex justify-between items-center text-sm">
           <div className="text-gray-600">
             Current Tool: <span className="font-medium text-gray-800">
-              {tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {tool ? tool.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'None'}
             </span>
             {' • '}
             Stroke Width: <span className="font-medium text-gray-800">{strokeWidth}px</span>

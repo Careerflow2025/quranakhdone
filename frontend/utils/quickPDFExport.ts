@@ -13,11 +13,11 @@ export async function generateBeautifulPDF(data: any) {
     });
 
     // Professional Colors
-    const emerald = [16, 185, 129];
-    const blue = [59, 130, 246];
-    const purple = [147, 51, 234];
-    const gray = [31, 41, 55];
-    const lightBg = [248, 250, 252];
+    const emerald: [number, number, number] = [16, 185, 129]
+    const blue: [number, number, number] = [59, 130, 246]
+    const purple: [number, number, number] = [147, 51, 234]
+    const gray: [number, number, number] = [31, 41, 55]
+    const lightBg: [number, number, number] = [248, 250, 252]
 
     // PAGE 1: COVER & SUMMARY
     // ========================
@@ -59,11 +59,11 @@ export async function generateBeautifulPDF(data: any) {
     doc.text('Key Performance Metrics', 20, 70);
 
     // Metrics Cards
-    const metrics = [
+    const metrics: Array<{label: string; value: number; color: [number, number, number]}> = [
       { label: 'Total Students', value: data.students || 0, color: blue },
       { label: 'Total Teachers', value: data.teachers || 0, color: purple },
       { label: 'Total Classes', value: data.classes || 0, color: emerald },
-      { label: 'Total Parents', value: data.parents || 0, color: [236, 72, 153] }
+      { label: 'Total Parents', value: data.parents || 0, color: [236, 72, 153] as [number, number, number] }
     ];
 
     let xPos = 20;
@@ -161,7 +161,7 @@ export async function generateBeautifulPDF(data: any) {
     doc.roundedRect(20, yPos, 170, 12, 3, 3, 'F');
 
     // Progress bar
-    const barColor = attendanceRate > 80 ? emerald : attendanceRate > 60 ? [251, 146, 60] : [239, 68, 68];
+    const barColor: [number, number, number] = attendanceRate > 80 ? emerald : attendanceRate > 60 ? [251, 146, 60] as [number, number, number] : [239, 68, 68] as [number, number, number];
     doc.setFillColor(...barColor);
     doc.roundedRect(20, yPos, (170 * attendanceRate) / 100, 12, 3, 3, 'F');
 
