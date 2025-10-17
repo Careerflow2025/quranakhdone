@@ -72,7 +72,7 @@ export default function RegisterSchool() {
         options: {
           data: {
             full_name: adminData.fullName,
-            role: 'school_admin'
+            role: 'owner'
           }
         }
       });
@@ -115,10 +115,8 @@ export default function RegisterSchool() {
         .from('schools')
         .insert({
           name: schoolData.schoolName,
-          address: schoolData.address || '',
-          phone: schoolData.phone || '',
-          email: schoolData.email
-          // Only use columns that exist in the table
+          timezone: 'Africa/Casablanca'
+          // NEW schema only has: id, name, logo_url, timezone, created_at, updated_at
         } as any)
         .select()
         .single() as { data: any; error: any };
@@ -141,8 +139,7 @@ export default function RegisterSchool() {
           school_id: newSchool.id,
           email: adminData.email,
           display_name: adminData.fullName,
-          role: 'school_admin',
-          phone: adminData.phone || ''
+          role: 'owner'
         } as any);
 
       if (profileError) {
