@@ -62,13 +62,13 @@ export function useSchoolData() {
       setSchoolInfo({
         name: (school as any)?.name || 'My School',
         id: (school as any)?.id || '',
-        location: (school as any)?.address || 'Not specified',
+        location: 'Not specified',  // address column doesn't exist in NEW schema
         established: (school as any)?.created_at ? new Date((school as any).created_at).getFullYear().toString() : new Date().getFullYear().toString(),
         principal: user?.fullName || 'School Administrator',
-        subscription: (school as any)?.subscription_status || 'active',
-        validUntil: (school as any)?.subscription_end || '2025-12-31',
-        email: (school as any)?.email || '',
-        phone: (school as any)?.phone || ''
+        subscription: 'active',  // subscription_status column doesn't exist in NEW schema
+        validUntil: '2025-12-31',  // subscription_end column doesn't exist in NEW schema
+        email: '',  // email column doesn't exist in NEW schema
+        phone: ''   // phone column doesn't exist in NEW schema
       });
 
       // Fetch students (without join for now to avoid errors)
@@ -146,11 +146,30 @@ export function useSchoolData() {
         setStats(prev => ({ ...prev, totalTeachers: transformedTeachers.length }));
       }
 
-      // Fetch parents (without join for now)
-      const { data: parentsData, error: parentsError } = await supabase
-        .from('parents')
-        .select('*')
+      // Fetch parents (parents table doesn't have school_id - get via parent_students -> students -> school_id)
+      // First get all students for this school
+      const { data: schoolStudents } = await supabase
+        .from('students')
+        .select('id')
         .eq('school_id', user.schoolId);
+
+      // Then get parent IDs for these students
+      const studentIds = schoolStudents?.map((s: any) => s.id) || [];
+      const { data: parentStudentLinks } = await supabase
+        .from('parent_students')
+        .select('parent_id')
+        .in('student_id', studentIds);
+
+      // Get unique parent IDs
+      const parentIds = [...new Set(parentStudentLinks?.map((ps: any) => ps.parent_id) || [])];
+
+      // Finally fetch the parents
+      const { data: parentsData, error: parentsError } = parentIds.length > 0
+        ? await supabase
+            .from('parents')
+            .select('*')
+            .in('id', parentIds)
+        : { data: null, error: null };
 
       // Fetch profiles for parents separately
       let parentsWithProfiles: any[] = [];
