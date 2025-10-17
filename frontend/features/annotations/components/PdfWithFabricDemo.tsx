@@ -111,7 +111,7 @@ export default function PdfWithFabricDemo({ pdfUrl }: Props) {
     f.selection = isEraser;
     
     if (!isEraser) {
-      const brush = f.freeDrawingBrush as fabric.PencilBrush;
+      const brush = f.freeDrawingBrush as any;
       brush.width = strokeWidth;
       brush.color = tool === 'green_pen' ? '#22c55e' : 
                    tool === 'red_pen' ? '#ef4444' : 

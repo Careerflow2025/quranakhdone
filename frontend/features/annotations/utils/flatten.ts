@@ -1,7 +1,7 @@
 import { fabric } from 'fabric';
 import { compressImage } from './compression';
 
-export async function flattenPdfAndFabric(pageCanvas: HTMLCanvasElement, fabricCanvas: fabric.Canvas): Promise<Blob> {
+export async function flattenPdfAndFabric(pageCanvas: HTMLCanvasElement, fabricCanvas: any): Promise<Blob> {
   // Create temp offscreen canvas
   const offCanvas = document.createElement('canvas');
   offCanvas.width = pageCanvas.width;

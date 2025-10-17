@@ -1,11 +1,11 @@
 import { fabric } from 'fabric';
 
-export function serializeFabric(f: fabric.Canvas): object {
+export function serializeFabric(f: any): object {
   // Save minimal JSON plus custom props (e.g., color, width)
   return f.toJSON(['selectable','strokeWidth','stroke','fill']);
 }
 
-export function deserializeFabric(f: fabric.Canvas, json: any): Promise<void> {
+export function deserializeFabric(f: any, json: any): Promise<void> {
   return new Promise((resolve)=>{
     f.loadFromJSON(json, ()=>{ f.renderAll(); resolve(); });
   });
