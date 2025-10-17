@@ -34,7 +34,8 @@
       "Bash(git push:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nFix: All fabric.js TypeScript namespace errors for Netlify production build\n\nSystematically fixed all remaining fabric.js type errors across all annotation\nand Quran viewer components to ensure successful Netlify deployment.\n\nFabric.js Type Fixes (Complete):\n- Changed fabricRef/canvasRef from fabric.Canvas | null to any type (5 files)\n- Added explicit any types to all fabric event handler parameters\n- Fixed forEachObject callback parameter type\n\nFiles Modified:\n- features/annotations/components/PdfWithFabric.tsx:\n  * Line 30: fabricRef typed as any\n- features/annotations/components/QuranAnnotator.tsx:\n  * Line 18: fabricRef typed as any\n  * Line 157: path:created event handler parameter typed as any\n  * Line 195: forEachObject callback parameter typed as any\n- features/quran/components/EnterpriseQuranViewer.tsx:\n  * Line 70: canvasRef typed as any\n- features/quran/components/MushafQuranViewer.tsx:\n  * Line 65: canvasRef typed as any\n- features/annotations/components/PdfWithFabricDemo.tsx:\n  * Line 23: fabricRef typed as any\n\nBuild Status: ✓ Local build passed (45/45 pages compiled successfully)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(using NODE_MODULE_VERSION 127. This version requires NODE_MODULE_VERSION 108.\"\n\nBuild Status: ✓ Compiled successfully (45/45 pages)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
