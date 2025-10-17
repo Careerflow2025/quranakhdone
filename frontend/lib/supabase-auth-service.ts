@@ -375,7 +375,7 @@ export async function loginWithRole(email: string, password: string) {
       case 'school_admin':
         const { data: school } = await supabase
           .from('schools')
-          .select('*')
+          .select('id, name, logo_url, timezone, created_at, updated_at')
           .eq('id', profile.school_id)
           .single();
         additionalData = school;
