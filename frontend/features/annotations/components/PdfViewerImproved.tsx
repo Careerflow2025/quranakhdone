@@ -15,7 +15,7 @@ export default function PdfViewerImproved({ pdfUrl }: Props) {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricInstanceRef = useRef<fabric.Canvas | null>(null);
+  const fabricInstanceRef = useRef<any>(null);
 
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
@@ -124,9 +124,9 @@ export default function PdfViewerImproved({ pdfUrl }: Props) {
       canvas.isDrawingMode = false;
       canvas.selection = true;
       // Allow selecting and deleting objects
-      canvas.on('selection:created', (e) => {
+      canvas.on('selection:created', (e: any) => {
         if (e.selected && e.selected.length > 0) {
-          e.selected.forEach(obj => canvas.remove(obj));
+          e.selected.forEach((obj: any) => canvas.remove(obj));
           canvas.discardActiveObject();
           canvas.renderAll();
         }

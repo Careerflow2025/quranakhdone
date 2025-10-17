@@ -28,7 +28,9 @@
       "Bash(1)",
       "Bash(timeout 180 npm run build:*)",
       "Bash(timeout 300 npm run build:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix: fabric.js TypeScript errors for Netlify production build\n\nFixed remaining TypeScript compilation errors in PdfViewerImproved component\nto ensure successful Netlify deployment.\n\nFabric.js Type Fixes:\n- Changed fabricInstanceRef from fabric.Canvas to any type\n- Added explicit any types to fabric event handler parameters\n- Fixed implicit any type error in selection:created event callback\n\nFiles Modified:\n- features/annotations/components/PdfViewerImproved.tsx:\n  * Line 18: fabricInstanceRef typed as any\n  * Line 127-129: Event handler parameters explicitly typed as any\n\nBuild Status: ✓ Compiled successfully (45/45 pages)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
