@@ -51,7 +51,8 @@ export async function createSchoolWithAdmin(data: {
     const adminLastName = nameParts.slice(1).join(' ');
 
     // 1. Create the school record (NEW schema: only name + timezone)
-    const { data: school, error: schoolError } = (await supabase
+    // MUST use supabaseAdmin because RLS policy requires service_role for schools INSERT
+    const { data: school, error: schoolError } = (await supabaseAdmin
       .from('schools')
       .insert({
         name: data.schoolName,

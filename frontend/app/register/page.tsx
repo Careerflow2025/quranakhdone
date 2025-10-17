@@ -92,124 +92,29 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      // PRODUCTION FIX: Handle both new and existing users
-      // Step 1: Try to sign up admin user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: adminData.email,
-        password: adminData.password,
-        options: {
-          data: {
-            full_name: adminData.fullName,
-            display_name: adminData.fullName,
-            role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
-            school_id: null // Will be set after school creation
-          }
-        }
+      // CORRECT APPROACH: Call API route that has service_role permissions
+      // RLS Policy requires service_role to INSERT into schools table
+      // Frontend with anon key cannot INSERT schools directly
+      const response = await fetch('/api/auth/create-school', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          schoolName: schoolData.name,
+          schoolEmail: adminData.email, // Use admin email as school contact
+          adminEmail: adminData.email,
+          adminPassword: adminData.password,
+          adminName: adminData.fullName,
+          timezone: 'Africa/Casablanca'
+        })
       });
 
-      // Create mutable variable for authenticated user
-      let authenticatedUser: any = authData?.user;
+      const result = await response.json();
 
-      // Handle existing user case
-      if (authError && authError.message === 'User already registered') {
-        // User exists, try to sign them in
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: adminData.email,
-          password: adminData.password
-        });
-
-        if (signInError) {
-          throw new Error('Email already registered. Please login with your existing password or use a different email.');
-        }
-
-        // Check if user already has a school
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('school_id')
-          .eq('user_id', signInData.user.id)
-          .single() as { data: any; error: any };
-
-        if (existingProfile?.school_id) {
-          throw new Error('This account already has a school associated. Please login instead.');
-        }
-
-        // Continue with school creation for existing user
-        authenticatedUser = signInData.user;
-      } else if (authError) {
-        throw authError;
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'School creation failed');
       }
-
-      if (!authenticatedUser) throw new Error('Failed to create user account');
-
-      // Step 2: Now we're authenticated, create the school
-      // NEW SCHEMA: schools table only has: id, name, logo_url, timezone, created_at, updated_at
-      const { data: schoolInsertData, error: schoolError } = (await supabase
-        .from('schools')
-        .insert({
-          name: schoolData.name,
-          timezone: 'Africa/Casablanca'
-        } as any)
-        .select()
-        .single()) as { data: any; error: any };
-
-      if (schoolError) {
-        console.error('School creation error:', schoolError);
-        // If school creation fails, we should handle this gracefully
-        // The user account exists but no school - they'll need support
-        throw new Error(`School creation failed: ${schoolError.message}. Please contact support with your admin email: ${adminData.email}`);
-      }
-
-      if (!schoolInsertData) throw new Error('Failed to create school');
-
-      // Step 3: Create/update profile linking user to school
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: authenticatedUser.id,
-          school_id: schoolInsertData.id,
-          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
-          display_name: adminData.fullName,
-          email: adminData.email,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as any, {
-          onConflict: 'user_id'
-        });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Try to update if insert fails
-        const updateData = {
-          school_id: schoolInsertData.id,
-          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
-          display_name: adminData.fullName,
-          updated_at: new Date().toISOString()
-        };
-        const { error: updateError } = await (supabase.from('profiles') as any)
-          .update(updateData)
-          .eq('user_id', authenticatedUser.id);
-
-        if (updateError) {
-          console.error('Profile update error:', updateError);
-          throw new Error(`Profile setup failed: ${updateError.message}. Please contact support.`);
-        }
-      }
-
-      // Step 4: Store credentials
-      await supabase
-        .from('user_credentials')
-        .upsert({
-          user_id: authenticatedUser.id,
-          school_id: schoolInsertData.id,
-          username: adminData.email,
-          password: adminData.password,
-          role: 'owner', // NEW schema uses 'owner' not 'school_admin' or 'school'
-          password_changed: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as any, {
-          onConflict: 'user_id'
-        });
 
       // Success! Show success step
       setStep(3);
