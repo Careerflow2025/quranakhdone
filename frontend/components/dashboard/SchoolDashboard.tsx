@@ -472,101 +472,44 @@ export default function SchoolDashboard() {
   // PRODUCTION: Add Teacher Function
   const handleAddTeacher = async (teacherData: any) => {
     try {
-      const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
+      // Get auth token for API call
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
 
-      // Create user account for teacher
-      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
-        email: teacherData.email,
-        password: tempPassword,
-        options: {
-          data: {
-            full_name: teacherData.name,
-            display_name: teacherData.name,
-            role: 'teacher',
-            school_id: user?.schoolId // Pass school_id in metadata
-          }
-        }
+      // Call API endpoint that uses the correct credential system
+      const response = await fetch('/api/auth/create-teacher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          name: teacherData.name,
+          email: teacherData.email,
+          phone: teacherData.phone || '',
+          subject: teacherData.subject || '',
+          qualification: teacherData.qualification || '',
+          experience: teacherData.experience || '',
+          assignedClasses: teacherData.assignedClasses || []
+        })
       });
 
-      if (authError) {
-        if (authError.message === 'User already registered') {
-          showNotification(
-            'Email already exists',
-            'warning',
-            5000,
-            'Please use a different email address'
-          );
-          return;
-        }
-        throw authError;
-      }
+      const result = await response.json();
 
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      // Create profile first
-      const { error: profileError } = await (supabase as any).from('profiles').insert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        role: 'teacher',
-        display_name: teacherData.name,
-        email: teacherData.email
-      } as any);
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-      }
-
-      // Add to teachers table with address and phone
-      console.log('Adding teacher with data:', {
-        phone: teacherData.phone,
-        address: teacherData.address,
-        subject: teacherData.subject
-      });
-
-      const { data, error } = await (supabase as any)
-        .from('teachers')
-        .insert({
-          user_id: authData.user.id,
-          school_id: user?.schoolId,
-          age: parseInt(teacherData.age) || null,
-          gender: teacherData.gender || null,
-          subject: teacherData.subject,
-          qualification: teacherData.qualification,
-          experience: teacherData.experience,
-          address: teacherData.address || null,
-          phone: teacherData.phone || null,
-          active: true
-        } as any)
-        .select()
-        .single();
-
-      console.log('Teacher added to database:', data);
-
-      if (error) throw error;
-
-      // Create credentials record for teacher
-      const { error: credError } = await (supabase as any).from('user_credentials').insert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        email: teacherData.email,
-        password: tempPassword,
-        role: 'teacher'
-      } as any);
-
-      if (credError) {
-        console.error('Credentials error:', credError);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create teacher');
       }
 
       refreshData();
       setShowAddModal(false);
 
       showNotification(
-        `Teacher "${teacherData.name} added successfully!`,
+        `Teacher "${teacherData.name}" added successfully!`,
         'success',
         8000,
-        `Login: ${teacherData.email} | Password: ${tempPassword}`
+        `Credentials have been sent to ${teacherData.email}`
       );
     } catch (error: any) {
       console.error('Error adding teacher:', error);

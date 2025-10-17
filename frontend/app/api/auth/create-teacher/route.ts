@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTeacherAccount } from '@/lib/supabase-auth-service';
+import { createTeacher } from '@/lib/credentials-system';
 import { createClient } from '@supabase/supabase-js';
 
 // Create admin client for verification
@@ -45,11 +45,17 @@ export async function POST(req: NextRequest) {
 
     // Get the request data
     const body = await req.json();
-    
-    // Create teacher account with the school_id from the admin's profile
-    const result = await createTeacherAccount({
-      ...body,
-      schoolId: profile.school_id
+
+    // Create teacher using the correct credential system (NO Supabase Auth)
+    const result = await createTeacher({
+      name: body.name,
+      email: body.email,
+      phone: body.phone,
+      schoolId: profile.school_id,
+      subject: body.subject,
+      qualification: body.qualification,
+      experience: body.experience,
+      assignedClasses: body.assignedClasses || []
     });
 
     if (!result.success) {
