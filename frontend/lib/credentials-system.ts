@@ -43,7 +43,7 @@ export async function createTeacher(data: {
       user_metadata: {
         role: 'teacher',
         school_id: data.schoolId,
-        full_name: data.name
+        display_name: data.name
       }
     });
 
@@ -52,28 +52,24 @@ export async function createTeacher(data: {
 
     // 2. Update user_profiles with full details (trigger might have created basic entry)
     const { error: profileError } = await supabaseAdmin
-      .from('user_profiles')
+      .from('profiles')
       .upsert({
-        id: authData.user.id,
+        user_id: authData.user.id,
         email: data.email,
-        full_name: data.name,
+        display_name: data.name,
         role: 'teacher',
         school_id: data.schoolId
       });
 
     if (profileError) throw profileError;
 
-    // 3. Create teacher record in teachers table
+    // 3. Create teacher record in teachers table (PRODUCTION schema: minimal columns)
     const { data: teacher, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .insert({
         user_id: authData.user.id,
         school_id: data.schoolId,
-        full_name: data.name,
-        email: data.email,
-        phone: data.phone,
-        qualifications: data.qualification || '',
-        experience: data.experience || ''
+        bio: data.qualification || data.experience || ''
       })
       .select()
       .single();

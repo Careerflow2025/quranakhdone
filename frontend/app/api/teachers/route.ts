@@ -10,17 +10,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'School ID is required' }, { status: 400 });
   }
   
+  // Join with profiles to get teacher name and email (PRODUCTION schema)
   const { data, error } = await sb
     .from('teachers')
     .select(`
       id,
-      full_name,
-      email,
-      phone,
-      qualifications,
-      experience,
+      user_id,
+      bio,
+      active,
       created_at,
-      user_id
+      profile:profiles!user_id (
+        display_name,
+        email
+      )
     `)
     .eq('school_id', school_id);
     
