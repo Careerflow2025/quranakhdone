@@ -2431,7 +2431,7 @@ export default function SchoolDashboard() {
                   <button
                     onClick={() => {
                       setAddModalType('teacher');
-                      setShowAddTeacher(true);
+                      setShowAddModal(true);
                     }}
                     className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                   >
