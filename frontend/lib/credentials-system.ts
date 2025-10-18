@@ -37,20 +37,57 @@ export async function createTeacher(data: {
   try {
     const password = generatePassword();
 
-    // 1. Create Supabase Auth user (trigger auto-creates user_profiles entry)
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        role: 'teacher',
-        school_id: data.schoolId,
-        display_name: data.name
-      }
+    // 1. Check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Failed to create auth user');
+    const userExists = existingUsers?.users?.find((u: any) => u.email === data.email);
+
+    let authData: any;
+
+    if (userExists) {
+      // Check if teacher record exists
+      const { data: existingTeacher } = await supabaseAdmin
+        .from('teachers')
+        .select('*')
+        .eq('user_id', userExists.id)
+        .single();
+
+      if (existingTeacher) {
+        throw new Error('A teacher with this email already exists');
+      }
+
+      // User exists but not as teacher - update their metadata
+      await supabaseAdmin.auth.admin.updateUserById(userExists.id, {
+        user_metadata: {
+          ...userExists.user_metadata,
+          role: 'teacher',
+          display_name: data.name,
+          school_id: data.schoolId
+        }
+      });
+
+      authData = { user: userExists };
+    } else {
+      // Create new auth user (trigger auto-creates user_profiles entry)
+      const { data: newAuthData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          role: 'teacher',
+          school_id: data.schoolId,
+          display_name: data.name
+        }
+      });
+
+      if (authError) throw authError;
+      if (!newAuthData?.user) throw new Error('Failed to create auth user');
+
+      authData = newAuthData;
+    }
 
     // 2. Update user_profiles with full details (trigger might have created basic entry)
     const { error: profileError } = await supabaseAdmin
