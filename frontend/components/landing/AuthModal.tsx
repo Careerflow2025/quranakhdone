@@ -115,11 +115,9 @@ export default function AuthModal({ isOpen, type, role, onClose }: AuthModalProp
             console.log('Supabase session established for school owner');
           }
 
-          // Route to appropriate dashboard based on role
+          // Route to appropriate dashboard based on role (PRODUCTION schema roles)
           const roleRoutes: Record<string, string> = {
-            owner: '/school/dashboard',
-            admin: '/school/dashboard',
-            school: '/school/dashboard',
+            school_admin: '/school/dashboard',
             teacher: '/teacher/dashboard',
             student: '/student/dashboard',
             parent: '/parent/dashboard'

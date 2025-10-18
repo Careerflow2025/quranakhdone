@@ -29,14 +29,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user is a school admin
+    // Check if user is a school admin (using PRODUCTION schema: user_profiles table)
     const { data: profile } = await supabaseAdmin
-      .from('profiles')
+      .from('user_profiles')
       .select('role, school_id')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'owner' && profile?.role !== 'admin') {
+    if (profile?.role !== 'school_admin') {
       return NextResponse.json(
         { error: 'Only school administrators can create teacher accounts' },
         { status: 403 }
