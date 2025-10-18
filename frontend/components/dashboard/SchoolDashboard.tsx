@@ -1945,62 +1945,44 @@ export default function SchoolDashboard() {
 
   // Delete Teacher Function
   const handleDeleteTeacher = async (teacherId: any) => {
-    if (confirm('Are you sure you want to delete this teacher? This will completely remove them from the system.')) {
-      try {
-        // First, get the teacher's user_id
-        const { data: teacherData, error: fetchError } = await (supabase as any)
-          .from('teachers')
-          .select('user_id')
-          .eq('id', teacherId)
-          .single();
+    if (!confirm('Are you sure you want to delete this teacher? This will completely remove them from the system.')) return;
 
-        if (fetchError) throw fetchError;
+    try {
+      const response = await fetch('/api/school/delete-teachers', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherIds: [teacherId] })
+      });
 
-        const userId = (teacherData as any).user_id;
+      const data = await response.json();
 
-        // Try to use the database function to delete completely
-        const { error: rpcError } = await (supabase as any)
-          .rpc('delete_user_completely', { user_id_to_delete: userId });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete teacher');
+      }
 
-        if (rpcError) {
-          // Fallback to manual deletion if RPC fails
-          console.warn('RPC deletion failed, using fallback method:', rpcError);
-
-          // Delete from teachers table
-          await (supabase as any)
-            .from('teachers')
-            .delete()
-            .eq('id', teacherId);
-
-          // Delete from user_credentials table
-          await (supabase as any)
-            .from('user_credentials')
-            .delete()
-            .eq('user_id', userId);
-
-          // Delete from profiles table
-          await (supabase as any)
-            .from('profiles')
-            .delete()
-            .eq('user_id', userId);
-        }
-
+      if (data.success) {
         refreshData();
         showNotification(
           'Teacher deleted successfully',
           'success',
           3000,
-          'Removed from all systems'
+          'Completely removed from all systems including authentication'
         );
-      } catch (error: any) {
-        console.error('Error deleting teacher:', error);
-        showNotification(
-          'Failed to delete teacher',
-          'error',
-          5000,
-          error.message
-        );
+
+        if (data.errors && data.errors.length > 0) {
+          console.error('Deletion errors:', data.errors);
+        }
+      } else {
+        throw new Error(data.error || 'Unknown error occurred');
       }
+    } catch (error: any) {
+      console.error('Error deleting teacher:', error);
+      showNotification(
+        'Failed to delete teacher',
+        'error',
+        5000,
+        error.message
+      );
     }
   };
 
