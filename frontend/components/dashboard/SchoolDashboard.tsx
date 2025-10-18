@@ -491,6 +491,8 @@ export default function SchoolDashboard() {
           subject: teacherData.subject || '',
           qualification: teacherData.qualification || '',
           experience: teacherData.experience || '',
+          address: teacherData.address || '',
+          bio: teacherData.bio || '',
           assignedClasses: teacherData.assignedClasses || []
         })
       });
