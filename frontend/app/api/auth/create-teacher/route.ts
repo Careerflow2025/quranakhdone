@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
       subject: body.subject,
       qualification: body.qualification,
       experience: body.experience,
+      address: body.address,
+      bio: body.bio,
       assignedClasses: body.assignedClasses || []
     });
 

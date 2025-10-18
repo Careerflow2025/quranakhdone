@@ -30,6 +30,8 @@ export async function createTeacher(data: {
   subject?: string;
   qualification?: string;
   experience?: string;
+  address?: string;
+  bio?: string;
   assignedClasses?: string[];
 }) {
   try {
@@ -57,19 +59,24 @@ export async function createTeacher(data: {
         user_id: authData.user.id,
         email: data.email,
         display_name: data.name,
+        phone: data.phone || null,
         role: 'teacher',
         school_id: data.schoolId
       });
 
     if (profileError) throw profileError;
 
-    // 3. Create teacher record in teachers table (PRODUCTION schema: minimal columns)
+    // 3. Create teacher record in teachers table with ALL fields
     const { data: teacher, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .insert({
         user_id: authData.user.id,
         school_id: data.schoolId,
-        bio: data.qualification || data.experience || ''
+        subject: data.subject || null,
+        qualification: data.qualification || null,
+        experience: data.experience ? parseInt(data.experience) : null,
+        address: data.address || null,
+        bio: data.bio || null
       })
       .select()
       .single();
