@@ -6812,25 +6812,25 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Update teacher data
+                // Update teacher data (teachers table fields only)
                 const { error: teacherError } = await (supabase as any)
                   .from('teachers')
                   .update({
-                    subject: formData.get('subject'),
-                    phone: formData.get('phone'),
-                    address: formData.get('address'),
-                    qualification: formData.get('qualification'),
-                    experience: formData.get('experience')
+                    subject: formData.get('subject') || null,
+                    address: formData.get('address') || null,
+                    qualification: formData.get('qualification') || null,
+                    experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null
                   })
                   .eq('id', editingTeacher.id);
 
                 if (teacherError) throw teacherError;
 
-                // Update profile data
+                // Update profile data (profiles table fields: name and phone)
                 const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
-                    display_name: formData.get('name')
+                    display_name: formData.get('name'),
+                    phone: formData.get('phone') || null
                   })
                   .eq('user_id', editingTeacher.user_id);
 
