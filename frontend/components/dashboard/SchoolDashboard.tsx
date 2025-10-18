@@ -1889,65 +1889,39 @@ export default function SchoolDashboard() {
     if (!confirm(`Are you sure you want to delete ${studentIds.length} student(s)? This will completely remove them from the system.`)) return;
 
     try {
-      let deletedCount = 0;
+      const response = await fetch('/api/school/delete-students', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentIds })
+      });
 
-      for (const studentId of studentIds) {
-        try {
-          // First, get the student's user_id
-          const { data: studentData, error: fetchError } = await (supabase as any)
-            .from('students')
-            .select('user_id')
-            .eq('id', studentId)
-            .single();
+      const data = await response.json();
 
-          if (fetchError) {
-            console.error(`Failed to fetch student ${studentId}:`, fetchError);
-            continue;
-          }
-
-          const userId = (studentData as any).user_id;
-
-          // Try to use the database function to delete completely
-          const { error: rpcError } = await (supabase as any)
-            .rpc('delete_user_completely', { user_id_to_delete: userId });
-
-          if (rpcError) {
-            // Fallback to manual deletion if RPC fails
-            console.warn('RPC deletion failed for student, using fallback:', rpcError);
-
-            // Delete from students table
-            await (supabase as any)
-              .from('students')
-              .delete()
-              .eq('id', studentId);
-
-            // Delete from user_credentials table
-            await (supabase as any)
-              .from('user_credentials')
-              .delete()
-              .eq('user_id', userId);
-
-            // Delete from profiles table
-            await (supabase as any)
-              .from('profiles')
-              .delete()
-              .eq('user_id', userId);
-          }
-
-          deletedCount++;
-        } catch (error: any) {
-          console.error(`Failed to delete student ${studentId}:`, error);
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete students');
       }
 
-      refreshData();
-      setSelectedUsers([]);
-      showNotification(
-        `Deleted ${deletedCount} student(s)`,
-        'success',
-        3000,
-        'Removed from all systems'
-      );
+      if (data.success) {
+        refreshData();
+        setSelectedUsers([]);
+
+        const errorMessage = data.errors && data.errors.length > 0
+          ? `${data.errors.length} failed to delete`
+          : undefined;
+
+        showNotification(
+          `Successfully deleted ${data.deletedCount} student(s)`,
+          'success',
+          3000,
+          errorMessage || 'Completely removed from all systems including authentication'
+        );
+
+        if (data.errors && data.errors.length > 0) {
+          console.error('Deletion errors:', data.errors);
+        }
+      } else {
+        throw new Error(data.error || 'Unknown error occurred');
+      }
     } catch (error: any) {
       console.error('Error deleting students:', error);
       showNotification(
