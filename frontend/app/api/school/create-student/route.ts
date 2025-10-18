@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Create/update profile (profiles table has: display_name, email, phone, address)
-    await supabaseAdmin
+    const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({
         user_id: authData.user.id,
@@ -99,6 +99,13 @@ export async function POST(req: NextRequest) {
         role: 'student',
         school_id: schoolId
       });
+
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      // Cleanup: delete auth user if profile creation fails
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      return NextResponse.json({ error: profileError.message }, { status: 400 });
+    }
 
     // 3. Calculate date of birth from age if provided
     let dobValue = null;
