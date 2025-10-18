@@ -11,7 +11,7 @@ export interface QuranAyah {
 export interface QuranScript {
   id: string;
   code: string;
-  full_name: string;
+  display_name: string;
 }
 
 // Highlight and Annotation Types
@@ -127,7 +127,7 @@ export interface Profile {
   user_id: string;
   school_id: string;
   role: UserRole;
-  full_name?: string;
+  display_name?: string;
   email: string;
   created_at: string;
   updated_at: string;

@@ -7,7 +7,7 @@ interface User {
   email: string;
   role: string;
   fullName?: string;
-  full_name?: string;
+  display_name?: string;
   schoolId?: string;
   school_id?: string;
   profile?: {
@@ -54,16 +54,16 @@ export const useAuthStore = create<AuthState>()(
           if (data.session) {
             // Get user profile from database
             const { data: profile } = await supabase
-              .from('user_profiles')
+              .from('profiles')
               .select('*')
-              .eq('id', data.user.id)
+              .eq('user_id', data.user.id)
               .single() as { data: any };
 
             const userData = {
               id: data.user.id,
               email: data.user.email!,
               role: profile?.role || 'student',
-              fullName: profile?.full_name || '',
+              fullName: profile?.display_name || '',
               schoolId: profile?.school_id || ''
             };
 
@@ -123,16 +123,16 @@ export const useAuthStore = create<AuthState>()(
         if (session) {
           // Get user profile
           const { data: profile } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('user_id', session.user.id)
             .single() as { data: any };
 
           const userData = {
             id: session.user.id,
             email: session.user.email!,
             role: profile?.role || 'student',
-            fullName: profile?.full_name || '',
+            fullName: profile?.display_name || '',
             schoolId: profile?.school_id || ''
           };
 

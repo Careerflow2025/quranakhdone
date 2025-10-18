@@ -346,105 +346,27 @@ export default function SchoolDashboard() {
   // PRODUCTION: Add Student Function (with skipAlert flag for bulk operations)
   const handleAddStudent = async (studentData: any, skipAlert: boolean = false) => {
     try {
-      const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
-
-      // Clean and validate email
-      let cleanEmail = studentData.email;
-      if (typeof cleanEmail === 'string') {
-        cleanEmail = cleanEmail.trim().toLowerCase();
-        cleanEmail = cleanEmail.replace(/\s+/g, ''); // Remove any spaces
-      }
-
-      // Validate email format before attempting to create user
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(cleanEmail)) {
-        console.error('Invalid email format for student:', cleanEmail);
-        throw new Error(`Invalid email format: ${studentData.email}`);
-      }
-
-      // Create user account for student
-      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
-        email: cleanEmail,
-        password: tempPassword,
-        options: {
-          data: {
-            display_name: studentData.name,
-            role: 'student',
-            school_id: user?.schoolId // Pass school_id in metadata
-          }
-        }
+      // Call API endpoint (uses admin client - no rate limiting)
+      const response = await fetch('/api/school/create-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: studentData.name,
+          email: studentData.email,
+          age: studentData.age,
+          gender: studentData.gender,
+          grade: studentData.grade,
+          address: studentData.address,
+          phone: studentData.phone,
+          parent: studentData.parent,
+          schoolId: user?.schoolId
+        })
       });
 
-      if (authError) {
-        // If user already exists, return specific error
-        if (authError.message === 'User already registered') {
-          if (!skipAlert) {
-            showNotification(
-              'Email already exists',
-              'warning',
-              5000,
-              'Please use a different email address'
-            );
-          }
-          throw new Error('DUPLICATE_EMAIL');
-        }
-        throw authError;
-      }
+      const result = await response.json();
 
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      // Create profile first (profiles table has: display_name, email, phone, address)
-      const { error: profileError } = await (supabase as any).from('profiles').insert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        role: 'student',
-        display_name: studentData.name,
-        email: studentData.email,
-        phone: studentData.phone || null,
-        address: studentData.address || null
-      } as any);
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        // Profile might already exist, continue
-      }
-
-      // Calculate date of birth from age if provided
-      let dobValue = null;
-      if (studentData.age) {
-        const currentYear = new Date().getFullYear();
-        const birthYear = currentYear - parseInt(studentData.age);
-        dobValue = `${birthYear}-01-01`; // Default to January 1st
-      }
-
-      // Add to students table (students table has: user_id, school_id, dob, gender, active)
-      const { data, error } = await (supabase as any)
-        .from('students')
-        .insert({
-          user_id: authData.user.id,
-          school_id: user?.schoolId,
-          dob: dobValue,
-          gender: studentData.gender || null,
-          active: true
-        } as any)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Create credentials record
-      const { error: credError } = await (supabase as any).from('user_credentials').insert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        email: studentData.email,
-        password: tempPassword,
-        role: 'student'
-      } as any);
-
-      if (credError) {
-        console.error('Credentials error:', credError);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create student');
       }
 
       refreshData();
@@ -453,15 +375,15 @@ export default function SchoolDashboard() {
       if (!skipAlert) {
         setShowAddModal(false);
         showNotification(
-          `Student "${studentData.name} added successfully!`,
+          `Student "${studentData.name}" added successfully!`,
           'success',
           8000,
-          `Login: ${studentData.email} | Password: ${tempPassword}`
+          `Login: ${result.data.email} | Password: ${result.data.password}`
         );
       }
 
       // Return success data for bulk operations
-      return { success: true, tempPassword, email: cleanEmail };
+      return { success: true, tempPassword: result.data.password, email: result.data.email };
     } catch (error: any) {
       console.error('Error adding student:', error);
       if (!skipAlert) {

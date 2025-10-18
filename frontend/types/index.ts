@@ -18,7 +18,7 @@ export interface Profile {
   user_id: string;
   school_id: string;
   role: Role;
-  full_name: string;
+  display_name: string;
   email: string;
   created_at: string;
 }
@@ -87,7 +87,7 @@ export interface Attendance {
 export interface QuranScript {
   id: string;
   code: string;
-  full_name: string;
+  display_name: string;
 }
 
 export interface QuranAyah {

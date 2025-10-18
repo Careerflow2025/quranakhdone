@@ -158,7 +158,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           .from('students')
           .select(`
             *,
-            profiles:user_id(school_id, full_name, email)
+            profiles:user_id(school_id, display_name, email)
           `) as any;
 
         if (!profileStudentResult.error && profileStudentResult.data) {
@@ -213,7 +213,7 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
           .from('teachers')
           .select(`
             *,
-            profiles:user_id(school_id, full_name, email)
+            profiles:user_id(school_id, display_name, email)
           `) as any;
 
         if (!profileTeacherResult.error && profileTeacherResult.data) {
@@ -287,9 +287,9 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
       // Transform students data to include profile info
       const transformedStudents = (studentsData || []).map((student: any) => {
-        // Get name from student table, profile full_name, or profile email
+        // Get name from student table, profile display_name, or profile email
         let studentName = student.name ||
-                         student.profiles?.full_name ||
+                         student.profiles?.display_name ||
                          student.profiles?.email?.split('@')[0] ||
                          'Unknown Student';
 
@@ -309,9 +309,9 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
       // Transform teachers data to include profile info
       const transformedTeachers = (teachersData || []).map((teacher: any) => {
-        // Get name from teacher table, profile full_name, or profile email
+        // Get name from teacher table, profile display_name, or profile email
         let teacherName = teacher.name ||
-                         teacher.profiles?.full_name ||
+                         teacher.profiles?.display_name ||
                          teacher.profiles?.email?.split('@')[0] ||
                          'Unknown Teacher';
 

@@ -55,7 +55,7 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
       }
 
       const { data: adminProfile } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('school_id')
         .eq('id', currentUser.user.id)
         .single<Pick<Profile, 'school_id'>>();
@@ -74,7 +74,7 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
         password: tempPassword,
         options: {
           data: {
-            full_name: formData.fullName,
+            display_name: formData.fullName,
             role: formData.role
           },
           emailRedirectTo: `${window.location.origin}/login`
@@ -89,12 +89,12 @@ export default function CreateUserModal({ isOpen, onClose, userType, onUserCreat
 
       // Step 2: Create profile
       const { error: profileError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .insert({
           user_id: authData.user.id,
           school_id: adminProfile.school_id,
           email: formData.email,
-          full_name: formData.fullName,
+          display_name: formData.fullName,
           role: formData.role,
           phone: formData.phone
         } as any);

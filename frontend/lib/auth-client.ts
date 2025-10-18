@@ -23,9 +23,9 @@ export async function loginWithRole(email: string, password: string) {
 
     // 2. Get user role from profile
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('role, school_id')
-      .eq('id', authData.user.id)
+      .eq('user_id', authData.user.id)
       .single();
 
     if (profileError) throw profileError;
@@ -121,9 +121,9 @@ export async function getCurrentUser() {
   if (!user) return null;
 
   const { data: profile } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('role, school_id')
-    .eq('id', user.id)
+    .eq('user_id', user.id)
     .single();
 
   return {

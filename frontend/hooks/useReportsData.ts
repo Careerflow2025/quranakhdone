@@ -237,7 +237,7 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       // Teacher performance
       const { data: teachers } = await supabase
         .from('teachers')
-        .select('id, profiles(full_name)')
+        .select('id, profiles(display_name)')
         .eq('school_id', user.schoolId!);
 
       const teacherPerformance = await Promise.all(
@@ -266,7 +266,7 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
 
           return {
             id: teacher.id,
-            name: teacher.profiles?.full_name || 'Unknown',
+            name: teacher.profiles?.display_name || 'Unknown',
             class_count: classCount || 0,  // REAL class count
             assignmentsCreated: assignmentCount || 0,
             completionRate,

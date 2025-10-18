@@ -79,11 +79,11 @@ export async function createSchoolWithAdmin(data: {
 
     // 3. Create user profile using admin client to bypass RLS
     const { error: profileError } = await supabaseAdmin
-      .from('user_profiles')
+      .from('profiles')
       .insert({
-        id: authUser.user.id,
+        user_id: authUser.user.id,
         email: data.adminEmail,
-        full_name: data.adminName,
+        display_name: data.adminName,
         role: 'school_admin',
         school_id: school.id
       } as any);
@@ -134,11 +134,11 @@ export async function createTeacherAccount(data: {
 
     // 2. Ensure user profile exists (trigger should create it, but update to be sure)
     const { error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .upsert({
-        id: authUser.user.id,
+        user_id: authUser.user.id,
         email: data.email,
-        full_name: data.name,
+        display_name: data.name,
         role: 'teacher',
         school_id: data.schoolId
       } as any);
@@ -234,11 +234,11 @@ export async function createStudentWithParent(data: {
 
     // 2. Ensure parent user profile exists (trigger should create it, but update to be sure)
     const { error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .upsert({
-        id: authUser.user.id,
+        user_id: authUser.user.id,
         email: data.parentEmail,
-        full_name: data.parentName,
+        display_name: data.parentName,
         role: 'parent',
         school_id: null // Parents don't belong to a specific school
       } as any);
@@ -360,9 +360,9 @@ export async function loginWithRole(email: string, password: string) {
 
     // 2. Get user role from profile
     const { data: profile, error: profileError} = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('role, school_id')
-      .eq('id', authData.user.id)
+      .eq('user_id', authData.user.id)
       .single();
 
     if (profileError) throw profileError;
@@ -457,9 +457,9 @@ export async function getCurrentUser() {
   if (!user) return null;
 
   const { data: profile } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('role, school_id')
-    .eq('id', user.id)
+    .eq('user_id', user.id)
     .single();
 
   return {

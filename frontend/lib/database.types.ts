@@ -45,7 +45,7 @@ export type Database = {
           user_id: string
           school_id: string | null
           role: 'school' | 'teacher' | 'student' | 'parent'
-          full_name: string | null
+          display_name: string | null
           email: string
           phone: string | null
           avatar_url: string | null
@@ -56,7 +56,7 @@ export type Database = {
           user_id: string
           school_id?: string | null
           role: 'school' | 'teacher' | 'student' | 'parent'
-          full_name?: string | null
+          display_name?: string | null
           email: string
           phone?: string | null
           avatar_url?: string | null
@@ -67,7 +67,7 @@ export type Database = {
           user_id?: string
           school_id?: string | null
           role?: 'school' | 'teacher' | 'student' | 'parent'
-          full_name?: string | null
+          display_name?: string | null
           email?: string
           phone?: string | null
           avatar_url?: string | null

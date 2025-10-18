@@ -164,7 +164,7 @@ export const authApi = {
   register: (userData: { 
     email: string; 
     password: string; 
-    full_name: string; 
+    display_name: string; 
     role: string; 
     school_id?: string;
   }) =>

@@ -1,22 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__memory__create_entities",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nFix: Role enum mismatch - change ''school_admin'' to ''owner'' for NEW schema\n\nFixed \"Profile not found\" login error caused by role enum mismatch between\ncode and database schema. NEW production schema uses ''owner'' role, not ''school_admin''.\n\nRoot Cause Analysis:\n- Database enum (role type): ''owner'', ''admin'', ''teacher'', ''student'', ''parent''\n- Code was using OLD schema terminology: ''school_admin'' \n- Auth user created with user_metadata.role=''school_admin'' (invalid)\n- Profile INSERT used role=''owner'' (correct) but auth metadata mismatched\n- Login switch case checked for ''school_admin'' which never matched\n\nFixes Applied:\n1. Line 73: Changed user_metadata.role from ''school_admin'' → ''owner''\n2. Line 375-376: Updated login switch to handle both ''owner'' and ''admin'' cases\n3. Now consistent across: auth.users metadata, profiles table, and login logic\n\nFiles Modified:\n- frontend/lib/supabase-auth-service.ts:\n  * createSchoolWithAdmin: user_metadata now uses ''owner'' role\n  * loginWithRole: switch case now handles ''owner''|''admin'' roles\n\nError Resolved: \"Profile not found. Please contact support or complete registration\"\n\nFlow Now Works: School creation → Auth user → Profile → Login ✓\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push)",
-      "Bash(cat:*)",
-      "Bash(git commit:*)",
-      "Bash(find:*)",
-      "Read(//c//**)",
-      "Bash(git push:*)",
-      "Bash(npm run dev:*)",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_fill_form",
-      "Bash(curl:*)",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_wait_for"
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Read(//c//**)"
     ],
     "deny": [],
     "ask": []

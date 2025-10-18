@@ -33,7 +33,7 @@ export const supabaseHelpers = {
   // Get user profile with role
   getUserProfile: async (userId: string) => {
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('*')
       .eq('user_id', userId)
       .single()

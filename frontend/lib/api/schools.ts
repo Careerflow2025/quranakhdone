@@ -11,7 +11,7 @@ export const schoolApi = {
   // Get current school details
   async getCurrentSchool(): Promise<School | null> {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('school_id')
       .single() as { data: { school_id: string } | null }
 
@@ -32,11 +32,11 @@ export const schoolApi = {
     email: string
     password: string
     role: 'teacher' | 'student' | 'parent'
-    full_name: string
+    display_name: string
     phone?: string
   }) {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('school_id, role')
       .single() as { data: { school_id: string; role: string } | null }
 
@@ -55,12 +55,12 @@ export const schoolApi = {
 
     // Create profile
     const { error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .insert({
         user_id: authData.user.id,
         school_id: profile.school_id,
         role: userData.role,
-        full_name: userData.full_name,
+        display_name: userData.display_name,
         email: userData.email,
         phone: userData.phone
       } as any)
@@ -95,7 +95,7 @@ export const schoolApi = {
   // Update user password (school admin only)
   async updateUserPassword(userId: string, newPassword: string) {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('role')
       .single() as { data: { role: string } | null }
 
@@ -114,14 +114,14 @@ export const schoolApi = {
   // Get all school users
   async getSchoolUsers() {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('school_id')
       .single() as { data: { school_id: string } | null }
 
     if (!profile?.school_id) return []
 
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select(`
         *,
         teachers!inner(*),
@@ -137,7 +137,7 @@ export const schoolApi = {
   // Get school statistics
   async getSchoolStats() {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('school_id')
       .single() as { data: { school_id: string } | null }
 

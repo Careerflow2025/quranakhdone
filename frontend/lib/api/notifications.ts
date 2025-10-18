@@ -72,7 +72,7 @@ export const notificationApi = {
     data?: any
   }): Promise<Notification> {
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('school_id')
       .eq('user_id', data.user_id)
       .single()

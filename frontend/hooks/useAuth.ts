@@ -51,9 +51,9 @@ export function useAuth(requiredRole?: Role) {
 
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (data) {

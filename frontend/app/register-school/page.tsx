@@ -71,7 +71,7 @@ export default function RegisterSchool() {
         password: adminData.password,
         options: {
           data: {
-            full_name: adminData.fullName,
+            display_name: adminData.fullName,
             role: 'owner'
           }
         }
@@ -133,12 +133,12 @@ export default function RegisterSchool() {
       // Step 4: Create admin profile
       console.log('Step 4: Creating admin profile...');
       const { error: profileError } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .insert({
           user_id: authData.user.id,
           school_id: newSchool.id,
           email: adminData.email,
-          full_name: adminData.fullName,
+          display_name: adminData.fullName,
           role: 'owner'
         } as any);
 

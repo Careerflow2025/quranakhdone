@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
 
     // Get profile from user_profiles table (PRODUCTION schema)
     const { data: profile, error: profileError } = await supabaseAdmin
-      .from('user_profiles')
-      .select('role, school_id, full_name')
+      .from('profiles')
+      .select('role, school_id, display_name')
       .eq('id', data.user.id)
       .single();
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       email: data.user.email,
       role: profile.role,
       schoolId: profile.school_id,
-      fullName: profile.full_name
+      fullName: profile.display_name
     };
 
     // Get role-specific data

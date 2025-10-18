@@ -261,7 +261,7 @@ export function useClassSubscription(classId: string | null) {
                 students!inner(
                   *,
                   profiles!inner(
-                    full_name,
+                    display_name,
                     avatar_url
                   )
                 )
