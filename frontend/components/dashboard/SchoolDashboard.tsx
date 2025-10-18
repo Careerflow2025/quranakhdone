@@ -6548,37 +6548,27 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Calculate DOB from age if provided
-                let dobValue = null;
-                const ageStr = formData.get('age') as string;
-                if (ageStr) {
-                  const currentYear = new Date().getFullYear();
-                  const birthYear = currentYear - parseInt(ageStr);
-                  dobValue = `${birthYear}-01-01`;
-                }
-
-                // Update student data (students table has: user_id, school_id, dob, gender, grade, active)
-                const { error: studentError } = await (supabase as any)
-                  .from('students')
-                  .update({
-                    dob: dobValue,
+                // Call API route to update student (uses service role key to bypass RLS)
+                const response = await fetch('/api/school/update-student', {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    studentId: editingStudent.id,
+                    userId: editingStudent.user_id,
+                    name: formData.get('name'),
+                    age: formData.get('age'),
                     grade: formData.get('grade'),
-                    gender: formData.get('gender')
-                  })
-                  .eq('id', editingStudent.id);
-
-                if (studentError) throw studentError;
-
-                // Update profile data (profiles table has: display_name, email, phone)
-                const { error: profileError } = await (supabase as any)
-                  .from('profiles')
-                  .update({
-                    display_name: formData.get('name'),
+                    gender: formData.get('gender'),
                     phone: formData.get('phone')
-                  })
-                  .eq('user_id', editingStudent.user_id);
+                  }),
+                });
 
-                if (profileError) throw profileError;
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(errorData.error || 'Failed to update student');
+                }
 
                 // Refresh data to get the latest from database
                 await refreshData();
