@@ -395,13 +395,15 @@ export default function SchoolDashboard() {
         throw new Error('Failed to create user account');
       }
 
-      // Create profile first
+      // Create profile first (profiles table has: display_name, email, phone, address)
       const { error: profileError } = await (supabase as any).from('profiles').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'student',
         display_name: studentData.name,
-        email: studentData.email
+        email: studentData.email,
+        phone: studentData.phone || null,
+        address: studentData.address || null
       } as any);
 
       if (profileError) {
@@ -409,16 +411,22 @@ export default function SchoolDashboard() {
         // Profile might already exist, continue
       }
 
-      // Add to students table (without email, name, phone fields as they don't exist)
+      // Calculate date of birth from age if provided
+      let dobValue = null;
+      if (studentData.age) {
+        const currentYear = new Date().getFullYear();
+        const birthYear = currentYear - parseInt(studentData.age);
+        dobValue = `${birthYear}-01-01`; // Default to January 1st
+      }
+
+      // Add to students table (students table has: user_id, school_id, dob, gender, active)
       const { data, error } = await (supabase as any)
         .from('students')
         .insert({
           user_id: authData.user.id,
           school_id: user?.schoolId,
-          age: parseInt(studentData.age) || null,
-          grade: studentData.grade,
+          dob: dobValue,
           gender: studentData.gender || null,
-          address: studentData.address || null,
           active: true
         } as any)
         .select()
