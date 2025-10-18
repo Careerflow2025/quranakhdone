@@ -371,17 +371,13 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({ show, onClose,
     name: '',
     email: '',
     phone: '',
-    subject: '',
-    qualification: '',
-    experience: '',
-    joinDate: new Date().toISOString().split('T')[0],
-    address: ''
+    bio: ''
   });
 
   if (!show) return null;
 
   const handleSubmit = () => {
-    if (!teacherData.name || !teacherData.email || !teacherData.subject) {
+    if (!teacherData.name || !teacherData.email) {
       alert('Please fill in all required fields');
       return;
     }
@@ -400,11 +396,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({ show, onClose,
       name: '',
       email: '',
       phone: '',
-      subject: '',
-      qualification: '',
-      experience: '',
-      joinDate: new Date().toISOString().split('T')[0],
-      address: ''
+      bio: ''
     });
   };
 
@@ -443,7 +435,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({ show, onClose,
                   required
                 />
               </div>
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                 <input
                   type="tel"
@@ -452,60 +444,15 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({ show, onClose,
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
-                <select
-                  value={teacherData.subject}
-                  onChange={(e) => setTeacherData({...teacherData, subject: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select Subject</option>
-                  <option value="Quran Memorization">Quran Memorization</option>
-                  <option value="Tajweed">Tajweed</option>
-                  <option value="Islamic Studies">Islamic Studies</option>
-                  <option value="Arabic Language">Arabic Language</option>
-                  <option value="Fiqh">Fiqh</option>
-                  <option value="Hadith">Hadith</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
-                <input
-                  type="text"
-                  value={teacherData.qualification}
-                  onChange={(e) => setTeacherData({...teacherData, qualification: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Bachelor's in Islamic Studies"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Experience (years)</label>
-                <input
-                  type="number"
-                  value={teacherData.experience}
-                  onChange={(e) => setTeacherData({...teacherData, experience: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
-                <input
-                  type="date"
-                  value={teacherData.joinDate}
-                  onChange={(e) => setTeacherData({...teacherData, joinDate: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Bio / Qualifications</label>
               <textarea
-                value={teacherData.address}
-                onChange={(e) => setTeacherData({...teacherData, address: e.target.value})}
+                value={teacherData.bio}
+                onChange={(e) => setTeacherData({...teacherData, bio: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                rows={2}
+                rows={3}
+                placeholder="Teacher qualifications, experience, specialization..."
               />
             </div>
           </form>
