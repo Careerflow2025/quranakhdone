@@ -15,6 +15,8 @@ export const StudentCsvRow = z.object({
   parent_name: z.string().min(1),
   parent_email: z.string().email(),
   date_of_birth: z.string().optional().or(z.literal('')),
+  gender: z.enum(['male', 'female']).optional().or(z.literal('')),
+  grade: z.string().optional().or(z.literal('')),
   external_id: z.string().optional().or(z.literal('')),
   class_code: z.string().min(1)
 });
