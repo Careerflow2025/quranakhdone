@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       authData = newAuthData;
     }
 
-    // 2. Create/update profile (profiles table has: display_name, email, phone, address)
+    // 2. Create/update profile (profiles table has: display_name, email, phone)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({
@@ -95,7 +95,6 @@ export async function POST(req: NextRequest) {
         email: email,
         display_name: name,
         phone: phone || null,
-        address: address || null,
         role: 'student',
         school_id: schoolId
       });
