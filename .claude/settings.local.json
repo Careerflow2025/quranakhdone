@@ -3,7 +3,12 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
-      "Read(//c//**)"
+      "Read(//c//**)",
+      "mcp__supabase__live_dangerously",
+      "mcp__supabase__execute_postgresql",
+      "Bash(git push)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

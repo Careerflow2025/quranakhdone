@@ -344,8 +344,8 @@ export function useSchoolData() {
   };
 
   // Function to refresh data
-  const refreshData = () => {
-    fetchSchoolData();
+  const refreshData = async () => {
+    await fetchSchoolData();
   };
 
   return {

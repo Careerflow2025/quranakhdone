@@ -6580,8 +6580,54 @@ export default function SchoolDashboard() {
 
                 if (profileError) throw profileError;
 
-                refreshData();
+                // Refresh data to get the latest from database
+                await refreshData();
+
+                // Close edit modal
                 setEditingStudent(null);
+
+                // If viewing this student's details, re-fetch and update the modal
+                if (showStudentDetails && showStudentDetails.id === editingStudent.id) {
+                  // Re-fetch this specific student's data to ensure we have the freshest data
+                  const { data: updatedStudentData } = await (supabase as any)
+                    .from('students')
+                    .select('*')
+                    .eq('id', editingStudent.id)
+                    .single();
+
+                  if (updatedStudentData) {
+                    // Get the profile data
+                    const { data: profileData } = await (supabase as any)
+                      .from('profiles')
+                      .select('user_id, display_name, email, phone')
+                      .eq('user_id', updatedStudentData.user_id)
+                      .single();
+
+                    // Calculate age from DOB
+                    let age = null;
+                    if (updatedStudentData.dob) {
+                      const today = new Date();
+                      const birthDate = new Date(updatedStudentData.dob);
+                      age = today.getFullYear() - birthDate.getFullYear();
+                      const monthDiff = today.getMonth() - birthDate.getMonth();
+                      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                      }
+                    }
+
+                    // Update the modal with fresh data
+                    setShowStudentDetails({
+                      ...updatedStudentData,
+                      name: profileData?.display_name || 'Unknown',
+                      email: profileData?.email || '',
+                      phone: profileData?.phone || '',
+                      age: age,
+                      enrollment_date: updatedStudentData.created_at,
+                      status: updatedStudentData.active ? 'active' : 'inactive'
+                    });
+                  }
+                }
+
                 showNotification(
                   'Student updated successfully',
                   'success',
