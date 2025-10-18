@@ -6548,24 +6548,33 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Update student data
+                // Calculate DOB from age if provided
+                let dobValue = null;
+                const ageStr = formData.get('age') as string;
+                if (ageStr) {
+                  const currentYear = new Date().getFullYear();
+                  const birthYear = currentYear - parseInt(ageStr);
+                  dobValue = `${birthYear}-01-01`;
+                }
+
+                // Update student data (students table has: user_id, school_id, dob, gender, grade, active)
                 const { error: studentError } = await (supabase as any)
                   .from('students')
                   .update({
-                    age: parseInt(formData.get('age') as string) || null,
+                    dob: dobValue,
                     grade: formData.get('grade'),
-                    gender: formData.get('gender'),
-                    address: formData.get('address')
+                    gender: formData.get('gender')
                   })
                   .eq('id', editingStudent.id);
 
                 if (studentError) throw studentError;
 
-                // Update profile data
+                // Update profile data (profiles table has: display_name, email, phone)
                 const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
-                    display_name: formData.get('name')
+                    display_name: formData.get('name'),
+                    phone: formData.get('phone')
                   })
                   .eq('user_id', editingStudent.user_id);
 
@@ -6620,12 +6629,12 @@ export default function SchoolDashboard() {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
-                <textarea
-                  name="address"
-                  defaultValue={editingStudent.address || ''}
-                  placeholder="Address (Optional)"
+                <input
+                  name="phone"
+                  type="tel"
+                  defaultValue={editingStudent.phone || ''}
+                  placeholder="Phone (Optional)"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
                 />
               </div>
               <div className="flex space-x-3 mt-6">
