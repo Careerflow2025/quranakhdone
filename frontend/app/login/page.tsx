@@ -49,51 +49,33 @@ export default function LoginPage() {
 
       console.log('✅ Authentication successful:', authData.user.email);
 
-      // Step 2: Get user profile and determine dashboard
-      // Using RPC function for production reliability
-      const { data: userInfo, error: profileError } = await supabase
-        .rpc('get_current_user_info') as { data: any; error: any };
+      // Step 2: Get user profile directly (RPC function not available)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', authData.user.id)
+        .single();
 
-      if (profileError) {
+      if (profileError || !profile) {
         console.error('Profile fetch error:', profileError);
-        // Fallback: Try direct query
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', authData.user.id)
-          .single();
-
-        if (profile && typeof profile === 'object' && 'role' in profile) {
-          console.log('✅ Profile found (fallback):', profile);
-
-          // Update auth store
-          await storeLogin(email, password);
-
-          // Redirect based on role - Using actual routes that exist in app directory
-          const dashboardRoute = (profile as any).role === 'owner' ? '/school-dashboard' :
-                                (profile as any).role === 'admin' ? '/school-dashboard' :
-                                (profile as any).role === 'teacher' ? '/teacher-dashboard' :
-                                (profile as any).role === 'student' ? '/student-dashboard' :
-                                (profile as any).role === 'parent' ? '/parent-dashboard' : '/';
-
-          console.log('🚀 Redirecting to:', dashboardRoute);
-          router.push(dashboardRoute);
-          return;
-        }
+        setError('Profile not found. Please contact support.');
+        setIsLoading(false);
+        return;
       }
 
-      if (userInfo && Array.isArray(userInfo) && userInfo.length > 0) {
-        const user = userInfo[0];
-        console.log('✅ User info retrieved:', user);
+      console.log('✅ Profile found:', profile);
 
-        // Update auth store with complete user data
-        const userData = {
-          id: authData.user.id,
-          email: user.email || authData.user.email,
-          role: user.role || 'owner',  // FIXED: default should be 'owner' not 'school'
-          fullName: user.full_name || '',
-          schoolId: user.school_id || ''
-        };
+      // Update auth store
+      await storeLogin(email, password);
+
+      // Update auth store with complete user data
+      const userData = {
+        id: authData.user.id,
+        email: (profile as any).email || authData.user.email,
+        role: (profile as any).role || 'owner',
+        fullName: (profile as any).display_name || '',
+        schoolId: (profile as any).school_id || ''
+      };
 
         // Store in localStorage for persistence
         localStorage.setItem('token', authData.session?.access_token || '');
@@ -107,26 +89,15 @@ export default function LoginPage() {
           isLoading: false
         });
 
-        // Redirect to appropriate dashboard - Using actual routes that exist
-        const dashboardRoute = user.dashboard_route ||
-                              (user.role === 'owner' ? '/school-dashboard' :
-                               user.role === 'admin' ? '/school-dashboard' :
-                               user.role === 'teacher' ? '/teacher-dashboard' :
-                               user.role === 'student' ? '/student-dashboard' :
-                               user.role === 'parent' ? '/parent-dashboard' : '/');
+        // Redirect based on role - Using actual routes that exist in app directory
+        const dashboardRoute = (profile as any).role === 'owner' ? '/school-dashboard' :
+                              (profile as any).role === 'admin' ? '/school-dashboard' :
+                              (profile as any).role === 'teacher' ? '/teacher-dashboard' :
+                              (profile as any).role === 'student' ? '/student-dashboard' :
+                              (profile as any).role === 'parent' ? '/parent-dashboard' : '/';
 
-        console.log('🚀 Redirecting to dashboard:', dashboardRoute);
-
-        // Use router.push for production navigation
+        console.log('🚀 Redirecting to:', dashboardRoute);
         router.push(dashboardRoute);
-      } else {
-        // No profile found - might be a new user who just registered
-        console.log('⚠️ No profile found, checking for school admin role...');
-
-        // For new registrations, they should have a profile
-        // If not, create one or redirect to complete profile
-        setError('Profile not found. Please contact support or complete registration.');
-      }
 
     } catch (error: any) {
       console.error('Login error:', error);
