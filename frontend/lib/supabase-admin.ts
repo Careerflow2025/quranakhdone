@@ -34,13 +34,13 @@ export const adminHelpers = {
     // Create profile
     if (authData.user && schoolId) {
       const { error: profileError } = await supabaseAdmin
-        .from('profiles')
+        .from('user_profiles')
         .insert({
           user_id: authData.user.id,
           email,
           role,
           school_id: schoolId,
-          display_name: email.split('@')[0]
+          full_name: email.split('@')[0]
         } as any)
 
       if (profileError) throw profileError
@@ -69,7 +69,7 @@ export const adminHelpers = {
   // Get all users for a school
   getSchoolUsers: async (schoolId: string) => {
     const { data, error } = await supabaseAdmin
-      .from('profiles')
+      .from('user_profiles')
       .select('*')
       .eq('school_id', schoolId)
 

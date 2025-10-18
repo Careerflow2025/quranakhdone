@@ -54,16 +54,16 @@ export const useAuthStore = create<AuthState>()(
           if (data.session) {
             // Get user profile from database
             const { data: profile } = await supabase
-              .from('profiles')
+              .from('user_profiles')
               .select('*')
-              .eq('user_id', data.user.id)
+              .eq('id', data.user.id)
               .single() as { data: any };
 
             const userData = {
               id: data.user.id,
               email: data.user.email!,
               role: profile?.role || 'student',
-              fullName: profile?.display_name || '',
+              fullName: profile?.full_name || '',
               schoolId: profile?.school_id || ''
             };
 
@@ -123,16 +123,16 @@ export const useAuthStore = create<AuthState>()(
         if (session) {
           // Get user profile
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('*')
-            .eq('user_id', session.user.id)
+            .eq('id', session.user.id)
             .single() as { data: any };
 
           const userData = {
             id: session.user.id,
             email: session.user.email!,
             role: profile?.role || 'student',
-            fullName: profile?.display_name || '',
+            fullName: profile?.full_name || '',
             schoolId: profile?.school_id || ''
           };
 

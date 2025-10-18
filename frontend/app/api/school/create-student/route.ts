@@ -99,11 +99,11 @@ export async function POST(req: NextRequest) {
 
       // Update user profile
       await supabaseAdmin
-        .from('profiles')
+        .from('user_profiles')
         .upsert({
           user_id: parentUserId,
           email: parentEmail,
-          display_name: parentName,
+          full_name: parentName,
           role: 'parent',
           school_id: schoolId
         });
@@ -129,11 +129,11 @@ export async function POST(req: NextRequest) {
 
     // Create student profile
     await supabaseAdmin
-      .from('profiles')
+      .from('user_profiles')
       .insert({
         user_id: studentAuth.user.id,
         email: studentEmail,
-        display_name: studentName,
+        full_name: studentName,
         role: 'student',
         school_id: schoolId
       } as any);

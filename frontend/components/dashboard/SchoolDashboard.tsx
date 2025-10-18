@@ -369,7 +369,7 @@ export default function SchoolDashboard() {
         options: {
           data: {
             full_name: studentData.name,
-            display_name: studentData.name,
+            full_name: studentData.name,
             role: 'student',
             school_id: user?.schoolId // Pass school_id in metadata
           }
@@ -397,11 +397,11 @@ export default function SchoolDashboard() {
       }
 
       // Create profile first
-      const { error: profileError } = await (supabase as any).from('profiles').insert({
+      const { error: profileError } = await (supabase as any).from('user_profiles').insert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'student',
-        display_name: studentData.name,
+        full_name: studentData.name,
         email: studentData.email
       } as any);
 
@@ -534,7 +534,7 @@ export default function SchoolDashboard() {
         options: {
           data: {
             full_name: parentData.name,
-            display_name: parentData.name,
+            full_name: parentData.name,
             role: 'parent',
             school_id: user?.schoolId
           }
@@ -559,11 +559,11 @@ export default function SchoolDashboard() {
       }
 
       // Create profile first (in case trigger didn't fire)
-      const { error: profileError } = await (supabase as any).from('profiles').upsert({
+      const { error: profileError } = await (supabase as any).from('user_profiles').upsert({
         user_id: authData.user.id,
         school_id: user?.schoolId,
         role: 'parent',
-        display_name: parentData.name,
+        full_name: parentData.name,
         email: parentData.email
       } as any);
 
@@ -1018,7 +1018,7 @@ export default function SchoolDashboard() {
         .select(`
           *,
           profiles!user_credentials_user_id_fkey (
-            display_name,
+            full_name,
             email,
             role
           )
@@ -1055,7 +1055,7 @@ export default function SchoolDashboard() {
       // Call the edge function to send email
       const emailHtml = `
         <h2>Welcome to ${(schoolData as any)?.name || 'QuranAkh School'}</h2>
-        <p>Hello ${credential.profiles?.display_name || 'User'},</p>
+        <p>Hello ${credential.profiles?.full_name || 'User'},</p>
         <p>Your ${credential.role} account has been created.</p>
         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3>Your Login Credentials:</h3>
@@ -1159,8 +1159,8 @@ export default function SchoolDashboard() {
       if (sentMessages && !sentError) {
         const senderIds = [...new Set(sentMessages.map((m: any) => m.sender_id))];
         const { data: senderProfiles } = await (supabase as any)
-          .from('profiles')
-          .select('user_id, display_name, email, role')
+          .from('user_profiles')
+          .select('user_id, full_name, email, role')
           .in('user_id', senderIds);
 
         sentWithProfiles = sentMessages.map((msg: any) => ({
@@ -1187,8 +1187,8 @@ export default function SchoolDashboard() {
         if (messages) {
           const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
           const { data: senderProfiles } = await (supabase as any)
-            .from('profiles')
-            .select('user_id, display_name, email, role')
+            .from('user_profiles')
+            .select('user_id, full_name, email, role')
             .in('user_id', senderIds);
 
           receivedMessages = receivedRecords.map((rec: any) => {
@@ -1599,7 +1599,7 @@ export default function SchoolDashboard() {
 
         // Check for duplicates in database
         const { data: existingProfiles, error: checkError } = await (supabase as any)
-          .from('profiles')
+          .from('user_profiles')
           .select('email')
           .in('email', csvEmails);
 
@@ -1728,7 +1728,7 @@ export default function SchoolDashboard() {
             try {
               // Find existing user
               const { data: existingProfile } = await (supabase as any)
-                .from('profiles')
+                .from('user_profiles')
                 .select('user_id')
                 .eq('email', student.email.toLowerCase())
                 .single();
@@ -1830,7 +1830,7 @@ export default function SchoolDashboard() {
 
           // Delete from profiles table
           const { error: profileError } = await (supabase as any)
-            .from('profiles')
+            .from('user_profiles')
             .delete()
             .eq('user_id', userId);
 
@@ -1993,7 +1993,7 @@ export default function SchoolDashboard() {
 
             // Delete from profiles table
             await (supabase as any)
-              .from('profiles')
+              .from('user_profiles')
               .delete()
               .eq('user_id', userId);
           }
@@ -2070,7 +2070,7 @@ export default function SchoolDashboard() {
 
           // Delete from profiles table
           await (supabase as any)
-            .from('profiles')
+            .from('user_profiles')
             .delete()
             .eq('user_id', userId);
         }
@@ -3059,7 +3059,7 @@ export default function SchoolDashboard() {
                                       id,
                                       user_id,
                                       profiles!inner (
-                                        display_name,
+                                        full_name,
                                         email
                                       )
                                     )
@@ -3068,7 +3068,7 @@ export default function SchoolDashboard() {
 
                                 const formattedStudents = linkedStudents?.map((link: any) => ({
                                   id: link.students.id,
-                                  name: link.students.profiles.display_name,
+                                  name: link.students.profiles.full_name,
                                   email: link.students.profiles.email
                                 })) || [];
 
@@ -3090,7 +3090,7 @@ export default function SchoolDashboard() {
                                     students!inner (
                                       id,
                                       profiles!inner (
-                                        display_name,
+                                        full_name,
                                         email
                                       )
                                     )
@@ -3099,7 +3099,7 @@ export default function SchoolDashboard() {
                                   .then(({ data }: any) => {
                                     const linkedStudents = data?.map((link: any) => ({
                                       id: link.students.id,
-                                      name: link.students.profiles.display_name,
+                                      name: link.students.profiles.full_name,
                                       email: link.students.profiles.email
                                     })) || [];
                                     setSelectedStudentsForParent(linkedStudents);
@@ -3130,7 +3130,7 @@ export default function SchoolDashboard() {
 
                                     // Delete profile
                                     await (supabase as any)
-                                      .from('profiles')
+                                      .from('user_profiles')
                                       .delete()
                                       .eq('user_id', parent.user_id);
 
@@ -3861,7 +3861,7 @@ export default function SchoolDashboard() {
                           return (
                             msg.subject?.toLowerCase().includes(searchLower) ||
                             msg.body?.toLowerCase().includes(searchLower) ||
-                            msg.sender?.display_name?.toLowerCase().includes(searchLower) ||
+                            msg.sender?.full_name?.toLowerCase().includes(searchLower) ||
                             msg.sender?.email?.toLowerCase().includes(searchLower)
                           );
                         }
@@ -3899,7 +3899,7 @@ export default function SchoolDashboard() {
                                 message.unread ? 'bg-blue-500' : 'bg-transparent'
                               }`} />
                               <h4 className="font-semibold text-sm text-gray-900">
-                                {message.sender?.display_name || 'Unknown Sender'}
+                                {message.sender?.full_name || 'Unknown Sender'}
                               </h4>
                               {message.type === 'sent' && (
                                 <span className="ml-2 text-xs text-gray-500">(Sent)</span>
@@ -3965,7 +3965,7 @@ export default function SchoolDashboard() {
                             </h3>
                             <div className="flex items-center space-x-3 mt-1">
                               <span className="text-sm text-gray-600">
-                                From: <span className="font-medium">{selectedMessage.sender?.display_name || 'Unknown'}</span>
+                                From: <span className="font-medium">{selectedMessage.sender?.full_name || 'Unknown'}</span>
                               </span>
                               <span className="text-sm text-gray-600">
                                 To: <span className="font-medium">
@@ -4442,7 +4442,7 @@ export default function SchoolDashboard() {
                               </div>
                               <div className="ml-3">
                                 <p className="text-sm font-medium text-gray-900">
-                                  {credential.profiles?.display_name || 'Unknown User'}
+                                  {credential.profiles?.full_name || 'Unknown User'}
                                 </p>
                                 <p className="text-xs text-gray-500">
                                   ID: {credential.user_id?.slice(0, 8)}...
@@ -6013,9 +6013,9 @@ export default function SchoolDashboard() {
 
                 // Update profile
                 const { error: profileError } = await (supabase as any)
-                  .from('profiles')
+                  .from('user_profiles')
                   .update({
-                    display_name: formData.get('name'),
+                    full_name: formData.get('name'),
                     email: formData.get('email')
                   })
                   .eq('user_id', showEditParent.user_id);
@@ -6631,9 +6631,9 @@ export default function SchoolDashboard() {
 
                 // Update profile data
                 const { error: profileError } = await (supabase as any)
-                  .from('profiles')
+                  .from('user_profiles')
                   .update({
-                    display_name: formData.get('name')
+                    full_name: formData.get('name')
                   })
                   .eq('user_id', editingStudent.user_id);
 
@@ -6822,9 +6822,9 @@ export default function SchoolDashboard() {
 
                 // Update profile data
                 const { error: profileError } = await (supabase as any)
-                  .from('profiles')
+                  .from('user_profiles')
                   .update({
-                    display_name: formData.get('name')
+                    full_name: formData.get('name')
                   })
                   .eq('user_id', editingTeacher.user_id);
 

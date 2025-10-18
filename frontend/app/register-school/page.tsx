@@ -133,12 +133,12 @@ export default function RegisterSchool() {
       // Step 4: Create admin profile
       console.log('Step 4: Creating admin profile...');
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .insert({
           user_id: authData.user.id,
           school_id: newSchool.id,
           email: adminData.email,
-          display_name: adminData.fullName,
+          full_name: adminData.fullName,
           role: 'owner'
         } as any);
 

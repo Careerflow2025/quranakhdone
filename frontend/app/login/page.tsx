@@ -58,7 +58,7 @@ export default function LoginPage() {
         console.error('Profile fetch error:', profileError);
         // Fallback: Try direct query
         const { data: profile } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('*')
           .eq('user_id', authData.user.id)
           .single();
@@ -91,7 +91,7 @@ export default function LoginPage() {
           id: authData.user.id,
           email: user.email || authData.user.email,
           role: user.role || 'owner',  // FIXED: default should be 'owner' not 'school'
-          fullName: user.display_name || '',
+          fullName: user.full_name || '',
           schoolId: user.school_id || ''
         };
 

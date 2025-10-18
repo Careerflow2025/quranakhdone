@@ -94,11 +94,11 @@ export async function POST(req: NextRequest) {
 
     // 3. Ensure user profile exists (trigger should create it, but upsert to be sure)
     await supabaseAdmin
-      .from('profiles')
+      .from('user_profiles')
       .upsert({
         user_id: authData.user.id,
         email: email,
-        display_name: name,
+        full_name: name,
         role: 'teacher',
         school_id: schoolId
       });

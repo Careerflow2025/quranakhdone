@@ -61,7 +61,7 @@ export const storageApi = {
 
     // Update profile
     const { error: updateError } = await (supabase
-      .from('profiles') as any)
+      .from('user_profiles') as any)
       .update({ avatar_url: publicUrl })
       .eq('user_id', userId)
 

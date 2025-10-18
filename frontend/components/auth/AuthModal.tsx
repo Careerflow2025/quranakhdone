@@ -123,7 +123,7 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
       const result = await authApi.register({
         email: schoolData.adminEmail,
         password: schoolData.password,
-        display_name: schoolData.adminName,
+        full_name: schoolData.adminName,
         role: 'owner',
         school_id: schoolData.schoolId
       });

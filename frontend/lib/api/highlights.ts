@@ -17,7 +17,7 @@ export const highlightApi = {
     note?: string
   }): Promise<Highlight> {
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('school_id, user_id')
       .single()
 
@@ -105,7 +105,7 @@ export const highlightApi = {
   }): Promise<HighlightNote> {
     const { data: user } = await supabase.auth.getUser()
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('role')
       .eq('user_id', user.user?.id!)
       .single()
@@ -140,7 +140,7 @@ export const highlightApi = {
       .select(`
         *,
         profiles!author_id(
-          display_name,
+          full_name,
           avatar_url
         )
       `)

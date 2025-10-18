@@ -29,7 +29,7 @@ export default function TestDatabase() {
     try {
       // Test 1: Check connection
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .limit(5);
 
@@ -68,7 +68,7 @@ export default function TestDatabase() {
   const testLogin = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('email', email)
         .single<Profile>();
@@ -79,7 +79,7 @@ export default function TestDatabase() {
       }
 
       if (data) {
-        alert(`✅ User found: ${data.display_name || data.email} (${data.role})`);
+        alert(`✅ User found: ${data.full_name || data.email} (${data.role})`);
       } else {
         alert('❌ User not found');
       }
@@ -153,7 +153,7 @@ export default function TestDatabase() {
                 <tbody>
                   {testResults.profiles.map((profile, idx) => (
                     <tr key={idx} className="border-t">
-                      <td className="px-4 py-2">{profile.display_name || profile.email}</td>
+                      <td className="px-4 py-2">{profile.full_name || profile.email}</td>
                       <td className="px-4 py-2">{profile.email}</td>
                       <td className="px-4 py-2">
                         <span className={`px-2 py-1 rounded text-sm ${

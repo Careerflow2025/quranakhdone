@@ -46,7 +46,7 @@ export const getCurrentUser = async () => {
 // Helper function to get user profile with school and role
 export const getUserProfile = async (userId: string) => {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('user_profiles')
     .select(
       `
       *,

@@ -82,15 +82,15 @@ export function useSchoolData() {
       if (!studentsError && studentsData) {
         const studentUserIds = studentsData.map((s: any) => s.user_id);
         const { data: studentProfiles } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', studentUserIds);
+          .from('user_profiles')
+          .select('id, full_name, email')
+          .in('id', studentUserIds);
 
         studentsWithProfiles = studentsData.map((student: any) => {
-          const profile = studentProfiles?.find((p: any) => p.user_id === student.user_id);
+          const profile = studentProfiles?.find((p: any) => p.id === student.user_id);
           return {
             ...student,
-            profiles: profile || { display_name: 'Unknown', email: '' }
+            profiles: profile || { full_name: 'Unknown', email: '' }
           };
         });
       }
@@ -99,7 +99,7 @@ export function useSchoolData() {
         // Transform data to include name and email at top level
         const transformedStudents = studentsWithProfiles.map((student: any) => ({
           ...student,
-          name: student.profiles?.display_name || 'Unknown',
+          name: student.profiles?.full_name || 'Unknown',
           email: student.profiles?.email || '',
           status: student.active ? 'active' : 'inactive',
           progress: 0, // Default value
@@ -120,15 +120,15 @@ export function useSchoolData() {
       if (!teachersError && teachersData) {
         const teacherUserIds = teachersData.map((t: any) => t.user_id);
         const { data: teacherProfiles } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', teacherUserIds);
+          .from('user_profiles')
+          .select('id, full_name, email')
+          .in('id', teacherUserIds);
 
         teachersWithProfiles = teachersData.map((teacher: any) => {
-          const profile = teacherProfiles?.find((p: any) => p.user_id === teacher.user_id);
+          const profile = teacherProfiles?.find((p: any) => p.id === teacher.user_id);
           return {
             ...teacher,
-            profiles: profile || { display_name: 'Unknown', email: '' }
+            profiles: profile || { full_name: 'Unknown', email: '' }
           };
         });
       }
@@ -137,7 +137,7 @@ export function useSchoolData() {
         // Transform data to include name and email at top level
         const transformedTeachers = teachersWithProfiles.map((teacher: any) => ({
           ...teacher,
-          name: teacher.profiles?.display_name || 'Unknown',
+          name: teacher.profiles?.full_name || 'Unknown',
           email: teacher.profiles?.email || '',
           status: teacher.active ? 'active' : 'inactive'
           // phone and address are already in teacher object from the * selection
@@ -176,15 +176,15 @@ export function useSchoolData() {
       if (!parentsError && parentsData) {
         const parentUserIds = parentsData.map((p: any) => p.user_id);
         const { data: parentProfiles } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email')
-          .in('user_id', parentUserIds);
+          .from('user_profiles')
+          .select('id, full_name, email')
+          .in('id', parentUserIds);
 
         parentsWithProfiles = parentsData.map((parent: any) => {
-          const profile = parentProfiles?.find((p: any) => p.user_id === parent.user_id);
+          const profile = parentProfiles?.find((p: any) => p.id === parent.user_id);
           return {
             ...parent,
-            profiles: profile || { display_name: 'Unknown', email: '' }
+            profiles: profile || { full_name: 'Unknown', email: '' }
           };
         });
       }
@@ -205,7 +205,7 @@ export function useSchoolData() {
         // Transform data to include name, email, and children count at top level
         const transformedParents = parentsWithProfiles.map((parent: any) => ({
           ...parent,
-          name: parent.profiles?.display_name || 'Unknown',
+          name: parent.profiles?.full_name || 'Unknown',
           email: parent.profiles?.email || '',
           children_count: childrenCounts[parent.id] || 0
         }));
@@ -292,13 +292,13 @@ export function useSchoolData() {
       if (!credsError && credsData) {
         const userIds = credsData.map((c: any) => c.user_id);
         const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email, role')
-          .in('user_id', userIds);
+          .from('user_profiles')
+          .select('id, full_name, email, role')
+          .in('id', userIds);
 
         // Merge profiles with credentials
         const mergedCreds = credsData.map((cred: any) => {
-          const profile = profilesData?.find((p: any) => p.user_id === cred.user_id);
+          const profile = profilesData?.find((p: any) => p.id === cred.user_id);
           return {
             ...cred,
             profiles: profile || null
