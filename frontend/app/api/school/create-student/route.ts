@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       dobValue = `${birthYear}-01-01`;
     }
 
-    // 4. Create student record (students table has: user_id, school_id, dob, gender, active)
+    // 4. Create student record (students table has: user_id, school_id, dob, gender, grade, active)
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
         school_id: schoolId,
         dob: dobValue,
         gender: gender || null,
+        grade: grade || null,
         active: true
       })
       .select()
