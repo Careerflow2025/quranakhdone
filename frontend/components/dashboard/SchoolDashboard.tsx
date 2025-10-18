@@ -533,7 +533,6 @@ export default function SchoolDashboard() {
         options: {
           data: {
             display_name: parentData.name,
-            display_name: parentData.name,
             role: 'parent',
             school_id: user?.schoolId
           }
