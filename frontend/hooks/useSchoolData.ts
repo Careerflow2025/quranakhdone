@@ -134,14 +134,18 @@ export function useSchoolData() {
       }
 
       if (!teachersError) {
-        // Transform data to include name, email, and phone at top level
+        // Transform data to include name, email, phone, and all teacher fields at top level
         const transformedTeachers = teachersWithProfiles.map((teacher: any) => ({
           ...teacher,
           name: teacher.profiles?.display_name || 'Unknown',
           email: teacher.profiles?.email || '',
           phone: teacher.profiles?.phone || '',
+          subject: teacher.subject || '',
+          qualification: teacher.qualification || '',
+          experience: teacher.experience || 0,
+          address: teacher.address || '',
+          bio: teacher.bio || '',
           status: teacher.active ? 'active' : 'inactive'
-          // subject, qualification, experience, address don't exist in database yet
         }));
         setTeachers(transformedTeachers);
         setStats(prev => ({ ...prev, totalTeachers: transformedTeachers.length }));

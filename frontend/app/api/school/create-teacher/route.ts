@@ -16,7 +16,7 @@ const supabaseAdmin = createClient(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, phone, schoolId, classIds } = body;
+    const { name, email, password, phone, schoolId, classIds, subject, qualification, experience, address, bio } = body;
 
     // 1. Check if user already exists
     const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers({
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         user_metadata: {
           ...userExists.user_metadata,
           role: 'teacher',
-          full_name: name,
+          display_name: name,
           school_id: schoolId
         }
       });
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         email_confirm: true,
         user_metadata: {
           role: 'teacher',
-          full_name: name,
+          display_name: name,
           school_id: schoolId
         }
       });
@@ -80,7 +80,12 @@ export async function POST(req: NextRequest) {
       .from('teachers')
       .insert({
         user_id: authData.user.id,
-        school_id: schoolId
+        school_id: schoolId,
+        subject: subject || null,
+        qualification: qualification || null,
+        experience: experience ? parseInt(experience) : null,
+        address: address || null,
+        bio: bio || null
       })
       .select()
       .single();
@@ -94,11 +99,12 @@ export async function POST(req: NextRequest) {
 
     // 3. Ensure user profile exists (trigger should create it, but upsert to be sure)
     await supabaseAdmin
-      .from('user_profiles')
+      .from('profiles')
       .upsert({
         user_id: authData.user.id,
         email: email,
-        full_name: name,
+        display_name: name,
+        phone: phone || null,
         role: 'teacher',
         school_id: schoolId
       });
