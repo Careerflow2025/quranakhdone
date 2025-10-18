@@ -2515,12 +2515,9 @@ export default function SchoolDashboard() {
 
                       {/* Filter Dropdowns */}
                       <select className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Grades</option>
-                        <option value="4">4th Grade</option>
-                        <option value="5">5th Grade</option>
-                        <option value="6">6th Grade</option>
-                        <option value="7">7th Grade</option>
-                        <option value="8">8th Grade</option>
+                        <option value="">All Genders</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
                       </select>
 
                       <select className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
