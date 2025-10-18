@@ -503,15 +503,21 @@ export default function SchoolDashboard() {
         throw new Error(result.error || 'Failed to create teacher');
       }
 
-      refreshData();
+      // Close modal first to prevent UI race conditions
       setShowAddModal(false);
 
+      // Show success notification
       showNotification(
         `Teacher "${teacherData.name}" added successfully!`,
         'success',
         8000,
         `Credentials have been sent to ${teacherData.email}`
       );
+
+      // Then refresh data after a small delay to ensure everything is settled
+      setTimeout(() => {
+        refreshData();
+      }, 100);
     } catch (error: any) {
       console.error('Error adding teacher:', error);
       showNotification(

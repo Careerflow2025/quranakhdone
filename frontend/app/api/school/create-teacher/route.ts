@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
         user_id: authData.user.id,
         email: email,
         display_name: name,
+        phone: phone || null,
         role: 'teacher',
         school_id: schoolId
       });

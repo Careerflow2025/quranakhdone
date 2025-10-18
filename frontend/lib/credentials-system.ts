@@ -96,6 +96,7 @@ export async function createTeacher(data: {
         user_id: authData.user.id,
         email: data.email,
         display_name: data.name,
+        phone: data.phone || null,
         role: 'teacher',
         school_id: data.schoolId
       });
