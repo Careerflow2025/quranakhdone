@@ -6493,17 +6493,13 @@ export default function SchoolDashboard() {
                   </p>
                 </div>
                 <div>
+                  <label className="text-sm text-gray-500">Phone</label>
+                  <p className="font-medium text-gray-900">{showStudentDetails.phone || 'N/A'}</p>
+                </div>
+                <div>
                   <label className="text-sm text-gray-500">Student ID</label>
                   <p className="font-medium text-gray-900 text-xs">{showStudentDetails.id}</p>
                 </div>
-              </div>
-
-              {/* Address field - full width */}
-              <div className="mb-4">
-                <label className="text-sm text-gray-500">Address</label>
-                <p className="font-medium text-gray-900 mt-1">
-                  {showStudentDetails.address || 'No address provided'}
-                </p>
               </div>
 
               <div className="border-t pt-4">

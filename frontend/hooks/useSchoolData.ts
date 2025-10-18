@@ -77,34 +77,51 @@ export function useSchoolData() {
         .select('*')
         .eq('school_id', user.schoolId);
 
-      // Fetch profiles for students separately
+      // Fetch profiles for students separately (include phone)
       let studentsWithProfiles: any[] = [];
       if (!studentsError && studentsData) {
         const studentUserIds = studentsData.map((s: any) => s.user_id);
         const { data: studentProfiles } = await supabase
           .from('profiles')
-          .select('user_id, display_name, email')
+          .select('user_id, display_name, email, phone')
           .in('user_id', studentUserIds);
 
         studentsWithProfiles = studentsData.map((student: any) => {
           const profile = studentProfiles?.find((p: any) => p.user_id === student.user_id);
           return {
             ...student,
-            profiles: profile || { display_name: 'Unknown', email: '' }
+            profiles: profile || { display_name: 'Unknown', email: '', phone: '' }
           };
         });
       }
 
       if (!studentsError) {
-        // Transform data to include name and email at top level
-        const transformedStudents = studentsWithProfiles.map((student: any) => ({
-          ...student,
-          name: student.profiles?.display_name || 'Unknown',
-          email: student.profiles?.email || '',
-          status: student.active ? 'active' : 'inactive',
-          progress: 0, // Default value
-          attendance: 0 // Default value
-        }));
+        // Transform data to include name, email, phone, and calculated fields at top level
+        const transformedStudents = studentsWithProfiles.map((student: any) => {
+          // Calculate age from date of birth
+          let age = null;
+          if (student.dob) {
+            const today = new Date();
+            const birthDate = new Date(student.dob);
+            age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+          }
+
+          return {
+            ...student,
+            name: student.profiles?.display_name || 'Unknown',
+            email: student.profiles?.email || '',
+            phone: student.profiles?.phone || '',
+            age: age,
+            enrollment_date: student.created_at,
+            status: student.active ? 'active' : 'inactive',
+            progress: 0, // Default value
+            attendance: 0 // Default value
+          };
+        });
         setStudents(transformedStudents);
         setStats(prev => ({ ...prev, totalStudents: transformedStudents.length }));
       }
