@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// ADMIN CLIENT - Bypasses RLS!
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
     const body = await req.json();
     const { schoolName, adminEmail, adminPassword, adminFullName } = body;
 
@@ -28,7 +18,7 @@ export async function POST(req: NextRequest) {
       email_confirm: true,
       user_metadata: {
         display_name: adminFullName,
-        role: 'owner'
+        role: 'school'
       }
     });
 
@@ -51,9 +41,9 @@ export async function POST(req: NextRequest) {
       .insert({
         name: schoolName,
         timezone: 'Africa/Casablanca'
-      })
+      } as any)
       .select()
-      .single();
+      .single() as { data: any; error: any };
 
     if (schoolError || !school) {
       console.error('❌ School creation failed:', schoolError);
@@ -73,8 +63,8 @@ export async function POST(req: NextRequest) {
         school_id: school.id,
         email: adminEmail,
         display_name: adminFullName,
-        role: 'owner'
-      });
+        role: 'school'
+      } as any);
 
     if (profileError) {
       console.error('❌ Profile creation failed:', profileError);

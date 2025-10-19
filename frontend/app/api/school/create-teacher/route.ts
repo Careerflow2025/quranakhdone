@@ -1,22 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize admin client with service role key
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Get the current user and verify they're a school admin
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is a school admin
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role, school_id')
+      .eq('user_id', user.id)
+      .single() as { data: { role: string; school_id: string } | null };
+
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 403 }
+      );
+    }
+
+    if (profile.role !== 'school') {
+      return NextResponse.json(
+        { error: 'Only school administrators can create teacher accounts' },
+        { status: 403 }
+      );
+    }
+    
     const body = await req.json();
-    const { name, email, password, phone, schoolId, classIds, subject, qualification, experience, address, bio } = body;
+    const { name, email, password, phone, classIds, subject, qualification, experience, address, bio } = body;
+    
+    // Use school_id from authenticated user's profile
+    const schoolId = profile.school_id;
 
     // 1. Check if user already exists
     const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers({

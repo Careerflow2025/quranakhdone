@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-type Role = 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
+type Role = 'school' | 'teacher' | 'student' | 'parent';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -52,9 +52,8 @@ export default function ProtectedRoute({
 
   const redirectToAppropriateRoute = (userRole: Role) => {
     switch (userRole) {
-      case 'owner':
-      case 'admin':
-        router.push('/admin');
+      case 'school':
+        router.push('/school-dashboard');
         break;
       case 'teacher':
         router.push('/teacher');
@@ -98,8 +97,8 @@ export function useRoleAccess() {
     return user ? roles.includes(user.role as Role) : false;
   };
 
-  const isAdmin = (): boolean => {
-    return hasAnyRole(['owner', 'admin']);
+  const isSchoolAdmin = (): boolean => {
+    return hasRole('school');
   };
 
   const isTeacher = (): boolean => {
@@ -118,7 +117,7 @@ export function useRoleAccess() {
     user,
     hasRole,
     hasAnyRole,
-    isAdmin,
+    isSchoolAdmin,
     isTeacher,
     isStudent,
     isParent,

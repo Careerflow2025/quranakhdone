@@ -30,7 +30,7 @@ export default function AdminLayout({
   };
 
   return (
-    <ProtectedRoute allowedRoles={['owner', 'admin']}>
+    <ProtectedRoute allowedRoles={['school']}>
       <div className="min-h-screen bg-gray-50">
         {/* Sidebar */}
         <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">

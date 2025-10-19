@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Create admin client
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
     const { email, password, role } = await req.json();
 
     if (!email || !password || !role) {
@@ -36,7 +32,7 @@ export async function POST(req: NextRequest) {
       .from('profiles')
       .select('role, school_id, display_name')
       .eq('id', data.user.id)
-      .single();
+      .single() as { data: { role: string; school_id: string; display_name: string } | null; error: any };
 
     if (profileError || !profile) {
       return NextResponse.json(
@@ -47,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Verify role matches requested role
     const roleMapping: Record<string, string[]> = {
-      'school': ['school_admin'],
+      'school': ['school_admin', 'school'],
       'teacher': ['teacher'],
       'student': ['student'],
       'parent': ['parent']
@@ -76,7 +72,7 @@ export async function POST(req: NextRequest) {
         .from('teachers')
         .select('*')
         .eq('user_id', data.user.id)
-        .single();
+        .single() as { data: any };
 
       userData.teacherData = teacher;
     } else if (profile.role === 'student') {
@@ -84,7 +80,7 @@ export async function POST(req: NextRequest) {
         .from('students')
         .select('*')
         .eq('user_id', data.user.id)
-        .single();
+        .single() as { data: any };
 
       userData.studentData = student;
     } else if (profile.role === 'parent') {
@@ -92,14 +88,14 @@ export async function POST(req: NextRequest) {
         .from('parents')
         .select('*')
         .eq('user_id', data.user.id)
-        .single();
+        .single() as { data: any };
 
       // Get linked students
       if (parent) {
         const { data: studentLinks } = await supabaseAdmin
           .from('parent_students')
           .select('student_id, students(*)')
-          .eq('parent_id', parent.id);
+          .eq('parent_id', parent.id) as { data: any };
 
         userData.parentData = parent;
         userData.children = studentLinks?.map((link: any) => link.students) || [];

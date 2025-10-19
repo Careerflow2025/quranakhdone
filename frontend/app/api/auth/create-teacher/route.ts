@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createTeacher } from '@/lib/credentials-system';
-import { createClient } from '@supabase/supabase-js';
-
-// Create admin client for verification
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
     // Get the current user and verify they're a school admin
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -34,9 +30,16 @@ export async function POST(req: NextRequest) {
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
-      .single();
+      .single() as { data: { role: string; school_id: string } | null };
 
-    if (profile?.role !== 'owner' && profile?.role !== 'admin') {
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 403 }
+      );
+    }
+
+    if (profile.role !== 'school' && profile.role !== 'teacher') {
       return NextResponse.json(
         { error: 'Only school administrators can create teacher accounts' },
         { status: 403 }

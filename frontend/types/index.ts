@@ -1,5 +1,5 @@
 // Core Types
-export type Role = 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
+export type Role = 'school' | 'teacher' | 'student' | 'parent';
 export type AssignmentStatus = 'assigned' | 'viewed' | 'submitted' | 'reviewed' | 'completed' | 'reopened';
 export type MistakeType = 'recap' | 'tajweed' | 'haraka' | 'letter';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';

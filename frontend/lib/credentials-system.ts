@@ -3,12 +3,7 @@
 // ALL users (school/teacher/student/parent) get Supabase Auth accounts
 // Uses user_profiles table (NOT profiles table)
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabaseAdmin } from './supabase-admin';
 
 // Generate secure random password
 export function generatePassword(): string {
@@ -35,6 +30,7 @@ export async function createTeacher(data: {
   assignedClasses?: string[];
 }) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const password = generatePassword();
 
     // 1. Check if user already exists
