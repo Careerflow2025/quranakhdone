@@ -1,12 +1,24 @@
 // PRODUCTION-READY Authentication Service for Quranakh
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase-admin';
 
-// Regular client for normal operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+let supabaseInstance: SupabaseClient | null = null;
+
+// Lazy-load regular client for normal operations
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabaseInstance;
+}
 
 // ============ SCHOOL ADMIN FUNCTIONS ============
 
@@ -125,6 +137,7 @@ export async function createTeacherAccount(data: {
     if (authError) throw authError;
 
     // 2. Ensure user profile exists (trigger should create it, but update to be sure)
+    const supabase = getSupabase();
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -212,6 +225,7 @@ export async function createStudentWithParent(data: {
 }) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
+    const supabase = getSupabase();
     
     // 1. Create parent user in Supabase Auth
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -343,6 +357,7 @@ export async function createStudentWithParent(data: {
 
 export async function loginWithRole(email: string, password: string) {
   try {
+    const supabase = getSupabase();
     // 1. Sign in with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -445,6 +460,7 @@ export async function loginWithRole(email: string, password: string) {
 
 // Get current user with role
 export async function getCurrentUser() {
+  const supabase = getSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) return null;
@@ -464,6 +480,7 @@ export async function getCurrentUser() {
 
 // Sign out
 export async function signOut() {
+  const supabase = getSupabase();
   await supabase.auth.signOut();
   if (typeof window !== 'undefined') {
     localStorage.clear();
