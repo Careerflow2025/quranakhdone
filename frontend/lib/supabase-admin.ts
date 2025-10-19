@@ -1,22 +1,41 @@
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { Database } from './database.types'
+
+let adminClientInstance: SupabaseClient<Database> | null = null
 
 // WARNING: This should only be used in server-side code
 // Never expose the service role key to the client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+export function getSupabaseAdmin(): SupabaseClient<Database> {
+  if (!adminClientInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Admin client with service role key for server-side operations
-export const supabaseAdmin = createClient<Database>(
-  supabaseUrl,
-  supabaseServiceKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables')
     }
+
+    adminClientInstance = createClient<Database>(
+      supabaseUrl,
+      supabaseServiceKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
   }
-)
+  return adminClientInstance
+}
+
+// Legacy export for backward compatibility
+export const supabaseAdmin = new Proxy({} as SupabaseClient<Database>, {
+  get: (target, prop) => {
+    const client = getSupabaseAdmin()
+    return (client as any)[prop]
+  }
+})
 
 // Admin-only functions
 export const adminHelpers = {

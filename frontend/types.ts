@@ -121,7 +121,7 @@ export interface Homework {
 }
 
 // User & Role Types
-export type UserRole = 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
+export type UserRole = 'school' | 'teacher' | 'student' | 'parent';
 
 export interface Profile {
   user_id: string;

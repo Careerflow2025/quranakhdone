@@ -35,15 +35,14 @@ export async function loginWithRole(email: string, password: string) {
     let redirectPath = '/';
 
     switch (profile.role) {
-      case 'owner':  // Fixed: use 'owner' not 'school_admin'
-      case 'admin':
+      case 'school':
         const { data: school } = await supabase
           .from('schools')
           .select('*')
           .eq('id', profile.school_id)
           .single();
         additionalData = school;
-        redirectPath = '/school-dashboard';  // Fixed: use actual route with -dashboard suffix
+        redirectPath = '/school-dashboard';
         break;
 
       case 'teacher':

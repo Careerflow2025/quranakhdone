@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 // Define Role type locally to avoid import issues
-type Role = 'owner' | 'admin' | 'teacher' | 'student' | 'parent' | 'school';
+type Role = 'school' | 'teacher' | 'student' | 'parent';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -77,8 +77,6 @@ export function useAuth(requiredRole?: Role) {
       // Redirect to appropriate dashboard based on user role
       switch (userRole) {
         case 'school':
-        case 'admin':
-        case 'owner':
           router.push('/school-dashboard');
           break;
         case 'teacher':

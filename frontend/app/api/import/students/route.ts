@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { parseCsv } from '@/features/admin/imports/parseCsv';
 import { StudentCsvRow } from '@/features/admin/imports/schemas';
-
-// Initialize admin client with service role key for bypassing RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 interface ImportResult {
   inserted: number;
@@ -25,6 +13,8 @@ interface ImportResult {
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    
     const body = await req.formData();
     const file = body.get('file') as File | null;
     const schoolId = body.get('school_id') as string | null;
@@ -52,7 +42,7 @@ export async function POST(req: Request) {
       .from('classes')
       .select('id, code')
       .eq('school_id', schoolId)
-      .in('code', uniqueClassCodes);
+      .in('code', uniqueClassCodes) as { data: Array<{ id: string; code: string }> | null; error: any };
 
     if (classesError) {
       return NextResponse.json({ error: classesError.message }, { status: 400 });
@@ -153,14 +143,14 @@ export async function POST(req: Request) {
       }));
 
     if (parentProfiles.length > 0) {
-      await supabaseAdmin.from('profiles').upsert(parentProfiles);
+      await supabaseAdmin.from('profiles').upsert(parentProfiles as any);
     }
 
     // Batch create parent records (ensure parents table has records)
     const { data: existingParents } = await supabaseAdmin
       .from('parents')
       .select('user_id, id')
-      .in('user_id', Array.from(parentEmailToUserId.values()));
+      .in('user_id', Array.from(parentEmailToUserId.values())) as { data: Array<{ user_id: string; id: string }> | null };
 
     const existingParentUserIds = new Set(existingParents?.map(p => p.user_id) || []);
     const parentUserIdToParentId = new Map(existingParents?.map(p => [p.user_id, p.id]) || []);
@@ -172,8 +162,8 @@ export async function POST(req: Request) {
     if (newParentRecords.length > 0) {
       const { data: createdParents } = await supabaseAdmin
         .from('parents')
-        .insert(newParentRecords)
-        .select('id, user_id');
+        .insert(newParentRecords as any)
+        .select('id, user_id') as { data: Array<{ id: string; user_id: string }> | null };
 
       createdParents?.forEach(p => {
         parentUserIdToParentId.set(p.user_id, p.id);
@@ -251,7 +241,7 @@ export async function POST(req: Request) {
     }));
 
     if (studentProfiles.length > 0) {
-      await supabaseAdmin.from('profiles').upsert(studentProfiles);
+      await supabaseAdmin.from('profiles').upsert(studentProfiles as any);
     }
 
     // Batch insert student records
@@ -277,10 +267,10 @@ export async function POST(req: Request) {
       };
     });
 
-    const { data: createdStudents, error: studentsError } = await supabaseAdmin
+    const { data: createdStudents, error: studentsError} = await supabaseAdmin
       .from('students')
-      .insert(studentRecords)
-      .select('id, user_id');
+      .insert(studentRecords as any)
+      .select('id, user_id') as { data: Array<{ id: string; user_id: string }> | null; error: any };
 
     if (studentsError) {
       // Cleanup: Delete auth users if student creation fails
@@ -290,10 +280,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: studentsError.message }, { status: 400 });
     }
 
-    results.inserted = createdStudents.length;
+    results.inserted = createdStudents?.length || 0;
 
     // Create map of user_id to student_id
-    const userIdToStudentId = new Map(createdStudents.map(s => [s.user_id, s.id]));
+    const userIdToStudentId = new Map(createdStudents?.map(s => [s.user_id, s.id]) || []);
 
     // ============================================================================
     // PHASE 4: Create parent-student links and class enrollments (batch)
@@ -326,14 +316,14 @@ export async function POST(req: Request) {
 
     // Batch insert parent-student links
     if (parentStudentLinks.length > 0) {
-      await supabaseAdmin.from('parent_students').insert(parentStudentLinks);
+      await supabaseAdmin.from('parent_students').insert(parentStudentLinks as any);
     }
 
     // Batch insert class enrollments
     if (classEnrollments.length > 0) {
       const { error: enrollError } = await supabaseAdmin
         .from('class_enrollments')
-        .insert(classEnrollments);
+        .insert(classEnrollments as any);
 
       if (!enrollError) {
         results.enrolled = classEnrollments.length;
@@ -370,7 +360,7 @@ export async function POST(req: Request) {
     });
 
     if (credentialRecords.length > 0) {
-      await supabaseAdmin.from('user_credentials').insert(credentialRecords);
+      await supabaseAdmin.from('user_credentials').insert(credentialRecords as any);
     }
 
     // Add student credentials to results

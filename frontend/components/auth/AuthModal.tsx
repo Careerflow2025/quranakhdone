@@ -91,7 +91,7 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
         onSuccess?.();
         onClose();
         // Redirect based on role
-        if (userType === 'school' || data.user.role === 'owner' || data.user.role === 'admin') {
+        if (userType === 'school' || data.user.role === 'school') {
           window.location.href = '/school-dashboard';
         } else {
           window.location.href = `/${userType}`;
@@ -124,7 +124,7 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
         email: schoolData.adminEmail,
         password: schoolData.password,
         display_name: schoolData.adminName,
-        role: 'owner',
+        role: 'school',
         school_id: schoolData.schoolId
       });
 
