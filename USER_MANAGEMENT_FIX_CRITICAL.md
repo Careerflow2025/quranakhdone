@@ -178,12 +178,24 @@ SERVER CODE WITH SERVICE ROLE KEY → Bypasses RLS → WORKS
 4. **Student Creation** - ALREADY CORRECT ✅
    - Already uses `/api/school/create-student` endpoint
 
+5. **Parent Creation** (SchoolDashboard.tsx line 461-517) - FIXED ✅
+   - Changed from client-side operations → `/api/school/create-parent`
+   - Uses Service Role Key to bypass RLS
+   - Handles parent-student relationships (can link to multiple children)
+   - Auto-generates password
+   - Includes proper cleanup/rollback
+
+6. **Parent Deletion** (API endpoint created) - FIXED ✅
+   - Created `/api/school/delete-parents` endpoint
+   - Uses Service Role Key to bypass RLS
+   - Deletes parent-student links
+   - Deletes from parents, profiles, and auth tables
+   - Complete cleanup from all systems
+
 ⏳ **PENDING** (Need to verify):
-5. **Student Update** - Need to check implementation
-6. **Teacher Update** - Need to check implementation
-7. **Parent Creation** - Need to check implementation
-8. **Parent Update** - Need to check implementation
-9. **Parent Delete** - Need to check implementation
+7. **Student Update** - Need to check implementation
+8. **Teacher Update** - Need to check implementation
+9. **Parent Update** - Need to check implementation
 
 ## Testing Checklist
 
