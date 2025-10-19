@@ -398,32 +398,30 @@ export default function SchoolDashboard() {
     }
   };
 
-  // PRODUCTION: Add Teacher Function
+  // PRODUCTION: Add Teacher Function (FIXED - Uses Service Role Key endpoint)
   const handleAddTeacher = async (teacherData: any) => {
     try {
-      // Get auth token for API call
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
 
-      // Call API endpoint that uses the correct credential system
-      const response = await fetch('/api/auth/create-teacher', {
+      // Call server-side API endpoint that BYPASSES RLS using Service Role Key
+      const response = await fetch('/api/school/create-teacher', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           name: teacherData.name,
           email: teacherData.email,
+          password: tempPassword,
           phone: teacherData.phone || '',
+          schoolId: user?.schoolId || schoolInfo?.id,
           subject: teacherData.subject || '',
           qualification: teacherData.qualification || '',
           experience: teacherData.experience || '',
           address: teacherData.address || '',
           bio: teacherData.bio || '',
-          assignedClasses: teacherData.assignedClasses || []
+          classIds: teacherData.assignedClasses || []
         })
       });
 
@@ -436,12 +434,12 @@ export default function SchoolDashboard() {
       // Close modal first to prevent UI race conditions
       setShowAddModal(false);
 
-      // Show success notification
+      // Show success notification with credentials
       showNotification(
         `Teacher "${teacherData.name}" added successfully!`,
         'success',
-        8000,
-        `Credentials have been sent to ${teacherData.email}`
+        10000,
+        `Login: ${teacherData.email} | Password: ${result.data?.password || tempPassword}`
       );
 
       // Then refresh data after a small delay to ensure everything is settled
@@ -1728,67 +1726,47 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Delete Student Function - Complete removal
+  // PRODUCTION: Delete Student Function (FIXED - Uses Service Role Key endpoint)
   const handleDeleteStudent = async (studentId: any) => {
-    if (confirm('Are you sure you want to delete this student? This will completely remove them from the system.')) {
-      try {
-        // First, get the student's user_id
-        const { data: studentData, error: fetchError } = await (supabase as any)
-          .from('students')
-          .select('user_id')
-          .eq('id', studentId)
-          .single();
+    if (!confirm('Are you sure you want to delete this student? This will completely remove them from the system.')) return;
 
-        if (fetchError) throw fetchError;
+    try {
+      // Call server-side API endpoint that BYPASSES RLS using Service Role Key
+      const response = await fetch('/api/school/delete-students', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentIds: [studentId]
+        })
+      });
 
-        const userId = (studentData as any).user_id;
+      const data = await response.json();
 
-        // Try to use the database function to delete completely
-        const { error: rpcError } = await (supabase as any)
-          .rpc('delete_user_completely', { user_id_to_delete: userId });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete student');
+      }
 
-        if (rpcError) {
-          // Fallback to manual deletion if RPC fails
-          console.warn('RPC deletion failed, using fallback method:', rpcError);
-
-          // Delete from students table
-          const { error: studentError } = await (supabase as any)
-            .from('students')
-            .delete()
-            .eq('id', studentId);
-
-          if (studentError) throw studentError;
-
-          // Delete from user_credentials table
-          await (supabase as any)
-            .from('user_credentials')
-            .delete()
-            .eq('user_id', userId);
-
-          // Delete from profiles table
-          const { error: profileError } = await (supabase as any)
-            .from('profiles')
-            .delete()
-            .eq('user_id', userId);
-
-          if (profileError) throw profileError;
-        }
-
+      if (data.success) {
         refreshData();
         showNotification(
           'Student deleted successfully',
           'success',
           3000,
-          'Removed from all systems'
+          'Completely removed from all systems including authentication'
         );
-      } catch (error: any) {
-        console.error('Error deleting student:', error);
-        showNotification(
-          'Failed to delete student',
-          'error',
-          5000,
-          error.message
-        );
+      } else if (data.errors && data.errors.length > 0) {
+        throw new Error(data.errors[0].error);
       }
+    } catch (error: any) {
+      console.error('Error deleting student:', error);
+      showNotification(
+        'Failed to delete student',
+        'error',
+        5000,
+        error.message
+      );
     }
   };
 
