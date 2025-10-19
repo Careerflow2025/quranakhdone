@@ -1,26 +1,46 @@
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { Database } from './database.types'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+let supabaseInstance: SupabaseClient<Database> | null = null
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10
+// Lazy-load supabase client to avoid build-time errors
+function getSupabase(): SupabaseClient<Database> {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables')
     }
-    }
+
+    supabaseInstance = createClient<Database>(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        },
+        realtime: {
+          params: {
+            eventsPerSecond: 10
+          }
+        }
+      }
+    )
   }
-)
+  return supabaseInstance
+}
+
+// Export proxy that calls getSupabase() on each property access
+export const supabase = new Proxy({} as SupabaseClient<Database>, {
+  get: (target, prop) => {
+    const client = getSupabase()
+    return (client as any)[prop]
+  }
+})
 
 // Helper functions for common operations
 export const supabaseHelpers = {
