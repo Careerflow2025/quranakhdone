@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { School, Mail, Lock, User, Phone, MapPin, Calendar, ArrowRight, CheckCircle } from 'lucide-react';
+import { School, Mail, Lock, User, Phone, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
 
 export default function RegisterSchool() {
   const router = useRouter();
@@ -60,133 +59,51 @@ export default function RegisterSchool() {
     }
 
     try {
-      console.log('Starting registration process...');
-      console.log('School data:', schoolData);
-      console.log('Admin data:', { ...adminData, password: '[HIDDEN]' });
+      console.log('🚀 Calling server-side registration API...');
 
-      // Step 1: Create admin auth account FIRST (to bypass RLS)
-      console.log('Step 1: Creating admin auth account...');
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: adminData.email,
-        password: adminData.password,
-        options: {
-          data: {
-            display_name: adminData.fullName,
-            role: 'owner'
-          }
-        }
+      // Call the new server-side API endpoint (BYPASSES RLS!)
+      const response = await fetch('/api/auth/register-school', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schoolName: schoolData.schoolName,
+          adminEmail: adminData.email,
+          adminPassword: adminData.password,
+          adminFullName: adminData.fullName
+        })
       });
 
-      if (authError) {
-        console.error('Auth account creation failed:', authError);
-        if (authError.message?.includes('already registered')) {
-          throw new Error('An account with this email already exists. Please use a different email or login instead.');
-        }
-        throw authError;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
       }
 
-      if (!authData.user) {
-        throw new Error('User creation failed - no user data returned');
-      }
-
-      console.log('Auth account created successfully:', authData.user.id);
-
-      // Step 2: Try to sign in - if email confirmation is required, continue anyway
-      console.log('Step 2: Attempting sign in...');
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: adminData.email,
-        password: adminData.password
-      });
-
-      let isSignedIn = false;
-      if (signInError && !signInError.message?.includes('Email not confirmed')) {
-        console.error('Sign in failed:', signInError);
-        throw signInError;
-      } else if (signInError?.message?.includes('Email not confirmed')) {
-        console.log('Email confirmation required - continuing with registration');
-      } else {
-        console.log('Signed in successfully');
-        isSignedIn = true;
-      }
-
-      // Step 3: Create the school (now we're authenticated)
-      console.log('Step 3: Creating school...');
-      const { data: newSchool, error: schoolError } = await supabase
-        .from('schools')
-        .insert({
-          name: schoolData.schoolName,
-          timezone: 'Africa/Casablanca'
-          // NEW schema only has: id, name, logo_url, timezone, created_at, updated_at
-        } as any)
-        .select()
-        .single() as { data: any; error: any };
-
-      if (schoolError) {
-        console.error('School creation failed:', schoolError);
-        // If school creation fails, we should ideally delete the auth account
-        // but for now just throw the error
-        throw schoolError;
-      }
-
-      console.log('School created successfully:', newSchool);
-
-      // Step 4: Create admin profile
-      console.log('Step 4: Creating admin profile...');
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: authData.user.id,
-          school_id: newSchool.id,
-          email: adminData.email,
-          display_name: adminData.fullName,
-          role: 'owner'
-        } as any);
-
-      if (profileError) {
-        console.error('Profile creation failed:', profileError);
-        // Continue anyway - the account is created
-      }
-
-      console.log('Registration completed successfully!');
+      console.log('✅ Registration successful!', data);
 
       // Success! Show success message
       setStep(3);
 
-      // Sign out if we're signed in (we don't want auto-login)
-      if (isSignedIn) {
-        await supabase.auth.signOut();
-      }
-
       // Show success message and redirect to login after 3 seconds
-      console.log('Registration successful, redirecting to login...');
+      console.log('Redirecting to login...');
       setTimeout(() => {
-        alert('✅ School registration successful!\n\n📋 Your credentials:\nEmail: ' + adminData.email + '\nPassword: (the password you entered)\n\n👉 Please login with these credentials.');
         router.push('/login');
       }, 3000);
 
     } catch (error: any) {
-      console.error('Registration error:', error);
-      console.error('Full error details:', error);
+      console.error('💥 Registration error:', error);
 
-      // Show more detailed error to help debug
       let errorMessage = 'Failed to create school. ';
-      if (error.code === 'user_already_exists') {
+      if (error.message?.includes('already exists') || error.message?.includes('already registered')) {
         errorMessage = 'An account with this email already exists. Please try logging in instead.';
-      } else if (error.message?.includes('duplicate key')) {
-        errorMessage = 'A school with this email already exists.';
-      } else if (error.message?.includes('permission denied')) {
-        errorMessage = 'Database permission error. Please contact support.';
       } else if (error.message) {
-        errorMessage += error.message;
+        errorMessage = error.message;
       } else {
         errorMessage += 'Please check your connection and try again.';
       }
 
       setError(errorMessage);
       setLoading(false);
-
-      // Alert for immediate visibility
-      alert('Registration failed: ' + errorMessage);
     }
   };
 
