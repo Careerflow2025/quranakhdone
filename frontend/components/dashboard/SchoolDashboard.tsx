@@ -458,112 +458,55 @@ export default function SchoolDashboard() {
   };
 
   // PRODUCTION: Add Parent Function
+  // PRODUCTION: Add Parent Function (FIXED - Uses Service Role Key endpoint)
   const handleAddParent = async (parentData: any) => {
     try {
-      const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'; // Temporary password
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
 
-      // Create user account for parent
-      const { data: authData, error: authError } = await (supabase as any).auth.signUp({
-        email: parentData.email,
-        password: tempPassword,
-        options: {
-          data: {
-            display_name: parentData.name,
-            role: 'parent',
-            school_id: user?.schoolId
-          }
-        }
+      console.log('🚀 Calling server-side parent creation API...');
+
+      // Call the server-side API endpoint with Service Role Key (BYPASSES RLS!)
+      const response = await fetch('/api/school/create-parent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: parentData.name,
+          email: parentData.email,
+          password: tempPassword,
+          phone: parentData.phone || '',
+          schoolId: user?.schoolId || schoolInfo?.id,
+          studentIds: parentData.studentIds || [],  // Array of student IDs to link
+          address: parentData.address || ''
+        })
       });
 
-      if (authError) {
-        if (authError.message === 'User already registered') {
-          showNotification(
-            'Email already exists',
-            'warning',
-            5000,
-            'Please use a different email address'
-          );
-          return;
-        }
-        throw authError;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create parent');
       }
 
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
+      console.log('✅ Parent creation successful!', result);
 
-      // Create profile first (in case trigger didn't fire)
-      const { error: profileError } = await (supabase as any).from('profiles').upsert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        role: 'parent',
-        display_name: parentData.name,
-        email: parentData.email
-      } as any);
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-      }
-
-      // Wait a moment for profile to be created
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Upsert to parents table (insert or update if exists)
-      const { data, error } = await (supabase as any)
-        .from('parents')
-        .upsert({
-          user_id: authData.user.id,
-          school_id: user?.schoolId,
-          phone: parentData.phone || null,
-          address: parentData.address || null
-        } as any, {
-          onConflict: 'user_id'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Link parent to students if provided
-      if (parentData.studentIds && parentData.studentIds.length > 0) {
-        const parentStudentLinks = parentData.studentIds.map((studentId: any) => ({
-          parent_id: (data as any).id,
-          student_id: studentId
-        }));
-
-        const { error: linkError } = await (supabase as any)
-          .from('parent_students')
-          .insert(parentStudentLinks as any);
-
-        if (linkError) {
-          console.error('Error linking parent to students:', linkError);
-        }
-      }
-
-      // Create credentials record
-      const { error: credError } = await (supabase as any).from('user_credentials').insert({
-        user_id: authData.user.id,
-        school_id: user?.schoolId,
-        email: parentData.email,
-        password: tempPassword,
-        role: 'parent'
-      } as any);
-
-      if (credError) {
-        console.error('Credentials error:', credError);
-      }
-
-      refreshData();
       setShowAddParent(false);
 
       showNotification(
-        `Parent "${parentData.name} added successfully!`,
+        `Parent "${parentData.name}" added successfully!`,
         'success',
-        8000,
-        `Login: ${parentData.email} | Password: ${tempPassword}`
+        10000,
+        `Login: ${parentData.email} | Password: ${result.data?.password || tempPassword}${
+          result.data?.linkedStudents > 0 ? ` | Linked to ${result.data.linkedStudents} student(s)` : ''
+        }`
       );
+
+      // Refresh data after short delay
+      setTimeout(() => refreshData(), 100);
+
     } catch (error: any) {
-      console.error('Error adding parent:', error);
+      console.error('💥 Error adding parent:', error);
       showNotification(
         'Failed to add parent',
         'error',
