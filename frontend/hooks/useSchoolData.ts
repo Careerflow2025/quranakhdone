@@ -1,12 +1,14 @@
 // Production hook to fetch real school data from Supabase
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
 
 export function useSchoolData() {
-  const { user } = useAuthStore();
+  const { user, initializeAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const initStarted = useRef(false);
 
   // School info
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
@@ -33,11 +35,34 @@ export function useSchoolData() {
   const [allCalendarEvents, setAllCalendarEvents] = useState<any[]>([]);
   const [credentials, setCredentials] = useState<any[]>([]);
 
+  // Initialize auth on mount to ensure we have fresh session data
   useEffect(() => {
-    if (user?.schoolId) {
+    if (initStarted.current) return; // Prevent double initialization
+    initStarted.current = true;
+
+    const initAuth = async () => {
+      try {
+        await initializeAuth();
+        setAuthInitialized(true);
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+        setError('Failed to initialize authentication');
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // Fetch school data when auth is initialized and we have schoolId
+  useEffect(() => {
+    if (authInitialized && user?.schoolId) {
       fetchSchoolData();
+    } else if (authInitialized && !user?.schoolId) {
+      setError('No school ID found. Please contact support.');
+      setIsLoading(false);
     }
-  }, [user?.schoolId]);
+  }, [authInitialized, user?.schoolId]);
 
   const fetchSchoolData = async () => {
     if (!user?.schoolId) {

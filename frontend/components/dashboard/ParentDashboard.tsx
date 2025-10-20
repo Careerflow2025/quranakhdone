@@ -8,6 +8,11 @@ import {
   getScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
+import MessagesPanel from '@/components/messages/MessagesPanel';
+import GradebookPanel from '@/components/gradebook/GradebookPanel';
+import CalendarPanel from '@/components/calendar/CalendarPanel';
+import MasteryPanel from '@/components/mastery/MasteryPanel';
+import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 import {
   Star,
   Users,
@@ -724,6 +729,48 @@ export default function ParentDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('gradebook')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'gradebook'
+                  ? 'text-white bg-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Award className="w-4 h-4" />
+                <span>Gradebook</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('mastery')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'mastery'
+                  ? 'text-white bg-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Target className="w-4 h-4" />
+                <span>Mastery</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'calendar'
+                  ? 'text-white bg-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <CalendarIcon className="w-4 h-4" />
+                <span>Calendar</span>
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('targets')}
               className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'targets'
@@ -1284,86 +1331,7 @@ export default function ParentDashboard() {
 
         {/* Assignments Tab (Read-only) */}
         {activeTab === 'assignments' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold flex items-center">
-                  <FileText className="w-6 h-6 mr-2 text-purple-600" />
-                  {currentChild.name}'s Assignments (Mistakes)
-                  <span className="ml-3 bg-purple-100 text-purple-700 text-sm px-2 py-1 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'assignment').length} Total
-                  </span>
-                </h2>
-                <div className="bg-yellow-50 px-4 py-2 rounded-lg">
-                  <Eye className="w-4 h-4 inline mr-2 text-yellow-600" />
-                  <span className="text-sm text-yellow-700">View Only Mode</span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search assignments..."
-                    value={assignmentSearchTerm}
-                    onChange={(e) => setAssignmentSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
-                  />
-                </div>
-                <select
-                  value={assignmentTypeFilter}
-                  onChange={(e) => setAssignmentTypeFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-200 rounded-lg"
-                >
-                  <option value="all">All Types</option>
-                  <option value="tajweed">Tajweed</option>
-                  <option value="haraka">Haraka</option>
-                  <option value="recap">Recap</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {highlights
-                .filter((h: any) => h.type === 'assignment')
-                .filter((h: any) => {
-                  if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
-                  if (assignmentSearchTerm) {
-                    const searchLower = assignmentSearchTerm.toLowerCase();
-                    return h.teacherNote.toLowerCase().includes(searchLower) ||
-                           h.mistakeType?.toLowerCase().includes(searchLower);
-                  }
-                  return true;
-                })
-                .map((assignment: any) => (
-                  <div key={assignment.id} className="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div className={`p-4 ${
-                      assignment.mistakeType === 'tajweed' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
-                      assignment.mistakeType === 'recap' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                      'bg-gradient-to-r from-red-500 to-rose-500'
-                    }`}>
-                      <h3 className="font-semibold text-white">
-                        Surah {assignment.surah}, Ayah {assignment.ayahIndex + 1}
-                      </h3>
-                      <span className="bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs text-white">
-                        {assignment.mistakeType}
-                      </span>
-                    </div>
-                    <div className="p-5">
-                      <p className="text-gray-700 mb-4">{assignment.teacherNote}</p>
-                      <button
-                        onClick={() => handleViewHighlight(assignment.id)}
-                        className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg"
-                      >
-                        <Eye className="w-4 h-4 inline mr-2" />
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
+          <AssignmentsPanel userRole="parent" studentId={children[selectedChild].id} />
         )}
 
         {/* Progress Tab */}
@@ -1773,6 +1741,21 @@ export default function ParentDashboard() {
           </div>
         )}
 
+        {/* Gradebook Tab */}
+        {activeTab === 'gradebook' && (
+          <GradebookPanel userRole="parent" />
+        )}
+
+        {/* Mastery Tab */}
+        {activeTab === 'mastery' && (
+          <MasteryPanel userRole="parent" studentId={children[selectedChild].id} />
+        )}
+
+        {/* Calendar Tab */}
+        {activeTab === 'calendar' && (
+          <CalendarPanel userRole="parent" />
+        )}
+
         {/* Targets Tab (Read-only) */}
         {activeTab === 'targets' && (
           <div className="space-y-6">
@@ -1892,210 +1875,8 @@ export default function ParentDashboard() {
 
         {/* Messages Tab */}
         {activeTab === 'messages' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold flex items-center">
-                  <Mail className="w-7 h-7 mr-3 text-blue-600" />
-                  Parent-Teacher Messages
-                </h2>
-                <button
-                  onClick={() => setShowComposeModal(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-medium"
-                >
-                  <Plus className="w-5 h-5 inline mr-2" />
-                  Compose Message
-                </button>
-              </div>
-
-              {/* Message Tabs */}
-              <div className="flex space-x-2 border-b">
-                {['inbox', 'sent', 'archive'].map((tab: any) => (
-                  <button
-                    key={tab}
-                    onClick={() => setMessageTab(tab)}
-                    className={`px-6 py-3 font-medium capitalize border-b-2 ${
-                      messageTab === tab
-                        ? 'text-blue-600 border-blue-600'
-                        : 'text-gray-600 border-transparent'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-2">
-                      {tab === 'inbox' && <Inbox className="w-4 h-4" />}
-                      {tab === 'sent' && <Send className="w-4 h-4" />}
-                      {tab === 'archive' && <Archive className="w-4 h-4" />}
-                      <span>{tab}</span>
-                      {tab === 'inbox' && messages.inbox.filter((m: any) => m.unread).length > 0 && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {messages.inbox.filter((m: any) => m.unread).length}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Messages List */}
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="divide-y divide-gray-200">
-                {messages[messageTab as keyof typeof messages].length > 0 ? (
-                  messages[messageTab as keyof typeof messages].map((message: any) => (
-                    <div key={message.id} className={`p-6 hover:bg-gray-50 ${
-                      message.unread ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                    }`}>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold">{message.from || message.to}</h4>
-                          <p className="text-gray-900 font-medium mt-1">{message.subject}</p>
-                          <p className="text-gray-600 text-sm mt-2">{message.preview}</p>
-                        </div>
-                        <span className="text-sm text-gray-500">{message.time}</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-12 text-center">
-                    <Mail className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No messages in {messageTab}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Note Detail Modal (Read-only for parents) */}
-      {showNoteDetail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold">
-                {showNoteDetail.type === 'homework' ? 'Homework Details' : 'Assignment Details'}
-              </h3>
-              <button
-                onClick={() => setShowNoteDetail(null)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-600">Teacher</p>
-                <p className="font-medium">{showNoteDetail.teacherName}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600">Note</p>
-                <p className="font-medium">{showNoteDetail.teacherNote}</p>
-              </div>
-
-              {showNoteDetail.dueDate && (
-                <div>
-                  <p className="text-sm text-gray-600">Due Date</p>
-                  <p className="font-medium">{showNoteDetail.dueDate}</p>
-                </div>
-              )}
-
-              <div>
-                <p className="text-sm text-gray-600">Status</p>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  showNoteDetail.status === 'completed' ? 'bg-green-100 text-green-700' :
-                  showNoteDetail.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {showNoteDetail.status}
-                </span>
-              </div>
-
-              <div className="pt-4 text-center text-sm text-gray-500">
-                <Eye className="w-4 h-4 inline mr-1" />
-                Parents can view but cannot reply to assignments
-              </div>
-            </div>
-          </div>
-        </div>
+        <MessagesPanel userRole="parent" />
       )}
-
-      {/* Compose Message Modal */}
-      {showComposeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">New Message to Teacher</h3>
-                <button
-                  onClick={() => {
-                    setShowComposeModal(false);
-                    setComposeSubject('');
-                    setComposeMessage('');
-                  }}
-                  className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
-                <select className="w-full px-4 py-2 border border-gray-200 rounded-lg">
-                  <option>Ustadh Ahmed (Ahmed's Teacher)</option>
-                  <option>Ustadha Aisha (Fatima's Teacher)</option>
-                  <option>School Admin</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={composeSubject}
-                  onChange={(e) => setComposeSubject(e.target.value)}
-                  placeholder="Enter message subject..."
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                <textarea
-                  value={composeMessage}
-                  onChange={(e) => setComposeMessage(e.target.value)}
-                  placeholder="Type your message here..."
-                  rows={8}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg resize-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t">
-                <button
-                  onClick={() => {
-                    setShowComposeModal(false);
-                    setComposeSubject('');
-                    setComposeMessage('');
-                  }}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600"
-                >
-                  <Send className="w-4 h-4 inline mr-2" />
-                  Send Message
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Enhanced Profile Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">

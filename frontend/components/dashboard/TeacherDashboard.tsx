@@ -11,6 +11,11 @@ import {
   Archive, MapPin, ChevronLeft, Check, ChevronDown, Star, Zap,
   ArrowUp, ArrowDown, Bookmark, Copy, Hash, Layers, Layout, Package
 } from 'lucide-react';
+import MessagesPanel from '@/components/messages/MessagesPanel';
+import GradebookPanel from '@/components/gradebook/GradebookPanel';
+import CalendarPanel from '@/components/calendar/CalendarPanel';
+import MasteryPanel from '@/components/mastery/MasteryPanel';
+import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 
 export default function TeacherDashboard() {
   // State Management
@@ -144,7 +149,7 @@ export default function TeacherDashboard() {
   ]);
 
   // Navigation tabs - INCLUDING HOMEWORK AND TARGETS
-  const tabs = ['overview', 'my classes', 'students', 'assignments', 'homework', 'targets', 'attendance', 'messages', 'events'];
+  const tabs = ['overview', 'my classes', 'students', 'assignments', 'gradebook', 'mastery', 'homework', 'targets', 'attendance', 'messages', 'events'];
 
   // Function to mark homework as complete (turns green to gold)
   const markHomeworkComplete = (homeworkId: string) => {
@@ -874,12 +879,13 @@ export default function TeacherDashboard() {
           </div>
         )}
 
-        {/* Other tabs (assignments, attendance, messages, events) remain the same */}
+        {/* Other tabs (assignments, gradebook, attendance, messages, events) remain the same */}
         {activeTab === 'assignments' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Assignments</h2>
-            <p className="text-gray-500">Assignment management coming soon...</p>
-          </div>
+          <AssignmentsPanel userRole="teacher" />
+        )}
+
+        {activeTab === 'gradebook' && (
+          <GradebookPanel userRole="teacher" />
         )}
 
         {activeTab === 'attendance' && (
@@ -890,17 +896,15 @@ export default function TeacherDashboard() {
         )}
 
         {activeTab === 'messages' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Messages</h2>
-            <p className="text-gray-500">Communication center...</p>
-          </div>
+          <MessagesPanel userRole="teacher" />
         )}
 
         {activeTab === 'events' && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Events</h2>
-            <p className="text-gray-500">Calendar and events...</p>
-          </div>
+          <CalendarPanel userRole="teacher" />
+        )}
+
+        {activeTab === 'mastery' && (
+          <MasteryPanel userRole="teacher" />
         )}
       </main>
     </div>

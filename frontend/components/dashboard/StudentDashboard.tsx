@@ -1,13 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  getQuranByScriptId, 
-  getSurahByNumber, 
-  getAllQuranScripts, 
+import {
+  getQuranByScriptId,
+  getSurahByNumber,
+  getAllQuranScripts,
   getScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
+import MessagesPanel from '@/components/messages/MessagesPanel';
+import GradebookPanel from '@/components/gradebook/GradebookPanel';
+import CalendarPanel from '@/components/calendar/CalendarPanel';
+import MasteryPanel from '@/components/mastery/MasteryPanel';
+import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 import {
   Book,
   Mic,
@@ -723,6 +728,48 @@ export default function StudentDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab('gradebook')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                activeTab === 'gradebook'
+                  ? 'text-white bg-green-600 shadow-sm'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Award className="w-4 h-4" />
+                <span>Gradebook</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('mastery')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                activeTab === 'mastery'
+                  ? 'text-white bg-green-600 shadow-sm'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Target className="w-4 h-4" />
+                <span>Mastery</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                activeTab === 'calendar'
+                  ? 'text-white bg-green-600 shadow-sm'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <CalendarIcon className="w-4 h-4" />
+                <span>Calendar</span>
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('progress')}
               className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
                 activeTab === 'progress'
@@ -1089,155 +1136,7 @@ export default function StudentDashboard() {
 
       {/* Assignments Tab */}
       {activeTab === 'assignments' && (
-        <div className="space-y-6">
-          {/* Search and Filters */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold flex items-center">
-                <FileText className="w-6 h-6 mr-2 text-purple-600" />
-                My Assignments (Mistakes)
-                <span className="ml-3 bg-purple-100 text-purple-700 text-sm px-2 py-1 rounded-full">
-                  {highlights.filter((h: any) => h.type === 'assignment').length} Total
-                </span>
-              </h2>
-            </div>
-
-            {/* Filters */}
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search assignments by surah, note, or type..."
-                  value={assignmentSearchTerm}
-                  onChange={(e) => setAssignmentSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-400"
-                />
-              </div>
-
-              <select
-                value={assignmentTypeFilter}
-                onChange={(e) => setAssignmentTypeFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-400"
-              >
-                <option value="all">All Types</option>
-                <option value="tajweed">Tajweed</option>
-                <option value="haraka">Haraka</option>
-                <option value="recap">Recap</option>
-              </select>
-
-              <button
-                onClick={() => {
-                  setAssignmentSearchTerm('');
-                  setAssignmentTypeFilter('all');
-                }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
-
-          {/* Assignments Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {highlights
-              .filter((h: any) => h.type === 'assignment')
-              .filter((h: any) => {
-                if (assignmentTypeFilter !== 'all' && h.mistakeType !== assignmentTypeFilter) return false;
-                if (assignmentSearchTerm) {
-                  const searchLower = assignmentSearchTerm.toLowerCase();
-                  return h.teacherNote.toLowerCase().includes(searchLower) ||
-                         h.teacherName.toLowerCase().includes(searchLower) ||
-                         h.mistakeType.toLowerCase().includes(searchLower) ||
-                         `surah ${h.surah}`.toLowerCase().includes(searchLower);
-                }
-                return true;
-              })
-              .map((assignment: any) => (
-                <div
-                  key={assignment.id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
-                >
-                  <div className={`p-4 ${
-                    assignment.mistakeType === 'tajweed' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
-                    assignment.mistakeType === 'recap' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                    assignment.mistakeType === 'haraka' ? 'bg-gradient-to-r from-red-500 to-rose-500' :
-                    'bg-gradient-to-r from-gray-500 to-gray-600'
-                  }`}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold text-white text-lg">
-                          Surah {assignment.surah}, Ayah {assignment.ayahIndex + 1}
-                        </h3>
-                        <p className="text-white text-opacity-90 text-sm mt-1">
-                          {assignment.teacherName}
-                        </p>
-                      </div>
-                      <span className="bg-white bg-opacity-20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white">
-                        {assignment.mistakeType}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <p className="text-gray-700 mb-4">
-                      {assignment.teacherNote}
-                    </p>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Status:</span>
-                        <span className={`font-medium ${
-                          assignment.status === 'reviewed' ? 'text-green-600' :
-                          assignment.status === 'pending' ? 'text-yellow-600' :
-                          'text-gray-600'
-                        }`}>
-                          {assignment.status}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Assigned:</span>
-                        <span className="text-gray-700">{assignment.timestamp}</span>
-                      </div>
-
-                      {assignment.replies.length > 0 && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Conversation:</span>
-                          <span className="text-blue-600 font-medium">
-                            {assignment.replies.length} messages
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-5 pt-4 border-t flex items-center justify-between">
-                      <button
-                        onClick={() => {
-                          setActiveTab('quran');
-                          setCurrentSurah(assignment.surah);
-                          const page = Math.floor(assignment.ayahIndex / AYAHS_PER_PAGE) + 1;
-                          setCurrentPage(page);
-                        }}
-                        className="flex items-center space-x-2 text-purple-600 hover:text-purple-700 font-medium"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Go to Quran</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleHighlightClick(assignment.id)}
-                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>Reply</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
+        <AssignmentsPanel userRole="student" studentId={studentInfo.id} />
       )}
 
       {/* Progress Tab */}
@@ -1739,179 +1638,22 @@ export default function StudentDashboard() {
 
       {/* Messages Tab */}
       {activeTab === 'messages' && (
-        <div className="space-y-6">
-          {/* Messages Header */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold flex items-center">
-                <Mail className="w-7 h-7 mr-3 text-blue-600" />
-                Messages
-              </h2>
-              <button
-                onClick={() => setShowComposeModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 font-medium shadow-lg transition-all duration-200 flex items-center space-x-2"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Compose New Message</span>
-              </button>
-            </div>
+        <MessagesPanel userRole="student" />
+      )}
 
-            {/* Message Tabs */}
-            <div className="flex space-x-2 border-b">
-              {['inbox', 'sent', 'archive'].map((tab: any) => (
-                <button
-                  key={tab}
-                  onClick={() => setMessageTab(tab)}
-                  className={`px-6 py-3 font-medium capitalize transition-all duration-200 border-b-2 ${
-                    messageTab === tab
-                      ? 'text-blue-600 border-blue-600 bg-blue-50'
-                      : 'text-gray-600 border-transparent hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="flex items-center space-x-2">
-                    {tab === 'inbox' && <Inbox className="w-4 h-4" />}
-                    {tab === 'sent' && <Send className="w-4 h-4" />}
-                    {tab === 'archive' && <Archive className="w-4 h-4" />}
-                    <span>{tab}</span>
-                    {tab === 'inbox' && messages.inbox.filter((m: any) => m.unread).length > 0 && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-2">
-                        {messages.inbox.filter((m: any) => m.unread).length}
-                      </span>
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Gradebook Tab */}
+      {activeTab === 'gradebook' && (
+        <GradebookPanel userRole="student" />
+      )}
 
-          {/* Messages List */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-200">
-              {messages[messageTab as keyof typeof messages].length > 0 ? (
-                messages[messageTab as keyof typeof messages].map((message: any) => (
-                  <div
-                    key={message.id}
-                    className={`p-6 hover:bg-gray-50 transition cursor-pointer ${
-                      message.unread ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                    }`}
-                    onClick={() => {
-                      // Mark as read if unread
-                      if (message.unread && messageTab === 'inbox') {
-                        setMessages((prev: any) => ({
-                          ...prev,
-                          inbox: prev.inbox.map((m: any) =>
-                            m.id === message.id ? { ...m, unread: false } : m
-                          )
-                        }));
-                      }
-                    }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          messageTab === 'sent' ? 'bg-green-100' : 'bg-blue-100'
-                        }`}>
-                          <User className={`w-6 h-6 ${
-                            messageTab === 'sent' ? 'text-green-600' : 'text-blue-600'
-                          }`} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <h4 className="font-semibold text-gray-900">
-                              {message.from || message.to}
-                            </h4>
-                            {message.unread && (
-                              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">
-                                New
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-gray-900 font-medium mb-2">{message.subject}</p>
-                          <p className="text-gray-600 text-sm line-clamp-2">
-                            {message.preview || 'Click to read full message...'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">{message.time}</p>
-                        <div className="flex items-center space-x-2 mt-3">
-                          {messageTab === 'inbox' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Reply functionality
-                                setComposeSubject(`Re: ${message.subject}`);
-                                setShowComposeModal(true);
-                              }}
-                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
-                              title="Reply"
-                            >
-                              <Reply className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Archive functionality
-                              if (messageTab !== 'archive') {
-                                const messageToArchive = { ...message, unread: false };
-                                setMessages((prev: any) => ({
-                                  ...prev,
-                                  [messageTab]: prev[messageTab].filter((m: any) => m.id !== message.id),
-                                  archive: [...prev.archive, messageToArchive]
-                                }));
-                              }
-                            }}
-                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
-                            title={messageTab === 'archive' ? 'Archived' : 'Archive'}
-                          >
-                            <Archive className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Delete functionality
-                              setMessages((prev: any) => ({
-                                ...prev,
-                                [messageTab]: prev[messageTab].filter((m: any) => m.id !== message.id)
-                              }));
-                            }}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-12 text-center">
-                  <Mail className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    No messages in {messageTab}
-                  </h3>
-                  <p className="text-gray-500">
-                    {messageTab === 'inbox'
-                      ? 'Your inbox is empty. New messages from your teacher will appear here.'
-                      : messageTab === 'sent'
-                      ? 'You haven\'t sent any messages yet.'
-                      : 'No archived messages.'}
-                  </p>
-                  {messageTab === 'inbox' && (
-                    <button
-                      onClick={() => setShowComposeModal(true)}
-                      className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Send Your First Message
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Mastery Tab */}
+      {activeTab === 'mastery' && (
+        <MasteryPanel userRole="student" studentId={studentInfo.id} />
+      )}
+
+      {/* Calendar Tab */}
+      {activeTab === 'calendar' && (
+        <CalendarPanel userRole="student" />
       )}
 
       {/* Targets Tab */}

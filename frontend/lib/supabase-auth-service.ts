@@ -1,6 +1,27 @@
 // PRODUCTION-READY Authentication Service for Quranakh
 import { createClient } from '@supabase/supabase-js';
-import { getSupabaseAdmin } from './supabase-admin';
+
+// DEBUG: Log environment variables to verify they're loaded
+console.log('🔍 ENV CHECK:', {
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...',
+  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) + '...'
+});
+
+// Initialize Supabase Admin Client (for creating users)
+// This needs SERVICE_ROLE_KEY for creating users
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!, // This must be kept secret!
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
+console.log('✅ Supabase Admin client initialized');
 
 // Regular client for normal operations
 const supabase = createClient(
@@ -33,8 +54,6 @@ export async function createSchoolWithAdmin(data: {
   subscriptionPlan?: string;
 }) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
     // Parse admin name
     const nameParts = data.adminName.split(' ');
     const adminFirstName = nameParts[0];
@@ -60,7 +79,7 @@ export async function createSchoolWithAdmin(data: {
       email_confirm: true, // Auto-confirm for production
       user_metadata: {
         name: data.adminName,
-        role: 'school',
+        role: 'owner',
         school_id: school.id
       }
     });
@@ -74,7 +93,7 @@ export async function createSchoolWithAdmin(data: {
         user_id: authUser.user.id,
         email: data.adminEmail,
         display_name: data.adminName,
-        role: 'school',
+        role: 'school_admin',
         school_id: school.id
       } as any);
 
@@ -108,8 +127,6 @@ export async function createTeacherAccount(data: {
   experience?: string;
 }) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
     // 1. Create teacher user in Supabase Auth
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
@@ -211,8 +228,6 @@ export async function createStudentWithParent(data: {
   relationship: 'father' | 'mother' | 'guardian' | 'parent';
 }) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
     // 1. Create parent user in Supabase Auth
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: data.parentEmail,
@@ -366,7 +381,8 @@ export async function loginWithRole(email: string, password: string) {
     let redirectPath = '/';
 
     switch (profile.role) {
-      case 'school':
+      case 'owner':
+      case 'admin':
         const { data: school } = await supabase
           .from('schools')
           .select('id, name, logo_url, timezone, created_at, updated_at')
@@ -473,7 +489,6 @@ export async function signOut() {
 
 // Check if email exists
 export async function checkEmailExists(email: string) {
-  const supabaseAdmin = getSupabaseAdmin();
   const { data } = await supabaseAdmin.auth.admin.listUsers();
   return data?.users?.some((user: any) => user.email === email) || false;
 }
