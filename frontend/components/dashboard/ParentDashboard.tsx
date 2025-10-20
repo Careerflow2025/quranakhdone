@@ -35,6 +35,7 @@ import {
   Check,
   Clock,
   Calendar,
+  Calendar as CalendarIcon,
   FileText,
   Upload,
   Eye,
@@ -1875,8 +1876,10 @@ export default function ParentDashboard() {
 
         {/* Messages Tab */}
         {activeTab === 'messages' && (
-        <MessagesPanel userRole="parent" />
-      )}
+          <MessagesPanel userRole="parent" />
+        )}
+      </div>
+
       {/* Enhanced Profile Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
