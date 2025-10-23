@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   AssignmentWithDetails,
   AssignmentStatus,
@@ -150,10 +151,20 @@ export function useAssignments(initialStudentId?: string) {
         params.append('page', String(currentPage));
         params.append('limit', String(ITEMS_PER_PAGE));
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to view assignments');
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/assignments?${params.toString()}`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -192,10 +203,20 @@ export function useAssignments(initialStudentId?: string) {
         setIsLoading(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to view assignment details');
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -240,10 +261,20 @@ export function useAssignments(initialStudentId?: string) {
           attachments: assignmentData.attachments,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to create assignment');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch('/api/assignments', {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });
@@ -290,10 +321,20 @@ export function useAssignments(initialStudentId?: string) {
           due_at: updates.due_at,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to update assignment');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}`, {
           method: 'PATCH',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });
@@ -339,10 +380,20 @@ export function useAssignments(initialStudentId?: string) {
         setIsSubmitting(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to delete assignment');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}`, {
           method: 'DELETE',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -390,10 +441,20 @@ export function useAssignments(initialStudentId?: string) {
           attachments: submissionData.attachments,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to submit assignment');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}/submit`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });
@@ -444,10 +505,20 @@ export function useAssignments(initialStudentId?: string) {
           reason: transitionData.reason,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to transition assignment status');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}/transition`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });
@@ -497,10 +568,20 @@ export function useAssignments(initialStudentId?: string) {
           reason: reopenData.reason,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to reopen assignment');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}/reopen`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });
@@ -546,10 +627,20 @@ export function useAssignments(initialStudentId?: string) {
         setIsSubmitting(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to attach rubric');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/assignments/${assignmentId}/rubric`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(rubricData),
         });

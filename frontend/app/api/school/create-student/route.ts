@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const {
       name,
       email,
-      age,
+      dob,  // FIX #3: Accept date of birth directly, not age
       gender,
       grade,
       address,
@@ -148,21 +148,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: profileError2.message }, { status: 400 });
     }
 
-    // 3. Calculate date of birth from age if provided
-    let dobValue = null;
-    if (age) {
-      const currentYear = new Date().getFullYear();
-      const birthYear = currentYear - parseInt(age);
-      dobValue = `${birthYear}-01-01`;
-    }
-
     // 3. Create student record (after profile exists - foreign key constraint)
+    // FIX #3: Use date of birth directly from request, no conversion needed
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
         user_id: authData.user.id,
         school_id: schoolId,
-        dob: dobValue,
+        dob: dob || null,  // Use actual DOB from date picker
         gender: gender || null,
         active: true
       })
@@ -176,16 +169,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: studentError.message }, { status: 400 });
     }
 
-    // 4. Store credentials for school admin
-    await supabaseAdmin
-      .from('user_credentials')
-      .insert({
-        user_id: authData.user.id,
-        school_id: schoolId,
-        email: email,
-        password: tempPassword,
-        role: 'student'
-      });
+    // 4. Credentials returned in response (user_credentials table doesn't exist)
+    // Password will be returned once for school admin to share with student
 
     return NextResponse.json({
       success: true,

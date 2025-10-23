@@ -17,6 +17,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   TargetWithDetails,
   CreateTargetRequest,
@@ -132,11 +133,21 @@ export function useTargets(): UseTargetsReturn {
         params.append('page', String(page));
         params.append('limit', String(pagination.limit));
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const errorMessage = 'Please login to view targets';
+          setError(errorMessage);
+          setIsLoading(false);
+          return { success: false, error: errorMessage };
+        }
+
         const response = await fetch(`/api/targets?${params.toString()}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -173,11 +184,21 @@ export function useTargets(): UseTargetsReturn {
       setIsLoadingTarget(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to view target details';
+        setError(errorMessage);
+        setIsLoadingTarget(false);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/targets/${targetId}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -211,11 +232,21 @@ export function useTargets(): UseTargetsReturn {
         setIsLoading(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const errorMessage = 'Please login to create target';
+          setError(errorMessage);
+          setIsLoading(false);
+          return { success: false, error: errorMessage };
+        }
+
         const response = await fetch('/api/targets', {
           method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(data),
         });
@@ -254,11 +285,21 @@ export function useTargets(): UseTargetsReturn {
         setIsLoading(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const errorMessage = 'Please login to update target progress';
+          setError(errorMessage);
+          setIsLoading(false);
+          return { success: false, error: errorMessage };
+        }
+
         const response = await fetch(`/api/targets/${targetId}/progress`, {
           method: 'PATCH',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(data),
         });
@@ -305,11 +346,21 @@ export function useTargets(): UseTargetsReturn {
         setIsLoading(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const errorMessage = 'Please login to delete target';
+          setError(errorMessage);
+          setIsLoading(false);
+          return { success: false, error: errorMessage };
+        }
+
         const response = await fetch(`/api/targets/${targetId}`, {
           method: 'DELETE',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 

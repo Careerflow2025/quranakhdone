@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
+import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
 import { useAuthStore } from '@/store/authStore';
@@ -101,6 +102,16 @@ export default function SchoolDashboard() {
 
   // Get current user from auth store
   const { user, logout } = useAuthStore();
+
+  // Get notifications from API
+  const {
+    notifications: dbNotifications,
+    unreadCount,
+    isLoading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+    refresh: refreshNotifications
+  } = useNotifications();
 
   // Refs for dropdown click-outside detection
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -358,20 +369,27 @@ export default function SchoolDashboard() {
   // PRODUCTION: Add Student Function (with skipAlert flag for bulk operations)
   const handleAddStudent = async (studentData: any, skipAlert: boolean = false) => {
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       // Call API endpoint (uses admin client - no rate limiting)
       const response = await fetch('/api/school/create-student', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           name: studentData.name,
           email: studentData.email,
-          age: studentData.age,
+          dob: studentData.dob,  // FIX #3: Use actual date of birth, not age
           gender: studentData.gender,
-          grade: studentData.grade,
-          address: studentData.address,
-          phone: studentData.phone,
-          parent: studentData.parent,
           schoolId: user?.schoolId
+          // FIX #5: Removed grade, address, phone, parent (not in database)
         })
       });
 
@@ -413,6 +431,13 @@ export default function SchoolDashboard() {
   // PRODUCTION: Add Teacher Function (FIXED - Uses Service Role Key endpoint)
   const handleAddTeacher = async (teacherData: any) => {
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       // Generate temporary password
       const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
 
@@ -420,20 +445,17 @@ export default function SchoolDashboard() {
       const response = await fetch('/api/school/create-teacher', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           name: teacherData.name,
           email: teacherData.email,
           password: tempPassword,
-          phone: teacherData.phone || '',
           schoolId: user?.schoolId || schoolInfo?.id,
-          subject: teacherData.subject || '',
-          qualification: teacherData.qualification || '',
-          experience: teacherData.experience || '',
-          address: teacherData.address || '',
-          bio: teacherData.bio || '',
-          classIds: teacherData.assignedClasses || []
+          bio: teacherData.bio || '',  // Only optional teacher field in database
+          classIds: teacherData.assignedClasses || []  // For class_teachers linking
+          // FIX #4: Removed phone, subject, qualification, experience, address (not in database)
         })
       });
 
@@ -473,6 +495,13 @@ export default function SchoolDashboard() {
   // PRODUCTION: Add Parent Function (FIXED - Uses Service Role Key endpoint)
   const handleAddParent = async (parentData: any) => {
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       // Generate temporary password
       const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
 
@@ -482,16 +511,16 @@ export default function SchoolDashboard() {
       const response = await fetch('/api/school/create-parent', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           name: parentData.name,
           email: parentData.email,
           password: tempPassword,
-          phone: parentData.phone || '',
           schoolId: user?.schoolId || schoolInfo?.id,
-          studentIds: parentData.studentIds || [],  // Array of student IDs to link
-          address: parentData.address || ''
+          studentIds: parentData.studentIds || []  // Array of student IDs to link
+          // FIX #6: Removed phone and address (not in database)
         })
       });
 
@@ -544,9 +573,9 @@ export default function SchoolDashboard() {
         school_id: user?.schoolId || '',
         name: classData.name,
         room: classData.room || null,
-        grade: classData.grade || null,
-        capacity: classData.capacity || 30,
-        schedule: {
+        // Removed: grade (column doesn't exist in database)
+        // Removed: capacity (column doesn't exist in database)
+        schedule_json: {  // FIXED: Field name is schedule_json in database, not schedule
           schedules: formattedSchedules,
           timezone: 'Africa/Casablanca' // Default timezone
         },
@@ -1686,11 +1715,19 @@ export default function SchoolDashboard() {
     if (!confirm('Are you sure you want to delete this student? This will completely remove them from the system.')) return;
 
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       // Call server-side API endpoint that BYPASSES RLS using Service Role Key
       const response = await fetch('/api/school/delete-students', {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           studentIds: [studentId]
@@ -1822,9 +1859,19 @@ export default function SchoolDashboard() {
     if (!confirm(`Are you sure you want to delete ${studentIds.length} student(s)? This will completely remove them from the system.`)) return;
 
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       const response = await fetch('/api/school/delete-students', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ studentIds })
       });
 
@@ -1881,9 +1928,19 @@ export default function SchoolDashboard() {
     if (!confirm('Are you sure you want to delete this teacher? This will completely remove them from the system.')) return;
 
     try {
+      // Get current user session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showNotification('Please login as school administrator', 'error');
+        return;
+      }
+
       const response = await fetch('/api/school/delete-teachers', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ teacherIds: [teacherId] })
       });
 
@@ -2056,45 +2113,116 @@ export default function SchoolDashboard() {
                   className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 relative"
                 >
                   <Bell className="w-5 h-5" />
-                  {recentActivities.length > 0 && (
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
                   )}
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900">Notifications</h3>
-                        <button
-                          onClick={() => setShowNotificationPreferences(true)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
+                        <h3 className="font-semibold text-gray-900">
+                          Notifications {unreadCount > 0 && <span className="ml-2 text-sm text-red-500">({unreadCount} unread)</span>}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={() => {
+                                markAllAsRead();
+                                showNotification('All notifications marked as read', 'success');
+                              }}
+                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                            >
+                              Mark all read
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setShowNotificationPreferences(true)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
-                      {recentActivities.length > 0 ? (
-                        recentActivities.map((activity: any) => (
-                          <div key={activity.id} className="p-4 border-b hover:bg-gray-50">
+                      {notificationsLoading && dbNotifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <RefreshCw className="w-5 h-5 mx-auto mb-2 animate-spin" />
+                          Loading notifications...
+                        </div>
+                      ) : dbNotifications.length > 0 ? (
+                        dbNotifications.map((notification: any) => (
+                          <div
+                            key={notification.id}
+                            onClick={() => {
+                              if (!notification.is_read) {
+                                markAsRead(notification.id);
+                              }
+                            }}
+                            className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
+                              !notification.is_read ? 'bg-blue-50' : ''
+                            }`}
+                          >
                             <div className="flex items-start space-x-3">
-                              <div className={`p-2 rounded-lg ${activity.color}`}>
-                                <activity.icon className="w-4 h-4" />
+                              <div className={`p-2 rounded-lg ${
+                                notification.type === 'assignment' ? 'bg-blue-100 text-blue-600' :
+                                notification.type === 'homework' ? 'bg-green-100 text-green-600' :
+                                notification.type === 'grade' ? 'bg-purple-100 text-purple-600' :
+                                notification.type === 'attendance' ? 'bg-yellow-100 text-yellow-600' :
+                                notification.type === 'message' ? 'bg-pink-100 text-pink-600' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>
+                                {notification.type === 'assignment' && <FileText className="w-4 h-4" />}
+                                {notification.type === 'homework' && <BookOpen className="w-4 h-4" />}
+                                {notification.type === 'grade' && <Award className="w-4 h-4" />}
+                                {notification.type === 'attendance' && <Users className="w-4 h-4" />}
+                                {notification.type === 'message' && <MessageSquare className="w-4 h-4" />}
+                                {!['assignment', 'homework', 'grade', 'attendance', 'message'].includes(notification.type) && <Bell className="w-4 h-4" />}
                               </div>
-                              <div className="flex-1">
-                                <p className="text-sm text-gray-900">{activity.description}</p>
-                                <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between">
+                                  <p className={`text-sm ${!notification.is_read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                                    {notification.payload?.title || notification.payload?.message || 'New notification'}
+                                  </p>
+                                  {!notification.is_read && (
+                                    <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></span>
+                                  )}
+                                </div>
+                                {notification.payload?.body && (
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                    {notification.payload.body}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-1">{notification.time_ago}</p>
                               </div>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-500">
-                          No new notifications
+                        <div className="p-8 text-center text-gray-500">
+                          <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">No notifications yet</p>
+                          <p className="text-xs mt-1">You'll be notified about important updates</p>
                         </div>
                       )}
                     </div>
+                    {dbNotifications.length > 0 && (
+                      <div className="p-3 border-t bg-gray-50 text-center">
+                        <button
+                          onClick={() => {
+                            // TODO: Navigate to full notifications page
+                            showNotification('Full notifications page coming soon', 'info');
+                          }}
+                          className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                        >
+                          View all notifications
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -4863,15 +4991,13 @@ export default function SchoolDashboard() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
+              // FIX #5: Only send fields that exist in database
               handleAddStudent({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                age: formData.get('age'),
-                grade: formData.get('grade'),
-                gender: formData.get('gender'),
-                address: formData.get('address'),
-                phone: formData.get('phone'),
-                parent: formData.get('parent')
+                dob: formData.get('dob'),  // FIX #3: DOB not age
+                gender: formData.get('gender')
+                // Removed: grade, address, phone, parent (not in database)
               });
             }}>
               <div className="space-y-4">
@@ -4891,10 +5017,11 @@ export default function SchoolDashboard() {
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <input
-                    name="age"
-                    type="number"
-                    placeholder="Age"
+                    name="dob"
+                    type="date"
+                    placeholder="Date of Birth"
                     className="w-full px-3 py-2 border rounded-lg"
+                    max={new Date().toISOString().split('T')[0]}
                     required
                   />
                   <select
@@ -4907,31 +5034,6 @@ export default function SchoolDashboard() {
                     <option value="Female">Female</option>
                   </select>
                 </div>
-                <input
-                  name="grade"
-                  type="text"
-                  placeholder="Grade (e.g., 5th Grade)"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-                <textarea
-                  name="address"
-                  placeholder="Address (Optional)"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
-                />
-                <input
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone (Optional)"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="parent"
-                  type="text"
-                  placeholder="Parent Name (Optional)"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
@@ -4961,16 +5063,12 @@ export default function SchoolDashboard() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
+              // FIX #4: Only send fields that exist in database
               handleAddTeacher({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                age: formData.get('age'),
-                gender: formData.get('gender'),
-                subject: formData.get('subject'),
-                phone: formData.get('phone'),
-                address: formData.get('address'),
-                qualification: formData.get('qualification'),
-                experience: formData.get('experience')
+                bio: formData.get('bio'),
+                assignedClasses: Array.from(formData.getAll('assignedClasses'))
               });
             }}>
               <div className="space-y-4">
@@ -4988,60 +5086,32 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    name="age"
-                    type="number"
-                    placeholder="Age"
-                    min="18"
-                    max="100"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    required
-                  />
-                  <select
-                    name="gender"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <input
-                  name="subject"
-                  type="text"
-                  placeholder="Subject"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-                <input
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone Number"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
                 <textarea
-                  name="address"
-                  placeholder="Address"
+                  name="bio"
+                  placeholder="Bio (Optional)"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
-                  required
+                  rows={3}
                 />
-                <input
-                  name="qualification"
-                  type="text"
-                  placeholder="Qualification"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="experience"
-                  type="text"
-                  placeholder="Years of Experience"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Assign Classes (Optional)
+                  </label>
+                  <select
+                    name="assignedClasses"
+                    multiple
+                    className="w-full px-3 py-2 border rounded-lg"
+                    size={Math.min(classes.length, 5)}
+                  >
+                    {classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name} {cls.room ? `(${cls.room})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Hold Ctrl/Cmd to select multiple classes
+                  </p>
+                </div>
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
@@ -5072,12 +5142,12 @@ export default function SchoolDashboard() {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
 
+              // FIX #6: Only send fields that exist in database
               handleAddParent({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                phone: formData.get('phone'),
-                address: formData.get('address'),
                 studentIds: selectedStudentsForParent.map((s: any) => s.id)
+                // Removed: phone, address (not in database)
               });
 
               // Reset selections after submit
@@ -5098,18 +5168,6 @@ export default function SchoolDashboard() {
                   placeholder="Email"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
-                />
-                <input
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone Number"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <textarea
-                  name="address"
-                  placeholder="Address"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
                 />
 
                 {/* Enhanced Student Selection with Search */}
@@ -5898,20 +5956,6 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-                <input
-                  name="phone"
-                  type="tel"
-                  defaultValue={showEditParent.phone}
-                  placeholder="Phone Number"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <textarea
-                  name="address"
-                  defaultValue={showEditParent.address}
-                  placeholder="Address"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
-                />
 
                 {/* Student Selection with Search */}
                 {students.length > 0 && (
@@ -6434,11 +6478,19 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
+                // Get current user session for authorization
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                  showNotification('Please login as school administrator', 'error');
+                  return;
+                }
+
                 // Call API route to update student (uses service role key to bypass RLS)
                 const response = await fetch('/api/school/update-student', {
                   method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
                   },
                   body: JSON.stringify({
                     studentId: editingStudent.id,
@@ -6529,17 +6581,11 @@ export default function SchoolDashboard() {
                   required
                 />
                 <input
-                  name="age"
-                  type="number"
-                  defaultValue={editingStudent.age}
-                  placeholder="Age"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="grade"
-                  type="text"
-                  defaultValue={editingStudent.grade}
-                  placeholder="Grade"
+                  name="dob"
+                  type="date"
+                  defaultValue={editingStudent.dob}
+                  placeholder="Date of Birth"
+                  max={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
                 <select
@@ -6551,13 +6597,6 @@ export default function SchoolDashboard() {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
-                <input
-                  name="phone"
-                  type="tel"
-                  defaultValue={editingStudent.phone || ''}
-                  placeholder="Phone (Optional)"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
@@ -6669,25 +6708,21 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Update teacher data (teachers table fields only)
+                // FIX #4: Update teacher data (only 'bio' field exists in teachers table)
                 const { error: teacherError } = await (supabase as any)
                   .from('teachers')
                   .update({
-                    subject: formData.get('subject') || null,
-                    address: formData.get('address') || null,
-                    qualification: formData.get('qualification') || null,
-                    experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null
+                    bio: formData.get('bio') || null
                   })
                   .eq('id', editingTeacher.id);
 
                 if (teacherError) throw teacherError;
 
-                // Update profile data (profiles table fields: name and phone)
+                // FIX #4: Update profile data (only display_name field, no phone in profiles)
                 const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
-                    display_name: formData.get('name'),
-                    phone: formData.get('phone') || null
+                    display_name: formData.get('name')
                   })
                   .eq('user_id', editingTeacher.user_id);
 
@@ -6719,40 +6754,12 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-                <input
-                  name="subject"
-                  type="text"
-                  defaultValue={editingTeacher.subject}
-                  placeholder="Subject"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="phone"
-                  type="tel"
-                  defaultValue={editingTeacher.phone}
-                  placeholder="Phone Number"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
                 <textarea
-                  name="address"
-                  defaultValue={editingTeacher.address || ''}
-                  placeholder="Address"
+                  name="bio"
+                  defaultValue={editingTeacher.bio || ''}
+                  placeholder="Bio (Optional)"
                   className="w-full px-3 py-2 border rounded-lg"
-                  rows={2}
-                />
-                <input
-                  name="qualification"
-                  type="text"
-                  defaultValue={editingTeacher.qualification}
-                  placeholder="Qualification"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="experience"
-                  type="text"
-                  defaultValue={editingTeacher.experience}
-                  placeholder="Years of Experience"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={3}
                 />
               </div>
               <div className="flex space-x-3 mt-6">

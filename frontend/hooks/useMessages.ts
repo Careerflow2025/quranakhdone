@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 
 // Types matching our Messages API
 export interface MessageUser {
@@ -101,10 +102,20 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
       const folderToFetch = folder || currentFolder;
       const url = `/api/messages?folder=${folderToFetch}&page=${page}&limit=20`;
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to view messages');
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(url, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -145,10 +156,20 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
       setIsLoadingThread(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to view thread');
+        setIsLoadingThread(false);
+        return;
+      }
+
       const response = await fetch(`/api/messages/thread/${threadId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -183,10 +204,19 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to send message');
+        return false;
+      }
+
       const response = await fetch('/api/messages', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(messageData),
       });

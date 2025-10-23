@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useNotifications } from '@/hooks/useNotifications';
 import {
   Users, BookOpen, Calendar, Bell, Settings, FileText, Clock, TrendingUp,
   CheckCircle, AlertCircle, Mail, GraduationCap, Search, Filter, User, LogOut,
@@ -25,6 +26,16 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+  // Get notifications from API
+  const {
+    notifications: dbNotifications,
+    unreadCount,
+    isLoading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+    refresh: refreshNotifications
+  } = useNotifications();
 
   // Homework State
   const [homeworkList, setHomeworkList] = useState<any[]>([]);
@@ -117,13 +128,113 @@ export default function TeacherDashboard() {
 
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 text-gray-600 hover:text-gray-900"
-              >
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
+                >
+                  <Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div className="p-4 border-b">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900">
+                          Notifications {unreadCount > 0 && <span className="ml-2 text-sm text-red-500">({unreadCount} unread)</span>}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                            >
+                              Mark all read
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notificationsLoading && dbNotifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <RefreshCw className="w-5 h-5 mx-auto mb-2 animate-spin" />
+                          Loading notifications...
+                        </div>
+                      ) : dbNotifications.length > 0 ? (
+                        dbNotifications.map((notification: any) => (
+                          <div
+                            key={notification.id}
+                            onClick={() => {
+                              if (!notification.is_read) {
+                                markAsRead(notification.id);
+                              }
+                            }}
+                            className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
+                              !notification.is_read ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className={`p-2 rounded-lg ${
+                                notification.type === 'assignment' ? 'bg-blue-100 text-blue-600' :
+                                notification.type === 'homework' ? 'bg-green-100 text-green-600' :
+                                notification.type === 'grade' ? 'bg-purple-100 text-purple-600' :
+                                notification.type === 'attendance' ? 'bg-yellow-100 text-yellow-600' :
+                                notification.type === 'message' ? 'bg-pink-100 text-pink-600' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>
+                                {notification.type === 'assignment' && <FileText className="w-4 h-4" />}
+                                {notification.type === 'homework' && <BookOpen className="w-4 h-4" />}
+                                {notification.type === 'grade' && <Award className="w-4 h-4" />}
+                                {notification.type === 'attendance' && <Users className="w-4 h-4" />}
+                                {notification.type === 'message' && <MessageSquare className="w-4 h-4" />}
+                                {!['assignment', 'homework', 'grade', 'attendance', 'message'].includes(notification.type) && <Bell className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between">
+                                  <p className={`text-sm ${!notification.is_read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                                    {notification.payload?.title || notification.payload?.message || 'New notification'}
+                                  </p>
+                                  {!notification.is_read && (
+                                    <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></span>
+                                  )}
+                                </div>
+                                {notification.payload?.body && (
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                    {notification.payload.body}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-1">{notification.time_ago}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center text-gray-500">
+                          <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">No notifications yet</p>
+                          <p className="text-xs mt-1">You'll be notified about important updates</p>
+                        </div>
+                      )}
+                    </div>
+                    {dbNotifications.length > 0 && (
+                      <div className="p-3 border-t bg-gray-50 text-center">
+                        <button
+                          onClick={() => setShowNotifications(false)}
+                          className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Profile */}
               <button

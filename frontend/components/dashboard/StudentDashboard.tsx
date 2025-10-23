@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useNotifications } from '@/hooks/useNotifications';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -115,6 +116,16 @@ export default function StudentDashboard() {
   const [composeMessage, setComposeMessage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  // Get notifications from API
+  const {
+    notifications: dbNotifications,
+    unreadCount,
+    isLoading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+    refresh: refreshNotifications
+  } = useNotifications();
   const [studentProfile] = useState({
     name: 'Ahmed Hassan',
     email: 'ahmed.hassan@school.edu',
@@ -131,13 +142,7 @@ export default function StudentDashboard() {
     bloodGroup: 'O+',
     emergencyContact: '+212 6XX-XXX-XXX'
   });
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'message', title: 'New message from teacher', text: 'Please review your homework', time: '5 minutes ago', unread: true },
-    { id: 2, type: 'assignment', title: 'New assignment', text: 'Memorize Surah Al-Mulk verses 1-5', time: '2 hours ago', unread: true },
-    { id: 3, type: 'achievement', title: 'Achievement unlocked!', text: 'Completed 5 Juz memorization', time: '1 day ago', unread: true },
-    { id: 4, type: 'reminder', title: 'Class tomorrow', text: 'Quran class at 9:00 AM', time: '2 days ago', unread: false },
-    { id: 5, type: 'feedback', title: 'Teacher feedback', text: 'Excellent recitation today!', time: '3 days ago', unread: false }
-  ]);
+  // Notifications now fetched from API via useNotifications hook (removed mock data)
   
   // Teacher Highlights (Read-only for students)
   const [highlights, setHighlights] = useState([
@@ -485,83 +490,118 @@ export default function StudentDashboard() {
             <div className="flex items-center space-x-3">
               {/* Notifications */}
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <Bell className="w-5 h-5" />
-                  {notifications.filter((n: any) => n.unread).length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notifications.filter((n: any) => n.unread).length}
+                      {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
                 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-50 max-h-96 overflow-hidden">
-                    <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
-                      <h3 className="font-semibold text-sm">Notifications</h3>
-                      <button 
-                        onClick={() => {
-                          setNotifications((prev: any) => prev.map((n: any) => ({ ...n, unread: false })));
-                        }}
-                        className="text-xs text-blue-600 hover:text-blue-700"
-                      >
-                        Mark all as read
-                      </button>
+                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div className="p-4 border-b">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900">
+                          Notifications
+                          {unreadCount > 0 && (
+                            <span className="ml-2 text-sm text-red-500">
+                              ({unreadCount} unread)
+                            </span>
+                          )}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={() => markAllAsRead()}
+                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                            >
+                              Mark all read
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="max-h-80 overflow-y-auto">
-                      {notifications.length > 0 ? (
-                        notifications.map((notif: any) => (
-                          <div 
-                            key={notif.id}
-                            onClick={() => {
-                              setNotifications((prev: any) => 
-                                prev.map((n: any) => n.id === notif.id ? { ...n, unread: false } : n)
-                              );
-                            }}
-                            className={`p-3 border-b hover:bg-gray-50 cursor-pointer transition ${
-                              notif.unread ? 'bg-blue-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <div className={`p-2 rounded-full ${
-                                notif.type === 'message' ? 'bg-blue-100' :
-                                notif.type === 'assignment' ? 'bg-green-100' :
-                                notif.type === 'achievement' ? 'bg-yellow-100' :
-                                notif.type === 'reminder' ? 'bg-purple-100' :
-                                'bg-gray-100'
-                              }`}>
-                                {notif.type === 'message' && <Mail className="w-4 h-4 text-blue-600" />}
-                                {notif.type === 'assignment' && <FileText className="w-4 h-4 text-green-600" />}
-                                {notif.type === 'achievement' && <Award className="w-4 h-4 text-yellow-600" />}
-                                {notif.type === 'reminder' && <Clock className="w-4 h-4 text-purple-600" />}
-                                {notif.type === 'feedback' && <MessageSquare className="w-4 h-4 text-gray-600" />}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between">
-                                  <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                                  {notif.unread && (
-                                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1"></span>
+
+                    <div className="max-h-96 overflow-y-auto">
+                      {notificationsLoading && dbNotifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <div className="w-5 h-5 mx-auto mb-2 border-2 border-gray-300 border-t-emerald-600 rounded-full animate-spin"></div>
+                          Loading notifications...
+                        </div>
+                      ) : dbNotifications.length > 0 ? (
+                        dbNotifications.map((notification: any) => {
+                          const notifType = notification.type || 'other';
+                          const title = notification.payload?.title || 'Notification';
+                          const body = notification.payload?.body || '';
+
+                          return (
+                            <div
+                              key={notification.id}
+                              onClick={() => {
+                                if (!notification.is_read) {
+                                  markAsRead(notification.id);
+                                }
+                              }}
+                              className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
+                                !notification.is_read ? 'bg-blue-50' : ''
+                              }`}
+                            >
+                              <div className="flex items-start space-x-3">
+                                <div className={`p-2 rounded-full flex-shrink-0 ${
+                                  notifType.includes('assignment') ? 'bg-blue-100' :
+                                  notifType.includes('homework') ? 'bg-green-100' :
+                                  notifType.includes('grade') ? 'bg-purple-100' :
+                                  notifType.includes('attendance') ? 'bg-yellow-100' :
+                                  notifType.includes('message') ? 'bg-pink-100' :
+                                  'bg-gray-100'
+                                }`}>
+                                  {notifType.includes('assignment') && <FileText className="w-4 h-4 text-blue-600" />}
+                                  {notifType.includes('homework') && <BookOpen className="w-4 h-4 text-green-600" />}
+                                  {notifType.includes('grade') && <Award className="w-4 h-4 text-purple-600" />}
+                                  {notifType.includes('attendance') && <Clock className="w-4 h-4 text-yellow-600" />}
+                                  {notifType.includes('message') && <Mail className="w-4 h-4 text-pink-600" />}
+                                  {!notifType.includes('assignment') && !notifType.includes('homework') && !notifType.includes('grade') && !notifType.includes('attendance') && !notifType.includes('message') && (
+                                    <Bell className="w-4 h-4 text-gray-600" />
                                   )}
                                 </div>
-                                <p className="text-xs text-gray-600 mt-0.5">{notif.text}</p>
-                                <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                                      {title}
+                                    </p>
+                                    {!notification.is_read && (
+                                      <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1"></span>
+                                    )}
+                                  </div>
+                                  {body && (
+                                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                      {body}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {notification.time_ago || 'Just now'}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       ) : (
                         <div className="p-8 text-center text-gray-500">
-                          <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                          <p className="text-sm">No notifications</p>
+                          <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">No notifications yet</p>
+                          <p className="text-xs mt-1">You'll be notified about important updates</p>
                         </div>
                       )}
                     </div>
-                    
-                    <div className="p-2 border-t bg-gray-50">
-                      <button className="w-full text-center text-xs text-blue-600 hover:text-blue-700 py-1">
+
+                    <div className="p-3 border-t bg-gray-50">
+                      <button className="w-full text-center text-xs text-emerald-600 hover:text-emerald-700 font-medium py-1">
                         View all notifications
                       </button>
                     </div>

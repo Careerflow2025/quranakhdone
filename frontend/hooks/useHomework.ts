@@ -12,6 +12,7 @@
 
 import { useState, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   HomeworkWithDetails,
   CreateHomeworkRequest,
@@ -85,11 +86,20 @@ export function useHomework() {
       if (filters?.sort_by) params.append('sort_by', filters.sort_by);
       if (filters?.sort_order) params.append('sort_order', filters.sort_order);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to view homework';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/homework?${params.toString()}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -125,11 +135,20 @@ export function useHomework() {
       setIsLoading(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to view student homework';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/homework/student/${studentId}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -178,11 +197,20 @@ export function useHomework() {
       setIsLoading(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to view homework details';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/homework/${homeworkId}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -217,11 +245,20 @@ export function useHomework() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to create homework';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch('/api/homework', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(homeworkData),
       });
@@ -260,11 +297,20 @@ export function useHomework() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to complete homework';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/homework/${homeworkId}/complete`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(completionData || {}),
       });
@@ -310,11 +356,20 @@ export function useHomework() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const errorMessage = 'Please login to add reply';
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
+      }
+
       const response = await fetch(`/api/homework/${homeworkId}/reply`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(replyData),
       });
