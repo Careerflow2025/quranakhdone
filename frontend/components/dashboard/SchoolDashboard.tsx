@@ -5086,12 +5086,17 @@ export default function SchoolDashboard() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
-              // FIX #4: Only send fields that exist in database
               handleAddTeacher({
                 name: formData.get('name'),
                 email: formData.get('email'),
+                password: formData.get('password'),
+                subject: formData.get('subject'),
+                qualification: formData.get('qualification'),
+                experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null,
+                phone: formData.get('phone'),
+                address: formData.get('address'),
                 bio: formData.get('bio'),
-                assignedClasses: Array.from(formData.getAll('assignedClasses'))
+                classIds: Array.from(formData.getAll('assignedClasses'))
               });
             }}>
               <div className="space-y-4">
@@ -5105,9 +5110,53 @@ export default function SchoolDashboard() {
                 <input
                   name="email"
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
+                />
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="Password *"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                  minLength={8}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="subject"
+                    type="text"
+                    placeholder="Subject (e.g., Quran, Tajweed)"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                  <input
+                    name="qualification"
+                    type="text"
+                    placeholder="Qualification"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="experience"
+                    type="number"
+                    placeholder="Years of Experience"
+                    className="px-3 py-2 border rounded-lg"
+                    min="0"
+                    max="50"
+                  />
+                  <input
+                    name="phone"
+                    type="tel"
+                    placeholder="Phone Number"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <input
+                  name="address"
+                  type="text"
+                  placeholder="Address"
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
                 <textarea
                   name="bio"
@@ -6746,17 +6795,22 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // FIX #4: Update teacher data (only 'bio' field exists in teachers table)
+                // Update teacher data with all fields
                 const { error: teacherError } = await (supabase as any)
                   .from('teachers')
                   .update({
+                    subject: formData.get('subject') || null,
+                    qualification: formData.get('qualification') || null,
+                    experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null,
+                    phone: formData.get('phone') || null,
+                    address: formData.get('address') || null,
                     bio: formData.get('bio') || null
                   })
                   .eq('id', editingTeacher.id);
 
                 if (teacherError) throw teacherError;
 
-                // FIX #4: Update profile data (only display_name field, no phone in profiles)
+                // Update profile data
                 const { error: profileError } = await (supabase as any)
                   .from('profiles')
                   .update({
@@ -6788,9 +6842,50 @@ export default function SchoolDashboard() {
                   name="name"
                   type="text"
                   defaultValue={editingTeacher.name}
-                  placeholder="Teacher Name"
+                  placeholder="Teacher Name *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="subject"
+                    type="text"
+                    defaultValue={editingTeacher.subject || ''}
+                    placeholder="Subject (e.g., Quran, Tajweed)"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                  <input
+                    name="qualification"
+                    type="text"
+                    defaultValue={editingTeacher.qualification || ''}
+                    placeholder="Qualification"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="experience"
+                    type="number"
+                    defaultValue={editingTeacher.experience || ''}
+                    placeholder="Years of Experience"
+                    className="px-3 py-2 border rounded-lg"
+                    min="0"
+                    max="50"
+                  />
+                  <input
+                    name="phone"
+                    type="tel"
+                    defaultValue={editingTeacher.phone || ''}
+                    placeholder="Phone Number"
+                    className="px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <input
+                  name="address"
+                  type="text"
+                  defaultValue={editingTeacher.address || ''}
+                  placeholder="Address"
+                  className="w-full px-3 py-2 border rounded-lg"
                 />
                 <textarea
                   name="bio"
@@ -7670,7 +7765,7 @@ export default function SchoolDashboard() {
                     end_time: endTimestamp,
                     all_day: allDay,
                     class_id: formData.get('class_id') || null,
-                    created_by: user?.id
+                    created_by_user_id: user?.id  // Fixed: Database field is created_by_user_id not created_by
                   });
 
                 if (error) {

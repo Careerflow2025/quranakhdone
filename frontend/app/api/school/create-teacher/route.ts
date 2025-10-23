@@ -143,6 +143,11 @@ export async function POST(req: NextRequest) {
       .insert({
         user_id: authData.user.id,
         school_id: schoolId,
+        subject: subject || null,
+        qualification: qualification || null,
+        experience: experience || null,
+        phone: phone || null,
+        address: address || null,
         bio: bio || null,
         active: true
       })
