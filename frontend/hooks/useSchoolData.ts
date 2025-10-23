@@ -136,15 +136,15 @@ export function useSchoolData() {
 
         // Transform data to include name, email, phone, class, and calculated fields at top level
         const transformedStudents = studentsWithProfiles.map((student: any) => {
-          // Calculate age from date of birth
-          let age = null;
-          if (student.dob) {
+          // Calculate age from date of birth ONLY if database age doesn't exist
+          let calculatedAge = null;
+          if (student.dob && !student.age) {
             const today = new Date();
             const birthDate = new Date(student.dob);
-            age = today.getFullYear() - birthDate.getFullYear();
+            calculatedAge = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-              age--;
+              calculatedAge--;
             }
           }
 
@@ -152,7 +152,7 @@ export function useSchoolData() {
             ...student,
             name: student.profiles?.display_name || 'Unknown',
             email: student.profiles?.email || '',
-            age: age,
+            age: student.age || calculatedAge,  // FIXED: Use database age first, then calculated
             class: enrollmentMap[student.id] || null,  // FIXED: Add class assignment
             enrollment_date: student.created_at,
             status: student.active ? 'active' : 'inactive',
