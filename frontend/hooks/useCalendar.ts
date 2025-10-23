@@ -590,25 +590,40 @@ export function useCalendar(initialView: CalendarView = 'month') {
 
         switch (currentView) {
           case 'day':
-            startDate = new Date(viewDate.setHours(0, 0, 0, 0)).toISOString();
-            endDate = new Date(viewDate.setHours(23, 59, 59, 999)).toISOString();
+            // FIXED: Use UTC methods to avoid timezone shifting
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const day = viewDate.getDate();
+
+            startDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0)).toISOString();
+            endDate = new Date(Date.UTC(year, month, day, 23, 59, 59, 999)).toISOString();
             break;
           case 'week':
-            const weekStart = new Date(viewDate);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            weekStart.setHours(0, 0, 0, 0);
+            // FIXED: Use UTC methods to avoid timezone shifting
+            const weekYear = viewDate.getFullYear();
+            const weekMonth = viewDate.getMonth();
+            const weekDay = viewDate.getDate();
+            const weekDayOfWeek = viewDate.getDay();
+
+            // Calculate week start (Sunday)
+            const weekStart = new Date(Date.UTC(weekYear, weekMonth, weekDay - weekDayOfWeek, 0, 0, 0, 0));
             startDate = weekStart.toISOString();
 
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            weekEnd.setHours(23, 59, 59, 999);
+            // Calculate week end (Saturday)
+            const weekEnd = new Date(Date.UTC(weekYear, weekMonth, weekDay - weekDayOfWeek + 6, 23, 59, 59, 999));
             endDate = weekEnd.toISOString();
             break;
           case 'month':
-            const monthStart = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+            // FIXED: Use UTC methods to avoid timezone shifting
+            const monthYear = viewDate.getFullYear();
+            const monthMonth = viewDate.getMonth();
+
+            // First day of month
+            const monthStart = new Date(Date.UTC(monthYear, monthMonth, 1, 0, 0, 0, 0));
             startDate = monthStart.toISOString();
 
-            const monthEnd = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0, 23, 59, 59, 999);
+            // Last day of month (using day 0 of next month gets last day of current month)
+            const monthEnd = new Date(Date.UTC(monthYear, monthMonth + 1, 0, 23, 59, 59, 999));
             endDate = monthEnd.toISOString();
             break;
         }
