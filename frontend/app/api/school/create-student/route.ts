@@ -149,14 +149,17 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Create student record (after profile exists - foreign key constraint)
-    // FIX #3: Use date of birth directly from request, no conversion needed
+    // FIXED: Save ALL student fields including grade, phone, address
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
         user_id: authData.user.id,
         school_id: schoolId,
-        dob: dob || null,  // Use actual DOB from date picker
+        dob: dob || null,
         gender: gender || null,
+        grade: grade || null,
+        phone: phone || null,
+        address: address || null,
         active: true
       })
       .select()

@@ -6043,6 +6043,20 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
+                <input
+                  name="phone"
+                  type="tel"
+                  defaultValue={showEditParent.phone || ''}
+                  placeholder="Phone Number"
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+                <input
+                  name="address"
+                  type="text"
+                  defaultValue={showEditParent.address || ''}
+                  placeholder="Home Address"
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
 
                 {/* Student Selection with Search */}
                 {students.length > 0 && (
@@ -6583,10 +6597,11 @@ export default function SchoolDashboard() {
                     studentId: editingStudent.id,
                     userId: editingStudent.user_id,
                     name: formData.get('name'),
-                    age: formData.get('age'),
-                    grade: formData.get('grade'),
+                    dob: formData.get('dob'),
                     gender: formData.get('gender'),
-                    phone: formData.get('phone')
+                    grade: formData.get('grade'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address')
                   }),
                 });
 
@@ -6663,27 +6678,55 @@ export default function SchoolDashboard() {
                   name="name"
                   type="text"
                   defaultValue={editingStudent.name}
-                  placeholder="Student Name"
+                  placeholder="Student Name *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="dob"
+                    type="date"
+                    defaultValue={editingStudent.dob}
+                    placeholder="Date of Birth"
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <select
+                    name="gender"
+                    defaultValue={editingStudent.gender || ''}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="grade"
+                    type="text"
+                    defaultValue={editingStudent.grade || ''}
+                    placeholder="Grade/Level"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <input
+                    name="phone"
+                    type="tel"
+                    defaultValue={editingStudent.phone || ''}
+                    placeholder="Phone Number"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
                 <input
-                  name="dob"
-                  type="date"
-                  defaultValue={editingStudent.dob}
-                  placeholder="Date of Birth"
-                  max={new Date().toISOString().split('T')[0]}
+                  name="address"
+                  type="text"
+                  defaultValue={editingStudent.address || ''}
+                  placeholder="Home Address"
                   className="w-full px-3 py-2 border rounded-lg"
                 />
-                <select
-                  name="gender"
-                  defaultValue={editingStudent.gender || ''}
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
@@ -7759,13 +7802,11 @@ export default function SchoolDashboard() {
                     title: formData.get('title'),
                     description: formData.get('description'),
                     event_type: formData.get('event_type'),
-                    start_date: date,  // events table uses start_date (DATE type)
-                    end_date: date,    // events table uses end_date (DATE type)
-                    start_time: startTimestamp,
-                    end_time: endTimestamp,
+                    start_date: startTimestamp,  // FIXED: start_date is TIMESTAMPTZ, not just date
+                    end_date: endTimestamp,      // FIXED: end_date is TIMESTAMPTZ, not just date
                     all_day: allDay,
                     class_id: formData.get('class_id') || null,
-                    created_by_user_id: user?.id  // Fixed: Database field is created_by_user_id not created_by
+                    created_by_user_id: user?.id
                   });
 
                 if (error) {

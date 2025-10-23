@@ -5,23 +5,19 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function DELETE(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    // Get Bearer token from Authorization header
+    const supabaseAdmin = getSupabaseAdmin();
+    const authHeader = req.headers.get('authorization');
 
-    // Create server client for user authentication
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Missing authorization header' },
+        { status: 401 }
+      );
+    }
 
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -31,7 +27,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Get user profile and check role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError} = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
@@ -59,9 +55,6 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Now we can use admin client for privileged operations
-    const supabaseAdmin = getSupabaseAdmin();
-    
     const body = await req.json();
     const { studentIds } = body;
 

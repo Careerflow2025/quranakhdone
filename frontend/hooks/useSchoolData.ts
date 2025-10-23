@@ -122,7 +122,19 @@ export function useSchoolData() {
       }
 
       if (!studentsError) {
-        // Transform data to include name, email, phone, and calculated fields at top level
+        // Fetch class enrollments for all students
+        const { data: enrollmentsData } = await supabase
+          .from('class_enrollments')
+          .select('student_id, class_id, classes(name)')
+          .in('student_id', studentsWithProfiles.map((s: any) => s.id));
+
+        // Create enrollment lookup map
+        const enrollmentMap: any = {};
+        enrollmentsData?.forEach((enrollment: any) => {
+          enrollmentMap[enrollment.student_id] = enrollment.classes?.name || null;
+        });
+
+        // Transform data to include name, email, phone, class, and calculated fields at top level
         const transformedStudents = studentsWithProfiles.map((student: any) => {
           // Calculate age from date of birth
           let age = null;
@@ -141,6 +153,7 @@ export function useSchoolData() {
             name: student.profiles?.display_name || 'Unknown',
             email: student.profiles?.email || '',
             age: age,
+            class: enrollmentMap[student.id] || null,  // FIXED: Add class assignment
             enrollment_date: student.created_at,
             status: student.active ? 'active' : 'inactive',
             progress: 0, // Default value
