@@ -272,7 +272,11 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             grade: cls.grade,
             capacity: cls.capacity || 30,
             teacher,
-            students: students.sort((a: any, b: any) => a.name.localeCompare(b.name)),
+            students: students.sort((a: any, b: any) => {
+              const nameA = a.name || '';
+              const nameB = b.name || '';
+              return nameA.localeCompare(nameB);
+            }),
             schedule_json: cls.schedule_json
           };
         }));
@@ -541,7 +545,11 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       if (studentsToAdd.length > 0) {
         const updatedClass = {
           ...selectedClass,
-          students: [...selectedClass.students, ...studentsToAdd].sort((a: any, b: any) => a.name.localeCompare(b.name))
+          students: [...selectedClass.students, ...studentsToAdd].sort((a: any, b: any) => {
+            const nameA = a.name || '';
+            const nameB = b.name || '';
+            return nameA.localeCompare(nameB);
+          })
         };
 
         setClasses((prev: any) => prev.map((cls: any) =>

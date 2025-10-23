@@ -386,10 +386,12 @@ export default function SchoolDashboard() {
         body: JSON.stringify({
           name: studentData.name,
           email: studentData.email,
-          dob: studentData.dob,  // FIX #3: Use actual date of birth, not age
+          age: studentData.age,
+          grade: studentData.grade,
+          dob: studentData.dob,
           gender: studentData.gender,
+          phone: studentData.phone,
           schoolId: user?.schoolId
-          // FIX #5: Removed grade, address, phone, parent (not in database)
         })
       });
 
@@ -4986,54 +4988,74 @@ export default function SchoolDashboard() {
       {/* Add Student Modal */}
       {showAddModal && addModalType === 'student' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Student</h2>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
-              // FIX #5: Only send fields that exist in database
               handleAddStudent({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                dob: formData.get('dob'),  // FIX #3: DOB not age
-                gender: formData.get('gender')
-                // Removed: grade, address, phone, parent (not in database)
+                age: parseInt(formData.get('age') as string),
+                grade: formData.get('grade'),
+                dob: formData.get('dob'),
+                gender: formData.get('gender'),
+                phone: formData.get('phone')
               });
             }}>
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <input
                   name="name"
                   type="text"
-                  placeholder="Student Name"
+                  placeholder="Student Name *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
                 <input
                   name="email"
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    name="dob"
-                    type="date"
-                    placeholder="Date of Birth"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    max={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                  <select
-                    name="gender"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </div>
+                <input
+                  name="age"
+                  type="number"
+                  placeholder="Age *"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  min="5"
+                  max="25"
+                  required
+                />
+                <input
+                  name="grade"
+                  type="text"
+                  placeholder="Grade (e.g., 6th Grade) *"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+                <select
+                  name="gender"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                >
+                  <option value="">Select Gender *</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder="Phone"
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+                <input
+                  name="dob"
+                  type="date"
+                  placeholder="Date of Birth"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  max={new Date().toISOString().split('T')[0]}
+                />
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
@@ -7051,7 +7073,7 @@ export default function SchoolDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Grade</p>
-                    <p className="font-medium">{viewingClass.grade || 'Not specified'}</p>
+                    <p className="font-medium">{viewingClass.grade_level || 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Capacity</p>
@@ -7606,6 +7628,19 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
+                const date = formData.get('date') as string;
+                const startTime = formData.get('start_time') as string;
+                const endTime = formData.get('end_time') as string;
+                const allDay = formData.get('all_day') === 'true';
+
+                // Combine date + time into TIMESTAMPTZ format
+                const startTimestamp = allDay
+                  ? `${date}T00:00:00Z`
+                  : `${date}T${startTime || '00:00'}:00Z`;
+                const endTimestamp = allDay
+                  ? `${date}T23:59:59Z`
+                  : `${date}T${endTime || '23:59'}:00Z`;
+
                 const { error } = await (supabase as any)
                   .from('calendar_events')
                   .insert({
@@ -7613,22 +7648,24 @@ export default function SchoolDashboard() {
                     title: formData.get('title'),
                     description: formData.get('description'),
                     event_type: formData.get('event_type'),
-                    date: formData.get('date'),
-                    start_time: formData.get('start_time') || null,
-                    end_time: formData.get('end_time') || null,
-                    location: formData.get('location') || null,
-                    color: formData.get('color'),
+                    start_time: startTimestamp,
+                    end_time: endTimestamp,
+                    all_day: allDay,
+                    class_id: formData.get('class_id') || null,
                     created_by: user?.id
                   });
 
-                if (error) throw error;
+                if (error) {
+                  console.error('Supabase error details:', JSON.stringify(error, null, 2));
+                  throw error;
+                }
 
                 showNotification('Event added successfully!', 'success');
                 setShowAddEvent(false);
                 refreshData(); // Refresh the calendar data
               } catch (error: any) {
                 console.error('Error adding event:', error);
-                showNotification('Failed to add event', 'error');
+                showNotification(`Failed to add event: ${error.message || 'Unknown error'}`, 'error');
               }
             }}>
               <div className="space-y-4">

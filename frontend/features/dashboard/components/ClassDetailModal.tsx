@@ -71,13 +71,15 @@ export default function ClassDetailModal() {
   };
   
   const filteredStudents = selectedClass.students.filter((student) =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (student.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     switch (sortBy) {
       case 'name':
-        return a.name.localeCompare(b.name);
+        const nameA = a.name || '';
+        const nameB = b.name || '';
+        return nameA.localeCompare(nameB);
       case 'recent':
         return 0; // Would sort by last activity
       case 'performance':
