@@ -122,19 +122,22 @@ export async function POST(req: NextRequest) {
 
         // Calculate DOB from age if provided (unless dob is directly provided)
         let dobValue = dob || null;
+        let ageValue = age ? parseInt(age) : null;
+
         if (!dobValue && age) {
           const currentYear = new Date().getFullYear();
           const birthYear = currentYear - parseInt(age);
           dobValue = `${birthYear}-01-01`;
         }
 
-        // Create student record with ALL fields
+        // Create student record with ALL fields including age
         const { data: student, error: studentError } = await supabaseAdmin
           .from('students')
           .insert({
             user_id: authData.user.id,
             school_id: schoolId,
             dob: dobValue,
+            age: ageValue,
             gender: gender || null,
             grade: grade || null,
             phone: phone || null,

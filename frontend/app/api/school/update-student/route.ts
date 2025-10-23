@@ -59,17 +59,31 @@ export async function PUT(req: NextRequest) {
       userId,
       name,
       dob,
+      age,
       gender,
       grade,
       phone,
       address
     } = body;
 
-    // 1. Update student record with ALL fields
+    // Calculate age from DOB if provided, or use age directly
+    let ageValue = age ? parseInt(age) : null;
+    if (!ageValue && dob) {
+      const today = new Date();
+      const birthDate = new Date(dob);
+      ageValue = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        ageValue--;
+      }
+    }
+
+    // 1. Update student record with ALL fields including age
     const { error: studentError } = await supabaseAdmin
       .from('students')
       .update({
         dob: dob || null,
+        age: ageValue,
         gender: gender || null,
         grade: grade || null,
         phone: phone || null,

@@ -60,16 +60,29 @@ export async function POST(req: NextRequest) {
     const {
       name,
       email,
-      dob,  // FIX #3: Accept date of birth directly, not age
+      dob,
+      age,
       gender,
       grade,
       address,
       phone,
       parent
     } = body;
-    
+
     // Use school_id from authenticated user's profile
     const schoolId = profile.school_id;
+
+    // Calculate age from DOB if provided, or use age directly
+    let ageValue = age ? parseInt(age) : null;
+    if (!ageValue && dob) {
+      const today = new Date();
+      const birthDate = new Date(dob);
+      ageValue = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        ageValue--;
+      }
+    }
 
     // Generate temporary password for student
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
@@ -149,13 +162,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Create student record (after profile exists - foreign key constraint)
-    // FIXED: Save ALL student fields including grade, phone, address
+    // FIXED: Save ALL student fields including age, grade, phone, address
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
         user_id: authData.user.id,
         school_id: schoolId,
         dob: dob || null,
+        age: ageValue,
         gender: gender || null,
         grade: grade || null,
         phone: phone || null,
