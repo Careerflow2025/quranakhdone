@@ -1361,21 +1361,91 @@ export default function SchoolDashboard() {
   const handleViewClass = async (classId: any) => {
     const cls = classes.find((c: any) => c.id === classId);
     if (cls) {
-      // Fetch additional details like enrolled students and assigned teachers
-      const { data: teachers } = await (supabase as any)
+      // Fetch teacher IDs assigned to this class
+      const { data: classTeachers } = await (supabase as any)
         .from('class_teachers')
-        .select('teacher_id, teachers(name, subject)')
-        .eq('class_id', classId) as any;
+        .select('teacher_id')
+        .eq('class_id', classId);
 
-      const { data: students } = await (supabase as any)
+      // Fetch full teacher details with profiles
+      let teachersWithDetails = [];
+      if (classTeachers && classTeachers.length > 0) {
+        const teacherIds = classTeachers.map((ct: any) => ct.teacher_id);
+
+        // Get teacher records
+        const { data: teacherRecords } = await (supabase as any)
+          .from('teachers')
+          .select('id, user_id, subject')
+          .in('id', teacherIds);
+
+        if (teacherRecords && teacherRecords.length > 0) {
+          const userIds = teacherRecords.map((t: any) => t.user_id);
+
+          // Get profile names
+          const { data: profiles } = await (supabase as any)
+            .from('profiles')
+            .select('user_id, display_name')
+            .in('user_id', userIds);
+
+          // Combine teacher data with profile names
+          teachersWithDetails = teacherRecords.map((teacher: any) => {
+            const profile = profiles?.find((p: any) => p.user_id === teacher.user_id);
+            return {
+              teacher_id: teacher.id,
+              teachers: {
+                name: profile?.display_name || 'Unknown',
+                subject: teacher.subject || 'No subject'
+              }
+            };
+          });
+        }
+      }
+
+      // Fetch student IDs enrolled in this class
+      const { data: classEnrollments } = await (supabase as any)
         .from('class_enrollments')
-        .select('student_id, students(name, email, grade)')
-        .eq('class_id', classId) as any;
+        .select('student_id')
+        .eq('class_id', classId);
+
+      // Fetch full student details with profiles
+      let studentsWithDetails = [];
+      if (classEnrollments && classEnrollments.length > 0) {
+        const studentIds = classEnrollments.map((ce: any) => ce.student_id);
+
+        // Get student records
+        const { data: studentRecords } = await (supabase as any)
+          .from('students')
+          .select('id, user_id, grade')
+          .in('id', studentIds);
+
+        if (studentRecords && studentRecords.length > 0) {
+          const userIds = studentRecords.map((s: any) => s.user_id);
+
+          // Get profile names and emails
+          const { data: profiles } = await (supabase as any)
+            .from('profiles')
+            .select('user_id, display_name, email')
+            .in('user_id', userIds);
+
+          // Combine student data with profile info
+          studentsWithDetails = studentRecords.map((student: any) => {
+            const profile = profiles?.find((p: any) => p.user_id === student.user_id);
+            return {
+              student_id: student.id,
+              students: {
+                name: profile?.display_name || 'Unknown',
+                email: profile?.email || '',
+                grade: student.grade || 'N/A'
+              }
+            };
+          });
+        }
+      }
 
       setViewingClass({
         ...cls,
-        assigned_teachers: teachers || [],
-        enrolled_students: students || []
+        assigned_teachers: teachersWithDetails,
+        enrolled_students: studentsWithDetails
       });
     }
   };
