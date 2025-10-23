@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   EventWithDetails,
   CreateEventRequest,
@@ -115,6 +116,14 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsLoading(true);
         setError(null);
 
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to access calendar');
+          setIsLoading(false);
+          return;
+        }
+
         const activeFilters = customFilters || filters;
 
         // Build query parameters
@@ -131,6 +140,7 @@ export function useCalendar(initialView: CalendarView = 'month') {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -169,10 +179,19 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsLoading(true);
         setError(null);
 
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to access calendar');
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/events/${eventId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 
@@ -209,10 +228,19 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsSubmitting(true);
         setError(null);
 
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to create events');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch('/api/events', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(eventData),
         });
@@ -253,10 +281,19 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsSubmitting(true);
         setError(null);
 
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to update events');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const response = await fetch(`/api/events/${eventId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(updates),
         });
@@ -302,11 +339,20 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsSubmitting(true);
         setError(null);
 
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Please login to delete events');
+          setIsSubmitting(false);
+          return false;
+        }
+
         const params = deleteSeries ? '?delete_series=true' : '';
         const response = await fetch(`/api/events/${eventId}${params}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         });
 

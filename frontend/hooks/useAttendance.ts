@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 
 // Types matching our Attendance API
 export interface AttendanceRecord {
@@ -121,6 +122,14 @@ export function useAttendance() {
       setIsLoading(true);
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to access attendance');
+        setIsLoading(false);
+        return;
+      }
+
       const filtersToUse = customFilters || filters;
 
       // Build query string
@@ -139,6 +148,7 @@ export function useAttendance() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -178,10 +188,18 @@ export function useAttendance() {
     try {
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to mark attendance');
+        return false;
+      }
+
       const response = await fetch('/api/attendance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
       });
@@ -217,10 +235,18 @@ export function useAttendance() {
     try {
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to update attendance');
+        return false;
+      }
+
       const response = await fetch(`/api/attendance/${recordId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
       });
@@ -265,6 +291,14 @@ export function useAttendance() {
       setIsLoadingSummary(true);
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to access attendance summary');
+        setIsLoadingSummary(false);
+        return;
+      }
+
       // Build query string
       const params = new URLSearchParams();
       params.append('class_id', class_id);
@@ -279,6 +313,7 @@ export function useAttendance() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
