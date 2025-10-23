@@ -3137,36 +3137,43 @@ export default function SchoolDashboard() {
                             </button>
                             <button
                               onClick={async () => {
-                                if (confirm(`Are you sure you want to delete parent "${parent.name}?`)) {
+                                if (confirm(`Are you sure you want to delete parent "${parent.name}"? This will completely remove them from the system.`)) {
                                   try {
-                                    // Delete parent (cascades to parent_students)
-                                    const { error } = await (supabase as any)
-                                      .from('parents')
-                                      .delete()
-                                      .eq('id', parent.id);
+                                    // FIXED: Use API endpoint with Bearer token instead of direct Supabase query
+                                    const { data: { session } } = await supabase.auth.getSession();
+                                    if (!session) {
+                                      showNotification('Please login as school administrator', 'error');
+                                      return;
+                                    }
 
-                                    if (error) throw error;
+                                    const response = await fetch('/api/school/delete-parents', {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${session.access_token}`
+                                      },
+                                      body: JSON.stringify({ parentIds: [parent.id] })
+                                    });
 
-                                    // Delete user credentials
-                                    await (supabase as any)
-                                      .from('user_credentials')
-                                      .delete()
-                                      .eq('user_id', parent.user_id);
+                                    const data = await response.json();
 
-                                    // Delete profile
-                                    await (supabase as any)
-                                      .from('profiles')
-                                      .delete()
-                                      .eq('user_id', parent.user_id);
+                                    if (!response.ok) {
+                                      throw new Error(data.error || 'Failed to delete parent');
+                                    }
 
-                                    // Note: Cannot delete from auth.users directly from frontend
-
-                                    showNotification(
-                                      `Parent "${parent.name} deleted successfully`,
-                                      'success'
-                                    );
-                                    refreshData();
+                                    if (data.success) {
+                                      showNotification(
+                                        `Parent "${parent.name}" deleted successfully`,
+                                        'success',
+                                        3000,
+                                        'Completely removed from all systems including authentication'
+                                      );
+                                      refreshData();
+                                    } else {
+                                      throw new Error(data.error || 'Unknown error occurred');
+                                    }
                                   } catch (error: any) {
+                                    console.error('Error deleting parent:', error);
                                     showNotification(
                                       'Failed to delete parent',
                                       'error',
@@ -6039,57 +6046,52 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Update parent record
-                const { error: parentError } = await (supabase as any)
-                  .from('parents')
-                  .update({
-                    phone: formData.get('phone') || null,
-                    address: formData.get('address') || null
-                  })
-                  .eq('id', showEditParent.id);
-
-                if (parentError) throw parentError;
-
-                // Update profile
-                const { error: profileError } = await (supabase as any)
-                  .from('profiles')
-                  .update({
-                    display_name: formData.get('name'),
-                    email: formData.get('email')
-                  })
-                  .eq('user_id', showEditParent.user_id);
-
-                if (profileError) throw profileError;
-
-                // Update parent-student links
-                // First, remove all existing links
-                await (supabase as any)
-                  .from('parent_students')
-                  .delete()
-                  .eq('parent_id', showEditParent.id);
-
-                // Then add new links
-                if (selectedStudentsForParent.length > 0) {
-                  const parentStudentLinks = selectedStudentsForParent.map((student: any) => ({
-                    parent_id: showEditParent.id,
-                    student_id: student.id
-                  }));
-
-                  await (supabase as any)
-                    .from('parent_students')
-                    .insert(parentStudentLinks as any);
+                // FIXED: Use API endpoint with Bearer token instead of direct Supabase queries
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                  showNotification('Please login as school administrator', 'error');
+                  return;
                 }
 
-                showNotification(
-                  `Parent "${formData.get('name')} updated successfully!`,
-                  'success'
-                );
+                const response = await fetch('/api/school/update-parent', {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                  },
+                  body: JSON.stringify({
+                    parentId: showEditParent.id,
+                    userId: showEditParent.user_id,
+                    name: formData.get('name'),
+                    phone: formData.get('phone') || null,
+                    address: formData.get('address') || null,
+                    studentIds: selectedStudentsForParent.map((s: any) => s.id)
+                  })
+                });
 
-                setShowEditParent(null);
-                setSelectedStudentsForParent([]);
-                setParentModalStudentSearch('');
-                refreshData();
+                const data = await response.json();
+
+                if (!response.ok) {
+                  throw new Error(data.error || 'Failed to update parent');
+                }
+
+                if (data.success) {
+                  showNotification(
+                    `Parent "${formData.get('name')}" updated successfully!`,
+                    'success',
+                    3000,
+                    'All changes have been saved'
+                  );
+
+                  setShowEditParent(null);
+                  setSelectedStudentsForParent([]);
+                  setParentModalStudentSearch('');
+                  refreshData();
+                } else {
+                  throw new Error(data.error || 'Unknown error occurred');
+                }
               } catch (error: any) {
+                console.error('Error updating parent:', error);
                 showNotification(
                   'Failed to update parent',
                   'error',
