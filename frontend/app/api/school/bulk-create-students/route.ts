@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    // Get Bearer token from Authorization header
+    const supabaseAdmin = getSupabaseAdmin();
+    const authHeader = req.headers.get('authorization');
 
-    // Create server client for user authentication
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Missing authorization header' },
+        { status: 401 }
+      );
+    }
 
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -31,13 +25,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user profile and check role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!profile) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 403 }
@@ -50,8 +52,6 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
-
-    const supabaseAdmin = getSupabaseAdmin();
     const body = await req.json();
     const { students } = body;
 
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     for (const studentData of students) {
       try {
-        const { name, email, age, gender } = studentData;
+        const { name, email, age, gender, grade, phone, address, dob } = studentData;
 
         // Generate temporary password
         const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
@@ -120,15 +120,15 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Calculate DOB from age if provided
-        let dobValue = null;
-        if (age) {
+        // Calculate DOB from age if provided (unless dob is directly provided)
+        let dobValue = dob || null;
+        if (!dobValue && age) {
           const currentYear = new Date().getFullYear();
           const birthYear = currentYear - parseInt(age);
           dobValue = `${birthYear}-01-01`;
         }
 
-        // Create student record
+        // Create student record with ALL fields
         const { data: student, error: studentError } = await supabaseAdmin
           .from('students')
           .insert({
@@ -136,6 +136,9 @@ export async function POST(req: NextRequest) {
             school_id: schoolId,
             dob: dobValue,
             gender: gender || null,
+            grade: grade || null,
+            phone: phone || null,
+            address: address || null,
             active: true
           })
           .select()

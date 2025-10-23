@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    // Get Bearer token from Authorization header
+    const supabaseAdmin = getSupabaseAdmin();
+    const authHeader = req.headers.get('authorization');
 
-    // Create server client for user authentication
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Missing authorization header' },
+        { status: 401 }
+      );
+    }
 
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -31,13 +25,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user profile and check role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!profile) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 403 }
@@ -50,8 +52,6 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
-
-    const supabaseAdmin = getSupabaseAdmin();
     const body = await req.json();
     const { teachers } = body;
 
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     for (const teacherData of teachers) {
       try {
-        const { name, email, password, bio, classIds } = teacherData;
+        const { name, email, password, bio, classIds, subject, qualification, experience, phone, address } = teacherData;
 
         // Check against cached user list
         const userExists = existingUsers?.users?.find((u: any) => u.email === email);
@@ -117,13 +117,18 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Create teacher record
+        // Create teacher record with ALL fields
         const { data: teacher, error: teacherError } = await supabaseAdmin
           .from('teachers')
           .insert({
             user_id: authData.user.id,
             school_id: schoolId,
             bio: bio || null,
+            subject: subject || null,
+            qualification: qualification || null,
+            experience: experience || null,
+            phone: phone || null,
+            address: address || null,
             active: true
           })
           .select()
