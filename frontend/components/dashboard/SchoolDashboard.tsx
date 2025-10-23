@@ -520,9 +520,10 @@ export default function SchoolDashboard() {
           name: parentData.name,
           email: parentData.email,
           password: tempPassword,
+          phone: parentData.phone,
+          address: parentData.address,
           schoolId: user?.schoolId || schoolInfo?.id,
           studentIds: parentData.studentIds || []  // Array of student IDs to link
-          // FIX #6: Removed phone and address (not in database)
         })
       });
 
@@ -575,8 +576,8 @@ export default function SchoolDashboard() {
         school_id: user?.schoolId || '',
         name: classData.name,
         room: classData.room || null,
-        // Removed: grade (column doesn't exist in database)
-        // Removed: capacity (column doesn't exist in database)
+        grade_level: classData.grade || null,
+        capacity: classData.capacity || 30,
         schedule_json: {  // FIXED: Field name is schedule_json in database, not schedule
           schedules: formattedSchedules,
           timezone: 'Africa/Casablanca' // Default timezone
@@ -1393,9 +1394,9 @@ export default function SchoolDashboard() {
       const classUpdateData: TablesUpdate<'classes'> = {
         name: classData.name,
         room: classData.room || null,
-        grade: classData.grade || null,
-        capacity: classData.capacity,
-        schedule: {
+        grade_level: classData.grade || null,
+        capacity: classData.capacity || 30,
+        schedule_json: {
           schedules: formattedSchedules,
           timezone: 'Africa/Casablanca'
         }
@@ -5164,12 +5165,13 @@ export default function SchoolDashboard() {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
 
-              // FIX #6: Only send fields that exist in database
+              // Send all fields including phone and address (now in database)
               handleAddParent({
                 name: formData.get('name'),
                 email: formData.get('email'),
+                phone: formData.get('phone'),
+                address: formData.get('address'),
                 studentIds: selectedStudentsForParent.map((s: any) => s.id)
-                // Removed: phone, address (not in database)
               });
 
               // Reset selections after submit
@@ -5177,20 +5179,34 @@ export default function SchoolDashboard() {
               setParentModalStudentSearch('');
             }}>
               <div className="space-y-4">
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="Parent Name"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Email"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="name"
+                    type="text"
+                    placeholder="Parent Name *"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    required
+                  />
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="Email *"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    required
+                  />
+                  <input
+                    name="phone"
+                    type="tel"
+                    placeholder="Phone Number"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <input
+                    name="address"
+                    type="text"
+                    placeholder="Home Address"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
 
                 {/* Enhanced Student Selection with Search */}
                 {students.length > 0 && (
@@ -7642,12 +7658,14 @@ export default function SchoolDashboard() {
                   : `${date}T${endTime || '23:59'}:00Z`;
 
                 const { error } = await (supabase as any)
-                  .from('calendar_events')
+                  .from('events')
                   .insert({
                     school_id: user?.schoolId,
                     title: formData.get('title'),
                     description: formData.get('description'),
                     event_type: formData.get('event_type'),
+                    start_date: date,  // events table uses start_date (DATE type)
+                    end_date: date,    // events table uses end_date (DATE type)
                     start_time: startTimestamp,
                     end_time: endTimestamp,
                     all_day: allDay,

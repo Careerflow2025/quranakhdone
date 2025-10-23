@@ -168,6 +168,22 @@ export async function POST(req: NextRequest) {
         .insert(classAssignments);
     }
 
+    // 5. Save credentials to user_credentials table for school admin access
+    const { error: credentialsError } = await supabaseAdmin
+      .from('user_credentials')
+      .insert({
+        user_id: authData.user.id,
+        school_id: schoolId,
+        email: email,
+        password: password,
+        role: 'teacher'
+      });
+
+    if (credentialsError) {
+      console.error('⚠️ Failed to save credentials:', credentialsError);
+      // Don't fail the entire operation if credentials save fails
+    }
+
     return NextResponse.json({
       success: true,
       data: {

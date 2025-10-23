@@ -155,7 +155,9 @@ export async function POST(req: NextRequest) {
       .from('parents')
       .insert({
         user_id: authData.user.id,
-        school_id: schoolId
+        school_id: schoolId,
+        phone: phone || null,
+        address: address || null
       })
       .select()
       .single();
@@ -202,6 +204,25 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('🎉 Parent creation complete!');
+
+    // Step 5: Save credentials to user_credentials table for school admin access
+    console.log('💾 Saving parent credentials...');
+    const { error: credentialsError } = await supabaseAdmin
+      .from('user_credentials')
+      .insert({
+        user_id: authData.user.id,
+        school_id: schoolId,
+        email: email,
+        password: password,
+        role: 'parent'
+      });
+
+    if (credentialsError) {
+      console.error('⚠️ Failed to save credentials:', credentialsError);
+      // Don't fail the entire operation if credentials save fails
+    } else {
+      console.log('✅ Credentials saved successfully');
+    }
 
     return NextResponse.json({
       success: true,

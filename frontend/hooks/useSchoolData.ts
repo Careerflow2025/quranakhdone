@@ -337,9 +337,19 @@ export function useSchoolData() {
         console.error('Error loading all calendar events:', allEventsError);
       }
 
-      // FIX #2: user_credentials table doesn't exist in current schema
-      // Setting empty array until credentials system is implemented
-      setCredentials([]);
+      // Fetch user credentials from database
+      const { data: credentialsData, error: credentialsError } = await supabase
+        .from('user_credentials')
+        .select('*')
+        .eq('school_id', user.schoolId)
+        .order('created_at', { ascending: false });
+
+      if (!credentialsError && credentialsData) {
+        setCredentials(credentialsData);
+      } else {
+        console.error('Error loading credentials:', credentialsError);
+        setCredentials([]);
+      }
 
       // For now, set empty recent activities (will be populated with real data later)
       setRecentActivities([]);

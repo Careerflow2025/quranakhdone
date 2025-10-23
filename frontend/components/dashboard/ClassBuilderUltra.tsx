@@ -340,16 +340,16 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     setLoading(false);
   };
 
-  // Get unassigned students
+  // Get all students (including assigned) - conflict detection will prevent invalid assignments
   const getUnassignedStudents = () => {
-    const assignedIds = classes.flatMap(cls => cls.students.map((s: any) => s.id));
-    return allStudents.filter((s: any) => !assignedIds.includes(s.id));
+    // Return all students - they can be in multiple classes if schedules don't conflict
+    return allStudents;
   };
 
-  // Get unassigned teachers
+  // Get all teachers (including assigned) - conflict detection will prevent invalid assignments
   const getUnassignedTeachers = () => {
-    const assignedIds = classes.filter((cls: any) => cls.teacher).map((cls: any) => cls.teacher!.id);
-    return allTeachers.filter((t: any) => !assignedIds.includes(t.id));
+    // Return all teachers - they can teach multiple classes if schedules don't conflict
+    return allTeachers;
   };
 
   // Check for schedule conflicts

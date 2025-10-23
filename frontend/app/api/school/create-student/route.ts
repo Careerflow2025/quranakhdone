@@ -169,8 +169,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: studentError.message }, { status: 400 });
     }
 
-    // 4. Credentials returned in response (user_credentials table doesn't exist)
-    // Password will be returned once for school admin to share with student
+    // 4. Save credentials to user_credentials table for school admin access
+    const { error: credentialsError } = await supabaseAdmin
+      .from('user_credentials')
+      .insert({
+        user_id: authData.user.id,
+        school_id: schoolId,
+        email: email,
+        password: tempPassword,
+        role: 'student'
+      });
+
+    if (credentialsError) {
+      console.error('⚠️ Failed to save credentials:', credentialsError);
+      // Don't fail the entire operation if credentials save fails
+    }
 
     return NextResponse.json({
       success: true,
