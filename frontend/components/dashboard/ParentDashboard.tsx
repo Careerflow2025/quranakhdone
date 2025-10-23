@@ -13,6 +13,9 @@ import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
 import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
+import AttendancePanel from '@/components/attendance/AttendancePanel';
+import { useAuthStore } from '@/store/authStore';
+import { useParentStudentLinks } from '@/hooks/useParentStudentLinks';
 import {
   Star,
   Users,
@@ -66,57 +69,128 @@ import {
 } from 'lucide-react';
 
 export default function ParentDashboard() {
+  // Auth and API hooks
+  const { user } = useAuthStore();
+  const { getChildren, isLoading: childrenLoading, error: childrenError } = useParentStudentLinks();
+
   // Children Info
   const [selectedChild, setSelectedChild] = useState(0);
-  const [children] = useState([
-    {
-      id: 'STU001',
-      name: 'Ahmed Al-Rahman',
-      gender: 'boy',
-      age: 12,
-      class: 'Class 6A',
-      teacherId: 'TCH001',
-      memorized: '5 Juz',
-      revision: '3 Juz',
-      lastSession: '2 hours ago',
-      progress: 73,
-      memorizedSurahs: 12,
-      tajweedScore: 85,
-      attendance: 92,
-      currentSurah: 1,
-      currentAyah: 1,
-      lastPageVisited: 15,
-      lastSurahVisited: 2,
-      // Class schedule for Ahmed
-      classSchedule: ['Monday', 'Thursday', 'Saturday'],
-      physicalAttendance: 92,
-      platformActivity: 85
-    },
-    {
-      id: 'STU002',
-      name: 'Fatima Al-Rahman',
-      gender: 'girl',
-      age: 10,
-      class: 'Class 4B',
-      teacherId: 'TCH002',
-      memorized: '3 Juz',
-      revision: '2 Juz',
-      lastSession: '3 hours ago',
-      progress: 65,
-      memorizedSurahs: 8,
-      tajweedScore: 78,
-      attendance: 95,
-      currentSurah: 1,
-      currentAyah: 1,
-      lastPageVisited: 8,
-      lastSurahVisited: 1,
-      // Class schedule for Fatima - different schedule
-      classSchedule: ['Tuesday', 'Wednesday', 'Friday'],
-      physicalAttendance: 95,
-      platformActivity: 78
+  const [children, setChildren] = useState<any[]>([]);
+  const [parentId, setParentId] = useState<string | null>(null);
+  const [isLoadingParent, setIsLoadingParent] = useState(true);
+
+  // Fetch parent_id from user_id
+  useEffect(() => {
+    async function fetchParentId() {
+      if (!user?.id) return;
+
+      try {
+        setIsLoadingParent(true);
+        const response = await fetch(`/api/parents?school_id=${user.schoolId}`, {
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch parent data');
+        }
+
+        const data = await response.json();
+
+        // Find the parent record that matches the current user
+        const parentRecord = data.data?.find((parent: any) => parent.user_id === user.id);
+
+        if (parentRecord) {
+          setParentId(parentRecord.id);
+        } else {
+          console.error('Parent record not found for user:', user.id);
+        }
+      } catch (error) {
+        console.error('Error fetching parent ID:', error);
+      } finally {
+        setIsLoadingParent(false);
+      }
     }
-  ]);
-  const currentChild = children[selectedChild];
+
+    fetchParentId();
+  }, [user?.id, user?.schoolId]);
+
+  // Fetch children when we have parent_id
+  useEffect(() => {
+    async function fetchChildren() {
+      if (!parentId) return;
+
+      const result = await getChildren(parentId);
+
+      if (result.success && result.data) {
+        // Transform API data to match the UI expectations
+        const transformedChildren = result.data.map((child: any) => ({
+          id: child.id,
+          name: child.name || '',
+          gender: child.gender || 'unknown',
+          age: child.dob ? calculateAge(child.dob) : 0,
+          class: 'Class TBD', // TODO: Fetch from enrollments
+          teacherId: 'TCH001', // TODO: Fetch from enrollments
+          memorized: '0 Juz', // TODO: Fetch from progress
+          revision: '0 Juz', // TODO: Fetch from progress
+          lastSession: 'N/A', // TODO: Fetch from activity
+          progress: 0, // TODO: Fetch from progress
+          memorizedSurahs: 0, // TODO: Fetch from progress
+          tajweedScore: 0, // TODO: Fetch from progress
+          attendance: 0, // TODO: Fetch from attendance
+          currentSurah: 1,
+          currentAyah: 1,
+          lastPageVisited: 1,
+          lastSurahVisited: 1,
+          classSchedule: [], // TODO: Fetch from enrollments
+          physicalAttendance: 0, // TODO: Fetch from attendance
+          platformActivity: 0, // TODO: Fetch from activity
+          email: child.email || '',
+          active: child.active !== false,
+        }));
+
+        setChildren(transformedChildren);
+      }
+    }
+
+    fetchChildren();
+  }, [parentId, getChildren]);
+
+  // Helper function to calculate age from date of birth
+  function calculateAge(dob: string): number {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  const currentChild = children[selectedChild] || {
+    id: '',
+    name: 'No children found',
+    gender: 'unknown',
+    age: 0,
+    class: '',
+    teacherId: '',
+    memorized: '0 Juz',
+    revision: '0 Juz',
+    lastSession: 'N/A',
+    progress: 0,
+    memorizedSurahs: 0,
+    tajweedScore: 0,
+    attendance: 0,
+    currentSurah: 1,
+    currentAyah: 1,
+    lastPageVisited: 1,
+    lastSurahVisited: 1,
+    classSchedule: [],
+    physicalAttendance: 0,
+    platformActivity: 0,
+  };
 
   // Core States
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -768,6 +842,20 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <CalendarIcon className="w-4 h-4" />
                 <span>Calendar</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('attendance')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'attendance'
+                  ? 'text-white bg-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Clock className="w-4 h-4" />
+                <span>Attendance</span>
               </span>
             </button>
 
@@ -1755,6 +1843,11 @@ export default function ParentDashboard() {
         {/* Calendar Tab */}
         {activeTab === 'calendar' && (
           <CalendarPanel userRole="parent" />
+        )}
+
+        {/* Attendance Tab */}
+        {activeTab === 'attendance' && (
+          <AttendancePanel userRole="parent" studentId={children[selectedChild].id} />
         )}
 
         {/* Targets Tab (Read-only) */}

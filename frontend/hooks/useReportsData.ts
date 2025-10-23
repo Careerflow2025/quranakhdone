@@ -1,5 +1,5 @@
 // Hook to fetch comprehensive reports data with date filtering
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
 
@@ -50,6 +50,8 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchInProgress = useRef(false);
+  const lastFetchParams = useRef<string | null>(null);
   const [reportData, setReportData] = useState<ReportData>({
     totalStudents: 0,
     totalTeachers: 0,
@@ -78,14 +80,23 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
     studentProgress: []
   });
 
-  useEffect(() => {
-    if (user?.schoolId) {
-      fetchReportData();
-    }
-  }, [user?.schoolId, startDate, endDate]);
+  // Convert dates to timestamps for stable comparison
+  const startTimestamp = startDate?.getTime() || null;
+  const endTimestamp = endDate?.getTime() || null;
 
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     if (!user?.schoolId) return;
+
+    // Create cache key from school ID and timestamps
+    const cacheKey = `${user.schoolId}_${startTimestamp}_${endTimestamp}`;
+
+    // Prevent concurrent fetches and re-fetching same data
+    if (fetchInProgress.current || lastFetchParams.current === cacheKey) {
+      return;
+    }
+
+    fetchInProgress.current = true;
+    lastFetchParams.current = cacheKey;
 
     try {
       setIsLoading(true);
@@ -133,11 +144,12 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       const pendingAssignments = assignments?.filter((a: any) => ['assigned', 'viewed', 'submitted'].includes(a.status)).length || 0;
       const overdueAssignments = assignments?.filter((a: any) => a.late === true).length || 0;
 
-      // Fetch attendance data
+      // FIX #4: Fetch attendance data - attendance table doesn't have school_id column
+      // Filter through class relationship via RLS policies
       let attendanceQuery = supabase
         .from('attendance')
-        .select('*')
-        .eq('school_id', user.schoolId!);
+        .select('*');
+        // RLS policies will automatically scope to user's school
 
       if (startDate && endDate) {
         attendanceQuery = attendanceQuery
@@ -159,11 +171,13 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
         ? Math.round((completedAssignments / totalAssignments) * 100)
         : 0;
 
-      // Fetch grades data
+      // FIX #5: Fetch grades data - grades table doesn't have school_id column
+      // It inherits school scope through assignment_id relationship
+      // RLS policies handle the filtering
       const { data: grades } = await supabase
         .from('grades')
-        .select('score, max_score')
-        .eq('school_id', user.schoolId!);
+        .select('score, max_score');
+        // RLS policies will automatically scope to user's school through assignments
 
       const averageGrade = grades && grades.length > 0
         ? Math.round(
@@ -191,14 +205,14 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
         })
       );
 
-      // Attendance trend
+      // Attendance trend - RLS scoped, no school_id filter
       const attendanceTrend = await Promise.all(
         last7Days.map(async (date) => {
           const { data } = await supabase
             .from('attendance')
             .select('status')
-            .eq('school_id', user.schoolId!)
             .eq('session_date', date);
+            // RLS policies filter by school automatically
 
           const present = data?.filter((a: any) => a.status === 'present').length || 0;
           const total = data?.length || 0;
@@ -308,15 +322,28 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
     } catch (err: any) {
       console.error('Error fetching report data:', err);
       setError(err.message || 'Failed to load report data');
+      lastFetchParams.current = null; // Reset on error to allow retry
     } finally {
       setIsLoading(false);
+      fetchInProgress.current = false;
     }
-  };
+  }, [user?.schoolId, startTimestamp, endTimestamp]); // Use timestamps for stable comparison
+
+  useEffect(() => {
+    if (user?.schoolId) {
+      fetchReportData();
+    }
+  }, [user?.schoolId, fetchReportData]);
+
+  const refreshData = useCallback(async () => {
+    lastFetchParams.current = null; // Reset cache to force re-fetch
+    await fetchReportData();
+  }, [fetchReportData]);
 
   return {
     isLoading,
     error,
     reportData,
-    refreshData: fetchReportData
+    refreshData
   };
 }

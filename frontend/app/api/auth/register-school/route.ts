@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       email_confirm: true,
       user_metadata: {
         display_name: adminFullName,
-        role: 'school'
+        role: 'owner'  // FIXED: Valid enum values are owner|admin|teacher|student|parent
       }
     });
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
         school_id: school.id,
         email: adminEmail,
         display_name: adminFullName,
-        role: 'school'
+        role: 'owner'  // FIXED: Valid enum values are owner|admin|teacher|student|parent
       } as any);
 
     if (profileError) {

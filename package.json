@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.1",
+    "supabase": "^2.51.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.26.0"
+  }
+}

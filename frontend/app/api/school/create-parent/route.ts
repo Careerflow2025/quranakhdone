@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    // Get Bearer token from Authorization header
     const supabaseAdmin = getSupabaseAdmin();
-    
-    // Get the current user and verify they're a school admin
     const authHeader = req.headers.get('authorization');
+
     if (!authHeader) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Missing authorization header' },
         { status: 401 }
       );
     }
@@ -19,17 +21,25 @@ export async function POST(req: NextRequest) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Invalid authentication' },
+        { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
 
-    // Check if user is a school admin or teacher
-    const { data: profile } = await supabaseAdmin
+    // Get user profile and check role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
-      .single() as { data: { role: string; school_id: string } | null };
+      .single();
+
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (!profile) {
       return NextResponse.json(
@@ -38,13 +48,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (profile.role !== 'school' && profile.role !== 'teacher') {
+    if (profile.role !== 'owner' && profile.role !== 'admin' && profile.role !== 'teacher') {
       return NextResponse.json(
         { error: 'Only school administrators can create parent accounts' },
         { status: 403 }
       );
     }
-    
+
+    // Admin client already initialized above
     const body = await req.json();
     const { name, email, password, phone, studentIds, address } = body;
     
@@ -115,22 +126,43 @@ export async function POST(req: NextRequest) {
       authData = newAuthData;
     }
 
-    // Step 2: Create parent record (BYPASSES RLS with Service Role Key)
+    // Step 2: Create profile FIRST (required for foreign key constraint)
+    console.log('📝 Creating/updating profile...');
+    const { error: profileError2 } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        user_id: authData.user.id,
+        email: email,
+        display_name: name,
+        role: 'parent',
+        school_id: schoolId
+      });
+
+    if (profileError2) {
+      console.error('❌ Profile error:', profileError2);
+      // Cleanup: delete auth user if profile creation fails
+      if (!userExists) {
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      }
+      return NextResponse.json({ error: profileError2.message }, { status: 400 });
+    }
+
+    console.log('✅ Profile created/updated');
+
+    // Step 3: Create parent record (after profile exists - foreign key constraint)
     console.log('👨‍👩‍👧‍👦 Creating parent record...');
     const { data: parent, error: parentError } = await supabaseAdmin
       .from('parents')
       .insert({
         user_id: authData.user.id,
-        school_id: schoolId,
-        phone: phone || null,
-        address: address || null
+        school_id: schoolId
       })
       .select()
       .single();
 
     if (parentError) {
       console.error('❌ Parent error:', parentError);
-      // Cleanup: delete auth user if parent creation fails
+      // Cleanup: delete auth user and profile if parent creation fails
       if (!userExists) {
         await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       }
@@ -138,25 +170,6 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('✅ Parent record created:', parent.id);
-
-    // Step 3: Ensure profile exists (BYPASSES RLS)
-    console.log('📝 Creating/updating profile...');
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .upsert({
-        user_id: authData.user.id,
-        email: email,
-        display_name: name,
-        phone: phone || null,
-        role: 'parent',
-        school_id: schoolId
-      });
-
-    if (profileError) {
-      console.error('⚠️ Profile error (non-critical):', profileError);
-    } else {
-      console.log('✅ Profile created/updated');
-    }
 
     // Step 4: Link parent to students (CRITICAL - can link to multiple children)
     if (studentIds && studentIds.length > 0) {

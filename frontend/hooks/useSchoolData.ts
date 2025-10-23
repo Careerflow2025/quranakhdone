@@ -1,5 +1,5 @@
 // Production hook to fetch real school data from Supabase
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
 
@@ -9,6 +9,8 @@ export function useSchoolData() {
   const [error, setError] = useState<string | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
   const initStarted = useRef(false);
+  const fetchInProgress = useRef(false);
+  const currentSchoolId = useRef<string | null>(null);
 
   // School info
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
@@ -54,22 +56,21 @@ export function useSchoolData() {
     initAuth();
   }, []);
 
-  // Fetch school data when auth is initialized and we have schoolId
-  useEffect(() => {
-    if (authInitialized && user?.schoolId) {
-      fetchSchoolData();
-    } else if (authInitialized && !user?.schoolId) {
-      setError('No school ID found. Please contact support.');
-      setIsLoading(false);
-    }
-  }, [authInitialized, user?.schoolId]);
-
-  const fetchSchoolData = async () => {
+  // Wrap fetchSchoolData in useCallback to prevent infinite loops
+  const fetchSchoolData = useCallback(async () => {
     if (!user?.schoolId) {
       setError('No school ID found');
       setIsLoading(false);
       return;
     }
+
+    // Prevent concurrent fetches and re-fetching same school
+    if (fetchInProgress.current || currentSchoolId.current === user.schoolId) {
+      return;
+    }
+
+    fetchInProgress.current = true;
+    currentSchoolId.current = user.schoolId;
 
     try {
       setIsLoading(true);
@@ -108,14 +109,14 @@ export function useSchoolData() {
         const studentUserIds = studentsData.map((s: any) => s.user_id);
         const { data: studentProfiles } = await supabase
           .from('profiles')
-          .select('user_id, display_name, email, phone')
+          .select('user_id, display_name, email')
           .in('user_id', studentUserIds);
 
         studentsWithProfiles = studentsData.map((student: any) => {
           const profile = studentProfiles?.find((p: any) => p.user_id === student.user_id);
           return {
             ...student,
-            profiles: profile || { display_name: 'Unknown', email: '', phone: '' }
+            profiles: profile || { display_name: 'Unknown', email: '' }
           };
         });
       }
@@ -139,7 +140,6 @@ export function useSchoolData() {
             ...student,
             name: student.profiles?.display_name || 'Unknown',
             email: student.profiles?.email || '',
-            phone: student.profiles?.phone || '',
             age: age,
             enrollment_date: student.created_at,
             status: student.active ? 'active' : 'inactive',
@@ -163,14 +163,14 @@ export function useSchoolData() {
         const teacherUserIds = teachersData.map((t: any) => t.user_id);
         const { data: teacherProfiles } = await supabase
           .from('profiles')
-          .select('user_id, display_name, email, phone')
+          .select('user_id, display_name, email')
           .in('user_id', teacherUserIds);
 
         teachersWithProfiles = teachersData.map((teacher: any) => {
           const profile = teacherProfiles?.find((p: any) => p.user_id === teacher.user_id);
           return {
             ...teacher,
-            profiles: profile || { display_name: 'Unknown', email: '', phone: '' }
+            profiles: profile || { display_name: 'Unknown', email: '' }
           };
         });
       }
@@ -181,7 +181,6 @@ export function useSchoolData() {
           ...teacher,
           name: teacher.profiles?.display_name || 'Unknown',
           email: teacher.profiles?.email || '',
-          phone: teacher.profiles?.phone || '',
           subject: teacher.subject || '',
           qualification: teacher.qualification || '',
           experience: teacher.experience || 0,
@@ -193,30 +192,11 @@ export function useSchoolData() {
         setStats(prev => ({ ...prev, totalTeachers: transformedTeachers.length }));
       }
 
-      // Fetch parents (parents table doesn't have school_id - get via parent_students -> students -> school_id)
-      // First get all students for this school
-      const { data: schoolStudents } = await supabase
-        .from('students')
-        .select('id')
+      // FIX #3: Fetch parents - parents table HAS school_id column!
+      const { data: parentsData, error: parentsError } = await supabase
+        .from('parents')
+        .select('*')
         .eq('school_id', user.schoolId);
-
-      // Then get parent IDs for these students
-      const studentIds = schoolStudents?.map((s: any) => s.id) || [];
-      const { data: parentStudentLinks } = await supabase
-        .from('parent_students')
-        .select('parent_id')
-        .in('student_id', studentIds);
-
-      // Get unique parent IDs
-      const parentIds = [...new Set(parentStudentLinks?.map((ps: any) => ps.parent_id) || [])];
-
-      // Finally fetch the parents
-      const { data: parentsData, error: parentsError } = parentIds.length > 0
-        ? await supabase
-            .from('parents')
-            .select('*')
-            .in('user_id', parentIds)
-        : { data: null, error: null };
 
       // Fetch profiles for parents separately
       let parentsWithProfiles: any[] = [];
@@ -267,14 +247,42 @@ export function useSchoolData() {
         .eq('school_id', user.schoolId);
 
       if (!classesError && classesData) {
-        // Fetch teacher and student counts for each class
+        // FIX #1: Fetch teacher and student counts for each class correctly
         const classesWithCounts = await Promise.all(
           classesData.map(async (cls: any) => {
-            // Get teacher details (not just count)
-            const { data: teacherData } = await supabase
+            // Get teacher IDs for this class
+            const { data: classTeachers } = await supabase
               .from('class_teachers')
-              .select('teacher_id, teachers(id, name, email, subject)')
+              .select('teacher_id')
               .eq('class_id', cls.id);
+
+            // Get teacher details separately
+            let teacherDetails: any[] = [];
+            if (classTeachers && classTeachers.length > 0) {
+              const teacherIds = classTeachers.map((ct: any) => ct.teacher_id);
+              const { data: teachers } = await supabase
+                .from('teachers')
+                .select('id, user_id')
+                .in('id', teacherIds);
+
+              // Get profiles for these teachers
+              if (teachers && teachers.length > 0) {
+                const teacherUserIds = teachers.map((t: any) => t.user_id);
+                const { data: teacherProfiles } = await supabase
+                  .from('profiles')
+                  .select('user_id, display_name, email')
+                  .in('user_id', teacherUserIds);
+
+                teacherDetails = teachers.map((t: any) => {
+                  const profile = teacherProfiles?.find((p: any) => p.user_id === t.user_id);
+                  return {
+                    id: t.id,
+                    name: profile?.display_name || 'Unknown',
+                    email: profile?.email || ''
+                  };
+                });
+              }
+            }
 
             // Get student count
             const { count: studentCount } = await supabase
@@ -284,8 +292,8 @@ export function useSchoolData() {
 
             return {
               ...cls,
-              teacher_count: teacherData?.length || 0,
-              teachers: teacherData?.map((t: any) => t.teachers) || [],
+              teacher_count: teacherDetails.length,
+              teachers: teacherDetails,
               student_count: studentCount || 0
             };
           })
@@ -303,11 +311,11 @@ export function useSchoolData() {
 
       // Get upcoming events
       const { data: upcomingData, error: upcomingError } = await supabase
-        .from('calendar_events')
+        .from('events')
         .select('*')
         .eq('school_id', user.schoolId)
-        .gte('date', today)  // Use date format YYYY-MM-DD
-        .order('date', { ascending: true });
+        .gte('start_date', today)  // Use date format YYYY-MM-DD
+        .order('start_date', { ascending: true });
 
       if (!upcomingError) {
         setUpcomingEvents(upcomingData || []);
@@ -318,10 +326,10 @@ export function useSchoolData() {
 
       // Get ALL calendar events for the calendar grid
       const { data: allEventsData, error: allEventsError } = await supabase
-        .from('calendar_events')
+        .from('events')
         .select('*')
         .eq('school_id', user.schoolId)
-        .order('date', { ascending: true });
+        .order('start_date', { ascending: true });
 
       if (!allEventsError) {
         setAllCalendarEvents(allEventsData || []);
@@ -329,33 +337,9 @@ export function useSchoolData() {
         console.error('Error loading all calendar events:', allEventsError);
       }
 
-      // Fetch user credentials - join with profiles via user_id
-      const { data: credsData, error: credsError } = await supabase
-        .from('user_credentials')
-        .select('*')
-        .eq('school_id', user.schoolId);
-
-      // Fetch profiles separately for credentials
-      if (!credsError && credsData) {
-        const userIds = credsData.map((c: any) => c.user_id);
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email, role')
-          .in('user_id', userIds);
-
-        // Merge profiles with credentials
-        const mergedCreds = credsData.map((cred: any) => {
-          const profile = profilesData?.find((p: any) => p.user_id === cred.user_id);
-          return {
-            ...cred,
-            profiles: profile || null
-          };
-        });
-
-        setCredentials(mergedCreds);
-      } else {
-        setCredentials([]);
-      }
+      // FIX #2: user_credentials table doesn't exist in current schema
+      // Setting empty array until credentials system is implemented
+      setCredentials([]);
 
       // For now, set empty recent activities (will be populated with real data later)
       setRecentActivities([]);
@@ -363,13 +347,26 @@ export function useSchoolData() {
     } catch (err: any) {
       console.error('Error fetching school data:', err);
       setError(err.message || 'Failed to load school data');
+      currentSchoolId.current = null; // Reset on error to allow retry
     } finally {
       setIsLoading(false);
+      fetchInProgress.current = false;
     }
-  };
+  }, [user?.schoolId]); // Re-create only if schoolId changes
 
-  // Function to refresh data
+  // Fetch school data when auth is initialized and we have schoolId
+  useEffect(() => {
+    if (authInitialized && user?.schoolId) {
+      fetchSchoolData();
+    } else if (authInitialized && !user?.schoolId) {
+      setError('No school ID found. Please contact support.');
+      setIsLoading(false);
+    }
+  }, [authInitialized, user?.schoolId, fetchSchoolData]);
+
+  // Function to refresh data (resets cache to allow re-fetch)
   const refreshData = async () => {
+    currentSchoolId.current = null; // Reset to allow re-fetch
     await fetchSchoolData();
   };
 

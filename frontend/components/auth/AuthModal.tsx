@@ -124,7 +124,7 @@ export default function AuthModal({ isOpen, onClose, userType, onSuccess }: Auth
         email: schoolData.adminEmail,
         password: schoolData.password,
         display_name: schoolData.adminName,
-        role: 'school',
+        role: 'owner',  // FIXED: Valid enum values are owner|admin|teacher|student|parent
         school_id: schoolData.schoolId
       });
 

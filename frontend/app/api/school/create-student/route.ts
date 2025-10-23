@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    // Get Bearer token from Authorization header
     const supabaseAdmin = getSupabaseAdmin();
-    
-    // Get the current user and verify they're a school admin
     const authHeader = req.headers.get('authorization');
+
     if (!authHeader) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Missing authorization header' },
         { status: 401 }
       );
     }
@@ -19,17 +21,25 @@ export async function POST(req: NextRequest) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Invalid authentication' },
+        { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
 
-    // Check if user is a school admin or teacher
-    const { data: profile } = await supabaseAdmin
+    // Get user profile and check role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
-      .single() as { data: { role: string; school_id: string } | null };
+      .single();
+
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (!profile) {
       return NextResponse.json(
@@ -38,13 +48,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (profile.role !== 'school' && profile.role !== 'teacher') {
+    if (profile.role !== 'owner' && profile.role !== 'admin' && profile.role !== 'teacher') {
       return NextResponse.json(
         { error: 'Only school administrators can create student accounts' },
         { status: 403 }
       );
     }
-    
+
+    // Admin client already initialized above
     const body = await req.json();
     const {
       name,
@@ -119,23 +130,22 @@ export async function POST(req: NextRequest) {
       authData = newAuthData;
     }
 
-    // 2. Create/update profile (profiles table has: display_name, email, phone)
-    const { error: profileError } = await supabaseAdmin
+    // 2. Create/update profile FIRST (required for foreign key constraint)
+    const { error: profileError2 } = await supabaseAdmin
       .from('profiles')
       .upsert({
         user_id: authData.user.id,
         email: email,
         display_name: name,
-        phone: phone || null,
         role: 'student',
         school_id: schoolId
       });
 
-    if (profileError) {
-      console.error('Profile error:', profileError);
+    if (profileError2) {
+      console.error('Profile error:', profileError2);
       // Cleanup: delete auth user if profile creation fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      return NextResponse.json({ error: profileError.message }, { status: 400 });
+      return NextResponse.json({ error: profileError2.message }, { status: 400 });
     }
 
     // 3. Calculate date of birth from age if provided
@@ -146,7 +156,7 @@ export async function POST(req: NextRequest) {
       dobValue = `${birthYear}-01-01`;
     }
 
-    // 4. Create student record (students table has: user_id, school_id, dob, gender, grade, active)
+    // 3. Create student record (after profile exists - foreign key constraint)
     const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .insert({
@@ -154,7 +164,6 @@ export async function POST(req: NextRequest) {
         school_id: schoolId,
         dob: dobValue,
         gender: gender || null,
-        grade: grade || null,
         active: true
       })
       .select()
@@ -167,7 +176,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: studentError.message }, { status: 400 });
     }
 
-    // 5. Store credentials for school admin
+    // 4. Store credentials for school admin
     await supabaseAdmin
       .from('user_credentials')
       .insert({

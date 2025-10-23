@@ -11,6 +11,9 @@ const nextConfig = {
     // Temporarily ignore ESLint errors during builds
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['undici'],
+  },
 };
 
 module.exports = nextConfig;

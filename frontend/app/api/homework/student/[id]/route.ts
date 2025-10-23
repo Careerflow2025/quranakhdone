@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createBrowserClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase-server';
 import {
   GetStudentHomeworkResponse,
@@ -29,8 +30,28 @@ export async function GET(
   try {
     const studentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Check for Bearer token authentication (for API tests)
+    const authHeader = request.headers.get('authorization');
+    let supabase;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // Use direct Supabase client with Bearer token (for API tests)
+      const token = authHeader.replace('Bearer ', '');
+      supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        }
+      );
+    } else {
+      // Use cookie-based auth (for browser sessions)
+      supabase = createClient();
+    }
 
     // 2. Get authenticated user
     const {

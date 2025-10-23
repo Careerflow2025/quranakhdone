@@ -81,8 +81,6 @@ export async function GET(
         creator:created_by_user_id(user_id, display_name, email, role),
         class:class_id(id, name, room),
         assignment:assignment_id(id, title, status),
-        homework:homework_id(id),
-        target:target_id(id, title),
         participants:event_participants(
           id,
           user_id,
@@ -353,13 +351,22 @@ export async function PATCH(
         *,
         creator:created_by_user_id(user_id, display_name, email, role),
         class:class_id(id, name, room),
-        assignment:assignment_id(id, title, status),
-        homework:homework_id(id),
-        target:target_id(id, title)
+        assignment:assignment_id(id, title, status)
       `
       )
       .eq('id', params.id)
       .single();
+
+    if (!updatedEvent) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Failed to retrieve updated event',
+          code: 'DATABASE_ERROR',
+        },
+        { status: 500 }
+      );
+    }
 
     const eventWithDetails: EventWithDetails = {
       ...updatedEvent,

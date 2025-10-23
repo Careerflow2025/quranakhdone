@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (profile.role !== 'school' && profile.role !== 'teacher') {
+    if (profile.role !== 'owner' && profile.role !== 'admin' && profile.role !== 'teacher') {
       return NextResponse.json(
         { error: 'Only school administrators can create teacher accounts' },
         { status: 403 }

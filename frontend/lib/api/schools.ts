@@ -40,7 +40,7 @@ export const schoolApi = {
       .select('school_id, role')
       .single() as { data: { school_id: string; role: string } | null }
 
-    if (!profile || profile.role !== 'school') {
+    if (!profile || (profile.role !== 'owner' && profile.role !== 'admin')) {
       throw new Error('Only school admins can create users')
     }
 
@@ -99,7 +99,7 @@ export const schoolApi = {
       .select('role')
       .single() as { data: { role: string } | null }
 
-    if (!profile || profile.role !== 'school') {
+    if (!profile || (profile.role !== 'owner' && profile.role !== 'admin')) {
       throw new Error('Only school admins can update passwords')
     }
 

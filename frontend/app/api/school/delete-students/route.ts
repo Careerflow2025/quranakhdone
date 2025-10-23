@@ -1,35 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function DELETE(req: NextRequest) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    // Get the current user and verify they're a school admin
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const cookieStore = cookies();
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    // Create server client for user authentication
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+
+    // Get authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Invalid authentication' },
+        { error: 'Unauthorized - please login' },
         { status: 401 }
       );
     }
 
-    // Check if user is a school admin
-    const { data: profile } = await supabaseAdmin
+    // Get user profile and check role
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
-      .single() as { data: { role: string; school_id: string } | null };
+      .single();
+
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (!profile) {
       return NextResponse.json(
@@ -38,12 +52,15 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    if (profile.role !== 'school') {
+    if (profile.role !== 'owner' && profile.role !== 'admin') {
       return NextResponse.json(
         { error: 'Only school administrators can delete students' },
         { status: 403 }
       );
     }
+
+    // Now we can use admin client for privileged operations
+    const supabaseAdmin = getSupabaseAdmin();
     
     const body = await req.json();
     const { studentIds } = body;

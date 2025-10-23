@@ -1,0 +1,379 @@
+{
+  "timestamp": "2025-10-22T03:07:38.175Z",
+  "totalWorkflows": 11,
+  "passedWorkflows": 0,
+  "failedWorkflows": 11,
+  "workflows": {
+    "1": {
+      "name": "Classes Management",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "classes": false,
+            "class_teachers": false,
+            "class_enrollments": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "classes/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "classes/ClassesPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useClasses.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'classes' not found",
+        "Database: Table 'class_teachers' not found",
+        "Database: Table 'class_enrollments' not found"
+      ]
+    },
+    "2": {
+      "name": "Parent Linking",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "parents": false,
+            "parent_students": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "school/link-parent-student/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {}
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useParentStudentLinks.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'parents' not found",
+        "Database: Table 'parent_students' not found"
+      ]
+    },
+    "3": {
+      "name": "Homework Management",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "highlights": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "homework/route.ts": true,
+            "homework/student/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {}
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useHomework.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'highlights' not found"
+      ]
+    },
+    "4": {
+      "name": "Assignments Lifecycle",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "assignments": false,
+            "assignment_events": false,
+            "assignment_submissions": false,
+            "assignment_attachments": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "assignments/route.ts": true,
+            "assignments/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "assignments/AssignmentsPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useAssignments.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'assignments' not found",
+        "Database: Table 'assignment_events' not found",
+        "Database: Table 'assignment_submissions' not found",
+        "Database: Table 'assignment_attachments' not found"
+      ]
+    },
+    "5": {
+      "name": "Targets System",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "targets": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "targets/route.ts": true,
+            "targets/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {}
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {}
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'targets' not found"
+      ]
+    },
+    "6": {
+      "name": "Gradebook System",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "grades": false,
+            "rubrics": false,
+            "rubric_criteria": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "rubrics/route.ts": true,
+            "grades/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "gradebook/GradebookPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useGradebook.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'grades' not found",
+        "Database: Table 'rubrics' not found",
+        "Database: Table 'rubric_criteria' not found"
+      ]
+    },
+    "7": {
+      "name": "Attendance System",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "attendance": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {}
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {}
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {}
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'attendance' not found"
+      ]
+    },
+    "8": {
+      "name": "Messages System",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "messages": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "messages/route.ts": true,
+            "messages/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "messages/MessagesPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useMessages.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'messages' not found"
+      ]
+    },
+    "10": {
+      "name": "Student Management",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "students": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "school/create-student/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {}
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useStudents.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'students' not found"
+      ]
+    },
+    "11": {
+      "name": "Mastery Tracking",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "ayah_mastery": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "mastery/student/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "mastery/MasteryPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useMastery.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'ayah_mastery' not found"
+      ]
+    },
+    "12": {
+      "name": "Calendar/Events",
+      "layers": {
+        "database": {
+          "status": "failed",
+          "details": {
+            "events": false,
+            "calendar_events": false
+          }
+        },
+        "backend": {
+          "status": "passed",
+          "details": {
+            "events/route.ts": true,
+            "events/[id]/route.ts": true
+          }
+        },
+        "frontend": {
+          "status": "passed",
+          "details": {
+            "calendar/CalendarPanel.tsx": true
+          }
+        },
+        "hooks": {
+          "status": "passed",
+          "details": {
+            "useCalendar.ts": true
+          }
+        }
+      },
+      "overallStatus": "failed",
+      "issues": [
+        "Database: Table 'events' not found",
+        "Database: Table 'calendar_events' not found"
+      ]
+    }
+  }
+}

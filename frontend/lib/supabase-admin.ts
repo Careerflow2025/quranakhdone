@@ -8,11 +8,19 @@ let adminClientInstance: SupabaseClient<Database> | null = null
 // Never expose the service role key to the client
 export function getSupabaseAdmin(): SupabaseClient<Database> {
   if (!adminClientInstance) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+    // Remove all whitespace characters including newlines
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.replace(/\s/g, '')
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error('Missing Supabase environment variables')
+    }
+
+    // Use custom fetch wrapper to handle large headers
+    const customFetch: typeof fetch = async (input, init) => {
+      // Use globalThis.fetch (native Node.js fetch) instead of Next.js patched fetch
+      const nativeFetch = globalThis.fetch
+      return nativeFetch(input, init)
     }
 
     adminClientInstance = createClient<Database>(
@@ -22,6 +30,9 @@ export function getSupabaseAdmin(): SupabaseClient<Database> {
         auth: {
           autoRefreshToken: false,
           persistSession: false
+        },
+        global: {
+          fetch: customFetch
         }
       }
     )
@@ -40,7 +51,7 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient<Database>, {
 // Admin-only functions
 export const adminHelpers = {
   // Create new user with specific role
-  createUser: async (email: string, password: string, role: 'school' | 'teacher' | 'student' | 'parent', schoolId?: string) => {
+  createUser: async (email: string, password: string, role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent', schoolId?: string) => {
     // Create auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,

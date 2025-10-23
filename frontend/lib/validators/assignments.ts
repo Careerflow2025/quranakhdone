@@ -406,11 +406,11 @@ export function canTransitionAssignment(
     return true;
   }
 
-  // Teacher can mark as reviewed or completed
+  // Teacher can mark as reviewed, completed, or reopened
   if (
     ctx.userRole === 'teacher' &&
     ctx.teacherId === assignment.assignmentTeacherId &&
-    ['reviewed', 'completed'].includes(toStatus)
+    ['reviewed', 'completed', 'reopened'].includes(toStatus)
   ) {
     return true;
   }

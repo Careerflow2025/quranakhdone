@@ -19,6 +19,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useSchoolStore } from '../state/useSchoolStore';
+import { useStudents } from '@/hooks/useStudents';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateSecurePassword } from '@/lib/auth-client';
 import { createClient } from '@supabase/supabase-js';
@@ -29,7 +30,10 @@ const supabase = createClient(
 );
 
 export default function StudentManagementV2() {
-  const { students, classes, addStudent, removeStudent } = useSchoolStore();
+  // Get students from API instead of local Zustand state
+  const { students, isLoading: studentsLoading, error: studentsError, deleteStudent, refreshStudents } = useStudents();
+  // Keep classes from Zustand for now (can be migrated later)
+  const { classes } = useSchoolStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [filterClass, setFilterClass] = useState<string>('all');
@@ -55,9 +59,13 @@ export default function StudentManagementV2() {
   });
   
   const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClass = filterClass === 'all' || student.classId === filterClass;
+    // Support both first_name/last_name and name formats
+    const fullName = `${student.first_name || ''} ${student.last_name || ''}`.toLowerCase();
+    const studentName = (student.name || '').toLowerCase();
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
+                          studentName.includes(searchTerm.toLowerCase()) ||
+                          (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+    const matchesClass = filterClass === 'all'; // Class filtering needs classId mapping
     return matchesSearch && matchesClass;
   });
 
@@ -94,21 +102,9 @@ export default function StudentManagementV2() {
       if (result.success) {
         // Show success with credentials
         setCreatedCredentials(result.credentials);
-        
-        // Add to local store
-        const className = classes.find(c => c.id === formData.classId)?.name || '';
-        addStudent({
-          id: result.student.id,
-          name: formData.studentName,
-          className: className,
-          parentName: formData.parentName,
-          parentEmail: formData.parentEmail,
-          parentPhone: formData.parentPhone,
-          enrollmentDate: new Date().toISOString(),
-          status: 'active',
-          classId: formData.classId,
-          progress: 0
-        });
+
+        // Refresh students list from API instead of updating Zustand
+        await refreshStudents();
       } else {
         setError(result.error || 'Failed to create student and parent accounts');
       }
@@ -199,50 +195,58 @@ export default function StudentManagementV2() {
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                <h3 className="font-semibold text-gray-900">
+                  {student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Unnamed Student'}
+                </h3>
                 <div className="text-sm text-gray-600 mt-1">
-                  Class: {classes.find(c => c.id === student.classId)?.name || 'Unassigned'}
+                  {student.grade ? `Grade: ${student.grade}` : 'Grade: Not Set'}
                 </div>
               </div>
               <span className={`px-2 py-1 text-xs rounded-full ${
-                student.status === 'active' 
-                  ? 'bg-green-100 text-green-700' 
+                student.active !== false
+                  ? 'bg-green-100 text-green-700'
                   : 'bg-gray-100 text-gray-700'
               }`}>
-                {student.status}
+                {student.active !== false ? 'active' : 'inactive'}
               </span>
             </div>
-            
+
             <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Users className="w-3.5 h-3.5" />
-                <span>Parent: {student.parentName}</span>
-              </div>
-              {student.parentEmail && (
+              {student.email && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <Mail className="w-3.5 h-3.5" />
-                  <span className="truncate">{student.parentEmail}</span>
+                  <span className="truncate">{student.email}</span>
                 </div>
               )}
-              {student.parentPhone && (
+              {student.phone && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <Phone className="w-3.5 h-3.5" />
-                  <span>{student.parentPhone}</span>
+                  <span>{student.phone}</span>
                 </div>
               )}
-              
+              {student.age && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Age: {student.age}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between pt-2 border-t">
                 <div className="text-xs text-gray-500">
-                  Progress: {student.progress || 0}%
+                  ID: {student.id.substring(0, 8)}...
                 </div>
                 <div className="flex items-center gap-1">
                   <button className="p-1.5 hover:bg-blue-50 rounded text-blue-600">
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button 
-                    onClick={() => {
-                      if (confirm(`Are you sure you want to remove ${student.name}?`)) {
-                        removeStudent(student.id);
+                  <button
+                    onClick={async () => {
+                      const studentName = student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'this student';
+                      if (confirm(`Are you sure you want to remove ${studentName}?`)) {
+                        const result = await deleteStudent(student.id);
+                        if (!result.success) {
+                          alert(`Failed to delete student: ${result.error}`);
+                        }
                       }
                     }}
                     className="p-1.5 hover:bg-red-50 rounded text-red-600"

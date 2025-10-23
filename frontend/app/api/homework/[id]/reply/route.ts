@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateAddHomeworkReplyRequest,
   canReplyToHomework,
@@ -29,20 +30,30 @@ export async function POST(
   try {
     const homeworkId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<HomeworkErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<HomeworkErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -50,7 +61,7 @@ export async function POST(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -70,7 +81,7 @@ export async function POST(
     // 4. Get teacher_id (only teachers can add replies)
     let teacherId: string | undefined;
     if (['teacher', 'admin', 'owner'].includes(profile.role)) {
-      const { data: teacher, error: teacherError } = await supabase
+      const { data: teacher, error: teacherError } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -111,7 +122,7 @@ export async function POST(
     const { type, text, audio_url } = validation.data;
 
     // 6. Fetch existing homework
-    const { data: homework, error: homeworkError } = await supabase
+    const { data: homework, error: homeworkError } = await supabaseAdmin
       .from('highlights')
       .select('*')
       .eq('id', homeworkId)
@@ -167,7 +178,7 @@ export async function POST(
     }
 
     // 9. Insert note into notes table
-    const { data: note, error: insertError } = await supabase
+    const { data: note, error: insertError } = await supabaseAdmin
       .from('notes')
       .insert({
         highlight_id: homeworkId,
@@ -193,7 +204,7 @@ export async function POST(
     }
 
     // 10. Get student info for notification
-    const { data: student } = await supabase
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('user_id')
       .eq('id', homework.student_id)
@@ -201,7 +212,7 @@ export async function POST(
 
     // 11. Create notification for student
     if (student) {
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: homework.school_id,
         user_id: student.user_id,
         channel: 'in_app',
@@ -220,7 +231,7 @@ export async function POST(
 
       // Also send email notification for text notes
       if (type === 'text') {
-        await supabase.from('notifications').insert({
+        await supabaseAdmin.from('notifications').insert({
           school_id: homework.school_id,
           user_id: student.user_id,
           channel: 'email',

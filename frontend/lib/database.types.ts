@@ -44,7 +44,7 @@ export type Database = {
         Row: {
           user_id: string
           school_id: string | null
-          role: 'school' | 'teacher' | 'student' | 'parent'
+          role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
           display_name: string | null
           email: string
           phone: string | null
@@ -55,7 +55,7 @@ export type Database = {
         Insert: {
           user_id: string
           school_id?: string | null
-          role: 'school' | 'teacher' | 'student' | 'parent'
+          role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
           display_name?: string | null
           email: string
           phone?: string | null
@@ -276,7 +276,7 @@ export type Database = {
           id: string
           highlight_id: string
           author_id: string
-          author_role: 'school' | 'teacher' | 'student' | 'parent'
+          author_role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
           content: string | null
           voice_url: string | null
           voice_duration: number | null
@@ -287,7 +287,7 @@ export type Database = {
           id?: string
           highlight_id: string
           author_id: string
-          author_role: 'school' | 'teacher' | 'student' | 'parent'
+          author_role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
           content?: string | null
           voice_url?: string | null
           voice_duration?: number | null
@@ -492,7 +492,7 @@ export type Database = {
       }
       get_user_role: {
         Args: Record<PropertyKey, never>
-        Returns: 'school' | 'teacher' | 'student' | 'parent'
+        Returns: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
       }
       mark_highlight_complete: {
         Args: {
@@ -513,7 +513,7 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: 'school' | 'teacher' | 'student' | 'parent'
+      user_role: 'owner' | 'admin' | 'teacher' | 'student' | 'parent'
       highlight_color: 'green' | 'purple' | 'orange' | 'red' | 'brown' | 'gold'
       assignment_status: 'pending' | 'in-progress' | 'submitted' | 'reviewed' | 'completed'
       target_status: 'active' | 'completed' | 'cancelled'

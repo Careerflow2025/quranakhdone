@@ -1,31 +1,60 @@
 /**
- * Individual Message API Endpoints
- * POST /api/messages/:id/reply - Reply to message (creates new message in thread)
+ * Messages [id] API Endpoint
+ * POST /api/messages/:id - Reply to a message
  * PATCH /api/messages/:id - Mark message as read
  *
- * Created: 2025-10-20
- * Purpose: Individual message operations for threading and read status
+ * Created: 2025-10-22
+ * Purpose: Message reply and read status operations
  * RLS: All operations enforce school-level isolation via Supabase RLS policies
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
-import {
-  validateReplyToMessageRequest,
-  canReplyToMessage,
-  canMarkAsRead,
-} from '@/lib/validators/messages';
-import {
-  ReplyToMessageResponse,
-  MarkReadResponse,
-  MessageErrorResponse,
-  MessageWithDetails,
-  getThreadId,
-} from '@/lib/types/messages';
+
+interface Message {
+  id: string;
+  school_id: string;
+  from_user_id: string;
+  to_user_id: string;
+  subject: string | null;
+  body: string;
+  read_at: string | null;
+  thread_id: string | null;
+  created_at: string;
+  updated_at: string;
+  sender?: {
+    user_id: string;
+    display_name: string | null;
+    email: string;
+    role: string;
+  };
+  recipient?: {
+    user_id: string;
+    display_name: string | null;
+    email: string;
+    role: string;
+  };
+  reply_count?: number;
+}
+
+interface ReplyMessageResponse {
+  success: true;
+  message: Message;
+}
+
+interface MarkAsReadResponse {
+  success: true;
+  message: Message;
+}
+
+interface ErrorResponse {
+  success: false;
+  error: string;
+  code?: string;
+}
 
 // ============================================================================
-// POST /api/messages/:id - Reply To Message (Deprecated - use POST /api/messages with thread_id)
-// Note: This endpoint exists for convenience but recommending using main POST endpoint
+// POST /api/messages/:id - Reply to Message
 // ============================================================================
 
 export async function POST(
@@ -33,6 +62,22 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const messageId = params.id;
+    const body = await request.json();
+    const { body: replyBody } = body;
+
+    // Validate required fields
+    if (!replyBody || replyBody.trim().length === 0) {
+      return NextResponse.json<ErrorResponse>(
+        {
+          success: false,
+          error: 'Reply body cannot be empty',
+          code: 'EMPTY_BODY',
+        },
+        { status: 400 }
+      );
+    }
+
     // 1. Initialize Supabase client with auth
     const supabase = createClient();
 
@@ -43,7 +88,7 @@ export async function POST(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'Unauthorized',
@@ -61,7 +106,7 @@ export async function POST(
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'User profile not found',
@@ -75,185 +120,112 @@ export async function POST(
     const { data: originalMessage, error: messageError } = await supabase
       .from('messages')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', messageId)
       .eq('school_id', profile.school_id)
       .single();
 
     if (messageError || !originalMessage) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Message not found',
+          error: 'Original message not found',
           code: 'MESSAGE_NOT_FOUND',
         },
         { status: 404 }
       );
     }
 
-    // 5. Check permissions
-    if (
-      !canReplyToMessage(
-        { userId: user.id, userRole: profile.role, schoolId: profile.school_id },
-        {
-          messageSchoolId: originalMessage.school_id,
-          messageSenderId: originalMessage.sender_user_id,
-          messageRecipientId: originalMessage.recipient_user_id,
-        }
-      )
-    ) {
-      return NextResponse.json<MessageErrorResponse>(
-        {
-          success: false,
-          error: 'Insufficient permissions to reply to this message',
-          code: 'FORBIDDEN',
-        },
-        { status: 403 }
-      );
-    }
+    // 5. Determine thread_id (if original message is part of thread, use that thread_id; otherwise use original message id)
+    const thread_id = originalMessage.thread_id || originalMessage.id;
 
-    // 6. Parse and validate request body
-    const body = await request.json();
-    const validation = validateReplyToMessageRequest(body);
+    // 6. Determine recipient (sender of original message)
+    const recipient_user_id = originalMessage.from_user_id;
 
-    if (!validation.success) {
-      return NextResponse.json<MessageErrorResponse>(
-        {
-          success: false,
-          error: validation.error || 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: { errors: validation.errors },
-        },
-        { status: 400 }
-      );
-    }
-
-    const { body: replyBody, attachments } = validation.data;
-
-    // 7. Determine recipient (reply to sender of original message)
-    const recipientId =
-      originalMessage.sender_user_id === user.id
-        ? originalMessage.recipient_user_id
-        : originalMessage.sender_user_id;
-
-    // 8. Get thread ID (root message ID)
-    const threadId = getThreadId(originalMessage);
-
-    // 9. Create reply message
-    const replyData = {
-      school_id: profile.school_id,
-      thread_id: threadId,
-      sender_user_id: user.id,
-      recipient_user_id: recipientId,
-      subject: null, // Replies don't have subjects
-      body: replyBody,
-      read_at: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data: createdReply, error: createError } = await supabase
-      .from('messages')
-      .insert(replyData)
-      .select('*')
+    // Get recipient profile
+    const { data: recipientProfile, error: recipientError } = await supabase
+      .from('profiles')
+      .select('user_id, school_id, role, display_name, email')
+      .eq('user_id', recipient_user_id)
       .single();
 
-    if (createError || !createdReply) {
-      console.error('Failed to create reply:', createError);
-      return NextResponse.json<MessageErrorResponse>(
+    if (recipientError || !recipientProfile) {
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Failed to send reply',
-          code: 'DATABASE_ERROR',
-          details: { createError },
+          error: 'Recipient not found',
+          code: 'RECIPIENT_NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 7. Create reply message
+    const replyData = {
+      school_id: profile.school_id,
+      from_user_id: user.id,
+      to_user_id: recipient_user_id,
+      subject: originalMessage.subject,
+      body: replyBody.trim(),
+      thread_id: thread_id,
+      read_at: null,
+      topic: originalMessage.topic || 'general',
+      extension: originalMessage.extension || 'standard',
+      payload: null,
+      event: null,
+      private: originalMessage.private || false,
+    };
+
+    const { data: newReply, error: createError } = await supabase
+      .from('messages')
+      .insert([replyData])
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('Error creating reply:', createError);
+      return NextResponse.json<ErrorResponse>(
+        {
+          success: false,
+          error: 'Failed to create reply',
+          code: 'CREATE_ERROR',
         },
         { status: 500 }
       );
     }
 
-    // 10. Create attachments if provided
-    if (attachments && attachments.length > 0) {
-      const attachmentsData = attachments.map((att) => ({
-        message_id: createdReply.id,
-        url: att.url,
-        mime_type: att.mime_type,
-        file_name: att.file_name,
-        file_size: att.file_size,
-        created_at: new Date().toISOString(),
-      }));
-
-      await supabase.from('message_attachments').insert(attachmentsData);
-    }
-
-    // 11. Send notification to recipient
-    try {
-      await supabase.from('notifications').insert({
-        school_id: profile.school_id,
-        user_id: recipientId,
-        channel: 'in_app',
-        type: 'message_reply',
-        payload: {
-          message_id: createdReply.id,
-          thread_id: threadId,
-          sender_name: profile.display_name || profile.email,
-          preview: replyBody.substring(0, 100),
-        },
-        sent_at: new Date().toISOString(),
-      });
-    } catch (notifError) {
-      console.error('Failed to send notification:', notifError);
-    }
-
-    // 12. Get recipient details
-    const { data: recipientProfile } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, email, role')
-      .eq('user_id', recipientId)
-      .single();
-
-    // 13. Get attachments for response
-    const { data: replyAttachments } = await supabase
-      .from('message_attachments')
-      .select('*')
-      .eq('message_id', createdReply.id);
-
-    // 14. Build response
-    const replyWithDetails: MessageWithDetails = {
-      ...createdReply,
+    // 8. Populate sender and recipient data
+    const populatedReply = {
+      ...newReply,
       sender: {
-        id: profile.user_id,
-        display_name: profile.display_name || profile.email || 'Unknown',
+        user_id: profile.user_id,
+        display_name: profile.display_name,
         email: profile.email,
         role: profile.role,
       },
-      recipient: recipientProfile
-        ? {
-            id: recipientProfile.user_id,
-            display_name: recipientProfile.display_name || recipientProfile.email,
-            email: recipientProfile.email,
-            role: recipientProfile.role,
-          }
-        : ({} as any),
-      attachments: replyAttachments || [],
-      is_read: false,
+      recipient: {
+        user_id: recipientProfile.user_id,
+        display_name: recipientProfile.display_name,
+        email: recipientProfile.email,
+        role: recipientProfile.role,
+      },
+      reply_count: 0,
     };
 
-    // 15. Return success response
-    return NextResponse.json<ReplyToMessageResponse>(
+    // 9. Return response
+    return NextResponse.json<ReplyMessageResponse>(
       {
         success: true,
-        message: replyWithDetails,
-        thread_id: threadId,
+        message: populatedReply,
       },
       { status: 201 }
     );
   } catch (error) {
     console.error('Unexpected error in POST /api/messages/:id:', error);
-    return NextResponse.json<MessageErrorResponse>(
+    return NextResponse.json<ErrorResponse>(
       {
         success: false,
         error: 'Internal server error',
         code: 'INTERNAL_ERROR',
-        details: { error: String(error) },
       },
       { status: 500 }
     );
@@ -269,6 +241,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const messageId = params.id;
+
     // 1. Initialize Supabase client with auth
     const supabase = createClient();
 
@@ -279,7 +253,7 @@ export async function PATCH(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'Unauthorized',
@@ -292,12 +266,12 @@ export async function PATCH(
     // 3. Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('user_id, school_id, role')
+      .select('user_id, school_id, role, display_name, email')
       .eq('user_id', user.id)
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'User profile not found',
@@ -307,100 +281,79 @@ export async function PATCH(
       );
     }
 
-    // 4. Get message
+    // 4. Get message and verify user is recipient
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', messageId)
       .eq('school_id', profile.school_id)
+      .eq('to_user_id', user.id)
       .single();
 
     if (messageError || !message) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Message not found',
+          error: 'Message not found or you are not the recipient',
           code: 'MESSAGE_NOT_FOUND',
         },
         { status: 404 }
       );
     }
 
-    // 5. Check if already read
-    if (message.read_at) {
-      return NextResponse.json<MarkReadResponse>(
-        {
-          success: true,
-          message_id: message.id,
-          read_at: message.read_at,
-          message: 'Message was already marked as read',
-        },
-        { status: 200 }
-      );
-    }
-
-    // 6. Check permissions
-    if (
-      !canMarkAsRead(
-        { userId: user.id, userRole: profile.role, schoolId: profile.school_id },
-        {
-          messageSchoolId: message.school_id,
-          messageSenderId: message.sender_user_id,
-          messageRecipientId: message.recipient_user_id,
-        }
-      )
-    ) {
-      return NextResponse.json<MessageErrorResponse>(
-        {
-          success: false,
-          error: 'Insufficient permissions to mark this message as read',
-          code: 'FORBIDDEN',
-        },
-        { status: 403 }
-      );
-    }
-
-    // 7. Mark as read
-    const readAt = new Date().toISOString();
-    const { error: updateError } = await supabase
+    // 5. Update read_at timestamp
+    const { data: updatedMessage, error: updateError } = await supabase
       .from('messages')
-      .update({
-        read_at: readAt,
-        updated_at: readAt,
-      })
-      .eq('id', params.id);
+      .update({ read_at: new Date().toISOString() })
+      .eq('id', messageId)
+      .select()
+      .single();
 
     if (updateError) {
-      console.error('Failed to mark message as read:', updateError);
-      return NextResponse.json<MessageErrorResponse>(
+      console.error('Error updating message:', updateError);
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'Failed to mark message as read',
-          code: 'DATABASE_ERROR',
-          details: { updateError },
+          code: 'UPDATE_ERROR',
         },
         { status: 500 }
       );
     }
 
-    // 8. Return success response
-    return NextResponse.json<MarkReadResponse>(
+    // 6. Populate sender and recipient data
+    const { data: sender } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, email, role')
+      .eq('user_id', updatedMessage.from_user_id)
+      .single();
+
+    const populatedMessage = {
+      ...updatedMessage,
+      sender: sender || undefined,
+      recipient: {
+        user_id: profile.user_id,
+        display_name: profile.display_name,
+        email: profile.email,
+        role: profile.role,
+      },
+    };
+
+    // 7. Return response
+    return NextResponse.json<MarkAsReadResponse>(
       {
         success: true,
-        message_id: params.id,
-        read_at: readAt,
-        message: 'Message marked as read',
+        message: populatedMessage,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Unexpected error in PATCH /api/messages/:id:', error);
-    return NextResponse.json<MessageErrorResponse>(
+    return NextResponse.json<ErrorResponse>(
       {
         success: false,
         error: 'Internal server error',
         code: 'INTERNAL_ERROR',
-        details: { error: String(error) },
       },
       { status: 500 }
     );

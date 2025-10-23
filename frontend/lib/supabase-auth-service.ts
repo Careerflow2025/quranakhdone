@@ -12,7 +12,7 @@ console.log('🔍 ENV CHECK:', {
 // This needs SERVICE_ROLE_KEY for creating users
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // This must be kept secret!
+  process.env.SUPABASE_SERVICE_ROLE_KEY?.replace(/\n/g, '') || '', // Strip newlines from service role key
   {
     auth: {
       autoRefreshToken: false,
@@ -93,7 +93,7 @@ export async function createSchoolWithAdmin(data: {
         user_id: authUser.user.id,
         email: data.adminEmail,
         display_name: data.adminName,
-        role: 'school_admin',
+        role: 'owner',  // FIXED: Valid enum values are owner|admin|teacher|student|parent
         school_id: school.id
       } as any);
 

@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
   try {
+    // Get Bearer token from Authorization header
     const supabaseAdmin = getSupabaseAdmin();
-    
-    // Get the current user and verify they're a school admin
     const authHeader = req.headers.get('authorization');
+
     if (!authHeader) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Missing authorization header' },
         { status: 401 }
       );
     }
@@ -19,17 +21,25 @@ export async function POST(req: NextRequest) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Invalid authentication' },
+        { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
 
-    // Check if user is a school admin
-    const { data: profile } = await supabaseAdmin
+    // Get user profile and check role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
-      .single() as { data: { role: string; school_id: string } | null };
+      .single();
+
+    if (profileError) {
+      console.error('Profile query error:', profileError);
+      return NextResponse.json(
+        { error: `Profile query failed: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (!profile) {
       return NextResponse.json(
@@ -38,13 +48,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (profile.role !== 'school') {
+    if (profile.role !== 'owner' && profile.role !== 'admin') {
       return NextResponse.json(
         { error: 'Only school administrators can create teacher accounts' },
         { status: 403 }
       );
     }
-    
+
+    // Admin client already initialized above
     const body = await req.json();
     const { name, email, password, phone, classIds, subject, qualification, experience, address, bio } = body;
     
@@ -108,39 +119,42 @@ export async function POST(req: NextRequest) {
       authData = newAuthData;
     }
 
-    // 2. Create teacher record
+    // 2. Create user profile FIRST (required for foreign key constraint)
+    const { error: profileError2 } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        user_id: authData.user.id,
+        email: email,
+        display_name: name,
+        role: 'teacher',
+        school_id: schoolId
+      });
+
+    if (profileError2) {
+      console.error('Profile creation error:', profileError2);
+      // Cleanup: delete auth user if profile creation fails
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      return NextResponse.json({ error: profileError2.message }, { status: 400 });
+    }
+
+    // 3. Create teacher record (after profile exists)
     const { data: teacher, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .insert({
         user_id: authData.user.id,
         school_id: schoolId,
-        subject: subject || null,
-        qualification: qualification || null,
-        experience: experience ? parseInt(experience) : null,
-        address: address || null,
-        bio: bio || null
+        bio: bio || null,
+        active: true
       })
       .select()
       .single();
 
     if (teacherError) {
       console.error('Teacher error:', teacherError);
-      // Cleanup: delete auth user if teacher creation fails
+      // Cleanup: delete auth user and profile if teacher creation fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json({ error: teacherError.message }, { status: 400 });
     }
-
-    // 3. Ensure user profile exists (trigger should create it, but upsert to be sure)
-    await supabaseAdmin
-      .from('profiles')
-      .upsert({
-        user_id: authData.user.id,
-        email: email,
-        display_name: name,
-        phone: phone || null,
-        role: 'teacher',
-        school_id: schoolId
-      });
 
     // 4. Assign classes if provided
     if (classIds && classIds.length > 0) {

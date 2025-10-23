@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateCreateAssignmentRequest,
   canCreateAssignment,
@@ -33,20 +34,30 @@ type StudentRow = Database['public']['Tables']['students']['Row'];
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -54,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -73,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Check if user is a teacher (need teacher_id for created_by_teacher_id)
-    const { data: teacher, error: teacherError } = await supabase
+    const { data: teacher, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .select('id')
       .eq('user_id', user.id)
@@ -111,7 +122,7 @@ export async function POST(request: NextRequest) {
       validation.data;
 
     // 6. Verify student belongs to same school
-    const { data: student, error: studentError } = await supabase
+    const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .select('id, user_id')
       .eq('id', student_id)
@@ -130,7 +141,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify student is in same school via their profile
-    const { data: studentProfile, error: studentProfileError } = await supabase
+    const { data: studentProfile, error: studentProfileError } = await supabaseAdmin
       .from('profiles')
       .select('school_id')
       .eq('user_id', student.user_id)
@@ -178,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 8. Insert assignment into database
-    const { data: assignment, error: insertError } = await supabase
+    const { data: assignment, error: insertError } = await supabaseAdmin
       .from('assignments')
       .insert({
         school_id: profile.school_id,
@@ -207,7 +218,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 9. Create assignment event for "created" action
-    const { error: eventError } = await supabase
+    const { error: eventError } = await supabaseAdmin
       .from('assignment_events')
       .insert({
         assignment_id: assignment.id,
@@ -235,7 +246,7 @@ export async function POST(request: NextRequest) {
         mime_type: getMimeTypeFromUrl(url),
       }));
 
-      const { error: attachmentError } = await supabase
+      const { error: attachmentError } = await supabaseAdmin
         .from('assignment_attachments')
         .insert(attachmentInserts);
 
@@ -249,6 +260,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<CreateAssignmentResponse>(
       {
         success: true,
+        data: assignment,
         assignment,
         message: 'Assignment created successfully',
       },
@@ -274,20 +286,30 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -295,7 +317,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -346,7 +368,7 @@ export async function GET(request: NextRequest) {
     } = queryValidation.data;
 
     // 5. Build Supabase query with RLS enforcement (school_id automatically filtered)
-    let query = supabase
+    let query = supabaseAdmin
       .from('assignments')
       .select(
         `
@@ -456,6 +478,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<ListAssignmentsResponse>(
       {
         success: true,
+        data: assignmentsWithDetails,
         assignments: assignmentsWithDetails,
         pagination: {
           page,

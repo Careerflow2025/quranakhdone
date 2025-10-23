@@ -1,25 +1,59 @@
 /**
- * Message Thread API Endpoint
- * GET /api/messages/thread/:id - Get full message thread with all replies
+ * Messages Thread API Endpoint
+ * GET /api/messages/thread/:id - Get complete message thread with all replies
  *
- * Created: 2025-10-20
- * Purpose: Retrieve complete conversation thread for teacher-student-parent messaging
+ * Created: 2025-10-22
+ * Purpose: Retrieve threaded conversations with all messages and participants
  * RLS: All operations enforce school-level isolation via Supabase RLS policies
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
-import { canViewMessage } from '@/lib/validators/messages';
-import {
-  GetThreadResponse,
-  MessageErrorResponse,
-  MessageWithDetails,
-  MessageThread,
-  getThreadId,
-} from '@/lib/types/messages';
+
+interface Message {
+  id: string;
+  school_id: string;
+  from_user_id: string;
+  to_user_id: string;
+  subject: string | null;
+  body: string;
+  read_at: string | null;
+  thread_id: string | null;
+  created_at: string;
+  updated_at: string;
+  sender?: {
+    user_id: string;
+    display_name: string | null;
+    email: string;
+    role: string;
+  };
+  recipient?: {
+    user_id: string;
+    display_name: string | null;
+    email: string;
+    role: string;
+  };
+}
+
+interface ThreadResponse {
+  success: true;
+  thread: {
+    root_message: Message;
+    replies: Message[];
+    participant_count: number;
+    last_message_at: string;
+    unread_count: number;
+  };
+}
+
+interface ErrorResponse {
+  success: false;
+  error: string;
+  code?: string;
+}
 
 // ============================================================================
-// GET /api/messages/thread/:id - Get Full Thread
+// GET /api/messages/thread/:id - Get Message Thread
 // ============================================================================
 
 export async function GET(
@@ -27,6 +61,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const threadId = params.id;
+
     // 1. Initialize Supabase client with auth
     const supabase = createClient();
 
@@ -37,7 +73,7 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'Unauthorized',
@@ -55,7 +91,7 @@ export async function GET(
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json<MessageErrorResponse>(
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'User profile not found',
@@ -65,51 +101,59 @@ export async function GET(
       );
     }
 
-    // 4. Get root message (the message that started the thread)
-    // Root message either has: id = params.id AND thread_id IS NULL
-    // OR any message where id = params.id (in case thread_id was provided)
-    const { data: potentialRootMessage, error: rootError } = await supabase
+    // 4. Get the message by ID (could be root or reply)
+    const { data: requestedMessage, error: messageError } = await supabase
       .from('messages')
-      .select(
-        `
-        *,
-        sender:sender_user_id(user_id, display_name, email, role),
-        recipient:recipient_user_id(user_id, display_name, email, role),
-        attachments:message_attachments(*)
-      `
-      )
-      .eq('id', params.id)
+      .select('*')
+      .eq('id', threadId)
       .eq('school_id', profile.school_id)
       .single();
 
-    if (rootError || !potentialRootMessage) {
-      return NextResponse.json<MessageErrorResponse>(
+    if (messageError || !requestedMessage) {
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Thread not found',
-          code: 'THREAD_NOT_FOUND',
-          details: { rootError },
+          error: 'Message not found',
+          code: 'MESSAGE_NOT_FOUND',
         },
         { status: 404 }
       );
     }
 
-    // Determine the actual thread ID
-    const actualThreadId = getThreadId(potentialRootMessage);
+    // 5. Determine the root message
+    // If the requested message has thread_id, it's a reply - find the root
+    // Otherwise, it is the root
+    let rootMessage: any;
+    if (requestedMessage.thread_id) {
+      const { data: root, error: rootError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('id', requestedMessage.thread_id)
+        .eq('school_id', profile.school_id)
+        .single();
 
-    // 5. Check if user has access to this thread
-    // User must be sender or recipient of any message in the thread
-    if (
-      !canViewMessage(
-        { userId: user.id, userRole: profile.role, schoolId: profile.school_id },
-        {
-          messageSchoolId: potentialRootMessage.school_id,
-          messageSenderId: potentialRootMessage.sender_user_id,
-          messageRecipientId: potentialRootMessage.recipient_user_id,
-        }
-      )
-    ) {
-      return NextResponse.json<MessageErrorResponse>(
+      if (rootError || !root) {
+        return NextResponse.json<ErrorResponse>(
+          {
+            success: false,
+            error: 'Thread root message not found',
+            code: 'ROOT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+      rootMessage = root;
+    } else {
+      rootMessage = requestedMessage;
+    }
+
+    // 6. Verify user has access to this thread
+    const hasAccess =
+      rootMessage.from_user_id === user.id ||
+      rootMessage.to_user_id === user.id;
+
+    if (!hasAccess) {
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'You do not have access to this thread',
@@ -119,164 +163,106 @@ export async function GET(
       );
     }
 
-    // 6. Get the actual root message if potentialRootMessage is a reply
-    let rootMessage: any;
-    if (potentialRootMessage.thread_id === null) {
-      // This is the root message
-      rootMessage = potentialRootMessage;
-    } else {
-      // This is a reply, need to fetch the actual root
-      const { data: actualRoot, error: actualRootError } = await supabase
-        .from('messages')
-        .select(
-          `
-          *,
-          sender:sender_user_id(user_id, display_name, email, role),
-          recipient:recipient_user_id(user_id, display_name, email, role),
-          attachments:message_attachments(*)
-        `
-        )
-        .eq('id', actualThreadId)
-        .eq('school_id', profile.school_id)
-        .single();
-
-      if (actualRootError || !actualRoot) {
-        return NextResponse.json<MessageErrorResponse>(
-          {
-            success: false,
-            error: 'Root message not found',
-            code: 'THREAD_NOT_FOUND',
-            details: { actualRootError },
-          },
-          { status: 404 }
-        );
-      }
-
-      rootMessage = actualRoot;
-    }
-
     // 7. Get all replies in the thread
-    const { data: repliesData, error: repliesError } = await supabase
+    const { data: replies, error: repliesError } = await supabase
       .from('messages')
-      .select(
-        `
-        *,
-        sender:sender_user_id(user_id, display_name, email, role),
-        recipient:recipient_user_id(user_id, display_name, email, role),
-        attachments:message_attachments(*)
-      `
-      )
-      .eq('thread_id', actualThreadId)
+      .select('*')
+      .eq('thread_id', rootMessage.id)
       .eq('school_id', profile.school_id)
       .order('created_at', { ascending: true });
 
     if (repliesError) {
-      console.error('Failed to fetch thread replies:', repliesError);
-      return NextResponse.json<MessageErrorResponse>(
+      console.error('Error fetching replies:', repliesError);
+      return NextResponse.json<ErrorResponse>(
         {
           success: false,
           error: 'Failed to fetch thread replies',
           code: 'DATABASE_ERROR',
-          details: { repliesError },
         },
         { status: 500 }
       );
     }
 
-    // 8. Process root message into MessageWithDetails format
-    const rootMessageWithDetails: MessageWithDetails = {
+    // 8. Populate sender and recipient data for root message
+    const { data: rootSender } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, email, role')
+      .eq('user_id', rootMessage.from_user_id)
+      .single();
+
+    const { data: rootRecipient } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, email, role')
+      .eq('user_id', rootMessage.to_user_id)
+      .single();
+
+    const populatedRoot: Message = {
       ...rootMessage,
-      sender: rootMessage.sender
-        ? {
-            id: rootMessage.sender.user_id,
-            display_name: rootMessage.sender.display_name || rootMessage.sender.email,
-            email: rootMessage.sender.email,
-            role: rootMessage.sender.role,
-          }
-        : ({} as any),
-      recipient: rootMessage.recipient
-        ? {
-            id: rootMessage.recipient.user_id,
-            display_name: rootMessage.recipient.display_name || rootMessage.recipient.email,
-            email: rootMessage.recipient.email,
-            role: rootMessage.recipient.role,
-          }
-        : ({} as any),
-      attachments: rootMessage.attachments || [],
-      is_read: rootMessage.read_at !== null,
-      reply_count: repliesData?.length || 0,
+      sender: rootSender || undefined,
+      recipient: rootRecipient || undefined,
     };
 
-    // 9. Process replies into MessageWithDetails format
-    const repliesWithDetails: MessageWithDetails[] = (repliesData || []).map((reply: any) => ({
-      ...reply,
-      sender: reply.sender
-        ? {
-            id: reply.sender.user_id,
-            display_name: reply.sender.display_name || reply.sender.email,
-            email: reply.sender.email,
-            role: reply.sender.role,
-          }
-        : ({} as any),
-      recipient: reply.recipient
-        ? {
-            id: reply.recipient.user_id,
-            display_name: reply.recipient.display_name || reply.recipient.email,
-            email: reply.recipient.email,
-            role: reply.recipient.role,
-          }
-        : ({} as any),
-      attachments: reply.attachments || [],
-      is_read: reply.read_at !== null,
-    }));
+    // 9. Populate sender and recipient data for all replies
+    const populatedReplies = await Promise.all(
+      (replies || []).map(async (reply) => {
+        const { data: sender } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email, role')
+          .eq('user_id', reply.from_user_id)
+          .single();
+
+        const { data: recipient } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email, role')
+          .eq('user_id', reply.to_user_id)
+          .single();
+
+        return {
+          ...reply,
+          sender: sender || undefined,
+          recipient: recipient || undefined,
+        };
+      })
+    );
 
     // 10. Calculate thread statistics
-    // Get unique participants (sender and recipient from all messages)
-    const allMessages = [rootMessage, ...(repliesData || [])];
+    const allMessages = [rootMessage, ...(replies || [])];
     const participantIds = new Set<string>();
     allMessages.forEach((msg) => {
-      participantIds.add(msg.sender_user_id);
-      participantIds.add(msg.recipient_user_id);
+      participantIds.add(msg.from_user_id);
+      participantIds.add(msg.to_user_id);
     });
-    const participantCount = participantIds.size;
 
-    // Calculate last message timestamp
-    const lastMessage =
-      repliesData && repliesData.length > 0
-        ? repliesData[repliesData.length - 1]
-        : rootMessage;
-    const lastMessageAt = lastMessage.created_at;
+    const lastMessageAt =
+      allMessages.length > 0
+        ? allMessages[allMessages.length - 1].created_at
+        : rootMessage.created_at;
 
-    // Calculate unread count for current user (messages where user is recipient and not read)
-    const unreadCount = allMessages.filter(
-      (msg) => msg.recipient_user_id === user.id && msg.read_at === null
-    ).length;
+    const unreadMessages = allMessages.filter(
+      (msg) => msg.to_user_id === user.id && !msg.read_at
+    );
 
-    // 11. Build thread response
-    const thread: MessageThread = {
-      root_message: rootMessageWithDetails,
-      replies: repliesWithDetails,
-      participant_count: participantCount,
-      last_message_at: lastMessageAt,
-      unread_count: unreadCount,
-    };
-
-    // 12. Return success response
-    return NextResponse.json<GetThreadResponse>(
+    // 11. Return thread response
+    return NextResponse.json<ThreadResponse>(
       {
         success: true,
-        thread,
+        thread: {
+          root_message: populatedRoot,
+          replies: populatedReplies,
+          participant_count: participantIds.size,
+          last_message_at: lastMessageAt,
+          unread_count: unreadMessages.length,
+        },
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Unexpected error in GET /api/messages/thread/:id:', error);
-    return NextResponse.json<MessageErrorResponse>(
+    return NextResponse.json<ErrorResponse>(
       {
         success: false,
         error: 'Internal server error',
         code: 'INTERNAL_ERROR',
-        details: { error: String(error) },
       },
       { status: 500 }
     );

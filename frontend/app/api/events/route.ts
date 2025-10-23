@@ -495,9 +495,7 @@ export async function GET(request: NextRequest) {
         *,
         creator:created_by_user_id(user_id, display_name, email, role),
         class:class_id(id, name, room),
-        assignment:assignment_id(id, title, status),
-        homework:homework_id(id),
-        target:target_id(id, title)
+        assignment:assignment_id(id, title, status)
       `,
         { count: 'exact' }
       )

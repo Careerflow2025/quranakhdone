@@ -72,7 +72,7 @@ export default function LoginPage() {
       const userData = {
         id: authData.user.id,
         email: (profile as any).email || authData.user.email,
-        role: (profile as any).role || 'school',
+        role: (profile as any).role || 'owner',  // FIXED: Default to 'owner' not 'school'
         fullName: (profile as any).display_name || '',
         schoolId: (profile as any).school_id || ''
       };
@@ -90,12 +90,12 @@ export default function LoginPage() {
         });
 
         // Redirect based on role - Using actual routes that exist in app directory
-        const dashboardRoute = (profile as any).role === 'school' ? '/school-dashboard' :
+        const dashboardRoute = ((profile as any).role === 'owner' || (profile as any).role === 'admin') ? '/school-dashboard' :
                               (profile as any).role === 'teacher' ? '/teacher-dashboard' :
                               (profile as any).role === 'student' ? '/student-dashboard' :
                               (profile as any).role === 'parent' ? '/parent-dashboard' : '/';
 
-        console.log('🚀 Redirecting to:', dashboardRoute);
+        console.log('🚀 Redirecting to:', dashboardRoute, 'for role:', (profile as any).role);
         router.push(dashboardRoute);
 
     } catch (error: any) {

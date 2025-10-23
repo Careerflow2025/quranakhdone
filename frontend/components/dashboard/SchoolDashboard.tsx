@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
@@ -64,28 +64,40 @@ export default function SchoolDashboard() {
     setCredentials
   } = useSchoolData();
 
+  // Memoize report dates to prevent re-renders
+  const reportStartDate = useMemo(() => {
+    if (reportPeriod === 'custom' && customStartDate && customEndDate) {
+      return new Date(customStartDate);
+    }
+    if (reportPeriod === 'today') {
+      return new Date();
+    }
+    if (reportPeriod === 'week') {
+      return new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    }
+    if (reportPeriod === 'month') {
+      return new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    }
+    if (reportPeriod === 'year') {
+      return new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    }
+    return undefined;
+  }, [reportPeriod, customStartDate, customEndDate]);
+
+  const reportEndDate = useMemo(() => {
+    if (reportPeriod === 'custom' && customStartDate && customEndDate) {
+      return new Date(customEndDate);
+    }
+    return new Date();
+  }, [reportPeriod, customStartDate, customEndDate]);
+
   // Get reports data with date filtering
   const {
     isLoading: reportsLoading,
     error: reportsError,
     reportData,
     refreshData: refreshReports
-  } = useReportsData(
-    reportPeriod === 'custom' && customStartDate && customEndDate
-      ? new Date(customStartDate)
-      : reportPeriod === 'today'
-      ? new Date()
-      : reportPeriod === 'week'
-      ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      : reportPeriod === 'month'
-      ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      : reportPeriod === 'year'
-      ? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
-      : undefined,
-    reportPeriod === 'custom' && customStartDate && customEndDate
-      ? new Date(customEndDate)
-      : new Date()
-  );
+  } = useReportsData(reportStartDate, reportEndDate);
 
   // Get current user from auth store
   const { user, logout } = useAuthStore();

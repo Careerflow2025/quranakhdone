@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateUpdateAssignmentRequest,
   canViewAssignment,
@@ -40,20 +40,30 @@ export async function GET(
   try {
     const assignmentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -61,7 +71,7 @@ export async function GET(
     }
 
     // 3. Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -83,7 +93,7 @@ export async function GET(
     let studentId: string | undefined;
 
     if (profile.role === 'teacher') {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -92,7 +102,7 @@ export async function GET(
     }
 
     if (profile.role === 'student') {
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('id')
         .eq('user_id', user.id)
@@ -101,7 +111,7 @@ export async function GET(
     }
 
     // 5. Fetch assignment with all related data
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select(
         `
@@ -167,7 +177,7 @@ export async function GET(
     }
 
     // 7. Fetch submission data if exists
-    const { data: submissions } = await supabase
+    const { data: submissions } = await supabaseAdmin
       .from('assignment_submissions')
       .select('id, text, created_at')
       .eq('assignment_id', assignmentId)
@@ -179,7 +189,7 @@ export async function GET(
     // 8. Fetch attachments for submission
     let submissionAttachments: any[] = [];
     if (latestSubmission) {
-      const { data: attachments } = await supabase
+      const { data: attachments } = await supabaseAdmin
         .from('assignment_attachments')
         .select('id, url, mime_type')
         .eq('assignment_id', assignmentId);
@@ -190,7 +200,7 @@ export async function GET(
     // 9. Fetch grades if assignment is reviewed or completed
     let grades: any[] = [];
     if (['reviewed', 'completed'].includes(assignment.status)) {
-      const { data: gradesData } = await supabase
+      const { data: gradesData } = await supabaseAdmin
         .from('grades')
         .select(
           `
@@ -217,7 +227,7 @@ export async function GET(
     }
 
     // 10. Fetch event history
-    const { data: events } = await supabase
+    const { data: events } = await supabaseAdmin
       .from('assignment_events')
       .select(
         `
@@ -311,20 +321,30 @@ export async function PATCH(
   try {
     const assignmentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -332,7 +352,7 @@ export async function PATCH(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -352,7 +372,7 @@ export async function PATCH(
     // 4. Get teacher_id if user is teacher
     let teacherId: string | undefined;
     if (profile.role === 'teacher') {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -361,7 +381,7 @@ export async function PATCH(
     }
 
     // 5. Fetch existing assignment
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('*')
       .eq('id', assignmentId)
@@ -434,7 +454,7 @@ export async function PATCH(
     }
 
     // 9. Update assignment
-    const { data: updatedAssignment, error: updateError } = await supabase
+    const { data: updatedAssignment, error: updateError } = await supabaseAdmin
       .from('assignments')
       .update({
         ...validation.data,
@@ -458,7 +478,7 @@ export async function PATCH(
     }
 
     // 10. Create event for update
-    await supabase.from('assignment_events').insert({
+    await supabaseAdmin.from('assignment_events').insert({
       assignment_id: assignmentId,
       event_type: 'updated',
       actor_user_id: user.id,
@@ -503,20 +523,30 @@ export async function DELETE(
   try {
     const assignmentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -524,7 +554,7 @@ export async function DELETE(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -544,7 +574,7 @@ export async function DELETE(
     // 4. Get teacher_id if user is teacher
     let teacherId: string | undefined;
     if (profile.role === 'teacher') {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -553,7 +583,7 @@ export async function DELETE(
     }
 
     // 5. Fetch existing assignment
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('*')
       .eq('id', assignmentId)
@@ -610,7 +640,7 @@ export async function DELETE(
     }
 
     // 8. Delete assignment (cascades to events, submissions, attachments via FK constraints)
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseAdmin
       .from('assignments')
       .delete()
       .eq('id', assignmentId);

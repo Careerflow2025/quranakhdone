@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateCompleteHomeworkRequest,
   validateCompletion,
@@ -32,20 +33,30 @@ export async function PATCH(
   try {
     const homeworkId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<HomeworkErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<HomeworkErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -53,7 +64,7 @@ export async function PATCH(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role, display_name')
       .eq('user_id', user.id)
@@ -73,7 +84,7 @@ export async function PATCH(
     // 4. Get teacher_id (only teachers can complete homework)
     let teacherId: string | undefined;
     if (['teacher', 'admin', 'owner'].includes(profile.role)) {
-      const { data: teacher, error: teacherError } = await supabase
+      const { data: teacher, error: teacherError } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -103,7 +114,7 @@ export async function PATCH(
     const { completed_by, completion_note } = validation.data;
 
     // 6. Fetch existing homework
-    const { data: homework, error: homeworkError } = await supabase
+    const { data: homework, error: homeworkError } = await supabaseAdmin
       .from('highlights')
       .select('*')
       .eq('id', homeworkId)
@@ -179,7 +190,7 @@ export async function PATCH(
 
     // 10. Update homework: green → gold transition
     const completedById = completed_by || user.id;
-    const { data: updatedHomework, error: updateError } = await supabase
+    const { data: updatedHomework, error: updateError } = await supabaseAdmin
       .from('highlights')
       .update({
         color: 'gold', // Gold = completed homework
@@ -209,7 +220,7 @@ export async function PATCH(
     }
 
     // 11. Get student info for notification
-    const { data: student } = await supabase
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('user_id')
       .eq('id', homework.student_id)
@@ -217,7 +228,7 @@ export async function PATCH(
 
     // 12. Create notification for student
     if (student) {
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: homework.school_id,
         user_id: student.user_id,
         channel: 'in_app',
@@ -234,7 +245,7 @@ export async function PATCH(
       });
 
       // Also send email notification
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: homework.school_id,
         user_id: student.user_id,
         channel: 'email',

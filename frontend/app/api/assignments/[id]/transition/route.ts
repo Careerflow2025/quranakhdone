@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateTransitionAssignmentRequest,
   validateStatusTransition,
@@ -32,20 +33,30 @@ export async function POST(
   try {
     const assignmentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -53,7 +64,7 @@ export async function POST(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -75,7 +86,7 @@ export async function POST(
     let studentId: string | undefined;
 
     if (profile.role === 'teacher') {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -84,7 +95,7 @@ export async function POST(
     }
 
     if (profile.role === 'student') {
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('id')
         .eq('user_id', user.id)
@@ -111,7 +122,7 @@ export async function POST(
     const { to_status, reason } = validation.data;
 
     // 6. Fetch existing assignment
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('*')
       .eq('id', assignmentId)
@@ -174,7 +185,7 @@ export async function POST(
     }
 
     // 9. Update assignment status
-    const { data: updatedAssignment, error: updateError } = await supabase
+    const { data: updatedAssignment, error: updateError } = await supabaseAdmin
       .from('assignments')
       .update({
         status: to_status,
@@ -198,7 +209,7 @@ export async function POST(
     }
 
     // 10. Create assignment event for transition
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await supabaseAdmin
       .from('assignment_events')
       .insert({
         assignment_id: assignmentId,
@@ -226,7 +237,7 @@ export async function POST(
 
     if (to_status === 'viewed') {
       // Notify teacher when student views assignment
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('user_id')
         .eq('id', assignment.created_by_teacher_id)
@@ -235,7 +246,7 @@ export async function POST(
       notificationType = 'assignment_viewed';
     } else if (to_status === 'submitted') {
       // Notify teacher when student submits
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('user_id')
         .eq('id', assignment.created_by_teacher_id)
@@ -244,7 +255,7 @@ export async function POST(
       notificationType = 'assignment_submitted';
     } else if (to_status === 'reviewed' || to_status === 'completed') {
       // Notify student when teacher reviews/completes
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('user_id')
         .eq('id', assignment.student_id)
@@ -253,7 +264,7 @@ export async function POST(
       notificationType = to_status === 'reviewed' ? 'assignment_reviewed' : 'assignment_completed';
     } else if (to_status === 'reopened') {
       // Notify student when assignment is reopened
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('user_id')
         .eq('id', assignment.student_id)
@@ -263,7 +274,7 @@ export async function POST(
     }
 
     if (notifyUserId) {
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: assignment.school_id,
         user_id: notifyUserId,
         channel: 'in_app',

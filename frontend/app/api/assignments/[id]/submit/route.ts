@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateSubmitAssignmentRequest,
   validateSubmission,
@@ -32,19 +33,29 @@ export async function POST(
     const assignmentId = params.id;
 
     // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get Bearer token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<AssignmentErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<AssignmentErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -52,7 +63,7 @@ export async function POST(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -70,7 +81,7 @@ export async function POST(
     }
 
     // 4. Get student_id (only students can submit)
-    const { data: student, error: studentError } = await supabase
+    const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .select('id')
       .eq('user_id', user.id)
@@ -106,7 +117,7 @@ export async function POST(
     const { text, attachments } = validation.data;
 
     // 6. Fetch existing assignment
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('*')
       .eq('id', assignmentId)
@@ -168,7 +179,7 @@ export async function POST(
     }
 
     // 9. Check if already submitted (reopen_count logic)
-    const { data: existingSubmissions } = await supabase
+    const { data: existingSubmissions } = await supabaseAdmin
       .from('assignment_submissions')
       .select('id')
       .eq('assignment_id', assignmentId)
@@ -177,7 +188,7 @@ export async function POST(
     const isResubmission = (existingSubmissions?.length || 0) > 0;
 
     // 10. Create submission record
-    const { data: submission, error: submissionError } = await supabase
+    const { data: submission, error: submissionError } = await supabaseAdmin
       .from('assignment_submissions')
       .insert({
         assignment_id: assignmentId,
@@ -209,7 +220,7 @@ export async function POST(
         mime_type: getMimeTypeFromUrl(url),
       }));
 
-      const { error: attachmentError } = await supabase
+      const { error: attachmentError } = await supabaseAdmin
         .from('assignment_attachments')
         .insert(attachmentInserts);
 
@@ -220,7 +231,7 @@ export async function POST(
     }
 
     // 12. Update assignment status to 'submitted'
-    const { data: updatedAssignment, error: updateError } = await supabase
+    const { data: updatedAssignment, error: updateError } = await supabaseAdmin
       .from('assignments')
       .update({
         status: 'submitted',
@@ -244,7 +255,7 @@ export async function POST(
     }
 
     // 13. Create assignment event for submission
-    await supabase.from('assignment_events').insert({
+    await supabaseAdmin.from('assignment_events').insert({
       assignment_id: assignmentId,
       event_type: isResubmission ? 'resubmitted' : 'submitted',
       actor_user_id: user.id,
@@ -259,14 +270,14 @@ export async function POST(
     });
 
     // 14. Create notification for teacher
-    const { data: teacher } = await supabase
+    const { data: teacher } = await supabaseAdmin
       .from('teachers')
       .select('user_id')
       .eq('id', assignment.created_by_teacher_id)
       .single();
 
     if (teacher) {
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: assignment.school_id,
         user_id: teacher.user_id,
         channel: 'in_app',
@@ -281,7 +292,7 @@ export async function POST(
       });
 
       // Also send email notification if configured
-      await supabase.from('notifications').insert({
+      await supabaseAdmin.from('notifications').insert({
         school_id: assignment.school_id,
         user_id: teacher.user_id,
         channel: 'email',

@@ -13,6 +13,8 @@ import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
 import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
+import AttendancePanel from '@/components/attendance/AttendancePanel';
+import TargetsPanel from '@/components/targets/TargetsPanel';
 import {
   Book,
   Mic,
@@ -99,75 +101,6 @@ export default function StudentDashboard() {
   const [assignmentSearchTerm, setAssignmentSearchTerm] = useState('');
   const [assignmentTypeFilter, setAssignmentTypeFilter] = useState('all');
 
-  // Student's Targets (assigned by teacher)
-  const [myTargets] = useState([
-    {
-      id: 'tgt1',
-      title: 'Complete Juz 30 Memorization',
-      description: 'Memorize all surahs in Juz 30 with proper tajweed',
-      type: 'individual',
-      assignedBy: 'Ustadh Ahmed',
-      startDate: '2024-01-01',
-      dueDate: '2024-03-30',
-      status: 'active',
-      category: 'memorization',
-      totalPages: 23,
-      completedPages: 15,
-      progress: 65,
-      milestones: [
-        { id: 'm1', name: 'Complete An-Naba', date: '2024-01-15', completed: true },
-        { id: 'm2', name: 'Complete An-Naziat', date: '2024-01-30', completed: true },
-        { id: 'm3', name: 'Complete Abasa', date: '2024-02-15', completed: false },
-        { id: 'm4', name: 'Complete At-Takwir', date: '2024-02-28', completed: false }
-      ],
-      lastActivity: '2 hours ago',
-      todaysPractice: '45 minutes',
-      weeklyAverage: '35 minutes/day'
-    },
-    {
-      id: 'tgt2',
-      title: 'Master Tajweed Rules - Noon Sakinah',
-      description: 'Learn and apply all rules of Noon Sakinah and Tanween',
-      type: 'class',
-      assignedBy: 'Ustadh Ahmed',
-      startDate: '2024-01-15',
-      dueDate: '2024-02-15',
-      status: 'active',
-      category: 'tajweed',
-      totalLessons: 8,
-      completedLessons: 6,
-      progress: 75,
-      milestones: [
-        { id: 'm5', name: 'Izhar rule', date: '2024-01-20', completed: true },
-        { id: 'm6', name: 'Idgham rule', date: '2024-01-25', completed: true },
-        { id: 'm7', name: 'Iqlab rule', date: '2024-02-01', completed: false },
-        { id: 'm8', name: 'Ikhfa rule', date: '2024-02-10', completed: false }
-      ],
-      lastActivity: '1 day ago',
-      testsCompleted: 3,
-      averageScore: 88
-    },
-    {
-      id: 'tgt3',
-      title: 'Daily Quran Recitation',
-      description: 'Recite at least 2 pages daily with proper pronunciation',
-      type: 'individual',
-      assignedBy: 'Ustadh Ahmed',
-      startDate: '2024-01-01',
-      dueDate: '2024-12-31',
-      status: 'active',
-      category: 'recitation',
-      totalDays: 365,
-      completedDays: 28,
-      progress: 8,
-      currentStreak: 12,
-      longestStreak: 15,
-      lastActivity: 'Today',
-      todaysPages: 3,
-      totalPagesRead: 84
-    }
-  ]);
-  
   // Message & UI States
   const [messageTab, setMessageTab] = useState('inbox');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -320,6 +253,44 @@ export default function StudentDashboard() {
       { id: 6, from: 'Ustadh Ahmed', subject: 'Previous assignment feedback', time: '2 weeks ago' }
     ]
   });
+
+  // Student targets/goals
+  const [myTargets] = useState([
+    {
+      id: 1,
+      title: 'Complete Juz 30',
+      status: 'active',
+      progress: 75,
+      deadline: '2025-12-31',
+      milestones: [
+        { id: 1, name: 'Surah An-Naba', completed: true },
+        { id: 2, name: 'Surah An-Nazi\'at', completed: true },
+        { id: 3, name: 'Surah Abasa', completed: false }
+      ]
+    },
+    {
+      id: 2,
+      title: 'Master Tajweed Rules',
+      status: 'active',
+      progress: 60,
+      deadline: '2025-11-30',
+      milestones: [
+        { id: 1, name: 'Noon Sakinah Rules', completed: true },
+        { id: 2, name: 'Meem Sakinah Rules', completed: false }
+      ]
+    },
+    {
+      id: 3,
+      title: 'Revise Juz 1-5',
+      status: 'active',
+      progress: 40,
+      deadline: '2026-01-15',
+      milestones: [
+        { id: 1, name: 'Juz 1', completed: true },
+        { id: 2, name: 'Juz 2', completed: false }
+      ]
+    }
+  ]);
 
   const AYAHS_PER_PAGE = 7;
 
@@ -767,6 +738,20 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <CalendarIcon className="w-4 h-4" />
                 <span>Calendar</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('attendance')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                activeTab === 'attendance'
+                  ? 'text-white bg-green-600 shadow-sm'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Clock className="w-4 h-4" />
+                <span>Attendance</span>
               </span>
             </button>
 
@@ -1657,254 +1642,14 @@ export default function StudentDashboard() {
         <CalendarPanel userRole="student" />
       )}
 
+      {/* Attendance Tab */}
+      {activeTab === 'attendance' && (
+        <AttendancePanel userRole="student" studentId={studentInfo.id} />
+      )}
+
       {/* Targets Tab */}
       {activeTab === 'targets' && (
-        <div className="space-y-6">
-          {/* Targets Header with Filters */}
-          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold flex flex-wrap items-center gap-2">
-                <Target className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-600" />
-                <span>My Learning Targets</span>
-                <span className="text-sm font-normal bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1 rounded-full">
-                  {myTargets.filter((t: any) => t.status === 'active').length} Active
-                </span>
-              </h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <button className="px-3 sm:px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition text-sm">
-                  Individual ({myTargets.filter((t: any) => t.type === 'individual').length})
-                </button>
-                <button className="px-3 sm:px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm">
-                  Class ({myTargets.filter((t: any) => t.type === 'class').length})
-                </button>
-              </div>
-            </div>
-
-            {/* Overall Progress Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-600">Average Progress</p>
-                    <p className="text-xl sm:text-2xl font-bold text-green-700">
-                      {Math.round(myTargets.reduce((acc: any, t: any) => acc + t.progress, 0) / myTargets.length)}%
-                    </p>
-                  </div>
-                  <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-600">Active Targets</p>
-                    <p className="text-xl sm:text-2xl font-bold text-blue-700">
-                      {myTargets.filter((t: any) => t.status === 'active').length}
-                    </p>
-                  </div>
-                  <Target className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-600">Completed This Week</p>
-                    <p className="text-xl sm:text-2xl font-bold text-purple-700">3</p>
-                  </div>
-                  <Award className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Targets List */}
-          <div className="space-y-4">
-            {myTargets.map((target: any) => (
-              <div
-                key={target.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-              >
-                <div className={`h-2 ${
-                  target.type === 'individual' ? 'bg-gradient-to-r from-yellow-400 to-orange-400' :
-                  'bg-gradient-to-r from-blue-400 to-indigo-400'
-                }`} />
-
-                <div className="p-4 sm:p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">{target.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          target.type === 'individual'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {target.type === 'individual' ? 'Individual' : 'Class'}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          target.category === 'memorization' ? 'bg-green-100 text-green-700' :
-                          target.category === 'tajweed' ? 'bg-orange-100 text-orange-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}>
-                          {target.category}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-3">{target.description}</p>
-                      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500">
-                        <span className="flex items-center">
-                          <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span className="truncate">{target.assignedBy}</span>
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span className="truncate">{target.dueDate}</span>
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span>{target.lastActivity}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center lg:justify-end">
-                      <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-                        <svg width="96" height="96" className="w-full h-full transform -rotate-90">
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="40"
-                            stroke="#e5e7eb"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="40"
-                            stroke={target.progress >= 75 ? '#10b981' : target.progress >= 50 ? '#f59e0b' : '#ef4444'}
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${target.progress * 2.51} 251`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg sm:text-xl font-bold">{target.progress}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress Details */}
-                  <div className="border-t pt-4 mt-4">
-                    {target.category === 'memorization' && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-4">
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Pages</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.completedPages}/{target.totalPages}</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Today</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.todaysPractice}</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg col-span-2 sm:col-span-1">
-                          <p className="text-xs sm:text-sm text-gray-500">Weekly Avg</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.weeklyAverage}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {target.category === 'tajweed' && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-4">
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Lessons</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.completedLessons}/{target.totalLessons}</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Tests</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.testsCompleted}</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg col-span-2 sm:col-span-1">
-                          <p className="text-xs sm:text-sm text-gray-500">Avg Score</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.averageScore}%</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {target.category === 'recitation' && (
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4">
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Streak</p>
-                          <p className="text-sm sm:text-base font-semibold text-green-600">🔥 {target.currentStreak}d</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Longest</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.longestStreak}d</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Today</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.todaysPages}p</p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs sm:text-sm text-gray-500">Total</p>
-                          <p className="text-sm sm:text-base font-semibold">{target.totalPagesRead}p</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Milestones */}
-                    {target.milestones && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Milestones</p>
-                        <div className="space-y-2">
-                          {target.milestones.map((milestone: any) => (
-                            <div key={milestone.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                              <div className="flex items-center space-x-2">
-                                {milestone.completed ? (
-                                  <Check className="w-4 h-4 text-green-600" />
-                                ) : (
-                                  <Clock className="w-4 h-4 text-gray-400" />
-                                )}
-                                <span className={`text-sm ${milestone.completed ? 'text-gray-700 line-through' : 'text-gray-600'}`}>
-                                  {milestone.name}
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-500">{milestone.date}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Action Button */}
-                    <div className="flex justify-center sm:justify-end mt-4">
-                      <button
-                        onClick={() => {
-                          // Navigate to related content based on target
-                          if (target.category === 'memorization') {
-                            setActiveTab('quran');
-                            // Navigate to the specific surah/page for memorization
-                          }
-                        }}
-                        className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition flex items-center space-x-2 text-sm sm:text-base"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Continue Practice</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {myTargets.length === 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-              <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Active Targets</h3>
-              <p className="text-gray-500">Your teacher hasn't assigned any targets yet.</p>
-            </div>
-          )}
-        </div>
+        <TargetsPanel studentId={studentInfo.id} showCreateButton={false} />
       )}
     </div>
 
