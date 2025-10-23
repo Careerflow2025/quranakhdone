@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function PUT(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // Create server client for user authentication
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    // FIXED: Get the authorization header (Bearer token authentication)
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Unauthorized - missing or invalid token' },
+        { status: 401 }
+      );
+    }
 
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Extract token
+    const token = authHeader.replace('Bearer ', '');
+
+    // Verify the token and get user
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('Auth error:', userError);
       return NextResponse.json(
-        { error: 'Unauthorized - please login' },
+        { error: 'Unauthorized - invalid token' },
         { status: 401 }
       );
     }
 
     // Get user profile and check role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
@@ -59,19 +57,17 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Now we can use admin client for privileged operations
-    const supabaseAdmin = getSupabaseAdmin();
-
     const body = await req.json();
     const {
       parentId,
       userId,
       name,
+      phone,      // ✅ ADDED: Extract phone from request
+      address,    // ✅ ADDED: Extract address from request
       studentIds
     } = body;
 
-    // 1. Update profile record (parents table has minimal fields)
-    // Profiles table schema: user_id, school_id, role, display_name, email, created_at, updated_at
+    // 1. Update profile record (display_name only)
     const { error: profileError2 } = await supabaseAdmin
       .from('profiles')
       .update({
@@ -84,7 +80,21 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: profileError2.message }, { status: 400 });
     }
 
-    // 2. Update student linkages if provided
+    // 2. ✅ ADDED: Update parents table with phone and address
+    const { error: parentError } = await supabaseAdmin
+      .from('parents')
+      .update({
+        phone: phone || null,
+        address: address || null
+      })
+      .eq('id', parentId);
+
+    if (parentError) {
+      console.error('Parent update error:', parentError);
+      return NextResponse.json({ error: parentError.message }, { status: 400 });
+    }
+
+    // 3. Update student linkages if provided
     if (studentIds && Array.isArray(studentIds)) {
       // Delete existing links
       const { error: deleteLinkError } = await supabaseAdmin
