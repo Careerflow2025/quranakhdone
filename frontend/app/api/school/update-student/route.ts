@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function PUT(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    // Get Bearer token from Authorization header
+    const supabaseAdmin = getSupabaseAdmin();
+    const authHeader = req.headers.get('authorization');
 
-    // Create server client for user authentication
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Missing authorization header' },
+        { status: 401 }
+      );
+    }
 
-    // Get authenticated user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -31,7 +25,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Get user profile and check role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
@@ -59,33 +53,27 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Now we can use admin client for privileged operations
-    const supabaseAdmin = getSupabaseAdmin();
-    
     const body = await req.json();
     const {
       studentId,
       userId,
       name,
-      age,
-      gender
+      dob,
+      gender,
+      grade,
+      phone,
+      address
     } = body;
 
-    // Calculate DOB from age if provided
-    let dobValue = null;
-    if (age) {
-      const currentYear = new Date().getFullYear();
-      const birthYear = currentYear - parseInt(age);
-      dobValue = `${birthYear}-01-01`;
-    }
-
-    // 1. Update student record
-    // Students table schema: id, user_id, school_id, dob, gender, active, created_at
+    // 1. Update student record with ALL fields
     const { error: studentError } = await supabaseAdmin
       .from('students')
       .update({
-        dob: dobValue,
-        gender: gender || null
+        dob: dob || null,
+        gender: gender || null,
+        grade: grade || null,
+        phone: phone || null,
+        address: address || null
       })
       .eq('id', studentId);
 

@@ -82,44 +82,80 @@ export async function DELETE(req: NextRequest) {
         const userId = studentData.user_id;
 
         // 2. Delete from parent_students table (relationships)
-        await supabaseAdmin
+        console.log(`🔗 Deleting parent-student links for student ${studentId}...`);
+        const { error: parentStudentsError } = await supabaseAdmin
           .from('parent_students')
           .delete()
           .eq('student_id', studentId);
 
+        if (parentStudentsError) {
+          console.error(`❌ Error deleting parent-student links:`, parentStudentsError);
+          // Continue anyway, links might not exist
+        }
+
         // 3. Delete from class_enrollments table
-        await supabaseAdmin
+        console.log(`📚 Deleting class enrollments for student ${studentId}...`);
+        const { error: enrollmentsError } = await supabaseAdmin
           .from('class_enrollments')
           .delete()
           .eq('student_id', studentId);
 
-        // 4. Delete from students table
-        await supabaseAdmin
+        if (enrollmentsError) {
+          console.error(`❌ Error deleting class enrollments:`, enrollmentsError);
+          errors.push({ studentId, error: `Failed to delete enrollments: ${enrollmentsError.message}` });
+          continue;
+        }
+
+        // 4. Delete from students table - CRITICAL STEP
+        console.log(`👨‍🎓 Deleting student record ${studentId} from students table...`);
+        const { error: studentDeleteError } = await supabaseAdmin
           .from('students')
           .delete()
           .eq('id', studentId);
 
+        if (studentDeleteError) {
+          console.error(`❌ CRITICAL: Failed to delete student record:`, studentDeleteError);
+          errors.push({ studentId, error: `Failed to delete student: ${studentDeleteError.message}` });
+          continue;
+        }
+        console.log(`✅ Student record deleted from students table`);
+
         // 5. Delete from profiles table
-        await supabaseAdmin
+        console.log(`📝 Deleting profile for user ${userId}...`);
+        const { error: profileDeleteError } = await supabaseAdmin
           .from('profiles')
           .delete()
           .eq('user_id', userId);
 
+        if (profileDeleteError) {
+          console.error(`❌ Error deleting profile:`, profileDeleteError);
+          // Continue anyway, profile might not exist
+        }
+
         // 6. Delete from user_credentials table
-        await supabaseAdmin
+        console.log(`🔑 Deleting credentials for user ${userId}...`);
+        const { error: credentialsError } = await supabaseAdmin
           .from('user_credentials')
           .delete()
           .eq('user_id', userId);
 
+        if (credentialsError) {
+          console.error(`⚠️ Error deleting credentials:`, credentialsError);
+          // Continue anyway, credentials might not exist
+        }
+
         // 7. Delete Supabase Auth user (THIS IS THE CRITICAL STEP!)
+        console.log(`🔐 Deleting auth user ${userId}...`);
         const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
         if (authDeleteError) {
-          console.error(`Failed to delete auth user ${userId}:`, authDeleteError);
+          console.error(`❌ Failed to delete auth user ${userId}:`, authDeleteError);
           errors.push({ studentId, error: `Auth deletion failed: ${authDeleteError.message}` });
           continue;
         }
+        console.log(`✅ Auth user deleted successfully`);
 
+        console.log(`🎉 Student ${studentId} completely deleted from all systems`);
         deletedCount++;
       } catch (error: any) {
         console.error(`Error deleting student ${studentId}:`, error);
