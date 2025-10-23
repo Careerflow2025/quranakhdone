@@ -2682,8 +2682,10 @@ export default function SchoolDashboard() {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <p className="text-sm text-gray-900">{student.age || 'N/A'} yrs</p>
-                                <p className="text-xs text-gray-500">{student.gender || 'N/A'}</p>
+                                <p className="text-sm text-gray-900">
+                                  {student.age ? `${student.age} yrs` : <span className="text-orange-600 text-xs">Age not set</span>}
+                                </p>
+                                <p className="text-xs text-gray-500">{student.gender || 'Not specified'}</p>
                               </td>
                               <td className="px-6 py-4">
                                 <p className="text-sm font-medium text-gray-900">{student.grade || 'N/A'}</p>
@@ -6497,7 +6499,9 @@ export default function SchoolDashboard() {
                 </div>
                 <div>
                   <label className="text-sm text-gray-500">Age</label>
-                  <p className="font-medium text-gray-900">{showStudentDetails.age || 'N/A'}</p>
+                  <p className="font-medium text-gray-900">
+                    {showStudentDetails.age ? `${showStudentDetails.age} years` : <span className="text-orange-600">Not set</span>}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm text-gray-500">Grade</label>
