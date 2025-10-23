@@ -10,6 +10,7 @@ import useOfflineSync from '../hooks/useOfflineSync';
 import { initAutosave, triggerAutosave, flushAutosave, cancelAutosave } from '../utils/autosave';
 import { telemetry } from '../../telemetry/client';
 import { cacheAnnotation, getCachedAnnotation } from '../utils/cache';
+import { supabase } from '@/lib/supabase';
 
 // Dynamic import for PDF.js to avoid SSR issues
 let pdfjs: any = null;
@@ -40,9 +41,19 @@ export default function PdfWithFabric({ pdfUrl }: Props){
   useEffect(() => {
     initAutosave(async (payload: any) => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No session found for autosave');
+          await enqueue(payload);
+          return;
+        }
+
         const res = await fetch('/api/annotations/save', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
           body: JSON.stringify(payload)
         });
         const j = await res.json();
@@ -54,7 +65,7 @@ export default function PdfWithFabric({ pdfUrl }: Props){
         telemetry.logEvent('annotation.autosave_failed', { page: payload.page });
       }
     });
-    
+
     // Cleanup on unmount
     return () => cancelAutosave();
   }, [page]);
@@ -99,7 +110,20 @@ export default function PdfWithFabric({ pdfUrl }: Props){
     } else {
       // Load latest annotation from server if no cache
       try {
-        const res = await fetch(`/api/annotations/latest?studentId=demo&page=${page}`);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No session found for loading annotations');
+          const f = fabricRef.current!;
+          resetHistory(serializeFabric(f));
+          return;
+        }
+
+        const res = await fetch(`/api/annotations/latest?studentId=demo&page=${page}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
         const j = await res.json();
         if(j.ok && j.ann){
           const f = fabricRef.current!;
@@ -110,14 +134,14 @@ export default function PdfWithFabric({ pdfUrl }: Props){
           telemetry.logEvent('annotation.loaded_from_server', { page });
         } else {
           // No prior annotation -> reset history with blank canvas state
-          const f = fabricRef.current!; 
+          const f = fabricRef.current!;
           resetHistory(serializeFabric(f));
           telemetry.logEvent('annotation.loaded_blank', { page });
         }
-      } catch(err) { 
+      } catch(err) {
         console.warn('No prior annotation or error loading:', err);
         // Fallback to blank state
-        const f = fabricRef.current!; 
+        const f = fabricRef.current!;
         resetHistory(serializeFabric(f));
         telemetry.logEvent('annotation.load_failed', { page, error: err instanceof Error ? err.message : 'Unknown' });
       }
@@ -245,10 +269,17 @@ export default function PdfWithFabric({ pdfUrl }: Props){
         <button aria-label="Save annotations" className="border px-2 py-1 rounded bg-green-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500" onClick={async()=>{
           const f = fabricRef.current; if(!f) return;
           const pageCanvas = pageCanvasRef.current; if(!pageCanvas) return;
-          
+
+          // Get session for authorization
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            alert('Please login to save annotations');
+            return;
+          }
+
           // 1. Serialize Fabric JSON
           const layer = serializeFabric(f);
-          
+
           // 2. Flatten PDF + Fabric overlay to PNG
           const flattenedBlob = await flattenPdfAndFabric(pageCanvas, f);
           const flattenedPngDataUrl = await new Promise<string>((resolve) => {
@@ -256,23 +287,26 @@ export default function PdfWithFabric({ pdfUrl }: Props){
             reader.onload = () => resolve(reader.result as string);
             reader.readAsDataURL(flattenedBlob);
           });
-          
+
           // 3. Prepare payload
-          const payload = { 
-            schoolId:'demo', 
-            studentId:'demo', 
-            page, 
-            toolType:tool, 
-            layerJson:layer, 
+          const payload = {
+            schoolId:'demo',
+            studentId:'demo',
+            page,
+            toolType:tool,
+            layerJson:layer,
             userId:'demo',
             flattenedPngDataUrl
           };
-          
+
           // 4. Try to save online, fallback to offline queue
           try {
             const res = await fetch('/api/annotations/save',{
               method:'POST',
-              headers:{'Content-Type':'application/json'},
+              headers:{
+                'Content-Type':'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
               body:JSON.stringify(payload)
             });
             const j = await res.json();
@@ -285,8 +319,19 @@ export default function PdfWithFabric({ pdfUrl }: Props){
           }
         }}>Save</button>
         <button aria-label="Load annotations" className="border px-2 py-1 rounded bg-blue-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500" onClick={async()=>{
-          const res = await fetch(`/api/annotations/load?studentId=demo&page=${page}`);
-          const j = await res.json(); 
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            alert('Please login to load annotations');
+            return;
+          }
+
+          const res = await fetch(`/api/annotations/load?studentId=demo&page=${page}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+          const j = await res.json();
           if(j.layerJson && fabricRef.current) {
             await deserializeFabric(fabricRef.current, j.layerJson);
           }

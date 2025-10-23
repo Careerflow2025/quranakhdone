@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   RubricWithDetails,
   GradeWithDetails,
@@ -112,10 +113,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
         params.append('search', search);
       }
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access rubrics');
+      }
+
       const response = await fetch(`/api/rubrics?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -156,10 +164,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsLoadingRubric(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access rubric details');
+      }
+
       const response = await fetch(`/api/rubrics/${rubricId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -197,10 +212,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsSubmitting(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to create rubrics');
+      }
+
       const response = await fetch('/api/rubrics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(rubricData),
       });
@@ -241,10 +263,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsSubmitting(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to update rubrics');
+      }
+
       const response = await fetch(`/api/rubrics/${rubricId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(updates),
       });
@@ -289,10 +318,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsSubmitting(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to delete rubrics');
+      }
+
       const response = await fetch(`/api/rubrics/${rubricId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -340,10 +376,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsSubmitting(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to submit grades');
+      }
+
       const response = await fetch('/api/grades', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(gradeData),
       });
@@ -382,14 +425,21 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       return;
     }
 
-    try {
+    try{
       setIsLoading(true);
       setError(null);
+
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access assignment grades');
+      }
 
       const response = await fetch(`/api/grades/assignment/${assignmentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -430,10 +480,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsLoading(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access student grades');
+      }
+
       const response = await fetch(`/api/grades/student/${studentId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -475,10 +532,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
       setIsSubmitting(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to attach rubrics');
+      }
+
       const response = await fetch(`/api/assignments/${assignmentId}/rubric`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ rubric_id: rubricId }),
       });
@@ -526,10 +590,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
         params.append('student_id', studentId);
       }
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access gradebook');
+      }
+
       const response = await fetch(`/api/gradebook/student?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -575,10 +646,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
         params.append('child_id', childId);
       }
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access parent gradebook');
+      }
+
       const response = await fetch(`/api/gradebook/parent?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -634,10 +712,17 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
         params.append('include_comments', options.include_comments.toString());
       }
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to export gradebook');
+      }
+
       const response = await fetch(`/api/gradebook/export?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 

@@ -396,6 +396,12 @@ export function useCalendar(initialView: CalendarView = 'month') {
         setIsSubmitting(true);
         setError(null);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Please login to export calendar');
+        }
+
         const activeFilters = exportFilters || filters;
 
         // Build query parameters
@@ -407,6 +413,9 @@ export function useCalendar(initialView: CalendarView = 'month') {
 
         const response = await fetch(`/api/events/ical?${params.toString()}`, {
           method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
         });
 
         if (!response.ok) {

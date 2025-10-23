@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 
 // Types matching our Parents API
 export interface ParentData {
@@ -52,6 +53,12 @@ export function useParents() {
       setIsLoading(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access parents');
+      }
+
       // Use provided schoolId or get from user
       const targetSchoolId = schoolId || user?.schoolId;
 
@@ -68,6 +75,7 @@ export function useParents() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -98,17 +106,18 @@ export function useParents() {
     try {
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to create parents');
+      }
 
       const response = await fetch('/api/school/create-parent', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(parentData),
       });
@@ -143,11 +152,18 @@ export function useParents() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to update parents');
+      }
+
       const response = await fetch(`/api/school/update-parent`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(updateData),
       });
@@ -189,11 +205,18 @@ export function useParents() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to delete parents');
+      }
+
       const response = await fetch(`/api/school/delete-parents`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ parentIds }),
       });

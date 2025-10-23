@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
 
 // Types for linking operations
 export interface ChildData {
@@ -45,10 +46,11 @@ export function useParentStudentLinks() {
       setIsLoading(true);
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access children');
+      }
 
       const params = new URLSearchParams({
         parent_id: parentId,
@@ -59,7 +61,7 @@ export function useParentStudentLinks() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -101,17 +103,18 @@ export function useParentStudentLinks() {
     try {
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to link students');
+      }
 
       const response = await fetch('/api/school/link-parent-student', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(linkData),
       });
@@ -144,10 +147,11 @@ export function useParentStudentLinks() {
     try {
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to unlink students');
+      }
 
       const params = new URLSearchParams({
         parent_id: unlinkData.parent_id,
@@ -159,7 +163,7 @@ export function useParentStudentLinks() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 

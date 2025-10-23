@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 
 // Types matching our Students API
 export interface StudentData {
@@ -75,6 +76,12 @@ export function useStudents() {
       setIsLoading(true);
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to access students');
+      }
+
       // Use provided schoolId or get from user
       const targetSchoolId = schoolId || user?.schoolId;
 
@@ -91,6 +98,7 @@ export function useStudents() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -121,17 +129,18 @@ export function useStudents() {
     try {
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to create students');
+      }
 
       const response = await fetch('/api/school/create-student', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(studentData),
       });
@@ -166,11 +175,18 @@ export function useStudents() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to update students');
+      }
+
       const response = await fetch(`/api/school/update-student`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           id: studentId,
@@ -215,11 +231,18 @@ export function useStudents() {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to delete students');
+      }
+
       const response = await fetch(`/api/school/delete-students`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ studentIds }),
       });
@@ -261,17 +284,18 @@ export function useStudents() {
     try {
       setError(null);
 
-      // Get Bearer token from current session
-      const authHeader = await fetch('/api/auth/session', {
-        credentials: 'include',
-      }).then(res => res.json()).then(data => data.token);
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to bulk create students');
+      }
 
       const response = await fetch('/api/school/bulk-create-students', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': authHeader ? `Bearer ${authHeader}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(bulkData),
       });

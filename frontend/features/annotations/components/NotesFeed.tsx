@@ -1,9 +1,19 @@
 'use client';
 import { useState,useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+
 export default function NotesFeed({ studentId }:{ studentId:string }){
   const [notes,setNotes]=useState<any[]>([]);
   useEffect(()=>{(async()=>{
-    const res = await fetch(`/api/notes/list?studentId=${studentId}`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch(`/api/notes/list?studentId=${studentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
     const j = await res.json(); if(j.ok) setNotes(j.notes);
   })();},[studentId]);
   return (

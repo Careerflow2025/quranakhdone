@@ -1,16 +1,36 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+
 export default function NotesPanel({ studentId }:{ studentId:string }){
   const [notes,setNotes]=useState<any[]>([]);
   const [text,setText]=useState('');
   const [visible,setVisible]=useState(true);
   async function load(){
-    const res = await fetch(`/api/notes/list?studentId=${studentId}&all=1`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch(`/api/notes/list?studentId=${studentId}&all=1`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
     const j = await res.json(); if(j.ok) setNotes(j.notes);
   }
   useEffect(()=>{ load(); },[]);
   async function add(){
-    const res = await fetch('/api/notes/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ schoolId:'demo', studentId, authorId:'demo-teacher', text, visibleToParent:visible })});
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch('/api/notes/add',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body:JSON.stringify({ schoolId:'demo', studentId, authorId:'demo-teacher', text, visibleToParent:visible })
+    });
     const j = await res.json(); if(j.ok){ setNotes([j.note,...notes]); setText(''); }
   }
   return (

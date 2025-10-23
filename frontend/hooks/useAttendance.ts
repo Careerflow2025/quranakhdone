@@ -373,6 +373,12 @@ export function useAttendance() {
     }
   ) => {
     try {
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to export attendance data');
+      }
+
       // Fetch all records for export (no pagination)
       const params = new URLSearchParams();
       params.append('class_id', class_id);
@@ -381,7 +387,12 @@ export function useAttendance() {
       if (options?.end_date) params.append('end_date', options.end_date);
       params.append('limit', '1000'); // Large limit for export
 
-      const response = await fetch(`/api/attendance?${params.toString()}`);
+      const response = await fetch(`/api/attendance?${params.toString()}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
       const data = await response.json();
 
       if (data.success && data.data.records.length > 0) {

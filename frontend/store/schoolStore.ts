@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 
 interface Class {
   id: string;
@@ -83,9 +84,18 @@ export const useSchoolStore = create<SchoolState>()(
         set({ isLoading: true, error: null });
 
         try {
+          // Get session for authorization
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            throw new Error('Please login to access school data');
+          }
+
           // Fetch classes
           const classesResponse = await fetch(`/api/classes?school_id=${schoolId}`, {
             credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            },
           });
 
           if (classesResponse.ok) {
@@ -96,6 +106,9 @@ export const useSchoolStore = create<SchoolState>()(
           // Fetch students
           const studentsResponse = await fetch(`/api/school/students?school_id=${schoolId}`, {
             credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            },
           });
 
           if (studentsResponse.ok) {
@@ -106,6 +119,9 @@ export const useSchoolStore = create<SchoolState>()(
           // Fetch teachers
           const teachersResponse = await fetch(`/api/school/teachers?school_id=${schoolId}`, {
             credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            },
           });
 
           if (teachersResponse.ok) {

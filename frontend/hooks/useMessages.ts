@@ -252,10 +252,17 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to reply to messages');
+      }
+
       const response = await fetch(`/api/messages/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ body, attachments }),
       });
@@ -296,10 +303,17 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
     try {
       setError(null);
 
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to mark messages as read');
+      }
+
       const response = await fetch(`/api/messages/${messageId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 

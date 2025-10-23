@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import {
   StudentMasteryOverview,
   SurahMasteryData,
@@ -88,12 +89,19 @@ export function useMastery(initialStudentId?: string) {
         if (activeFilters.script_id) params.append('script_id', activeFilters.script_id);
         if (activeFilters.surah) params.append('surah', String(activeFilters.surah));
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Please login to access mastery data');
+        }
+
         const response = await fetch(
           `/api/mastery/student/${targetStudentId}?${params.toString()}`,
           {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
             },
           }
         );
@@ -148,12 +156,19 @@ export function useMastery(initialStudentId?: string) {
         params.append('student_id', targetStudentId);
         if (filters.script_id) params.append('script_id', filters.script_id);
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Please login to access mastery heatmap');
+        }
+
         const response = await fetch(
           `/api/mastery/heatmap/${targetSurah}?${params.toString()}`,
           {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
             },
           }
         );
@@ -197,10 +212,17 @@ export function useMastery(initialStudentId?: string) {
           level: masteryData.level,
         };
 
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Please login to update mastery');
+        }
+
         const response = await fetch('/api/mastery/upsert', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(requestData),
         });

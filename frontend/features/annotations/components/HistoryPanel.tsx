@@ -1,15 +1,32 @@
 'use client';
 import { useState,useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function HistoryPanel({ studentId }:{ studentId:string }){
   const [rows,setRows]=useState<any[]>([]);
   useEffect(()=>{(async()=>{
-    const res = await fetch(`/api/renders/history?studentId=${studentId}`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch(`/api/renders/history?studentId=${studentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
     const j = await res.json(); if(j.ok) setRows(j.rows);
   })();},[studentId]);
 
   async function restore(row:any){
-    const res = await fetch(`/api/annotations/load?studentId=${studentId}&page=${row.page_number}`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch(`/api/annotations/load?studentId=${studentId}&page=${row.page_number}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
     const j = await res.json(); console.log('Loaded annotation', j);
     // later: actually load into Fabric
   }

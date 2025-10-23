@@ -17,6 +17,7 @@ import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import { useAuthStore } from '@/store/authStore';
 import { useParentStudentLinks } from '@/hooks/useParentStudentLinks';
+import { supabase } from '@/lib/supabase';
 import {
   Star,
   Users,
@@ -87,8 +88,21 @@ export default function ParentDashboard() {
 
       try {
         setIsLoadingParent(true);
+
+        // Get current session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No session found for parent dashboard');
+          setIsLoadingParent(false);
+          return;
+        }
+
         const response = await fetch(`/api/parents?school_id=${user.schoolId}`, {
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          }
         });
 
         if (!response.ok) {
