@@ -20,9 +20,8 @@ export default function CalendarSection() {
   const [formData, setFormData] = useState({
     title: '',
     event_type: 'class_session',
-    start_date: '',
+    date: '',
     start_time: '',
-    end_date: '',
     end_time: '',
     all_day: false,
     description: '',
@@ -76,28 +75,20 @@ export default function CalendarSection() {
     setIsSubmitting(true);
 
     try {
-      // Get session for auth
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        alert('Please log in to create events');
-        return;
-      }
-
-      // Combine date and time
+      // Combine date and time (SAME date for both start and end)
       const startDateTime = formData.all_day
-        ? `${formData.start_date}T00:00:00`
-        : `${formData.start_date}T${formData.start_time}:00`;
+        ? `${formData.date}T00:00:00`
+        : `${formData.date}T${formData.start_time}:00`;
 
       const endDateTime = formData.all_day
-        ? `${formData.end_date || formData.start_date}T23:59:59`
-        : `${formData.end_date || formData.start_date}T${formData.end_time || formData.start_time}:00`;
+        ? `${formData.date}T23:59:59`
+        : `${formData.date}T${formData.end_time || formData.start_time}:00`;
 
-      // Create event via API
+      // Create event via API (auth handled by server-side cookies)
       const response = await fetch('/api/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           title: formData.title,
@@ -118,9 +109,8 @@ export default function CalendarSection() {
       setFormData({
         title: '',
         event_type: 'class_session',
-        start_date: '',
+        date: '',
         start_time: '',
-        end_date: '',
         end_time: '',
         all_day: false,
         description: '',
@@ -351,21 +341,23 @@ export default function CalendarSection() {
                 </label>
               </div>
 
-              {/* Start Date & Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Start Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-                {!formData.all_day && (
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Time Range (only if not all-day) */}
+              {!formData.all_day && (
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Start Time *
@@ -378,23 +370,6 @@ export default function CalendarSection() {
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
-                )}
-              </div>
-
-              {/* End Date & Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.end_date}
-                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-                {!formData.all_day && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       End Time
@@ -406,8 +381,8 @@ export default function CalendarSection() {
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Description */}
               <div>
