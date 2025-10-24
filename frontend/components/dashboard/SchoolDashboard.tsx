@@ -10,6 +10,7 @@ import type { Database } from '@/lib/database.types';
 import { useAuthStore } from '@/store/authStore';
 import SchoolProfile from './SchoolProfile';
 import CalendarSection from '@/components/calendar/CalendarSection';
+import SettingsSection from './SettingsSection';
 import {
   Users, UserPlus, GraduationCap, BookOpen, Calendar, Bell, Settings, Home, Search, Filter,
   Download, Upload, Edit, Trash2, MoreVertical, Check, AlertCircle, Clock, FileText, Award,
@@ -4866,6 +4867,9 @@ export default function SchoolDashboard() {
               </div>
             </div>
           )}
+
+          {/* Settings Tab - School Configuration & Settings */}
+          {activeTab === 'settings' && <SettingsSection />}
         </div>
       </div>
 
