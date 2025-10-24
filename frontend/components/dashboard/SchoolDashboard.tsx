@@ -2117,9 +2117,17 @@ export default function SchoolDashboard() {
       <div className="w-64 bg-white shadow-md">
         <div className="p-4 border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <School className="w-6 h-6 text-white" />
-            </div>
+            {schoolInfo?.logo_url ? (
+              <img
+                src={schoolInfo.logo_url}
+                alt="School Logo"
+                className="w-10 h-10 rounded-lg object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                <School className="w-6 h-6 text-white" />
+              </div>
+            )}
             <div>
               <h2 className="font-semibold text-gray-900">{schoolInfo?.name || 'My School'}</h2>
               <p className="text-xs text-gray-500">School Dashboard</p>
@@ -2315,37 +2323,51 @@ export default function SchoolDashboard() {
                   onClick={() => setShowSettings(!showSettings)}
                   className="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
                 >
-                  <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    {user?.fullName?.charAt(0) || schoolInfo?.name?.charAt(0) || 'S'}
-                  </div>
+                  {schoolInfo?.logo_url ? (
+                    <img
+                      src={schoolInfo.logo_url}
+                      alt="School Logo"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {user?.fullName?.charAt(0) || schoolInfo?.name?.charAt(0) || 'S'}
+                    </div>
+                  )}
                 </button>
 
                 {showSettings && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b">
-                      <p className="font-semibold text-gray-900">{user?.fullName || 'School Admin'}</p>
+                      <div className="flex items-center space-x-3 mb-2">
+                        {schoolInfo?.logo_url ? (
+                          <img
+                            src={schoolInfo.logo_url}
+                            alt="School Logo"
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            {schoolInfo?.name?.charAt(0) || 'S'}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-gray-900">{schoolInfo?.name || 'My School'}</p>
+                          <p className="text-xs text-gray-500">{user?.fullName || 'School Admin'}</p>
+                        </div>
+                      </div>
                       <p className="text-sm text-gray-500">{user?.email}</p>
                     </div>
                     <div className="p-2">
                       <button
                         onClick={() => {
-                          setShowProfile(true);
-                          setShowSettings(false);
-                        }}
-                        className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                      >
-                        <User className="w-4 h-4" />
-                        <span>Profile</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setActiveSettingsPanel('general');
+                          setActiveTab('settings');
                           setShowSettings(false);
                         }}
                         className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                       >
                         <Settings className="w-4 h-4" />
-                        <span>Settings</span>
+                        <span>School Settings</span>
                       </button>
                       <button
                         onClick={handleLogout}

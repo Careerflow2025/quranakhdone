@@ -138,11 +138,10 @@ export default function SettingsSection() {
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${settingsData?.school.id}_logo_${Date.now()}.${fileExt}`;
-      const filePath = `school-logos/${fileName}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('public-files')
-        .upload(filePath, file, {
+        .from('school-logos')
+        .upload(fileName, file, {
           cacheControl: '3600',
           upsert: true
         });
@@ -151,8 +150,8 @@ export default function SettingsSection() {
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('public-files')
-        .getPublicUrl(filePath);
+        .from('school-logos')
+        .getPublicUrl(fileName);
 
       // Update school with new logo URL
       const { data: { session } } = await supabase.auth.getSession();

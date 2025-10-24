@@ -75,7 +75,13 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "mcp__supabase__list_migrations",
-      "Bash(PORT=3021 npm run dev:*)"
+      "Bash(PORT=3021 npm run dev:*)",
+      "mcp__supabase__get_logs",
+      "Bash(powershell.exe:*)",
+      "Bash(PORT=3022 npm run dev:*)",
+      "mcp__playwright__browser_fill_form",
+      "Bash(npx tsc:*)",
+      "mcp__supabase__list_storage_buckets"
     ],
     "deny": [],
     "ask": []

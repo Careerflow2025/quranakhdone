@@ -88,6 +88,7 @@ export function useSchoolData() {
       setSchoolInfo({
         name: (school as any)?.name || 'My School',
         id: (school as any)?.id || '',
+        logo_url: (school as any)?.logo_url || null,  // School logo from database
         location: 'Not specified',  // address column doesn't exist in NEW schema
         established: (school as any)?.created_at ? new Date((school as any).created_at).getFullYear().toString() : new Date().getFullYear().toString(),
         principal: user?.fullName || 'School Administrator',
