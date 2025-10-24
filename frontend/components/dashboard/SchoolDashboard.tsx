@@ -122,6 +122,11 @@ export default function SchoolDashboard() {
   // State Management (keeping ALL the beautiful UI states)
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // DEBUG: Log activeTab changes
+  useEffect(() => {
+    console.log('📑 activeTab changed to:', activeTab);
+  }, [activeTab]);
   const [viewMode, setViewMode] = useState('list');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalType, setAddModalType] = useState('student');
@@ -2140,7 +2145,10 @@ export default function SchoolDashboard() {
           ].map((item: any) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                console.log('🔘 Menu clicked:', item.id);
+                setActiveTab(item.id);
+              }}
               className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                 activeTab === item.id
                   ? 'bg-emerald-50 text-emerald-600'
@@ -4869,7 +4877,13 @@ export default function SchoolDashboard() {
           )}
 
           {/* Settings Tab - School Configuration & Settings */}
-          {activeTab === 'settings' && <SettingsSection />}
+          {activeTab === 'settings' && (
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Settings Section Test</h2>
+              <p className="text-gray-600 mb-4">If you see this, the tab is working!</p>
+              <SettingsSection />
+            </div>
+          )}
         </div>
       </div>
 

@@ -37,6 +37,7 @@ interface SettingsData {
 }
 
 export default function SettingsSection() {
+  console.log('🔧 SettingsSection: Component mounted');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -60,14 +61,18 @@ export default function SettingsSection() {
 
   const fetchSettings = async () => {
     try {
+      console.log('🔧 fetchSettings: Starting...');
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔧 fetchSettings: Session:', session ? 'Found' : 'None');
 
       if (!session) {
+        console.error('🔧 fetchSettings: No session found');
         alert('Please login to access settings');
         return;
       }
 
+      console.log('🔧 fetchSettings: Calling API...');
       const response = await fetch('/api/school/settings', {
         method: 'GET',
         credentials: 'include',
@@ -77,12 +82,16 @@ export default function SettingsSection() {
         },
       });
 
+      console.log('🔧 fetchSettings: Response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error('🔧 fetchSettings: API error:', error);
         throw new Error(error.error || 'Failed to fetch settings');
       }
 
       const result = await response.json();
+      console.log('🔧 fetchSettings: Got data:', result);
       setSettingsData(result.data);
 
       // Populate form
@@ -99,9 +108,10 @@ export default function SettingsSection() {
       });
 
     } catch (error: any) {
-      console.error('Error fetching settings:', error);
+      console.error('🔧 fetchSettings: CATCH block error:', error);
       alert('Failed to load settings: ' + error.message);
     } finally {
+      console.log('🔧 fetchSettings: FINALLY - Setting isLoading to false');
       setIsLoading(false);
     }
   };
@@ -262,12 +272,15 @@ export default function SettingsSection() {
   };
 
   if (isLoading) {
+    console.log('🔧 SettingsSection: Rendering LOADING state');
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
       </div>
     );
   }
+
+  console.log('🔧 SettingsSection: Rendering MAIN content');
 
   return (
     <div className="space-y-6">
