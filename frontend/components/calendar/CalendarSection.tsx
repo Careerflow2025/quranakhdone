@@ -52,13 +52,19 @@ export default function CalendarSection() {
   };
 
   // Get upcoming events (next 7 days from today)
-  const upcomingEvents = events ? events.filter(event => {
-    const eventDate = new Date(event.start_date);
-    const today = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
-    return eventDate >= today && eventDate <= nextWeek;
-  }).slice(0, 5) : [];
+  const upcomingEvents = events ? events
+    .filter(event => {
+      const eventDate = new Date(event.start_date);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today at 00:00 local time
+      const sevenDaysFromNow = new Date(today);
+      sevenDaysFromNow.setDate(today.getDate() + 7);
+      sevenDaysFromNow.setHours(23, 59, 59, 999); // End of 7th day
+
+      return eventDate >= now && eventDate <= sevenDaysFromNow;
+    })
+    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) // Sort by date
+    .slice(0, 5) : [];
 
   // Check if day is today
   const isToday = (day: number) => {
