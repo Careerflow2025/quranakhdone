@@ -319,35 +319,60 @@ export function useSchoolData() {
         setStats(prev => ({ ...prev, totalClasses: 0 }));
       }
 
-      // Fetch calendar events for upcoming events
-      const today = new Date().toISOString().split('T')[0];
+      // FIXED: Use API endpoint instead of direct Supabase query
+      // Fetch calendar events through API for proper date format conversion
+      const today = new Date().toISOString(); // ISO 8601 format for API
 
-      // Get upcoming events
-      const { data: upcomingData, error: upcomingError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('school_id', user.schoolId)
-        .gte('start_date', today)  // Use date format YYYY-MM-DD
-        .order('start_date', { ascending: true });
+      try {
+        // Get session for Bearer token authentication
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Get upcoming events via API
+          const upcomingParams = new URLSearchParams({
+            start_date: today,
+            limit: '50'
+          });
 
-      if (!upcomingError) {
-        setUpcomingEvents(upcomingData || []);
-        setStats(prev => ({ ...prev, upcomingEvents: upcomingData?.length || 0 }));
-      } else {
-        console.error('Error loading upcoming events:', upcomingError);
-      }
+          const upcomingResponse = await fetch(`/api/events?${upcomingParams.toString()}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
 
-      // Get ALL calendar events for the calendar grid
-      const { data: allEventsData, error: allEventsError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('school_id', user.schoolId)
-        .order('start_date', { ascending: true });
+          if (upcomingResponse.ok) {
+            const upcomingResult = await upcomingResponse.json();
+            const upcomingData = upcomingResult.data?.events || [];
+            setUpcomingEvents(upcomingData);
+            setStats(prev => ({ ...prev, upcomingEvents: upcomingData.length }));
+          } else {
+            console.error('Error loading upcoming events:', await upcomingResponse.text());
+          }
 
-      if (!allEventsError) {
-        setAllCalendarEvents(allEventsData || []);
-      } else {
-        console.error('Error loading all calendar events:', allEventsError);
+          // Get ALL calendar events for the calendar grid via API
+          const allEventsParams = new URLSearchParams({
+            limit: '1000' // High limit to get all events
+          });
+
+          const allEventsResponse = await fetch(`/api/events?${allEventsParams.toString()}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+
+          if (allEventsResponse.ok) {
+            const allEventsResult = await allEventsResponse.json();
+            const allEventsData = allEventsResult.data?.events || [];
+            setAllCalendarEvents(allEventsData);
+          } else {
+            console.error('Error loading all calendar events:', await allEventsResponse.text());
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching events via API:', error);
       }
 
       // Fetch user credentials from database

@@ -4276,13 +4276,16 @@ export default function SchoolDashboard() {
                             <div>
                               <p className="font-medium text-gray-900">{event.title}</p>
                               <p className="text-sm text-gray-500">
-                                {new Date(event.date).toLocaleDateString('en-US', {
+                                {new Date(event.start_date).toLocaleDateString('en-US', {
                                   weekday: 'long',
                                   year: 'numeric',
                                   month: 'long',
                                   day: 'numeric'
                                 })}
-                                {event.start_time && ` at ${event.start_time}`}
+                                {!event.all_day && ` at ${new Date(event.start_date).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}`}
                               </p>
                             </div>
                           </div>
