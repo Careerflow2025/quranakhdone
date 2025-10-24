@@ -75,6 +75,14 @@ export default function CalendarSection() {
     setIsSubmitting(true);
 
     try {
+      // Get session for authorization (SAME PATTERN AS CLASSES!)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Please login to create events');
+        setIsSubmitting(false);
+        return;
+      }
+
       // Combine date and time (SAME date for both start and end)
       const startDateTime = formData.all_day
         ? `${formData.date}T00:00:00`
@@ -84,11 +92,13 @@ export default function CalendarSection() {
         ? `${formData.date}T23:59:59`
         : `${formData.date}T${formData.end_time || formData.start_time}:00`;
 
-      // Create event via API (auth handled by server-side cookies)
+      // Create event via API (EXACT SAME PATTERN AS CLASSES!)
       const response = await fetch('/api/events', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           title: formData.title,
