@@ -352,7 +352,7 @@ export function useSchoolData() {
 
           // Get ALL calendar events for the calendar grid via API
           const allEventsParams = new URLSearchParams({
-            limit: '1000' // High limit to get all events
+            limit: '500' // API max limit (see EVENT_CONSTANTS.MAX_PAGINATION_LIMIT)
           });
 
           const allEventsResponse = await fetch(`/api/events?${allEventsParams.toString()}`, {

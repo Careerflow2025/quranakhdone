@@ -83,14 +83,14 @@ export default function CalendarSection() {
         return;
       }
 
-      // Combine date and time (SAME date for both start and end)
+      // Combine date and time and convert to ISO 8601 format with timezone
       const startDateTime = formData.all_day
-        ? `${formData.date}T00:00:00`
-        : `${formData.date}T${formData.start_time}:00`;
+        ? new Date(`${formData.date}T00:00:00`).toISOString()
+        : new Date(`${formData.date}T${formData.start_time}:00`).toISOString();
 
       const endDateTime = formData.all_day
-        ? `${formData.date}T23:59:59`
-        : `${formData.date}T${formData.end_time || formData.start_time}:00`;
+        ? new Date(`${formData.date}T23:59:59`).toISOString()
+        : new Date(`${formData.date}T${formData.end_time || formData.start_time}:00`).toISOString();
 
       // Create event via API (EXACT SAME PATTERN AS CLASSES!)
       const response = await fetch('/api/events', {
