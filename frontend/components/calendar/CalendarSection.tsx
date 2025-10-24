@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCalendar } from '@/hooks/useCalendar';
-import { Calendar, ChevronLeft, ChevronRight, Plus, Clock, X } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Plus, Clock, X, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function CalendarSection() {
@@ -18,6 +18,7 @@ export default function CalendarSection() {
 
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     event_type: 'class_session',
@@ -51,7 +52,7 @@ export default function CalendarSection() {
     });
   };
 
-  // Get upcoming events (next 7 days from today)
+  // Get upcoming events (next 7 days from today) with search filter
   const upcomingEvents = events ? events
     .filter(event => {
       const eventDate = new Date(event.start_date);
@@ -61,10 +62,20 @@ export default function CalendarSection() {
       sevenDaysFromNow.setDate(today.getDate() + 7);
       sevenDaysFromNow.setHours(23, 59, 59, 999); // End of 7th day
 
-      return eventDate >= now && eventDate <= sevenDaysFromNow;
+      // Date range filter
+      const inDateRange = eventDate >= now && eventDate <= sevenDaysFromNow;
+
+      // Search filter (search in title, description, event_type)
+      const searchLower = searchText.toLowerCase();
+      const matchesSearch = !searchText ||
+        event.title?.toLowerCase().includes(searchLower) ||
+        event.description?.toLowerCase().includes(searchLower) ||
+        event.event_type?.toLowerCase().includes(searchLower);
+
+      return inDateRange && matchesSearch;
     })
     .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) // Sort by date
-    .slice(0, 5) : [];
+    : [];
 
   // Check if day is today
   const isToday = (day: number) => {
@@ -241,6 +252,26 @@ export default function CalendarSection() {
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-5 h-5 text-emerald-600" />
           <h3 className="text-lg font-semibold text-gray-900">Upcoming Events</h3>
+        </div>
+
+        {/* Search Filter */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search events by title, description, or type..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+          {searchText && (
+            <button
+              onClick={() => setSearchText('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
