@@ -11,8 +11,9 @@ export default function CalendarSection() {
     isLoading,
     currentDate,
     navigateToDate,
-    navigateMonth,
-    refreshEvents,
+    navigatePrevious,
+    navigateNext,
+    refreshData,
   } = useCalendar('month');
 
   const [showAddEvent, setShowAddEvent] = useState(false);
@@ -128,9 +129,7 @@ export default function CalendarSection() {
       setShowAddEvent(false);
 
       // Refresh calendar to show new event
-      if (refreshEvents) {
-        refreshEvents();
-      }
+      refreshData();
 
       alert('Event created successfully!');
     } catch (error: any) {
@@ -159,14 +158,14 @@ export default function CalendarSection() {
         {/* Month Navigation */}
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={() => navigateMonth('prev')}
+            onClick={navigatePrevious}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h3 className="text-lg font-semibold">{monthName}</h3>
           <button
-            onClick={() => navigateMonth('next')}
+            onClick={navigateNext}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <ChevronRight className="w-5 h-5" />
