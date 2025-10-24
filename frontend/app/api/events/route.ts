@@ -354,6 +354,11 @@ export async function POST(request: NextRequest) {
     const primaryEvent = createdEvents[0];
     const eventWithDetails: EventWithDetails = {
       ...primaryEvent,
+      // FIXED: Convert PostgreSQL timestamp format to ISO 8601 for JavaScript Date compatibility
+      start_date: primaryEvent.start_date ? new Date(primaryEvent.start_date).toISOString() : primaryEvent.start_date,
+      end_date: primaryEvent.end_date ? new Date(primaryEvent.end_date).toISOString() : primaryEvent.end_date,
+      created_at: primaryEvent.created_at ? new Date(primaryEvent.created_at).toISOString() : primaryEvent.created_at,
+      updated_at: primaryEvent.updated_at ? new Date(primaryEvent.updated_at).toISOString() : primaryEvent.updated_at,
       creator: creator
         ? {
             id: creator.user_id,
@@ -546,6 +551,12 @@ export async function GET(request: NextRequest) {
     // 8. Process events with details
     const eventsWithDetails: EventWithDetails[] = (events || []).map((event: any) => ({
       ...event,
+      // FIXED: Convert PostgreSQL timestamp format to ISO 8601 for JavaScript Date compatibility
+      // PostgreSQL: "2025-10-25 14:00:00+00" → ISO 8601: "2025-10-25T14:00:00.000Z"
+      start_date: event.start_date ? new Date(event.start_date).toISOString() : event.start_date,
+      end_date: event.end_date ? new Date(event.end_date).toISOString() : event.end_date,
+      created_at: event.created_at ? new Date(event.created_at).toISOString() : event.created_at,
+      updated_at: event.updated_at ? new Date(event.updated_at).toISOString() : event.updated_at,
       creator: event.creator
         ? {
             id: event.creator.user_id,

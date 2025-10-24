@@ -129,6 +129,11 @@ export async function GET(
     // 6. Build event with details
     const eventWithDetails: EventWithDetails = {
       ...event,
+      // FIXED: Convert PostgreSQL timestamp format to ISO 8601 for JavaScript Date compatibility
+      start_date: event.start_date ? new Date(event.start_date).toISOString() : event.start_date,
+      end_date: event.end_date ? new Date(event.end_date).toISOString() : event.end_date,
+      created_at: event.created_at ? new Date(event.created_at).toISOString() : event.created_at,
+      updated_at: event.updated_at ? new Date(event.updated_at).toISOString() : event.updated_at,
       creator: event.creator
         ? {
             id: event.creator.user_id,
@@ -370,6 +375,11 @@ export async function PATCH(
 
     const eventWithDetails: EventWithDetails = {
       ...updatedEvent,
+      // FIXED: Convert PostgreSQL timestamp format to ISO 8601 for JavaScript Date compatibility
+      start_date: updatedEvent.start_date ? new Date(updatedEvent.start_date).toISOString() : updatedEvent.start_date,
+      end_date: updatedEvent.end_date ? new Date(updatedEvent.end_date).toISOString() : updatedEvent.end_date,
+      created_at: updatedEvent.created_at ? new Date(updatedEvent.created_at).toISOString() : updatedEvent.created_at,
+      updated_at: updatedEvent.updated_at ? new Date(updatedEvent.updated_at).toISOString() : updatedEvent.updated_at,
       creator: updatedEvent.creator
         ? {
             id: updatedEvent.creator.user_id,
