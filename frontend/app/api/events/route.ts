@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateCreateEventRequest,
   validateListEventsRequest,
@@ -112,28 +112,39 @@ function generateRecurringInstances(
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client (SAME PATTERN AS CLASSES!)
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get and validate authorization header (SAME PATTERN AS CLASSES!)
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<EventErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    // 3. Extract and validate token (SAME PATTERN AS CLASSES!)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -198,7 +209,7 @@ export async function POST(request: NextRequest) {
 
     // 6. Verify linked resources exist (if provided)
     if (class_id) {
-      const { data: classExists } = await supabase
+      const { data: classExists } = await supabaseAdmin
         .from('classes')
         .select('id, school_id')
         .eq('id', class_id)
@@ -217,7 +228,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (assignment_id) {
-      const { data: assignmentExists } = await supabase
+      const { data: assignmentExists } = await supabaseAdmin
         .from('assignments')
         .select('id, school_id')
         .eq('id', assignment_id)
@@ -264,7 +275,7 @@ export async function POST(request: NextRequest) {
 
     if (is_recurring && recurrence_rule) {
       // Create parent event
-      const { data: parentEvent, error: parentError } = await supabase
+      const { data: parentEvent, error: parentError } = await supabaseAdmin
         .from('events')
         .insert(baseEventData)
         .select()
@@ -296,7 +307,7 @@ export async function POST(request: NextRequest) {
           recurrence_parent_id: parentEvent.id,
         };
 
-        const { data: instanceEvent } = await supabase
+        const { data: instanceEvent } = await supabaseAdmin
           .from('events')
           .insert(instanceData)
           .select()
@@ -308,7 +319,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create single event
-      const { data: singleEvent, error: singleError } = await supabase
+      const { data: singleEvent, error: singleError } = await supabaseAdmin
         .from('events')
         .insert(baseEventData)
         .select()
@@ -340,11 +351,11 @@ export async function POST(request: NextRequest) {
         }))
       );
 
-      await supabase.from('event_participants').insert(participantsData);
+      await supabaseAdmin.from('event_participants').insert(participantsData);
     }
 
     // 10. Get creator details for response
-    const { data: creator } = await supabase
+    const { data: creator } = await supabaseAdmin
       .from('profiles')
       .select('user_id, display_name, email, role')
       .eq('user_id', user.id)
@@ -403,28 +414,39 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client (SAME PATTERN AS CLASSES!)
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get and validate authorization header (SAME PATTERN AS CLASSES!)
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<EventErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    // 3. Extract and validate token (SAME PATTERN AS CLASSES!)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -493,7 +515,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Build query
-    let query = supabase
+    let query = supabaseAdmin
       .from('events')
       .select(
         `
