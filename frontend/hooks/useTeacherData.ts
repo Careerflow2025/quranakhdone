@@ -55,31 +55,31 @@ export function useTeacherData() {
 
   // Fetch teacher data
   const fetchTeacherData = useCallback(async () => {
-    if (!user?.userId) {
+    if (!user?.id) {
       setError('No user ID found');
       setIsLoading(false);
       return;
     }
 
     // Prevent concurrent fetches
-    if (fetchInProgress.current || currentTeacherId.current === user.userId) {
+    if (fetchInProgress.current || currentTeacherId.current === user.id) {
       return;
     }
 
     fetchInProgress.current = true;
-    currentTeacherId.current = user.userId;
+    currentTeacherId.current = user.id;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching teacher data for user:', user.userId);
+      console.log('🔍 Fetching teacher data for user:', user.id);
 
       // Fetch teacher record
       const { data: teacher, error: teacherError } = await supabase
         .from('teachers')
         .select('*')
-        .eq('user_id', user.userId)
+        .eq('user_id', user.id)
         .single();
 
       if (teacherError) throw teacherError;
@@ -245,7 +245,7 @@ export function useTeacherData() {
       const { data: messagesData } = await supabase
         .from('messages')
         .select('*')
-        .eq('recipient_id', user.userId)
+        .eq('recipient_id', user.id)
         .eq('read', false);
 
       if (messagesData) {
@@ -266,17 +266,17 @@ export function useTeacherData() {
       setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [user?.userId, user?.schoolId, user?.fullName]);
+  }, [user?.id, user?.schoolId, user?.fullName]);
 
   // Fetch teacher data when auth is initialized
   useEffect(() => {
-    if (authInitialized && user?.userId) {
+    if (authInitialized && user?.id) {
       fetchTeacherData();
-    } else if (authInitialized && !user?.userId) {
+    } else if (authInitialized && !user?.id) {
       setError('No user ID found. Please login again.');
       setIsLoading(false);
     }
-  }, [authInitialized, user?.userId, fetchTeacherData]);
+  }, [authInitialized, user?.id, fetchTeacherData]);
 
   // Refresh data function
   const refreshData = async () => {
