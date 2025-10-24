@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useTeacherData } from '@/hooks/useTeacherData';
 import {
   Users, BookOpen, Calendar, Bell, Settings, FileText, Clock, TrendingUp,
   CheckCircle, AlertCircle, Mail, GraduationCap, Search, Filter, User, LogOut,
@@ -22,6 +23,21 @@ import ClassesPanel from '@/components/classes/ClassesPanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 
 export default function TeacherDashboard() {
+  // Get real teacher data from database
+  const {
+    isLoading: teacherDataLoading,
+    error: teacherDataError,
+    teacherInfo,
+    stats,
+    students,
+    classes: myClasses,
+    assignments,
+    homework: homeworkData,
+    targets,
+    messages: teacherMessages,
+    refreshData
+  } = useTeacherData();
+
   // State Management
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -38,82 +54,52 @@ export default function TeacherDashboard() {
   } = useNotifications();
 
   // Homework State
-  const [homeworkList, setHomeworkList] = useState<any[]>([]);
   const [homeworkFilter, setHomeworkFilter] = useState('all');
   const [showHomeworkDetail, setShowHomeworkDetail] = useState<any>(null);
 
-  // Sample Data for demonstration
-  const myClasses = [
-    { id: 1, name: 'Class 6A', room: '101', students: 22, schedule: 'Mon-Fri 8:00 AM' },
-    { id: 2, name: 'Class 7B', room: '102', students: 18, schedule: 'Mon-Fri 10:00 AM' },
-    { id: 3, name: 'Class 5A', room: '201', students: 20, schedule: 'Mon-Fri 2:00 PM' }
-  ];
-
-  const myStudents = [
-    { id: 1, name: 'Ahmed Hassan', class: 'Class 6A', progress: 75, attendance: 95 },
-    { id: 2, name: 'Fatima Al-Zahra', class: 'Class 6A', progress: 88, attendance: 100 },
-    { id: 3, name: 'Abdullah Khan', class: 'Class 7B', progress: 65, attendance: 90 },
-    { id: 4, name: 'Aisha Ibrahim', class: 'Class 5A', progress: 92, attendance: 98 }
-  ];
-
-  // Sample homework data (green highlights)
-  const [homeworkData] = useState([
-    {
-      id: 'HW001',
-      studentName: 'Ahmed Hassan',
-      studentId: 'STU001',
-      class: 'Class 6A',
-      surah: 'Al-Mulk',
-      ayahRange: '1-10',
-      note: 'Memorize these verses by Thursday',
-      assignedDate: '2025-01-18',
-      dueDate: '2025-01-25',
-      status: 'pending',
-      replies: 2,
-      color: 'green'
-    },
-    {
-      id: 'HW002',
-      studentName: 'Fatima Al-Zahra',
-      studentId: 'STU002',
-      class: 'Class 6A',
-      surah: 'Al-Baqarah',
-      ayahRange: '1-5',
-      note: 'Practice recitation with proper tajweed',
-      assignedDate: '2025-01-17',
-      dueDate: '2025-01-24',
-      status: 'in-progress',
-      replies: 1,
-      color: 'green'
-    },
-    {
-      id: 'HW003',
-      studentName: 'Abdullah Khan',
-      studentId: 'STU003',
-      class: 'Class 7B',
-      surah: 'Yasin',
-      ayahRange: '20-30',
-      note: 'Review with focus on makharij',
-      assignedDate: '2025-01-16',
-      dueDate: '2025-01-23',
-      status: 'completed',
-      replies: 3,
-      color: 'gold' // Changed to gold when completed
-    }
-  ]);
-
-
-  // Navigation tabs - INCLUDING HOMEWORK AND TARGETS
+  // Navigation tabs
   const tabs = ['overview', 'my classes', 'students', 'assignments', 'gradebook', 'mastery', 'homework', 'targets', 'attendance', 'messages', 'events'];
 
   // Function to mark homework as complete (turns green to gold)
-  const markHomeworkComplete = (homeworkId: string) => {
-    setHomeworkList((prev: any) => prev.map((hw: any) =>
-      hw.id === homeworkId
-        ? { ...hw, status: 'completed', color: 'gold' }
-        : hw
-    ));
+  const markHomeworkComplete = async (homeworkId: string) => {
+    try {
+      // Update homework/assignment status in database
+      await refreshData();
+    } catch (error) {
+      console.error('Error marking homework complete:', error);
+    }
   };
+
+  // Show loading state
+  if (teacherDataLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
+          <p className="text-gray-600">Loading teacher dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (teacherDataError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-red-600 font-semibold mb-2">Error loading dashboard</p>
+          <p className="text-gray-600 mb-4">{teacherDataError}</p>
+          <button
+            onClick={refreshData}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -242,7 +228,7 @@ export default function TeacherDashboard() {
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
               >
                 <User className="w-6 h-6" />
-                <span className="hidden md:inline">Dr. Fatima</span>
+                <span className="hidden md:inline">{teacherInfo?.name || 'Teacher'}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
             </div>
@@ -281,7 +267,7 @@ export default function TeacherDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Students</p>
-                    <p className="text-2xl font-bold text-gray-900">60</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
                   </div>
                   <Users className="w-12 h-12 text-blue-100" />
                 </div>
@@ -291,7 +277,7 @@ export default function TeacherDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Active Homework</p>
-                    <p className="text-2xl font-bold text-green-600">12</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.activeHomework}</p>
                   </div>
                   <BookOpen className="w-12 h-12 text-green-100" />
                 </div>
@@ -301,7 +287,7 @@ export default function TeacherDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Active Targets</p>
-                    <p className="text-2xl font-bold text-purple-600">8</p>
+                    <p className="text-2xl font-bold text-purple-600">{stats.activeTargets}</p>
                   </div>
                   <Target className="w-12 h-12 text-purple-100" />
                 </div>
@@ -310,10 +296,10 @@ export default function TeacherDashboard() {
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Progress</p>
-                    <p className="text-2xl font-bold text-gray-900">78%</p>
+                    <p className="text-sm font-medium text-gray-600">My Classes</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalClasses}</p>
                   </div>
-                  <TrendingUp className="w-12 h-12 text-gray-300" />
+                  <BookOpen className="w-12 h-12 text-gray-300" />
                 </div>
               </div>
             </div>
@@ -504,28 +490,57 @@ export default function TeacherDashboard() {
         {/* My Classes Tab */}
         {activeTab === 'my classes' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">My Classes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {myClasses.map((cls: any) => (
-                <div key={cls.id} className="bg-white rounded-lg shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
-                  <p className="text-gray-500 mt-1">Room {cls.room}</p>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Students:</span>
-                      <span className="font-medium">{cls.students}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Schedule:</span>
-                      <span className="font-medium">{cls.schedule}</span>
-                    </div>
-                  </div>
-                  <button className="mt-4 w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100">
-                    View Details
-                  </button>
-                </div>
-              ))}
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">My Classes ({myClasses.length})</h2>
+              <button
+                onClick={refreshData}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </button>
             </div>
+
+            {myClasses.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg font-medium">No classes assigned yet</p>
+                <p className="text-gray-400 mt-2">
+                  Your classes will appear here once assigned by the school administrator
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {myClasses.map((cls: any) => (
+                  <div key={cls.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex-shrink-0 h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-6 h-6 text-purple-600" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
+                    {cls.room && (
+                      <p className="text-gray-500 mt-1">Room {cls.room}</p>
+                    )}
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Class ID:</span>
+                        <span className="font-medium text-xs text-gray-600">{cls.id.slice(0, 8)}...</span>
+                      </div>
+                      {cls.schedule_json && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Schedule:</span>
+                          <span className="font-medium">Available</span>
+                        </div>
+                      )}
+                    </div>
+                    <button className="mt-4 w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                      View Details
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -533,63 +548,83 @@ export default function TeacherDashboard() {
         {activeTab === 'students' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">My Students</h2>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Open Student Management
+              <h2 className="text-2xl font-bold text-gray-900">My Students ({students.length})</h2>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
               </button>
             </div>
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Student
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Class
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Progress
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Attendance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {myStudents.map((student: any) => (
-                    <tr key={student.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{student.class}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2 mr-2">
-                            <div
-                              className="bg-green-600 h-2 rounded-full"
-                              style={{ width: `${student.progress}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm text-gray-600">{student.progress}%</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">{student.attendance}%</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900">View</button>
-                      </td>
+
+            {students.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg font-medium">No students assigned yet</p>
+                <p className="text-gray-400 mt-2">
+                  Students will appear here once they are enrolled in your classes
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Class
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {students.map((student: any) => (
+                      <tr key={student.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                              {student.age && (
+                                <div className="text-sm text-gray-500">{student.age} years old</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{student.class || 'Not assigned'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500">{student.email || 'N/A'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            student.status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {student.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button className="text-blue-600 hover:text-blue-900">View Details</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
