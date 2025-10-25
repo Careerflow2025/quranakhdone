@@ -1527,19 +1527,26 @@ export default function StudentManagementDashboard() {
                         pageAyahs = quranText.ayahs;
                       }
 
-                      // Render the page with proper mushaf formatting
+                      // Render the page with traditional Mushaf formatting
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
                           minHeight: '750px',
-                          padding: '30px 40px',
-                          backgroundColor: '#FFFEF8',
+                          padding: '60px 80px',  // Book-like margins (wider)
+                          backgroundColor: '#2C3E50',  // Dark background like printed Mushaf
                           borderRadius: '8px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                          border: '1px solid #e5d4b1',
-                          fontSize: `${31 * (zoomLevel / 100)}px`,
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)',  // Book depth shadow
+                          border: '2px solid #34495E',  // Darker border for book effect
+                          fontSize: `${36 * (zoomLevel / 100)}px`,  // Larger text for readability
+                          lineHeight: '2.2',  // Traditional Mushaf line spacing
+                          textAlign: 'justify',  // Justified text like a book
+                          color: '#F5E6D3',  // Cream/beige text color
                           transform: `scale(${zoomLevel / 100})`,
-                          transformOrigin: 'top center'
+                          transformOrigin: 'top center',
+                          direction: 'rtl',  // Right-to-left for Arabic
+                          fontFamily: '"Amiri Quran", "Traditional Arabic", "Arial Unicode MS", sans-serif',  // Traditional Quran font
+                          letterSpacing: '0.02em',  // Slight letter spacing for clarity
+                          wordSpacing: '0.1em'  // Word spacing for justified text
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
@@ -1619,68 +1626,76 @@ export default function StudentManagementDashboard() {
                                   }
                                 }
                               }}
-                              className={`inline-block mx-1 px-1 cursor-pointer rounded transition-colors select-none ${
-                                isInSelection ? 'bg-yellow-200' : ''
+                              className={`inline px-0.5 cursor-pointer rounded transition-colors select-none ${
+                                isInSelection ? 'bg-yellow-600 bg-opacity-40' : ''
                               } ${
-                                highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-gray-100' : ''
+                                highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-gray-700 hover:bg-opacity-30' : ''
                               } ${
-                                wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-400' : ''
+                                wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-300 ring-opacity-60' : ''
                               } ${
-                                noteMode && wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'ring-4 ring-green-500 shadow-lg' : ''
+                                noteMode && wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'ring-4 ring-green-400 shadow-lg' : ''
                               } ${
                                 noteMode && wordHighlights.length > 0 && !wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'opacity-70 hover:opacity-100' : ''
                               }`}
                               style={{
                                 position: 'relative',
                                 ...(mistakes.length === 1 ? {
-                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? '#713f12' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? '#facc15' :
-                                    mistakes[0]?.bgColor?.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('green-100', '#dcfce7').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2'),
-                                  color: mistakes[0]?.textColor === 'text-yellow-100' ? '#fef3c7' :
-                                    mistakes[0]?.textColor === 'text-yellow-900' ? '#713f12' :
-                                    mistakes[0]?.textColor?.replace('text-', '').replace('purple-700', '#6b21a8').replace('green-700', '#15803d').replace('orange-700', '#c2410c').replace('red-700', '#b91c1c')
+                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent',
+                                  color: mistakes[0]?.textColor === 'text-yellow-100' ? '#FEF3C7' :
+                                    mistakes[0]?.textColor === 'text-yellow-900' ? '#F59E0B' :
+                                    '#F5E6D3'  // Keep cream color for dark background
                                 } : mistakes.length > 1 ? {
                                   background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                    const color = m.bgColor === 'bg-yellow-900' ? '#713f12' :
-                                      m.bgColor.replace('bg-', '').replace('purple-100', '#f3e8ff').replace('green-100', '#dcfce7').replace('orange-100', '#fed7aa').replace('red-100', '#fee2e2');
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
                                     const percent = (i * 100) / mistakes.length;
                                     const nextPercent = ((i + 1) * 100) / mistakes.length;
                                     return `${color} ${percent}%, ${color} ${nextPercent}%`;
                                   }).join(', ')})`,
-                                  color: '#ffffff',
+                                  color: '#F5E6D3',  // Cream color
                                   fontWeight: '600',
-                                  border: '1px solid rgba(0,0,0,0.2)',
-                                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
                                 } : {})
                               }}
                             >
-                              {word}
+                              {word}{' '}
                               {wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) && (
-                                <sup className="text-blue-500 ml-1" style={{ fontSize: '0.6em' }}>
-                                  <MessageSquare className="w-3 h-3 inline" />
+                                <sup className="text-blue-300 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                  <MessageSquare className="w-2.5 h-2.5 inline" />
                                 </sup>
                               )}
                             </span>
                           );
                         })}
-                        {/* Ayah Number in Ornamental Circle */}
-                        <span 
-                          className="inline-flex items-center justify-center mx-2 align-middle"
+                        {/* Ayah Number - Traditional Mushaf Style (Inline Small Circle) */}
+                        <span
+                          className="inline-flex items-center justify-center mx-1 align-middle"
                           style={{
-                            width: '35px',
-                            height: '35px',
+                            width: '24px',  // Smaller inline circle
+                            height: '24px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            color: 'white',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            verticalAlign: 'middle',
-                            display: 'inline-flex'
+                            background: 'rgba(245,230,211,0.15)',  // Subtle cream circle
+                            border: '1.5px solid rgba(245,230,211,0.4)',  // Cream border
+                            color: '#F5E6D3',  // Cream text
+                            fontSize: '11px',  // Smaller text
+                            fontWeight: '600',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                            verticalAlign: 'baseline',  // Align with text baseline
+                            display: 'inline-flex',
+                            fontFamily: 'sans-serif'  // Use regular font for numbers
                           }}
                         >
                           {ayah.number}
-                        </span>
+                        </span>{' '}
                               </span>
                             );
                           })}
