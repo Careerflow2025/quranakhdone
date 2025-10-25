@@ -7972,3 +7972,22 @@ export function getAyahsForPage(pageNumber: number): { surah: number; ayah: numb
 }
 
 export const TOTAL_MUSHAF_PAGES = 604;
+
+// Get the first and last page numbers for a specific Surah
+export function getSurahPageRange(surahNumber: number): { firstPage: number; lastPage: number } {
+  const pagesWithSurah = mushafPages.filter(p =>
+    p.surahStart === surahNumber ||
+    p.surahEnd === surahNumber ||
+    (p.surahsOnPage && p.surahsOnPage.includes(surahNumber))
+  );
+
+  if (pagesWithSurah.length === 0) {
+    return { firstPage: 1, lastPage: 1 };
+  }
+
+  const pageNumbers = pagesWithSurah.map(p => p.pageNumber);
+  return {
+    firstPage: Math.min(...pageNumbers),
+    lastPage: Math.max(...pageNumbers)
+  };
+}

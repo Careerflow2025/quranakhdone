@@ -10,7 +10,7 @@ import {
   getScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
-import { mushafPages, getPageContent, getPageBySurahAyah, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
+import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import {
   Book,
   Mic,
@@ -1683,22 +1683,23 @@ export default function StudentManagementDashboard() {
                             </span>
                           );
                         })}
-                        {/* Ayah Number - Traditional Mushaf Style (Inline Small Circle) */}
+                        {/* Ayah Number - Traditional Mushaf Style (Inline) */}
                         <span
-                          className="inline-flex items-center justify-center mx-1 align-middle"
+                          className="inline-flex items-center justify-center mx-0.5"
                           style={{
-                            width: '24px',  // Smaller inline circle
-                            height: '24px',
+                            width: '18px',  // Tiny inline circle
+                            height: '18px',
                             borderRadius: '50%',
-                            background: 'rgba(255,255,255,0.1)',  // Subtle white circle
-                            border: '1.5px solid rgba(255,255,255,0.3)',  // White border
+                            background: 'rgba(255,255,255,0.08)',  // Very subtle circle
+                            border: '1px solid rgba(255,255,255,0.2)',  // Thin border
                             color: '#FFFFFF',  // White text
-                            fontSize: '11px',  // Smaller text
-                            fontWeight: '600',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                            verticalAlign: 'baseline',  // Align with text baseline
+                            fontSize: '9px',  // Very small text
+                            fontWeight: '500',
+                            boxShadow: '0 0.5px 1px rgba(0,0,0,0.2)',
+                            verticalAlign: 'middle',  // Middle alignment
                             display: 'inline-flex',
-                            fontFamily: 'sans-serif'  // Use regular font for numbers
+                            fontFamily: 'sans-serif',  // Use regular font for numbers
+                            lineHeight: '1'  // Prevent line height issues
                           }}
                         >
                           {ayah.number}
@@ -1716,25 +1717,41 @@ export default function StudentManagementDashboard() {
                 {/* Page Navigation */}
                 <div className="mt-2 border-t pt-2" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
                   <div className="flex items-center justify-center gap-4">
-                    <button
-                      onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
-                      disabled={currentMushafPage === 1}
-                      className={`px-4 py-2 text-sm ${currentMushafPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                      <ChevronLeft className="w-4 h-4" />
-                      <span>Previous</span>
-                    </button>
-                    <div className="text-center">
-                      <span className="text-sm font-semibold text-gray-700">
-                        Page {currentMushafPage} of {TOTAL_MUSHAF_PAGES}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setCurrentMushafPage((prev: any) => Math.min(TOTAL_MUSHAF_PAGES, prev + 1))}
-                      disabled={currentMushafPage >= TOTAL_MUSHAF_PAGES}
-                      className={`px-4 py-2 text-sm ${currentMushafPage >= TOTAL_MUSHAF_PAGES ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                      <span>Next</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                    {(() => {
+                      // Get current page content to determine Surah
+                      const currentPageContent = getPageContent(currentMushafPage);
+                      const currentSurahNumber = currentPageContent?.surahStart || 1;
+
+                      // Get Surah page boundaries
+                      const { firstPage, lastPage } = getSurahPageRange(currentSurahNumber);
+
+                      const isFirstPage = currentMushafPage <= firstPage;
+                      const isLastPage = currentMushafPage >= lastPage;
+
+                      return (
+                        <>
+                          <button
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
+                            disabled={isFirstPage}
+                            className={`px-4 py-2 text-sm ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
+                            <ChevronLeft className="w-4 h-4" />
+                            <span>Previous</span>
+                          </button>
+                          <div className="text-center">
+                            <span className="text-sm font-semibold text-gray-700">
+                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
+                            disabled={isLastPage}
+                            className={`px-4 py-2 text-sm ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
+                            <span>Next</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
                 </div>
