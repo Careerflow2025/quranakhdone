@@ -1533,12 +1533,12 @@ export default function StudentManagementDashboard() {
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
                           width: '55vw',
                           maxWidth: '700px',
-                          minHeight: '65vh',
-                          maxHeight: '68vh',
+                          minHeight: '58vh',
+                          maxHeight: '60vh',
                           aspectRatio: '2/3',
-                          overflow: 'visible',
+                          overflow: 'hidden',
                           margin: '0.5rem auto',  // Minimal margin
-                          padding: '1.5rem 3rem',  // Generous side margins for annotations
+                          padding: '1.2rem 3rem',  // Generous side margins for annotations
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
@@ -1713,26 +1713,28 @@ export default function StudentManagementDashboard() {
                 </div>
 
                 {/* Page Navigation */}
-                <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
-                  <button
-                    onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
-                    disabled={currentMushafPage === 1}
-                    className={`px-4 py-2 text-sm ${currentMushafPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>Previous</span>
-                  </button>
-                  <div className="text-center">
-                    <span className="text-sm font-semibold text-gray-700">
-                      Page {currentMushafPage} of {TOTAL_MUSHAF_PAGES}
-                    </span>
+                <div className="mt-2 border-t pt-2" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
+                      disabled={currentMushafPage === 1}
+                      className={`px-4 py-2 text-sm ${currentMushafPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Previous</span>
+                    </button>
+                    <div className="text-center">
+                      <span className="text-sm font-semibold text-gray-700">
+                        Page {currentMushafPage} of {TOTAL_MUSHAF_PAGES}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setCurrentMushafPage((prev: any) => Math.min(TOTAL_MUSHAF_PAGES, prev + 1))}
+                      disabled={currentMushafPage >= TOTAL_MUSHAF_PAGES}
+                      className={`px-4 py-2 text-sm ${currentMushafPage >= TOTAL_MUSHAF_PAGES ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
+                      <span>Next</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setCurrentMushafPage((prev: any) => Math.min(TOTAL_MUSHAF_PAGES, prev + 1))}
-                    disabled={currentMushafPage >= TOTAL_MUSHAF_PAGES}
-                    className={`px-4 py-2 text-sm ${currentMushafPage >= TOTAL_MUSHAF_PAGES ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                    <span>Next</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
                 </div>
                 </div>
               </div>
