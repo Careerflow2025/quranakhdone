@@ -170,22 +170,10 @@ export function useTeacherData() {
               }
             }
 
-            // Get all students enrolled in this class
+            // Get all students enrolled in this class - STEP 1: Get enrollment records
             const { data: enrollments, error: enrollmentError } = await supabase
               .from('class_enrollments')
-              .select(`
-                student_id,
-                students!inner(
-                  id,
-                  user_id,
-                  dob,
-                  gender,
-                  age,
-                  active,
-                  phone,
-                  parent_phone
-                )
-              `)
+              .select('student_id')
               .eq('class_id', cls.id);
 
             if (enrollmentError) {
@@ -194,38 +182,52 @@ export function useTeacherData() {
               console.log(`  👥 Found ${enrollments?.length || 0} student enrollments`);
             }
 
-            // Get profiles for students separately
+            // STEP 2: Get student details separately
             const enrolledStudents = [];
             if (enrollments && enrollments.length > 0) {
-              for (const enr of enrollments) {
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('display_name, email')
-                  .eq('user_id', enr.students.user_id)
-                  .single();
+              const studentIds = enrollments.map((e: any) => e.student_id);
 
-                // Calculate age if not present
-                let calculatedAge = enr.students.age;
-                if (!calculatedAge && enr.students.dob) {
-                  const today = new Date();
-                  const birthDate = new Date(enr.students.dob);
-                  calculatedAge = today.getFullYear() - birthDate.getFullYear();
-                  const monthDiff = today.getMonth() - birthDate.getMonth();
-                  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                    calculatedAge--;
+              const { data: studentsData, error: studentsError } = await supabase
+                .from('students')
+                .select('id, user_id, dob, gender, age, active, phone, parent_phone')
+                .in('id', studentIds);
+
+              if (studentsError) {
+                console.error('❌ Error fetching students:', studentsError);
+              } else {
+                console.log(`  📚 Fetched ${studentsData?.length || 0} student records`);
+
+                // STEP 3: Get profiles for each student separately
+                for (const student of studentsData || []) {
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('display_name, email')
+                    .eq('user_id', student.user_id)
+                    .single();
+
+                  // Calculate age if not present
+                  let calculatedAge = student.age;
+                  if (!calculatedAge && student.dob) {
+                    const today = new Date();
+                    const birthDate = new Date(student.dob);
+                    calculatedAge = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                      calculatedAge--;
+                    }
                   }
-                }
 
-                enrolledStudents.push({
-                  id: enr.students.id,
-                  name: profile?.display_name || profile?.email?.split('@')[0] || 'Unknown',
-                  email: profile?.email || '',
-                  age: calculatedAge,
-                  gender: enr.students.gender,
-                  phone: enr.students.phone,
-                  parent_phone: enr.students.parent_phone,
-                  status: enr.students.active ? 'active' : 'inactive'
-                });
+                  enrolledStudents.push({
+                    id: student.id,
+                    name: profile?.display_name || profile?.email?.split('@')[0] || 'Unknown',
+                    email: profile?.email || '',
+                    age: calculatedAge,
+                    gender: student.gender,
+                    phone: student.phone,
+                    parent_phone: student.parent_phone,
+                    status: student.active ? 'active' : 'inactive'
+                  });
+                }
               }
             }
 
