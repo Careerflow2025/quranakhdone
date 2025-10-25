@@ -1471,18 +1471,12 @@ export default function StudentManagementDashboard() {
                     @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
 
                     .mushaf-page-text {
-                      text-align-last: justify;
+                      text-align-last: start;
                     }
 
                     .mushaf-page-content {
                       text-align: justify;
                       text-justify: kashida;
-                    }
-
-                    .mushaf-page-content::after {
-                      content: "";
-                      display: inline-block;
-                      width: 100%;
                     }
                   `}</style>
 
