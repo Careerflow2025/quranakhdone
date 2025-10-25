@@ -1207,11 +1207,8 @@ export default function StudentManagementDashboard() {
                   </div>
                 )}
               </div>
-              
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2">
-                <Save className="w-4 h-4" />
-                <span>Save</span>
-              </button>
+
+              {/* REMOVED: Non-functional Save button - highlights auto-save when created */}
             </div>
           </div>
         </div>
