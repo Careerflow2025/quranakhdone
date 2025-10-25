@@ -46,10 +46,10 @@ export function useStudentManagement(studentId: string | null) {
       console.log('🔍 Fetching student data for:', studentId);
       console.log('👤 Current user:', user.id, 'Role:', user.role);
 
-      // STEP 1: Fetch student record
+      // STEP 1: Fetch student record (including preferred_script_id for Quran version locking)
       const { data: student, error: studentError } = await supabase
         .from('students')
-        .select('*')
+        .select('*, preferred_script_id')
         .eq('id', studentId)
         .eq('school_id', user.schoolId) // Ensure same school
         .single();
@@ -80,7 +80,7 @@ export function useStudentManagement(studentId: string | null) {
         }
       }
 
-      // Set student info
+      // Set student info (including preferred_script_id for Quran version locking)
       setStudentInfo({
         id: student.id,
         userId: student.user_id,
@@ -92,7 +92,8 @@ export function useStudentManagement(studentId: string | null) {
         grade: student.grade,
         address: student.address,
         active: student.active,
-        schoolId: student.school_id
+        schoolId: student.school_id,
+        preferredScriptId: student.preferred_script_id // Quran version lock
       });
 
       // STEP 3: Get class enrollment

@@ -506,6 +506,17 @@ export default function StudentManagementDashboard() {
     }
   });
 
+  // Check if student already has a locked Quran version on load
+  useEffect(() => {
+    if (studentInfo?.preferredScriptId) {
+      console.log('✅ Student has locked Quran version:', studentInfo.preferredScriptId);
+      setSelectedScript(studentInfo.preferredScriptId);
+      setScriptLocked(true);
+    } else {
+      console.log('ℹ️ No locked Quran version for student - showing selector');
+    }
+  }, [studentInfo?.preferredScriptId]);
+
   // Handle Script Selection
   const handleScriptSelect = (scriptId: any) => {
     if (!scriptLocked) {
@@ -513,10 +524,41 @@ export default function StudentManagementDashboard() {
     }
   };
 
-  const lockScriptSelection = () => {
-    if (selectedScript) {
+  const lockScriptSelection = async () => {
+    if (!selectedScript || !studentInfo?.id) {
+      alert('Please select a script first');
+      return;
+    }
+
+    try {
+      console.log('🔒 Locking Quran version:', selectedScript, 'for student:', studentInfo.id);
+
+      // Save to database
+      const { data, error } = await fetch('/api/students/lock-script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: studentInfo.id,
+          scriptId: selectedScript
+        })
+      }).then(res => res.json());
+
+      if (error) {
+        throw new Error(error);
+      }
+
       setScriptLocked(true);
-      alert(`Script locked to: ${quranScripts.find((s: any) => s.id === selectedScript)?.name}`);
+
+      const scriptName = quranScripts.find((s: any) => s.id === selectedScript)?.name;
+      alert(`✅ Script permanently locked to: ${scriptName}\n\nThis cannot be changed.`);
+
+      // Refresh student data to update preferredScriptId
+      await refreshData();
+
+      console.log('✅ Quran version locked successfully');
+    } catch (err: any) {
+      console.error('❌ Error locking script:', err);
+      alert(`Failed to lock script: ${err.message}`);
     }
   };
 
