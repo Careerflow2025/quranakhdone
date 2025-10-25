@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { 
   getQuranByScriptId, 
   getSurahByNumber, 
@@ -51,22 +53,21 @@ import {
 } from 'lucide-react';
 
 export default function StudentManagementDashboard() {
-  // Student Info (would come from props/params in real app)
-  const [studentInfo] = useState({
-    id: 'STU001',
-    name: 'Ahmed Hassan',
-    age: 12,
-    class: 'Class 6A',
-    teacherId: 'TCH001',
-    currentSurah: 67,
-    currentAyah: 15,
-    memorized: '5 Juz',
-    revision: '3 Juz',
-    lastSession: '2 hours ago'
-  });
+  // Get studentId from URL query params
+  const searchParams = useSearchParams();
+  const studentId = searchParams.get('studentId');
 
-  // User role - in real app would come from auth context
-  const [userRole] = useState('teacher'); // 'teacher' or 'student'
+  // Fetch real student data from database
+  const {
+    isLoading: studentDataLoading,
+    error: studentDataError,
+    hasAccess,
+    studentInfo,
+    classInfo,
+    teacherInfo,
+    userRole,
+    refreshData
+  } = useStudentManagement(studentId);
 
   // Core States
   const [selectedScript, setSelectedScript] = useState('uthmani-hafs'); // Default to Uthmani script
@@ -967,6 +968,56 @@ export default function StudentManagementDashboard() {
     redrawCanvas();
   }, [currentMushafPage, currentSurah, drawings]);
 
+  // Loading state
+  if (studentDataLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading student data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (studentDataError || !studentInfo) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-lg max-w-md">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Student</h2>
+          <p className="text-gray-600 mb-4">{studentDataError || 'Student not found'}</p>
+          <button
+            onClick={() => window.location.href = '/teacher-dashboard'}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied state
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-lg shadow-lg max-w-md">
+          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You do not have permission to view this student's dashboard.</p>
+          <button
+            onClick={() => window.location.href = '/teacher-dashboard'}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -981,16 +1032,16 @@ export default function StudentManagementDashboard() {
               <div className="text-center">
                 <h1 className="text-3xl font-arabic text-green-800">سُورَةُ {quranText.surah}</h1>
                 <p className="text-sm text-gray-600">
-                  {allSurahs.find((s: any) => s.number === currentSurah)?.nameEnglish || ''} • 
-                  {allSurahs.find((s: any) => s.number === currentSurah)?.type || 'Meccan'} • 
+                  {allSurahs.find((s: any) => s.number === currentSurah)?.nameEnglish || ''} •
+                  {allSurahs.find((s: any) => s.number === currentSurah)?.type || 'Meccan'} •
                   {allSurahs.find((s: any) => s.number === currentSurah)?.verses || '7'} Verses
                 </p>
               </div>
             </div>
-            
+
             {/* Center - Student Info */}
             <div className="text-center">
-              <p className="text-sm text-gray-500">{studentInfo.name} • {studentInfo.class}</p>
+              <p className="text-sm text-gray-500">{studentInfo.name} • {classInfo?.name || 'No Class'}</p>
               <p className="text-xs text-gray-400">Student Management Dashboard</p>
             </div>
             
