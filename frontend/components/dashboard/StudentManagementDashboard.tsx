@@ -1531,16 +1531,19 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          minHeight: '750px',
-                          padding: '60px 80px',  // Book-like margins (wider)
-                          backgroundColor: '#2C3E50',  // Dark background like printed Mushaf
+                          maxHeight: '75vh',
+                          minHeight: '65vh',
+                          maxWidth: '90vw',
+                          overflow: 'hidden',
+                          padding: '40px 80px',  // Book-like margins (wider, reduced vertical)
+                          backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)',  // Book depth shadow
-                          border: '2px solid #34495E',  // Darker border for book effect
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
+                          border: '2px solid #1a1a1a',  // Darker border for book effect
                           fontSize: `${36 * (zoomLevel / 100)}px`,  // Larger text for readability
                           lineHeight: '2.2',  // Traditional Mushaf line spacing
                           textAlign: 'justify',  // Justified text like a book
-                          color: '#F5E6D3',  // Cream/beige text color
+                          color: '#FFFFFF',  // Pure white text color
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           direction: 'rtl',  // Right-to-left for Arabic
@@ -1683,9 +1686,9 @@ export default function StudentManagementDashboard() {
                             width: '24px',  // Smaller inline circle
                             height: '24px',
                             borderRadius: '50%',
-                            background: 'rgba(245,230,211,0.15)',  // Subtle cream circle
-                            border: '1.5px solid rgba(245,230,211,0.4)',  // Cream border
-                            color: '#F5E6D3',  // Cream text
+                            background: 'rgba(255,255,255,0.1)',  // Subtle white circle
+                            border: '1.5px solid rgba(255,255,255,0.3)',  // White border
+                            color: '#FFFFFF',  // White text
                             fontSize: '11px',  // Smaller text
                             fontWeight: '600',
                             boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
