@@ -1531,17 +1531,18 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          maxHeight: '75vh',
-                          minHeight: '65vh',
+                          maxHeight: '58vh',
+                          minHeight: '50vh',
                           maxWidth: '90vw',
                           overflow: 'hidden',
-                          padding: '40px 80px',  // Book-like margins (wider, reduced vertical)
+                          margin: '2rem auto',  // Center with space around
+                          padding: '30px 80px',  // Generous side margins for annotations, smaller vertical
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
                           border: '2px solid #1a1a1a',  // Darker border for book effect
-                          fontSize: `${36 * (zoomLevel / 100)}px`,  // Larger text for readability
-                          lineHeight: '2.2',  // Traditional Mushaf line spacing
+                          fontSize: `${30 * (zoomLevel / 100)}px`,  // Smaller text to fit more lines
+                          lineHeight: '2.0',  // Slightly tighter spacing to fit more content
                           textAlign: 'justify',  // Justified text like a book
                           color: '#FFFFFF',  // Pure white text color
                           transform: `scale(${zoomLevel / 100})`,
