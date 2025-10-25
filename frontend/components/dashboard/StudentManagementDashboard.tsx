@@ -1534,8 +1534,8 @@ export default function StudentManagementDashboard() {
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
                           width: '45vw',
                           maxWidth: '600px',
-                          minHeight: '75vh',
-                          maxHeight: '80vh',
+                          minHeight: '68vh',
+                          maxHeight: '72vh',
                           aspectRatio: '2/3',
                           overflow: 'hidden',
                           margin: '0 auto',  // Top-aligned, horizontally centered
