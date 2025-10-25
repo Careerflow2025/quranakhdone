@@ -175,10 +175,23 @@ export function useAssignments(initialStudentId?: string) {
 
         const data: ListAssignmentsResponse = await response.json();
 
-        setAssignments(data.data.assignments);
-        setSummary(data.data.summary);
-        setTotalItems(data.data.pagination.total);
-        setTotalPages(Math.ceil(data.data.pagination.total / ITEMS_PER_PAGE));
+        // API returns: { success, data: [...], assignments: [...], pagination: {...} }
+        setAssignments(data.assignments || data.data || []);
+
+        // Calculate summary from assignments since API doesn't return it
+        const assignmentsList = data.assignments || data.data || [];
+        const calculatedSummary: AssignmentSummary = {
+          total_assignments: assignmentsList.length,
+          by_status: assignmentsList.reduce((acc: Record<string, number>, a: any) => {
+            acc[a.status] = (acc[a.status] || 0) + 1;
+            return acc;
+          }, {}),
+          late_count: assignmentsList.filter((a: any) => a.is_overdue).length,
+        };
+        setSummary(calculatedSummary);
+
+        setTotalItems(data.pagination?.total || 0);
+        setTotalPages(Math.ceil((data.pagination?.total || 0) / ITEMS_PER_PAGE));
       } catch (err) {
         console.error('Error fetching assignments:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch assignments');
