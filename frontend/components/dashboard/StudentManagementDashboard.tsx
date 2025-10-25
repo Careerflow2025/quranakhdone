@@ -1640,16 +1640,14 @@ export default function StudentManagementDashboard() {
                               }`}
                               style={{
                                 position: 'relative',
+                                color: '#000000',  // ALWAYS black text, never change
                                 ...(mistakes.length === 1 ? {
                                   backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
                                     mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
                                     mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
                                     mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent',
-                                  color: mistakes[0]?.textColor === 'text-yellow-100' ? '#FEF3C7' :
-                                    mistakes[0]?.textColor === 'text-yellow-900' ? '#F59E0B' :
-                                    '#F5E6D3'  // Keep cream color for dark background
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
                                 } : mistakes.length > 1 ? {
                                   background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
@@ -1661,10 +1659,8 @@ export default function StudentManagementDashboard() {
                                     const nextPercent = ((i + 1) * 100) / mistakes.length;
                                     return `${color} ${percent}%, ${color} ${nextPercent}%`;
                                   }).join(', ')})`,
-                                  color: '#F5E6D3',  // Cream color
                                   fontWeight: '600',
-                                  border: '1px solid rgba(255,255,255,0.2)',
-                                  textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+                                  border: '1px solid rgba(0,0,0,0.15)'
                                 } : {})
                               }}
                             >
