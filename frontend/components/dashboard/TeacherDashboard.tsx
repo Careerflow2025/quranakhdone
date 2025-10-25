@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTeacherData } from '@/hooks/useTeacherData';
 import {
@@ -23,6 +24,8 @@ import ClassesPanel from '@/components/classes/ClassesPanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 
 export default function TeacherDashboard() {
+  const router = useRouter();
+
   // Get real teacher data from database
   const {
     isLoading: teacherDataLoading,
@@ -42,6 +45,7 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [selectedStudentDetails, setSelectedStudentDetails] = useState<any>(null);
 
   // Get notifications from API
   const {
@@ -639,7 +643,25 @@ export default function TeacherDashboard() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button className="text-blue-600 hover:text-blue-900">View Details</button>
+                          <div className="flex items-center gap-3">
+                            {/* Quran Icon - Navigate to Student Management Dashboard */}
+                            <button
+                              onClick={() => router.push(`/student-management?studentId=${student.id}`)}
+                              className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors"
+                              title="Open Student Quran Management"
+                            >
+                              <BookOpen className="w-5 h-5" />
+                            </button>
+
+                            {/* Eye Icon - View Student Details */}
+                            <button
+                              onClick={() => setSelectedStudentDetails(student)}
+                              className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="View Student Details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -841,6 +863,137 @@ export default function TeacherDashboard() {
               <button
                 onClick={() => setSelectedClassDetails(null)}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Details Modal */}
+      {selectedStudentDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 p-6 text-white rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <User className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedStudentDetails.name}</h2>
+                    <p className="text-sm text-blue-100">{selectedStudentDetails.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedStudentDetails(null)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Info className="w-5 h-5 text-blue-600" />
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500">Age</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedStudentDetails.age || 'N/A'} years</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500">Gender</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedStudentDetails.gender || 'N/A'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500">Grade</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedStudentDetails.grade || 'N/A'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500">Status</p>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                      selectedStudentDetails.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedStudentDetails.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-green-600" />
+                  Contact Information
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-base font-medium text-gray-900">{selectedStudentDetails.email}</p>
+                  </div>
+                  {selectedStudentDetails.phone && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Phone</p>
+                      <p className="text-base font-medium text-gray-900">{selectedStudentDetails.phone}</p>
+                    </div>
+                  )}
+                  {selectedStudentDetails.address && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-500">Address</p>
+                      <p className="text-base font-medium text-gray-900">{selectedStudentDetails.address}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Class Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-purple-600" />
+                  Class Information
+                </h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Assigned Class</p>
+                  <p className="text-base font-medium text-gray-900">{selectedStudentDetails.class || 'Not assigned'}</p>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-yellow-600" />
+                  Quick Actions
+                </h3>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setSelectedStudentDetails(null);
+                      router.push(`/student-management?studentId=${selectedStudentDetails.id}`);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white px-4 py-3 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    Open Quran Management
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end">
+              <button
+                onClick={() => setSelectedStudentDetails(null)}
+                className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-all"
               >
                 Close
               </button>
