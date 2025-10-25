@@ -1527,26 +1527,31 @@ export default function StudentManagementDashboard() {
                         pageAyahs = quranText.ayahs;
                       }
 
-                      // Render the page with traditional Mushaf formatting
+                      // Render the page with traditional Mushaf formatting - Viewport sized
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          minHeight: '750px',
-                          padding: '60px 80px',  // Book-like margins (wider)
-                          backgroundColor: '#2C3E50',  // Dark background like printed Mushaf
+                          maxHeight: '70vh',  // Fit in viewport - no scrolling needed
+                          minHeight: '70vh',  // Consistent height
+                          height: '70vh',  // Fixed height based on viewport
+                          padding: '40px 80px',  // Keep wide margins for annotations, reduce vertical padding
+                          backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)',  // Book depth shadow
-                          border: '2px solid #34495E',  // Darker border for book effect
-                          fontSize: `${36 * (zoomLevel / 100)}px`,  // Larger text for readability
-                          lineHeight: '2.2',  // Traditional Mushaf line spacing
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Subtle shadow for black
+                          border: '2px solid #1a1a1a',  // Very dark border
+                          fontSize: `${32 * (zoomLevel / 100)}px`,  // Slightly smaller for better fit
+                          lineHeight: '2.0',  // Tighter line spacing to fit more content
                           textAlign: 'justify',  // Justified text like a book
-                          color: '#F5E6D3',  // Cream/beige text color
+                          color: '#FFFFFF',  // Pure white text color
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           direction: 'rtl',  // Right-to-left for Arabic
                           fontFamily: '"Amiri Quran", "Traditional Arabic", "Arial Unicode MS", sans-serif',  // Traditional Quran font
                           letterSpacing: '0.02em',  // Slight letter spacing for clarity
-                          wordSpacing: '0.1em'  // Word spacing for justified text
+                          wordSpacing: '0.1em',  // Word spacing for justified text
+                          overflow: 'hidden',  // Prevent scrolling within page
+                          display: 'flex',
+                          flexDirection: 'column'
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
@@ -1627,11 +1632,11 @@ export default function StudentManagementDashboard() {
                                 }
                               }}
                               className={`inline px-0.5 cursor-pointer rounded transition-colors select-none ${
-                                isInSelection ? 'bg-yellow-600 bg-opacity-40' : ''
+                                isInSelection ? 'bg-yellow-500 bg-opacity-50' : ''
                               } ${
-                                highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-gray-700 hover:bg-opacity-30' : ''
+                                highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-white hover:bg-opacity-10' : ''
                               } ${
-                                wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-300 ring-opacity-60' : ''
+                                wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) ? 'ring-2 ring-blue-400 ring-opacity-80' : ''
                               } ${
                                 noteMode && wordHighlights.some((h: any) => selectedHighlightsForNote.includes(h.id)) ? 'ring-4 ring-green-400 shadow-lg' : ''
                               } ${
@@ -1640,55 +1645,54 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 ...(mistakes.length === 1 ? {
-                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent',
-                                  color: mistakes[0]?.textColor === 'text-yellow-100' ? '#FEF3C7' :
-                                    mistakes[0]?.textColor === 'text-yellow-900' ? '#F59E0B' :
-                                    '#F5E6D3'  // Keep cream color for dark background
+                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(161,98,7,0.5)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.5)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(168,85,247,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(251,146,60,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(248,113,113,0.4)' : 'transparent',
+                                  color: '#FFFFFF',  // Pure white text
+                                  fontWeight: mistakes[0]?.textColor === 'text-yellow-900' ? '700' : '600'
                                 } : mistakes.length > 1 ? {
                                   background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(161,98,7,0.5)' :
+                                      m.bgColor.includes('purple') ? 'rgba(168,85,247,0.5)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.5)' :
+                                      m.bgColor.includes('orange') ? 'rgba(251,146,60,0.5)' :
+                                      m.bgColor.includes('red') ? 'rgba(248,113,113,0.5)' : 'transparent';
                                     const percent = (i * 100) / mistakes.length;
                                     const nextPercent = ((i + 1) * 100) / mistakes.length;
                                     return `${color} ${percent}%, ${color} ${nextPercent}%`;
                                   }).join(', ')})`,
-                                  color: '#F5E6D3',  // Cream color
-                                  fontWeight: '600',
-                                  border: '1px solid rgba(255,255,255,0.2)',
-                                  textShadow: '1px 1px 3px rgba(0,0,0,0.5)'
+                                  color: '#FFFFFF',  // Pure white text
+                                  fontWeight: '700',
+                                  border: '1px solid rgba(255,255,255,0.3)',
+                                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
                                 } : {})
                               }}
                             >
                               {word}{' '}
                               {wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) && (
-                                <sup className="text-blue-300 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                <sup className="text-blue-400 ml-0.5" style={{ fontSize: '0.5em' }}>
                                   <MessageSquare className="w-2.5 h-2.5 inline" />
                                 </sup>
                               )}
                             </span>
                           );
                         })}
-                        {/* Ayah Number - Traditional Mushaf Style (Inline Small Circle) */}
+                        {/* Ayah Number - Traditional Mushaf Style (Inline Small Circle) - White on Black */}
                         <span
                           className="inline-flex items-center justify-center mx-1 align-middle"
                           style={{
                             width: '24px',  // Smaller inline circle
                             height: '24px',
                             borderRadius: '50%',
-                            background: 'rgba(245,230,211,0.15)',  // Subtle cream circle
-                            border: '1.5px solid rgba(245,230,211,0.4)',  // Cream border
-                            color: '#F5E6D3',  // Cream text
+                            background: 'rgba(255,255,255,0.1)',  // Subtle white circle
+                            border: '1.5px solid rgba(255,255,255,0.3)',  // White border
+                            color: '#FFFFFF',  // Pure white text
                             fontSize: '11px',  // Smaller text
                             fontWeight: '600',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                            boxShadow: '0 1px 2px rgba(255,255,255,0.2)',
                             verticalAlign: 'baseline',  // Align with text baseline
                             display: 'inline-flex',
                             fontFamily: 'sans-serif'  // Use regular font for numbers
