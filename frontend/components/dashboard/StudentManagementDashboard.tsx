@@ -1534,14 +1534,14 @@ export default function StudentManagementDashboard() {
                           overflow: 'hidden',
                           margin: '0 auto',  // Top-aligned, horizontally centered
                           padding: '1.2rem 1.8rem',  // Side margins for annotations
-                          backgroundColor: '#000000',  // Pure black background
+                          backgroundColor: '#FFFFFF',  // Pure white background
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
                           border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
                           fontSize: `${20 * (zoomLevel / 100)}px`,  // 12% larger for better readability
                           lineHeight: '2.0',  // Compact but readable line spacing
                           textAlign: 'justify',  // Justified text like a book
-                          color: '#FFFFFF',  // Pure white text color
+                          color: '#000000',  // Pure black text color
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           direction: 'rtl',  // Right-to-left for Arabic
@@ -1684,12 +1684,12 @@ export default function StudentManagementDashboard() {
                             width: '18px',  // Tiny inline circle
                             height: '18px',
                             borderRadius: '50%',
-                            background: 'rgba(255,255,255,0.08)',  // Very subtle circle
-                            border: '1px solid rgba(255,255,255,0.2)',  // Thin border
-                            color: '#FFFFFF',  // White text
+                            background: 'rgba(64, 130, 109, 0.12)',  // Subtle teal background
+                            border: '1px solid rgba(64, 130, 109, 0.4)',  // Teal border
+                            color: '#000000',  // Black text
                             fontSize: '9px',  // Very small text
                             fontWeight: '500',
-                            boxShadow: '0 0.5px 1px rgba(0,0,0,0.2)',
+                            boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
                             verticalAlign: 'middle',  // Middle alignment
                             display: 'inline-flex',
                             fontFamily: 'sans-serif',  // Use regular font for numbers
