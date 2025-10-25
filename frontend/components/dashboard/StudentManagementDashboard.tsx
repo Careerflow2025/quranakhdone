@@ -639,6 +639,10 @@ export default function StudentManagementDashboard() {
         });
 
         console.log('✅ Highlight saved to database');
+
+        // Refresh highlights to show new data immediately
+        await refreshHighlights();
+        console.log('✅ Highlights refreshed');
       } catch (error) {
         console.error('❌ Failed to create highlight:', error);
         alert('Failed to save highlight. Please try again.');
@@ -725,6 +729,10 @@ export default function StudentManagementDashboard() {
           });
 
           console.log('✅ Full ayah highlight saved to database');
+
+          // Refresh highlights to show new data immediately
+          await refreshHighlights();
+          console.log('✅ Highlights refreshed');
         } catch (error) {
           console.error('❌ Failed to create full ayah highlight:', error);
           alert('Failed to save highlight. Please try again.');

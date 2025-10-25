@@ -125,10 +125,101 @@ export async function POST(req: NextRequest) {
 
     console.log('✅ Highlight created successfully:', highlight.id);
 
+    // ============================================================================
+    // AUTOMATIC ASSIGNMENT CREATION - Core Workflow Feature
+    // ============================================================================
+    // When a highlight is created (except for 'completed' type), automatically
+    // create a corresponding assignment. This ensures highlights show up in
+    // assignments tab across all dashboards.
+    // ============================================================================
+
+    let assignment = null;
+
+    // Only create assignment if NOT completed and NOT homework type
+    // (homework highlights are displayed in homework tab, not assignment tab)
+    if (type && type !== 'completed' && type !== 'homework') {
+      try {
+        // Generate assignment title based on highlight type
+        const assignmentTitles: Record<string, string> = {
+          'recap': 'Recap',
+          'tajweed': 'Tajweed Practice',
+          'haraka': 'Haraka Correction',
+          'letter': 'Letter Correction'
+        };
+
+        const title = `${assignmentTitles[type] || 'Assignment'} - Surah ${surah}, Ayah ${ayah_start}${ayah_end !== ayah_start ? `-${ayah_end}` : ''}`;
+
+        // Generate description
+        const description = word_start !== null && word_end !== null
+          ? `Practice ${type} for specific words in Surah ${surah}, Ayah ${ayah_start}`
+          : `Practice ${type} for full ayah in Surah ${surah}, Ayah ${ayah_start}`;
+
+        // Calculate due date based on type
+        const now = new Date();
+        const daysToAdd = type === 'recap' ? 7 : 3; // 7 days for recap, 3 days for others
+        const dueDate = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
+        // Create assignment
+        const { data: createdAssignment, error: assignmentError } = await supabaseAdmin
+          .from('assignments')
+          .insert({
+            school_id: profile.school_id,
+            created_by_teacher_id: teacher_id,
+            student_id: student_id,
+            title: title,
+            description: description,
+            status: 'assigned',
+            due_at: dueDate.toISOString(),
+            reopen_count: 0
+          })
+          .select()
+          .single();
+
+        if (!assignmentError && createdAssignment) {
+          assignment = createdAssignment;
+          console.log('✅ Assignment created automatically:', createdAssignment.id);
+
+          // Create assignment event
+          await supabaseAdmin
+            .from('assignment_events')
+            .insert({
+              assignment_id: createdAssignment.id,
+              event_type: 'created',
+              actor_user_id: user.id,
+              from_status: null,
+              to_status: 'assigned',
+              meta: {
+                highlight_id: highlight.id,
+                auto_created: true,
+                surah: surah,
+                ayah_start: ayah_start,
+                ayah_end: ayah_end
+              }
+            });
+
+          console.log('✅ Assignment event created');
+        } else {
+          console.error('⚠️ Failed to create assignment:', assignmentError);
+          // Don't fail the highlight creation if assignment fails
+        }
+      } catch (assignmentCreationError: any) {
+        console.error('⚠️ Error during assignment creation:', assignmentCreationError);
+        // Don't fail the highlight creation if assignment fails
+      }
+    } else if (type === 'homework') {
+      console.log('ℹ️ Homework highlight - no assignment created (shows in homework tab)');
+    } else if (type === 'completed') {
+      console.log('ℹ️ Completed highlight - no assignment created');
+    }
+
     return NextResponse.json({
       success: true,
       data: highlight,
-      highlight: highlight
+      highlight: highlight,
+      assignment: assignment, // Include assignment if created
+      message: assignment
+        ? `Highlight and assignment created successfully`
+        : `Highlight created successfully`
     }, { status: 201 });
 
   } catch (error: any) {
