@@ -625,51 +625,88 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
     setSaving(true);
     setSaveSuccess(false);
     try {
+      console.log('🔄 Starting to save class assignments...');
+
       for (const cls of classes) {
+        console.log(`📝 Processing class: ${cls.name} (ID: ${cls.id})`);
+
         // Update teacher assignment
-        await supabase
+        console.log('  🗑️ Deleting old teacher assignments...');
+        const { error: deleteTeacherError } = await supabase
           .from('class_teachers')
           .delete()
           .eq('class_id', cls.id);
 
+        if (deleteTeacherError) {
+          console.error('  ❌ Failed to delete teacher assignments:', deleteTeacherError);
+          throw new Error(`Failed to delete teacher assignments for ${cls.name}: ${deleteTeacherError.message}`);
+        }
+
         if (cls.teacher) {
-          await supabase
+          console.log(`  ➕ Assigning teacher: ${cls.teacher.name} (ID: ${cls.teacher.id})`);
+          const { error: insertTeacherError } = await supabase
             .from('class_teachers')
             .insert({
               class_id: cls.id,
               teacher_id: cls.teacher.id
             } as any);
+
+          if (insertTeacherError) {
+            console.error('  ❌ Failed to insert teacher assignment:', insertTeacherError);
+            throw new Error(`Failed to assign teacher to ${cls.name}: ${insertTeacherError.message}`);
+          }
+          console.log('  ✅ Teacher assigned successfully');
         }
 
         // Update student enrollments
-        await supabase
+        console.log('  🗑️ Deleting old student enrollments...');
+        const { error: deleteStudentsError } = await supabase
           .from('class_enrollments')
           .delete()
           .eq('class_id', cls.id);
 
+        if (deleteStudentsError) {
+          console.error('  ❌ Failed to delete student enrollments:', deleteStudentsError);
+          throw new Error(`Failed to delete student enrollments for ${cls.name}: ${deleteStudentsError.message}`);
+        }
+
         if (cls.students.length > 0) {
+          console.log(`  ➕ Enrolling ${cls.students.length} students...`);
           const enrollments = cls.students.map((student: any) => ({
             class_id: cls.id,
             student_id: student.id
           }));
 
-          await supabase
+          const { error: insertStudentsError } = await supabase
             .from('class_enrollments')
             .insert(enrollments as any);
+
+          if (insertStudentsError) {
+            console.error('  ❌ Failed to insert student enrollments:', insertStudentsError);
+            console.error('  📋 Attempted enrollments:', enrollments);
+            throw new Error(`Failed to enroll students in ${cls.name}: ${insertStudentsError.message}`);
+          }
+          console.log(`  ✅ ${cls.students.length} students enrolled successfully`);
+        } else {
+          console.log('  ℹ️ No students to enroll for this class');
         }
+
+        console.log(`✅ Class ${cls.name} saved successfully\n`);
       }
 
+      console.log('🎉 All class assignments saved successfully!');
       setSaveSuccess(true);
       setHasChanges(false);
       setTimeout(() => setSaveSuccess(false), 3000);
 
       // Call the onSave callback to refresh parent data
       if (onSave) {
+        console.log('🔄 Refreshing parent data...');
         onSave();
       }
-    } catch (error) {
-      console.error('Error saving changes:', error);
-      alert('Failed to save changes');
+    } catch (error: any) {
+      console.error('❌ Error saving changes:', error);
+      alert(`Failed to save changes: ${error.message}`);
     }
     setSaving(false);
   };
