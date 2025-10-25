@@ -250,15 +250,35 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
       // Transform classes data
       if (classesData) {
         const transformedClasses = await Promise.all(classesData.map(async (cls: any) => {
-          // Get teacher details
+          // Get teacher details with profiles relationship for name
           let teacher = null;
           if (cls.class_teachers?.length > 0) {
             const { data: teacherData } = await supabase
               .from('teachers')
-              .select('*')
+              .select(`
+                *,
+                profiles:user_id(display_name, email)
+              `)
               .eq('id', cls.class_teachers[0].teacher_id)
               .single() as any;
-            teacher = teacherData;
+
+            // Transform teacher to include name from profiles
+            if (teacherData) {
+              const teacherName = teacherData.profiles?.display_name ||
+                                 teacherData.profiles?.email?.split('@')[0] ||
+                                 'Unknown Teacher';
+              const teacherEmail = teacherData.profiles?.email || '';
+
+              teacher = {
+                id: teacherData.id,
+                name: teacherName,
+                email: teacherEmail,
+                subject: teacherData.subject,
+                qualification: teacherData.qualification,
+                experience: teacherData.experience,
+                phone: teacherData.phone
+              };
+            }
           }
 
           // Get student details
