@@ -409,21 +409,30 @@ export default function ParentDashboard() {
 
   // Load Quran text
   useEffect(() => {
-    const scriptId = selectedScript || 'uthmani-hafs';
-    const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = surahList.find((s: any) => s.number === currentSurah);
+    const loadQuranText = async () => {
+      const scriptId = selectedScript || 'uthmani-hafs';
+      const surahInfo = surahList.find((s: any) => s.number === currentSurah);
 
-    if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
-      setQuranText({
-        surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
-        ayahs: surahData.ayahs.map((ayah: any) => ({
-          number: ayah.numberInSurah,
-          text: ayah.text,
-          words: ayah.text.split(' ')
-        }))
-      });
-      setCurrentPage(1);
-    }
+      try {
+        const surahData = await getSurahByNumber(scriptId, currentSurah);
+
+        if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
+          setQuranText({
+            surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
+            ayahs: surahData.ayahs.map((ayah: any) => ({
+              number: ayah.numberInSurah,
+              text: ayah.text,
+              words: ayah.text.split(' ')
+            }))
+          });
+          setCurrentPage(1);
+        }
+      } catch (error) {
+        console.error('Error loading Quran text:', error);
+      }
+    };
+
+    loadQuranText();
   }, [currentSurah, selectedScript]);
 
   const handleViewHighlight = (highlightId: any) => {

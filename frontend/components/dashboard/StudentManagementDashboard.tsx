@@ -242,37 +242,45 @@ export default function StudentManagementDashboard() {
 
   // Update Quran text when Surah or Script changes
   useEffect(() => {
-    const scriptId = selectedScript || 'uthmani-hafs';
-    const surahData = getSurahByNumber(scriptId, currentSurah);
-    const surahInfo = allSurahs.find((s: any) => s.number === currentSurah);
-    
-    if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
-      // Use the actual Quran data
-      setQuranText({
-        surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
-        ayahs: surahData.ayahs.map((ayah: any) => ({
-          number: ayah.numberInSurah,
-          text: ayah.text,
-          words: ayah.text.split(' ')
-        }))
-      });
-      // Reset to first page when Surah changes
-      // Set to the correct mushaf page for this surah
-      const mushafPage = getPageBySurahAyah(currentSurah, 1);
-      setCurrentMushafPage(mushafPage);
-    } else {
-      // Fallback for any loading issues
-      setQuranText({
-        surah: surahInfo?.nameArabic || 'سورة',
-        ayahs: [
-          { 
-            number: 1, 
-            text: 'جاري تحميل النص...', 
-            words: ['جاري', 'تحميل', 'النص...'] 
-          }
-        ]
-      });
-    }
+    const loadQuranText = async () => {
+      const scriptId = selectedScript || 'uthmani-hafs';
+      const surahInfo = allSurahs.find((s: any) => s.number === currentSurah);
+
+      try {
+        const surahData = await getSurahByNumber(scriptId, currentSurah);
+
+        if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
+          // Use the actual Quran data
+          setQuranText({
+            surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
+            ayahs: surahData.ayahs.map((ayah: any) => ({
+              number: ayah.numberInSurah,
+              text: ayah.text,
+              words: ayah.text.split(' ')
+            }))
+          });
+          // Reset to first page when Surah changes
+          // Set to the correct mushaf page for this surah
+          const mushafPage = getPageBySurahAyah(currentSurah, 1);
+          setCurrentMushafPage(mushafPage);
+        }
+      } catch (error) {
+        console.error('Error loading Quran text:', error);
+        // Fallback for any loading issues
+        setQuranText({
+          surah: surahInfo?.nameArabic || 'سورة',
+          ayahs: [
+            {
+              number: 1,
+              text: 'جاري تحميل النص...',
+              words: ['جاري', 'تحميل', 'النص...']
+            }
+          ]
+        });
+      }
+    };
+
+    loadQuranText();
   }, [currentSurah, selectedScript]);
   
   // Get all 114 Surahs from data file
