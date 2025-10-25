@@ -893,27 +893,7 @@ export default function StudentManagementDashboard() {
     ));
   };
 
-  // Simulate some completed homework (green highlights marked as gold)
-  useEffect(() => {
-    // When component mounts, check if there are any homework highlights that should be completed
-    // This would normally come from the database/API
-    const completedHomeworkIds = ['HW001', 'HW002']; // Example IDs from teacher dashboard
-
-    // Mark some homework highlights as completed for demonstration
-    const homeworkHighlights = highlights.filter((h: any) => h.mistakeType === 'homework');
-    if (homeworkHighlights.length > 0) {
-      // Mark first few homework highlights as completed
-      const updatedHighlights = highlights.map((h: any, index: any) => {
-        if (h.mistakeType === 'homework' && index < 2) {
-          return { ...h, isCompleted: true };
-        }
-        return h;
-      });
-      if (JSON.stringify(updatedHighlights) !== JSON.stringify(highlights)) {
-        setHighlights(updatedHighlights);
-      }
-    }
-  }, []);
+  // REMOVED: Mock completed homework simulation - using only real database data
 
   // Canvas Drawing Functions
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
