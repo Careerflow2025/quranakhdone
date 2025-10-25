@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const body = await req.json();
-    const { student_id, surah, ayah_start, ayah_end, color, type, note, page_number } = body;
+    const { student_id, surah, ayah_start, ayah_end, color, type, note, page_number, word_start, word_end } = body;
 
     // Validate required fields
     if (!student_id || !surah || !ayah_start || !ayah_end || !color) {
@@ -102,6 +102,8 @@ export async function POST(req: NextRequest) {
         surah: parseInt(surah),
         ayah_start: parseInt(ayah_start),
         ayah_end: parseInt(ayah_end),
+        word_start: word_start !== undefined && word_start !== null ? parseInt(word_start) : null,
+        word_end: word_end !== undefined && word_end !== null ? parseInt(word_end) : null,
         page_number: page_number ? parseInt(page_number) : null,
         color: color,
         type: type || null,

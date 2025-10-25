@@ -542,12 +542,11 @@ export default function StudentManagementDashboard() {
       const ayahIndex = quranText.ayahs.findIndex((ayah: any) => ayah.number === dbH.ayah_start);
       if (ayahIndex === -1) return;
 
-      // For single-word highlights (ayah_start === ayah_end)
-      if (dbH.ayah_start === dbH.ayah_end) {
-        // Add highlight for the first word of the ayah
-        // NOTE: Database doesn't store word index, so we highlight the whole ayah
-        const ayahWords = quranText.ayahs[ayahIndex]?.words?.length || 0;
-        for (let wordIdx = 0; wordIdx < ayahWords; wordIdx++) {
+      // Check if word indices are specified (word-level highlight)
+      if (dbH.word_start !== null && dbH.word_start !== undefined &&
+          dbH.word_end !== null && dbH.word_end !== undefined) {
+        // Word-level highlight: only highlight specific words
+        for (let wordIdx = dbH.word_start; wordIdx <= dbH.word_end; wordIdx++) {
           pageHighlights.push({
             id: `${dbH.id}-${wordIdx}`,
             dbId: dbH.id,
@@ -559,6 +558,20 @@ export default function StudentManagementDashboard() {
             isCompleted: dbH.completed_at !== null
           });
         }
+      } else {
+        // Full ayah highlight (word_start and word_end are NULL)
+        // Only create a single marker, not individual word highlights
+        pageHighlights.push({
+          id: `${dbH.id}-full-ayah`,
+          dbId: dbH.id,
+          ayahIndex,
+          wordIndex: null, // null indicates full ayah
+          mistakeType: dbH.type || dbH.color,
+          color: dbH.color,
+          timestamp: dbH.created_at,
+          isCompleted: dbH.completed_at !== null,
+          isFullAyah: true
+        });
       }
     });
 
@@ -612,6 +625,8 @@ export default function StudentManagementDashboard() {
           surah: pageData.surahStart,  // Current surah
           ayah_start: ayah.number,     // Actual ayah number
           ayah_end: ayah.number,       // Same ayah for single word
+          word_start: wordIndex,       // Specific word index
+          word_end: wordIndex,         // Same word for single word highlight
           color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color || selectedMistakeType,
           type: selectedMistakeType,
           page_number: currentMushafPage
@@ -660,34 +675,54 @@ export default function StudentManagementDashboard() {
   };
 
   // Highlight entire ayah (for recap and tajweed)
-  const highlightEntireAyah = (ayahIndex: number) => {
+  const highlightEntireAyah = async (ayahIndex: number) => {
     if (highlightMode && (selectedMistakeType === 'recap' || selectedMistakeType === 'homework' || selectedMistakeType === 'tajweed')) {
-      const ayahWords = quranText.ayahs[ayahIndex]?.words?.length || 0;
-      const newHighlights = [];
-      
-      for (let wordIdx = 0; wordIdx < ayahWords; wordIdx++) {
-        const exists = highlights.some(
-          h => h.ayahIndex === ayahIndex && h.wordIndex === wordIdx && h.mistakeType === selectedMistakeType
-        );
-        
-        if (!exists) {
-          newHighlights.push({
-            id: Date.now() + Math.random(),
-            ayahIndex,
-            wordIndex: wordIdx,
-            mistakeType: selectedMistakeType,
-            color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color,
-            timestamp: new Date().toISOString(),
-            isCompleted: false
-          });
+      // Check if full ayah highlight already exists
+      const existingFullAyahHighlight = highlights.find(
+        h => h.ayahIndex === ayahIndex && h.isFullAyah && h.mistakeType === selectedMistakeType
+      );
+
+      if (existingFullAyahHighlight && existingFullAyahHighlight.dbId) {
+        // Remove full ayah highlight from database
+        try {
+          await deleteHighlight(existingFullAyahHighlight.dbId);
+          console.log('✅ Full ayah highlight deleted from database');
+        } catch (error) {
+          console.error('❌ Failed to delete full ayah highlight:', error);
+          alert('Failed to delete highlight. Please try again.');
         }
-      }
-      
-      if (newHighlights.length > 0) {
-        setHighlights([...highlights, ...newHighlights]);
       } else {
-        // If all words are already highlighted, remove them all
-        setHighlights(highlights.filter((h: any) => !(h.ayahIndex === ayahIndex && h.mistakeType === selectedMistakeType)));
+        // Add new full ayah highlight to database (word indices = null)
+        try {
+          const pageData = getPageContent(currentMushafPage);
+          if (!pageData) {
+            console.error('❌ No page data available');
+            return;
+          }
+
+          const ayah = quranText.ayahs[ayahIndex];
+          if (!ayah) {
+            console.error('❌ Ayah not found:', ayahIndex);
+            return;
+          }
+
+          // Create full ayah highlight (word_start and word_end are null)
+          await createHighlightDB({
+            surah: pageData.surahStart,
+            ayah_start: ayah.number,
+            ayah_end: ayah.number,
+            word_start: undefined, // null in database = full ayah
+            word_end: undefined,   // null in database = full ayah
+            color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color || selectedMistakeType,
+            type: selectedMistakeType,
+            page_number: currentMushafPage
+          });
+
+          console.log('✅ Full ayah highlight saved to database');
+        } catch (error) {
+          console.error('❌ Failed to create full ayah highlight:', error);
+          alert('Failed to save highlight. Please try again.');
+        }
       }
     }
   };
@@ -1639,28 +1674,58 @@ export default function StudentManagementDashboard() {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
                             return (
                               <span key={ayah.number} className="inline relative group">
-                        {/* Select All Ayah Button - Show for recap, homework and tajweed only if ayah not fully selected */}
+                        {/* Compact Full Ayah Indicator - Show for recap, homework and tajweed */}
                         {highlightMode && (selectedMistakeType === 'recap' || selectedMistakeType === 'homework' || selectedMistakeType === 'tajweed') && (() => {
-                          const ayahWords = quranText.ayahs[ayahIndex]?.words?.length || 0;
-                          const highlightedWordsCount = highlights.filter(
-                            h => h.ayahIndex === ayahIndex && h.mistakeType === selectedMistakeType
-                          ).length;
-                          // Only show button if not all words are highlighted
-                          return highlightedWordsCount < ayahWords;
+                          // Check if full ayah highlight exists for this ayah and type
+                          const hasFullAyahHighlight = highlights.some(
+                            h => h.ayahIndex === ayahIndex && h.isFullAyah && h.mistakeType === selectedMistakeType
+                          );
+                          return !hasFullAyahHighlight; // Only show if not already highlighted
                         })() && (
                           <button
                             onClick={() => highlightEntireAyah(ayahIndex)}
-                            className={`absolute -left-24 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-all text-white px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap z-10 shadow-lg ${
+                            className={`absolute -left-12 top-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-90 transition-all z-10 ${
                               selectedMistakeType === 'recap'
-                                ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
+                                ? 'bg-purple-500 hover:bg-purple-600'
                                 : selectedMistakeType === 'homework'
-                                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
+                                ? 'bg-green-500 hover:bg-green-600'
+                                : 'bg-orange-500 hover:bg-orange-600'
                             }`}
+                            style={{
+                              width: '8px',
+                              height: '32px',
+                              borderRadius: '4px',
+                              border: '1px solid rgba(0,0,0,0.2)',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
                             title="Select entire ayah"
-                          >
-                            ✓ All Ayah
-                          </button>
+                          />
+                        )}
+                        {/* Show compact filled indicator when full ayah is highlighted */}
+                        {(() => {
+                          const fullAyahHighlight = highlights.find(
+                            h => h.ayahIndex === ayahIndex && h.isFullAyah && h.mistakeType === selectedMistakeType
+                          );
+                          return fullAyahHighlight;
+                        })() && (
+                          <button
+                            onClick={() => highlightEntireAyah(ayahIndex)}
+                            className={`absolute -left-12 top-1/2 -translate-y-1/2 opacity-70 group-hover:opacity-100 transition-all z-10 ${
+                              selectedMistakeType === 'recap'
+                                ? 'bg-purple-600'
+                                : selectedMistakeType === 'homework'
+                                ? 'bg-green-600'
+                                : 'bg-orange-600'
+                            }`}
+                            style={{
+                              width: '10px',
+                              height: '36px',
+                              borderRadius: '4px',
+                              border: '2px solid rgba(255,255,255,0.5)',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                            }}
+                            title="Remove full ayah highlight"
+                          />
                         )}
                         {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
@@ -1713,7 +1778,7 @@ export default function StudentManagementDashboard() {
                                   }
                                 }
                               }}
-                              className={`inline px-0.5 cursor-pointer rounded transition-colors select-none ${
+                              className={`inline cursor-pointer rounded transition-colors select-none ${
                                 isInSelection ? 'bg-yellow-600 bg-opacity-40' : ''
                               } ${
                                 highlightMode && mistakes.length === 0 && !isInSelection ? 'hover:bg-gray-700 hover:bg-opacity-30' : ''
@@ -1727,6 +1792,11 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 color: '#000000',  // ALWAYS black text, never change
+                                paddingTop: '1px',     // Reduced top space (15% less)
+                                paddingBottom: '2px',  // Balanced bottom space
+                                paddingLeft: '2px',    // Horizontal padding
+                                paddingRight: '2px',   // Horizontal padding
+                                lineHeight: '1.4',     // Controlled line height
                                 ...(mistakes.length === 1 ? {
                                   backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :

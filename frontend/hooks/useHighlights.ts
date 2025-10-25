@@ -60,6 +60,8 @@ export function useHighlights(studentId: string | null) {
     surah: number;
     ayah_start: number;
     ayah_end: number;
+    word_start?: number;
+    word_end?: number;
     color: string;
     type?: string;
     note?: string;
