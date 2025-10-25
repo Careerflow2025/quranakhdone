@@ -1538,7 +1538,7 @@ export default function StudentManagementDashboard() {
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
                           border: '2px solid #1a1a1a',  // Darker border for book effect
-                          fontSize: `${18 * (zoomLevel / 100)}px`,  // Smaller for more content
+                          fontSize: `${20 * (zoomLevel / 100)}px`,  // 12% larger for better readability
                           lineHeight: '2.0',  // Compact but readable line spacing
                           textAlign: 'justify',  // Justified text like a book
                           color: '#FFFFFF',  // Pure white text color
