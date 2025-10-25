@@ -189,7 +189,7 @@ export function useTeacherData() {
 
               const { data: studentsData, error: studentsError } = await supabase
                 .from('students')
-                .select('id, user_id, dob, gender, age, active, phone, parent_phone')
+                .select('id, user_id, dob, gender, age, active, phone, grade, address')
                 .in('id', studentIds);
 
               if (studentsError) {
@@ -224,7 +224,8 @@ export function useTeacherData() {
                     age: calculatedAge,
                     gender: student.gender,
                     phone: student.phone,
-                    parent_phone: student.parent_phone,
+                    grade: student.grade,
+                    address: student.address,
                     status: student.active ? 'active' : 'inactive'
                   });
                 }
