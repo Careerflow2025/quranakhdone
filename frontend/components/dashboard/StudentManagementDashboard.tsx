@@ -1536,8 +1536,8 @@ export default function StudentManagementDashboard() {
                           padding: '1.2rem 1.8rem',  // Side margins for annotations
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
-                          border: '2px solid #1a1a1a',  // Darker border for book effect
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
+                          border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
                           fontSize: `${20 * (zoomLevel / 100)}px`,  // 12% larger for better readability
                           lineHeight: '2.0',  // Compact but readable line spacing
                           textAlign: 'justify',  // Justified text like a book
