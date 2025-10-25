@@ -6,6 +6,7 @@ import qaloonData from './qaloon.json';
 import uthmaniData from './uthmani.json';
 import tajweedData from './tajweed.json';
 import simpleData from './simple.json';
+import fallbackData from './quran-clean.json'; // Fallback if imports fail
 
 // Define the 6 different Quran scripts with UNIQUE data sources
 export const quranScripts = {
@@ -102,13 +103,14 @@ export const quranScripts = {
 };
 
 // Script ID to data mapping for easy lookup
+// Use fallback if primary imports fail
 const scriptDataMap: Record<string, any> = {
-  'uthmani-hafs': uthmaniHafsData,
-  'warsh': warshData,
-  'qaloon': qaloonData,
-  'al-duri': uthmaniData,
-  'al-bazzi': tajweedData,
-  'qunbul': simpleData
+  'uthmani-hafs': uthmaniHafsData || fallbackData,
+  'warsh': warshData || fallbackData,
+  'qaloon': qaloonData || fallbackData,
+  'al-duri': uthmaniData || fallbackData,
+  'al-bazzi': tajweedData || fallbackData,
+  'qunbul': simpleData || fallbackData
 };
 
 // Get Surah by number and script
@@ -116,7 +118,14 @@ export function getSurahByNumber(scriptId: string, surahNumber: number) {
   console.log('getSurahByNumber called with:', scriptId, surahNumber);
 
   // Get the correct data source for this script
-  const scriptData = scriptDataMap[scriptId] || scriptDataMap['uthmani-hafs'];
+  let scriptData = scriptDataMap[scriptId] || scriptDataMap['uthmani-hafs'] || fallbackData;
+
+  // Final fallback to ensure we always have data
+  if (!scriptData || !Array.isArray(scriptData)) {
+    console.warn('⚠️ Script data not loaded properly, using fallback');
+    scriptData = fallbackData;
+  }
+
   console.log('Using script data for:', scriptId, 'Data length:', scriptData?.length);
 
   // Find the surah in the script-specific data
@@ -192,7 +201,13 @@ export function getQuranByScriptId(scriptId: string) {
   if (!script) return null;
 
   // Get the correct data source for this script
-  const scriptData = scriptDataMap[scriptId] || scriptDataMap['uthmani-hafs'];
+  let scriptData = scriptDataMap[scriptId] || scriptDataMap['uthmani-hafs'] || fallbackData;
+
+  // Final fallback to ensure we always have data
+  if (!scriptData || !Array.isArray(scriptData)) {
+    console.warn('⚠️ Script data not loaded properly, using fallback');
+    scriptData = fallbackData;
+  }
 
   return {
     ...script,
