@@ -1048,26 +1048,39 @@ export default function SchoolDashboard() {
   // Reset password
   const resetCredentialPassword = async (credentialId: any) => {
     try {
+      // Get the credential to extract user_id
+      const credential = credentials.find((c: any) => c.id === credentialId);
+      if (!credential) {
+        throw new Error('Credential not found');
+      }
+
       // Generate new password
       const newPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-5);
 
-      const resetData: TablesUpdate<'user_credentials'> = {
-        password: newPassword,
-        sent_at: null // Reset sent status so they need to send new email
-      };
+      // Call API to update BOTH Supabase Auth AND user_credentials table
+      const response = await fetch('/api/school/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: credential.user_id,
+          newPassword: newPassword,
+          credentialId: credentialId
+        }),
+      });
 
-      const { error } = await (supabase as any)
-        .from('user_credentials')
-        .update(resetData)
-        .eq('id', credentialId);
+      const data = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reset password');
+      }
 
-      showNotification('Password reset successfully. Send email to share new password.', 'success');
+      showNotification('Password reset successfully. Both Auth and credentials updated. Send email to share new password.', 'success');
       loadCredentials();
     } catch (error: any) {
       console.error('Error resetting password:', error);
-      showNotification('Failed to reset password', 'error');
+      showNotification('Failed to reset password: ' + error.message, 'error');
     }
   };
 
