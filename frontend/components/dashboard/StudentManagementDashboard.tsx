@@ -1412,9 +1412,12 @@ export default function StudentManagementDashboard() {
 
             {/* Main Quran Viewer */}
             <div className="col-span-8">
-              <div className="bg-white rounded-xl shadow-lg relative" style={{
+              <div className="bg-white rounded-xl shadow-lg relative flex flex-col" style={{
                 background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                minHeight: '100vh',
+                height: '100vh',
+                overflow: 'hidden'
               }}>
                 {/* Canvas Overlay for Pen Annotations */}
                 <canvas
@@ -1435,8 +1438,8 @@ export default function StudentManagementDashboard() {
                 />
 
                 {/* Page-like container */}
-                <div className="p-2" style={{
-                  minHeight: 'auto',
+                <div className="p-2 flex flex-col flex-1" style={{
+                  minHeight: 0,
                   backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
                   backgroundSize: '50px 50px',
                   pointerEvents: penMode ? 'none' : 'auto'
@@ -1450,7 +1453,7 @@ export default function StudentManagementDashboard() {
                 )}
 
                 {/* Quran Text Display - Mushaf Style with Dynamic Script Styling */}
-                <div className="relative">
+                <div className="relative flex-1 flex flex-col justify-center">
                   
                   <div 
                     className="text-center leading-loose px-16 py-8 bg-gradient-to-b from-white to-gray-50 rounded-lg" 
@@ -1530,15 +1533,15 @@ export default function StudentManagementDashboard() {
                       // Render the page with traditional Mushaf formatting
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
-                        <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
+                        <div className={`mushaf-page-content mushaf-text ${scriptClass} flex-1`} style={{
                           width: '55vw',
                           maxWidth: '700px',
-                          minHeight: '58vh',
-                          maxHeight: '60vh',
+                          minHeight: '70vh',
+                          maxHeight: '75vh',
                           aspectRatio: '2/3',
                           overflow: 'hidden',
-                          margin: '0.5rem auto',  // Minimal margin
-                          padding: '1.2rem 3rem',  // Generous side margins for annotations
+                          margin: 'auto',  // Center
+                          padding: '2rem 3rem',  // Generous side margins for annotations
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
