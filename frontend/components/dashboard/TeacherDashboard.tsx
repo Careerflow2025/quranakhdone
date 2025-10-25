@@ -523,17 +523,33 @@ export default function TeacherDashboard() {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
                     {cls.room && (
-                      <p className="text-gray-500 mt-1">Room {cls.room}</p>
+                      <p className="text-gray-500 mt-1 flex items-center">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        Room {cls.room}
+                      </p>
                     )}
                     <div className="mt-4 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Class ID:</span>
-                        <span className="font-medium text-xs text-gray-600">{cls.id.slice(0, 8)}...</span>
+                      <div className="flex justify-between text-sm items-center">
+                        <span className="text-gray-500 flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          Capacity:
+                        </span>
+                        <span className="font-semibold text-blue-600">{cls.studentCount || 0} / {cls.capacity || 30}</span>
                       </div>
-                      {cls.schedule_json && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Schedule:</span>
-                          <span className="font-medium">Available</span>
+                      <div className="flex justify-between text-sm items-center">
+                        <span className="text-gray-500 flex items-center">
+                          <GraduationCap className="w-4 h-4 mr-1" />
+                          Teachers:
+                        </span>
+                        <span className="font-medium text-gray-900">{cls.teacherCount || 0}</span>
+                      </div>
+                      {cls.schedule_json && cls.schedule_json.schedules && cls.schedule_json.schedules.length > 0 && (
+                        <div className="flex justify-between text-sm items-center">
+                          <span className="text-gray-500 flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            Schedule:
+                          </span>
+                          <span className="font-medium text-green-600">{cls.schedule_json.schedules[0].day}</span>
                         </div>
                       )}
                     </div>
@@ -664,156 +680,167 @@ export default function TeacherDashboard() {
         )}
       </main>
 
-      {/* Class Details Modal */}
+      {/* Class Details Modal - Compact Design */}
       {selectedClassDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full h-[85vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">{selectedClassDetails.name}</h2>
-                  {selectedClassDetails.room && (
-                    <p className="text-blue-100">Room: {selectedClassDetails.room}</p>
-                  )}
-                  {selectedClassDetails.grade_level && (
-                    <p className="text-blue-100">Grade Level: {selectedClassDetails.grade_level}</p>
-                  )}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-5 text-white rounded-t-xl flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <BookOpen className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedClassDetails.name}</h2>
+                    <div className="flex gap-4 mt-1 text-sm text-blue-100">
+                      {selectedClassDetails.room && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" /> Room {selectedClassDetails.room}
+                        </span>
+                      )}
+                      {selectedClassDetails.grade_level && (
+                        <span>Grade: {selectedClassDetails.grade_level}</span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" /> {selectedClassDetails.studentCount || 0}/{selectedClassDetails.capacity || 30}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={() => setSelectedClassDetails(null)}
-                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2"
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-6">
-              {/* Class Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Class ID</p>
-                  <p className="font-mono text-xs text-gray-900">{selectedClassDetails.id}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">School ID</p>
-                  <p className="font-mono text-xs text-gray-900">{selectedClassDetails.school_id}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Capacity</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {selectedClassDetails.studentCount || 0} / {selectedClassDetails.capacity || 'N/A'}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Created</p>
-                  <p className="text-sm text-gray-900">
-                    {selectedClassDetails.created_at ? new Date(selectedClassDetails.created_at).toLocaleDateString() : 'N/A'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Teachers Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                  <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
-                  Assigned Teachers ({selectedClassDetails.teachers?.length || 0})
-                </h3>
-                {selectedClassDetails.teachers && selectedClassDetails.teachers.length > 0 ? (
-                  <div className="space-y-3">
-                    {selectedClassDetails.teachers.map((teacher: any) => (
-                      <div key={teacher.id} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-semibold text-gray-900">{teacher.name}</p>
-                            <p className="text-sm text-gray-600">{teacher.email}</p>
+            {/* Modal Content - 2 Column Layout */}
+            <div className="flex-1 overflow-hidden p-6">
+              <div className="grid grid-cols-2 gap-6 h-full">
+                {/* Left Column */}
+                <div className="space-y-4 overflow-y-auto pr-2">
+                  {/* Teachers Section */}
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm">
+                      <GraduationCap className="w-4 h-4 mr-2 text-blue-600" />
+                      Teachers ({selectedClassDetails.teachers?.length || 0})
+                    </h3>
+                    <div className="space-y-2">
+                      {selectedClassDetails.teachers && selectedClassDetails.teachers.length > 0 ? (
+                        selectedClassDetails.teachers.map((teacher: any) => (
+                          <div key={teacher.id} className="bg-white p-3 rounded-lg shadow-sm">
+                            <p className="font-medium text-gray-900 text-sm">{teacher.name}</p>
+                            <p className="text-xs text-gray-600">{teacher.email}</p>
                             {teacher.subject && (
-                              <p className="text-sm text-gray-600 mt-1">Subject: {teacher.subject}</p>
-                            )}
-                            {teacher.qualification && (
-                              <p className="text-sm text-gray-600">Qualification: {teacher.qualification}</p>
+                              <p className="text-xs text-blue-600 mt-1">{teacher.subject}</p>
                             )}
                           </div>
-                          {teacher.phone && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <Phone className="w-4 h-4 mr-1" />
-                              {teacher.phone}
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No teachers assigned</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Schedule Section */}
+                  {selectedClassDetails.schedule_json && selectedClassDetails.schedule_json.schedules && (
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm">
+                        <Clock className="w-4 h-4 mr-2 text-green-600" />
+                        Class Schedule
+                      </h3>
+                      <div className="space-y-2">
+                        {selectedClassDetails.schedule_json.schedules.map((schedule: any, idx: number) => (
+                          <div key={idx} className="bg-white p-3 rounded-lg shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-green-600" />
+                                <span className="font-medium text-sm text-gray-900">{schedule.day}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <Clock className="w-3 h-3" />
+                                {schedule.startTime} - {schedule.endTime}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No teachers assigned</p>
-                )}
-              </div>
-
-              {/* Students Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                  <Users className="w-5 h-5 mr-2 text-purple-600" />
-                  Enrolled Students ({selectedClassDetails.students?.length || 0})
-                </h3>
-                {selectedClassDetails.students && selectedClassDetails.students.length > 0 ? (
-                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {selectedClassDetails.students.map((student: any) => (
-                          <tr key={student.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{student.name}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{student.email}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{student.age || 'N/A'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{student.gender || 'N/A'}</td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {student.status}
-                              </span>
-                            </td>
-                          </tr>
+                            <p className="text-xs text-gray-500 mt-1">Duration: {schedule.duration} minutes</p>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No students enrolled</p>
-                )}
-              </div>
+                        {selectedClassDetails.schedule_json.timezone && (
+                          <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            Timezone: {selectedClassDetails.schedule_json.timezone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Schedule Section */}
-              {selectedClassDetails.schedule_json && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-green-600" />
-                    Class Schedule
-                  </h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                      {JSON.stringify(selectedClassDetails.schedule_json, null, 2)}
-                    </pre>
+                  {/* Class Info */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-3 text-sm">Class Information</h3>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-gray-500">Capacity</p>
+                        <p className="font-semibold text-gray-900">
+                          {selectedClassDetails.studentCount || 0} / {selectedClassDetails.capacity || 30}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Created</p>
+                        <p className="font-semibold text-gray-900">
+                          {selectedClassDetails.created_at ? new Date(selectedClassDetails.created_at).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
+
+                {/* Right Column - Students */}
+                <div className="bg-purple-50 rounded-lg p-4 overflow-y-auto">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center text-sm sticky top-0 bg-purple-50 pb-2">
+                    <Users className="w-4 h-4 mr-2 text-purple-600" />
+                    Students ({selectedClassDetails.students?.length || 0})
+                  </h3>
+                  {selectedClassDetails.students && selectedClassDetails.students.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedClassDetails.students.map((student: any) => (
+                        <div key={student.id} className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 text-sm">{student.name}</p>
+                              <p className="text-xs text-gray-600">{student.email}</p>
+                              <div className="flex gap-3 mt-2 text-xs text-gray-500">
+                                {student.age && <span>Age: {student.age}</span>}
+                                {student.gender && <span>Gender: {student.gender}</span>}
+                              </div>
+                            </div>
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${
+                              student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {student.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                      <Users className="w-12 h-12 mb-2 opacity-50" />
+                      <p className="text-sm">No students enrolled</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-gray-50 px-6 py-4 flex justify-end">
+            <div className="bg-gray-50 px-6 py-3 rounded-b-xl flex justify-end flex-shrink-0">
               <button
                 onClick={() => setSelectedClassDetails(null)}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md"
               >
                 Close
               </button>

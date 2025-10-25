@@ -122,8 +122,10 @@ export function useTeacherData() {
         // Enhance each class with teacher and student details
         if (fetchedClasses) {
           classesData = await Promise.all(fetchedClasses.map(async (cls: any) => {
+            console.log(`🔍 Enhancing class: ${cls.name} (${cls.id})`);
+
             // Get all teachers for this class
-            const { data: classTeacherRelations } = await supabase
+            const { data: classTeacherRelations, error: teacherError } = await supabase
               .from('class_teachers')
               .select(`
                 teacher_id,
@@ -134,25 +136,42 @@ export function useTeacherData() {
                   subject,
                   qualification,
                   experience,
-                  phone,
-                  profiles:user_id(display_name, email)
+                  phone
                 )
               `)
               .eq('class_id', cls.id);
 
-            const teachers = classTeacherRelations?.map((rel: any) => ({
-              id: rel.teachers.id,
-              name: rel.teachers.profiles?.display_name || rel.teachers.profiles?.email?.split('@')[0] || 'Unknown',
-              email: rel.teachers.profiles?.email || '',
-              bio: rel.teachers.bio,
-              subject: rel.teachers.subject,
-              qualification: rel.teachers.qualification,
-              experience: rel.teachers.experience,
-              phone: rel.teachers.phone
-            })) || [];
+            if (teacherError) {
+              console.error('❌ Error fetching teachers for class:', teacherError);
+            } else {
+              console.log(`  👨‍🏫 Found ${classTeacherRelations?.length || 0} teacher relations`);
+            }
+
+            // Get profiles for teachers separately
+            const teachers = [];
+            if (classTeacherRelations && classTeacherRelations.length > 0) {
+              for (const rel of classTeacherRelations) {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('display_name, email')
+                  .eq('user_id', rel.teachers.user_id)
+                  .single();
+
+                teachers.push({
+                  id: rel.teachers.id,
+                  name: profile?.display_name || profile?.email?.split('@')[0] || 'Unknown',
+                  email: profile?.email || '',
+                  bio: rel.teachers.bio,
+                  subject: rel.teachers.subject,
+                  qualification: rel.teachers.qualification,
+                  experience: rel.teachers.experience,
+                  phone: rel.teachers.phone
+                });
+              }
+            }
 
             // Get all students enrolled in this class
-            const { data: enrollments } = await supabase
+            const { data: enrollments, error: enrollmentError } = await supabase
               .from('class_enrollments')
               .select(`
                 student_id,
@@ -164,36 +183,53 @@ export function useTeacherData() {
                   age,
                   active,
                   phone,
-                  parent_phone,
-                  profiles:user_id(display_name, email)
+                  parent_phone
                 )
               `)
               .eq('class_id', cls.id);
 
-            const enrolledStudents = enrollments?.map((enr: any) => {
-              // Calculate age if not present
-              let calculatedAge = enr.students.age;
-              if (!calculatedAge && enr.students.dob) {
-                const today = new Date();
-                const birthDate = new Date(enr.students.dob);
-                calculatedAge = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                  calculatedAge--;
-                }
-              }
+            if (enrollmentError) {
+              console.error('❌ Error fetching enrollments for class:', enrollmentError);
+            } else {
+              console.log(`  👥 Found ${enrollments?.length || 0} student enrollments`);
+            }
 
-              return {
-                id: enr.students.id,
-                name: enr.students.profiles?.display_name || 'Unknown',
-                email: enr.students.profiles?.email || '',
-                age: calculatedAge,
-                gender: enr.students.gender,
-                phone: enr.students.phone,
-                parent_phone: enr.students.parent_phone,
-                status: enr.students.active ? 'active' : 'inactive'
-              };
-            }) || [];
+            // Get profiles for students separately
+            const enrolledStudents = [];
+            if (enrollments && enrollments.length > 0) {
+              for (const enr of enrollments) {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('display_name, email')
+                  .eq('user_id', enr.students.user_id)
+                  .single();
+
+                // Calculate age if not present
+                let calculatedAge = enr.students.age;
+                if (!calculatedAge && enr.students.dob) {
+                  const today = new Date();
+                  const birthDate = new Date(enr.students.dob);
+                  calculatedAge = today.getFullYear() - birthDate.getFullYear();
+                  const monthDiff = today.getMonth() - birthDate.getMonth();
+                  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    calculatedAge--;
+                  }
+                }
+
+                enrolledStudents.push({
+                  id: enr.students.id,
+                  name: profile?.display_name || profile?.email?.split('@')[0] || 'Unknown',
+                  email: profile?.email || '',
+                  age: calculatedAge,
+                  gender: enr.students.gender,
+                  phone: enr.students.phone,
+                  parent_phone: enr.students.parent_phone,
+                  status: enr.students.active ? 'active' : 'inactive'
+                });
+              }
+            }
+
+            console.log(`  ✅ Class enhanced: ${teachers.length} teachers, ${enrolledStudents.length} students`);
 
             return {
               ...cls,
