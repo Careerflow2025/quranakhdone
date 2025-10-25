@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
+import { useHighlights } from '@/hooks/useHighlights';
 import { 
   getQuranByScriptId, 
   getSurahByNumber, 
@@ -77,7 +78,21 @@ export default function StudentManagementDashboard() {
   const [selectedText, setSelectedText] = useState<any>(null);
   const [highlightMode, setHighlightMode] = useState(false);
   const [selectedMistakeType, setSelectedMistakeType] = useState('');
+
+  // Connect highlights to database (student-specific)
+  const {
+    highlights: dbHighlights,
+    isLoading: highlightsLoading,
+    error: highlightsError,
+    createHighlight: createHighlightDB,
+    completeHighlight,
+    deleteHighlight,
+    refreshHighlights
+  } = useHighlights(studentInfo?.id || null);
+
+  // Transform database highlights to UI format
   const [highlights, setHighlights] = useState<any[]>([]);
+
   const [notes, setNotes] = useState<any[]>([]);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
@@ -505,6 +520,51 @@ export default function StudentManagementDashboard() {
     }
   };
 
+  // Transform database highlights to UI format for current page
+  useEffect(() => {
+    if (!dbHighlights || dbHighlights.length === 0) {
+      setHighlights([]);
+      return;
+    }
+
+    // Get current page data
+    const pageData = getPageContent(currentMushafPage);
+    if (!pageData) return;
+
+    // Filter highlights for current page and transform to UI format
+    const pageHighlights: any[] = [];
+
+    dbHighlights.forEach((dbH: any) => {
+      // Check if highlight is on current page
+      if (dbH.page_number !== currentMushafPage) return;
+
+      // Find the ayah in quranText array
+      const ayahIndex = quranText.ayahs.findIndex((ayah: any) => ayah.number === dbH.ayah_start);
+      if (ayahIndex === -1) return;
+
+      // For single-word highlights (ayah_start === ayah_end)
+      if (dbH.ayah_start === dbH.ayah_end) {
+        // Add highlight for the first word of the ayah
+        // NOTE: Database doesn't store word index, so we highlight the whole ayah
+        const ayahWords = quranText.ayahs[ayahIndex]?.words?.length || 0;
+        for (let wordIdx = 0; wordIdx < ayahWords; wordIdx++) {
+          pageHighlights.push({
+            id: `${dbH.id}-${wordIdx}`,
+            dbId: dbH.id,
+            ayahIndex,
+            wordIndex: wordIdx,
+            mistakeType: dbH.type || dbH.color,
+            color: dbH.color,
+            timestamp: dbH.created_at,
+            isCompleted: dbH.completed_at !== null
+          });
+        }
+      }
+    });
+
+    setHighlights(pageHighlights);
+  }, [dbHighlights, currentMushafPage, quranText]);
+
   // Handle Text Selection for Highlighting
   const handleTextSelection = (ayahIndex: number, wordIndex: number, isMouseDown: boolean = false, isMouseUp: boolean = false) => {
     if (highlightMode && selectedMistakeType) {
@@ -516,26 +576,52 @@ export default function StudentManagementDashboard() {
   };
 
   // Toggle single word highlight - allows multiple colors on same word
-  const toggleSingleWord = (ayahIndex: number, wordIndex: number) => {
+  const toggleSingleWord = async (ayahIndex: number, wordIndex: number) => {
     const existingHighlight = highlights.find(
       h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex && h.mistakeType === selectedMistakeType
     );
-    
-    if (existingHighlight) {
-      // Remove only this specific color highlight
-      setHighlights(highlights.filter((h: any) => h.id !== existingHighlight.id));
+
+    if (existingHighlight && existingHighlight.dbId) {
+      // Remove highlight from database
+      try {
+        await deleteHighlight(existingHighlight.dbId);
+        console.log('✅ Highlight deleted from database');
+      } catch (error) {
+        console.error('❌ Failed to delete highlight:', error);
+        alert('Failed to delete highlight. Please try again.');
+      }
     } else {
-      // Add new highlight (allows multiple colors on same word)
-      const newHighlight = {
-        id: Date.now(),
-        ayahIndex,
-        wordIndex,
-        mistakeType: selectedMistakeType,
-        color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color,
-        timestamp: new Date().toISOString(),
-        isCompleted: false
-      };
-      setHighlights([...highlights, newHighlight]);
+      // Add new highlight to database
+      try {
+        // Get page data to determine surah/ayah numbers
+        const pageData = getPageContent(currentMushafPage);
+        if (!pageData) {
+          console.error('❌ No page data available');
+          return;
+        }
+
+        // Get the ayah object
+        const ayah = quranText.ayahs[ayahIndex];
+        if (!ayah) {
+          console.error('❌ Ayah not found:', ayahIndex);
+          return;
+        }
+
+        // Create highlight in database
+        await createHighlightDB({
+          surah: pageData.surahStart,  // Current surah
+          ayah_start: ayah.number,     // Actual ayah number
+          ayah_end: ayah.number,       // Same ayah for single word
+          color: mistakeTypes.find((m: any) => m.id === selectedMistakeType)?.color || selectedMistakeType,
+          type: selectedMistakeType,
+          page_number: currentMushafPage
+        });
+
+        console.log('✅ Highlight saved to database');
+      } catch (error) {
+        console.error('❌ Failed to create highlight:', error);
+        alert('Failed to save highlight. Please try again.');
+      }
     }
   };
 
