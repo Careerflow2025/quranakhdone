@@ -664,18 +664,43 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
 
         if (cls.teacher) {
           console.log(`  ➕ Assigning teacher: ${cls.teacher.name} (ID: ${cls.teacher.id})`);
-          const { error: insertTeacherError } = await supabase
+          console.log('  📋 Insert data:', { class_id: cls.id, teacher_id: cls.teacher.id });
+
+          // Get current user auth info for debugging
+          const { data: { user } } = await supabase.auth.getUser();
+          console.log('  👤 Current user:', user?.id);
+
+          const { data: insertResult, error: insertTeacherError } = await supabase
             .from('class_teachers')
             .insert({
               class_id: cls.id,
               teacher_id: cls.teacher.id
-            } as any);
+            } as any)
+            .select();
 
           if (insertTeacherError) {
             console.error('  ❌ Failed to insert teacher assignment:', insertTeacherError);
+            console.error('  📋 Error details:', JSON.stringify(insertTeacherError, null, 2));
+
+            // Check if the class exists and belongs to the right school
+            const { data: classCheck } = await supabase
+              .from('classes')
+              .select('id, name, school_id')
+              .eq('id', cls.id)
+              .single();
+            console.error('  🏫 Class check:', classCheck);
+
+            // Check current user's profile
+            const { data: profileCheck } = await supabase
+              .from('profiles')
+              .select('user_id, school_id, role')
+              .eq('user_id', user?.id)
+              .single();
+            console.error('  👤 Profile check:', profileCheck);
+
             throw new Error(`Failed to assign teacher to ${cls.name}: ${insertTeacherError.message}`);
           }
-          console.log('  ✅ Teacher assigned successfully');
+          console.log('  ✅ Teacher assigned successfully:', insertResult);
         }
 
         // Update student enrollments
