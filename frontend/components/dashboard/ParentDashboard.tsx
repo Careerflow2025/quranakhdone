@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useHighlights } from '@/hooks/useHighlights';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -67,7 +68,8 @@ import {
   Inbox,
   Reply,
   Search,
-  Paperclip
+  Paperclip,
+  Bookmark
 } from 'lucide-react';
 
 export default function ParentDashboard() {
@@ -238,10 +240,21 @@ export default function ParentDashboard() {
     refresh: refreshNotifications
   } = useNotifications();
 
+  // Get highlights from database for the selected child
+  const {
+    highlights: dbHighlights,
+    isLoading: highlightsLoading,
+    error: highlightsError,
+    refreshHighlights
+  } = useHighlights(currentChild?.id || null);
+
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
-  // Child's Highlights Data (read-only for parent)
-  const [highlights] = useState([
+  // Replace hardcoded highlights with database highlights
+  const highlights = dbHighlights || [];
+
+  // OLD Child's Highlights Data (read-only for parent) - REMOVED, using database
+  const [oldHighlights] = useState([
     {
       id: 'hl1',
       type: 'homework',
@@ -810,6 +823,25 @@ export default function ParentDashboard() {
                 {highlights.filter((h: any) => h.type === 'homework').length > 0 && (
                   <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                     {highlights.filter((h: any) => h.type === 'homework').length}
+                  </span>
+                )}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('highlights')}
+              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                activeTab === 'highlights'
+                  ? 'text-white bg-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              <span className="flex items-center space-x-2">
+                <Bookmark className="w-4 h-4" />
+                <span>Highlights</span>
+                {highlights.length > 0 && (
+                  <span className="bg-purple-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {highlights.length}
                   </span>
                 )}
               </span>
@@ -2008,6 +2040,142 @@ export default function ParentDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Highlights Tab (Read-only) */}
+        {activeTab === 'highlights' && (
+          <div className="space-y-6">
+            {/* Header with Stats */}
+            <div className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <Bookmark className="w-7 h-7 mr-3" />
+                    {currentChild.name}'s Highlights
+                  </h2>
+                  <p className="text-purple-100 mt-1">View Quran highlights created by teachers for your child</p>
+                </div>
+                <button
+                  onClick={refreshHighlights}
+                  disabled={highlightsLoading}
+                  className="bg-white text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition flex items-center font-semibold disabled:opacity-50"
+                >
+                  <Clock className="w-5 h-5 mr-2" />
+                  Refresh
+                </button>
+              </div>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <p className="text-purple-100 text-sm">Total</p>
+                  <p className="text-2xl font-bold">{highlights.length}</p>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <p className="text-purple-100 text-sm">Homework</p>
+                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'homework').length}</p>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <p className="text-purple-100 text-sm">Recap</p>
+                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'recap').length}</p>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <p className="text-purple-100 text-sm">Tajweed</p>
+                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'tajweed').length}</p>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                  <p className="text-purple-100 text-sm">Completed</p>
+                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.completed_at).length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Highlights Display */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
+                All Highlights
+              </h3>
+
+              {highlightsLoading ? (
+                <div className="text-center py-12">
+                  <Clock className="w-12 h-12 text-purple-600 mx-auto mb-4 animate-spin" />
+                  <p className="text-gray-600">Loading highlights...</p>
+                </div>
+              ) : highlightsError ? (
+                <div className="text-center py-12">
+                  <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+                  <p className="text-red-600 font-semibold mb-2">Error loading highlights</p>
+                  <p className="text-gray-600 mb-4">{highlightsError}</p>
+                  <button
+                    onClick={refreshHighlights}
+                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : highlights.length === 0 ? (
+                <div className="text-center py-12">
+                  <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg font-medium">No highlights yet</p>
+                  <p className="text-gray-400 mt-2">Teachers will add highlights to help your child learn</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {highlights.map((highlight: any) => {
+                    const surahName = surahList.find((s: any) => s.number === highlight.surah)?.name || `Surah ${highlight.surah}`;
+                    const typeColors: any = {
+                      'homework': 'bg-green-100 text-green-800 border-green-200',
+                      'recap': 'bg-purple-100 text-purple-800 border-purple-200',
+                      'tajweed': 'bg-orange-100 text-orange-800 border-orange-200',
+                      'haraka': 'bg-red-100 text-red-800 border-red-200',
+                      'letter': 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                    };
+                    const typeColor = highlight.completed_at
+                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                      : (typeColors[highlight.type] || 'bg-gray-100 text-gray-800 border-gray-200');
+
+                    return (
+                      <div
+                        key={highlight.id}
+                        className="border-2 border-gray-200 rounded-lg p-4 hover:border-purple-300 transition"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${typeColor}`}>
+                                {highlight.completed_at ? '✅ Completed' : highlight.type || 'highlight'}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {surahName} • Ayah {highlight.ayah_start}
+                                {highlight.ayah_end !== highlight.ayah_start && `-${highlight.ayah_end}`}
+                              </span>
+                            </div>
+
+                            {highlight.word_start !== null && highlight.word_end !== null && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                <span className="font-medium">Words:</span> {highlight.word_start} - {highlight.word_end}
+                              </p>
+                            )}
+
+                            {highlight.note && (
+                              <p className="text-sm text-gray-700 bg-gray-50 rounded p-2 mb-2">
+                                <span className="font-medium">Note:</span> {highlight.note}
+                              </p>
+                            )}
+
+                            <p className="text-xs text-gray-500">
+                              Created {new Date(highlight.created_at).toLocaleDateString()} at {new Date(highlight.created_at).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}

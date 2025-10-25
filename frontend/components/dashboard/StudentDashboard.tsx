@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useHighlights } from '@/hooks/useHighlights';
+import { supabase } from '@/lib/supabase';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -68,25 +70,78 @@ import {
 } from 'lucide-react';
 
 export default function StudentDashboard() {
+  // Student authentication and data
+  const [studentId, setStudentId] = useState<string | null>(null);
+  const [isLoadingStudent, setIsLoadingStudent] = useState(true);
+  const [studentError, setStudentError] = useState<string | null>(null);
+
   // Student Info
-  const [studentInfo] = useState({
-    id: 'STU001',
-    name: 'Ahmed Hassan',
+  const [studentInfo, setStudentInfo] = useState({
+    id: '',
+    name: 'Student',
     age: 12,
-    class: 'Class 6A',
-    teacherId: 'TCH001',
+    class: '',
+    teacherId: '',
     currentSurah: 1,
     currentAyah: 1,
-    memorized: '5 Juz',
-    revision: '3 Juz',
-    lastSession: '2 hours ago',
-    lastPageVisited: 15, // Track last page for auto-navigation
-    lastSurahVisited: 2, // Track last surah for auto-navigation
-    // Class schedule - student only has classes on specific days
-    classSchedule: ['Monday', 'Thursday', 'Saturday'],
-    physicalAttendance: 92, // Physical class attendance percentage
-    platformActivity: 85 // Platform usage percentage
+    memorized: '0 Juz',
+    revision: '0 Juz',
+    lastSession: '',
+    lastPageVisited: 1,
+    lastSurahVisited: 1,
+    classSchedule: [],
+    physicalAttendance: 0,
+    platformActivity: 0
   });
+
+  // Fetch student data from authentication
+  useEffect(() => {
+    async function fetchStudentData() {
+      try {
+        setIsLoadingStudent(true);
+
+        // Get current authenticated user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          throw new Error('Not authenticated');
+        }
+
+        // Get student record
+        const { data: studentData, error: studentErr } = await supabase
+          .from('students')
+          .select('id, user_id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (studentErr || !studentData) {
+          throw new Error('Student record not found');
+        }
+
+        // Get profile for name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+
+        setStudentId(studentData.id);
+        setStudentInfo(prev => ({
+          ...prev,
+          id: studentData.id,
+          name: profileData?.display_name || 'Student'
+        }));
+
+      } catch (err: any) {
+        console.error('Error fetching student data:', err);
+        setStudentError(err.message);
+      } finally {
+        setIsLoadingStudent(false);
+      }
+    }
+
+    fetchStudentData();
+  }, []);
 
   // Core States
   const [activeTab, setActiveTab] = useState('quran'); // 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -143,105 +198,14 @@ export default function StudentDashboard() {
     emergencyContact: '+212 6XX-XXX-XXX'
   });
   // Notifications now fetched from API via useNotifications hook (removed mock data)
-  
-  // Teacher Highlights (Read-only for students)
-  const [highlights, setHighlights] = useState([
-    // Homework (Green highlights)
-    {
-      id: 'hw1',
-      type: 'homework',
-      surah: 1,
-      ayahIndex: 0,
-      wordIndices: [0, 1, 2],
-      mistakeType: 'homework',
-      color: 'bg-green-200',
-      teacherNote: 'Practice this verse for tomorrow\'s class',
-      timestamp: '2 hours ago',
-      teacherName: 'Ustadh Ahmed',
-      dueDate: 'Tomorrow',
-      status: 'pending',
-      replies: []
-    },
-    {
-      id: 'hw2',
-      type: 'homework',
-      surah: 2,
-      ayahIndex: 5,
-      wordIndices: [1, 2, 3, 4],
-      mistakeType: 'homework',
-      color: 'bg-green-200',
-      teacherNote: 'Memorize these words with proper tajweed',
-      timestamp: '1 day ago',
-      teacherName: 'Ustadh Ahmed',
-      dueDate: 'In 3 days',
-      status: 'in-progress',
-      replies: [
-        { id: 'r1', text: 'I\'ve memorized half of it', timestamp: '12 hours ago', type: 'text', isStudent: true },
-        { id: 'r2', text: 'Great progress! Keep going', timestamp: '10 hours ago', type: 'text', isStudent: false }
-      ]
-    },
-    {
-      id: 'hw3',
-      type: 'homework',
-      surah: 1,
-      ayahIndex: 3,
-      wordIndices: [0, 1],
-      mistakeType: 'homework',
-      color: 'bg-green-200',
-      teacherNote: 'Review this section',
-      timestamp: '3 days ago',
-      teacherName: 'Ustadh Ahmed',
-      dueDate: 'Yesterday',
-      status: 'overdue',
-      replies: []
-    },
-    // Assignments (Other color highlights for mistakes)
-    {
-      id: 'a1',
-      type: 'assignment',
-      surah: 1,
-      ayahIndex: 0,
-      wordIndices: [0, 1],
-      mistakeType: 'tajweed',
-      color: 'bg-orange-200',
-      teacherNote: 'Remember to apply Idghaam rule here',
-      timestamp: '2 days ago',
-      teacherName: 'Ustadh Ahmed',
-      status: 'pending',
-      replies: []
-    },
-    {
-      id: 'a2',
-      type: 'assignment',
-      surah: 1,
-      ayahIndex: 1,
-      wordIndices: [2, 3],
-      mistakeType: 'recap',
-      color: 'bg-purple-200',
-      teacherNote: 'Focus on proper pronunciation of these words',
-      timestamp: '1 week ago',
-      teacherName: 'Ustadh Ahmed',
-      status: 'reviewed',
-      replies: [
-        { id: 'r3', text: 'I practiced this 5 times', timestamp: '6 days ago', type: 'text', isStudent: true },
-        { id: 'r4', text: 'Good job! Keep practicing', timestamp: '5 days ago', type: 'text', isStudent: false }
-      ]
-    },
-    {
-      id: 'a3',
-      type: 'assignment',
-      surah: 1,
-      ayahIndex: 2,
-      wordIndices: [1],
-      mistakeType: 'haraka',
-      color: 'bg-red-200',
-      teacherNote: 'This letter requires emphasis (tafkheem)',
-      timestamp: '3 days ago',
-      teacherName: 'Ustadh Ahmed',
-      status: 'pending',
-      replies: []
-    }
-  ]);
+
+  // Teacher Highlights - Fetch from database using useHighlights hook
+  const {
+    highlights: dbHighlights,
+    isLoading: highlightsLoading,
+    error: highlightsError,
+    refreshHighlights
+  } = useHighlights(studentId);
 
   // Mock messages
   const [messages, setMessages] = useState({
@@ -340,7 +304,7 @@ export default function StudentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    const highlight = highlights.find((h: any) => h.id === highlightId);
+    const highlight = dbHighlights.find((h: any) => h.id === highlightId);
     if (highlight) {
       setShowNoteReply(highlight);
     }
@@ -355,20 +319,12 @@ export default function StudentDashboard() {
         type: type,
         isStudent: true
       };
-      
-      // Update the highlights with the new reply
-      setHighlights((prevHighlights: any) => 
-        prevHighlights.map((h: any) => 
-          h.id === showNoteReply.id 
-            ? { ...h, replies: [...h.replies, newReply] }
-            : h
-        )
-      );
-      
-      // Update the current modal state
+
+      // Note: Replies are stored in database via notes table (future enhancement)
+      // For now, just update the modal state
       setShowNoteReply((prev: any) => ({
         ...prev,
-        replies: [...prev.replies, newReply]
+        replies: [...(prev.replies || []), newReply]
       }));
       
       setReplyText('');
@@ -442,6 +398,37 @@ export default function StudentDashboard() {
 
   const currentSurahInfo = allSurahs.find((s: any) => s.number === currentSurah) || allSurahs[0];
   const scriptStyling = getScriptStyling(selectedScript);
+
+  // Show loading state while fetching student data
+  if (isLoadingStudent || (studentId && highlightsLoading)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if student data fetch failed
+  if (studentError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-red-600 font-semibold mb-2">Error loading dashboard</p>
+          <p className="text-gray-600 mb-4">{studentError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -712,9 +699,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <BookOpen className="w-4 h-4" />
                 <span>Homework</span>
-                {highlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
+                {dbHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
                   <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
+                    {dbHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -731,9 +718,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <FileText className="w-4 h-4" />
                 <span>Assignments</span>
-                {highlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
+                {dbHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
                   <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
+                    {dbHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -905,7 +892,7 @@ export default function StudentDashboard() {
                     {currentAyahs.map((ayah: any, displayIndex: any) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       // Filter highlights for current surah and ayah
-                      const ayahHighlights = highlights.filter((h: any) =>
+                      const ayahHighlights = dbHighlights.filter((h: any) =>
                         h.surah === currentSurah && h.ayahIndex === ayahIndex
                       );
 
@@ -1021,7 +1008,7 @@ export default function StudentDashboard() {
                 <BookOpen className="w-6 h-6 mr-2 text-green-600" />
                 My Homework
                 <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                  {highlights.filter((h: any) => h.type === 'homework').length} Total
+                  {dbHighlights.filter((h: any) => h.type === 'homework').length} Total
                 </span>
               </h2>
             </div>
