@@ -1454,7 +1454,7 @@ export default function StudentManagementDashboard() {
 <div className="relative">
 
                   <div
-                    className="text-center leading-loose px-4 py-2 bg-gradient-to-b from-white to-gray-50 rounded-lg" 
+                    className="text-center leading-loose px-4 bg-gradient-to-b from-white to-gray-50 rounded-lg" 
                     style={{
                       ...getScriptStyling(selectedScript || 'uthmani-hafs'),
                       pointerEvents: penMode ? 'none' : 'auto'
@@ -1538,7 +1538,7 @@ export default function StudentManagementDashboard() {
                           maxHeight: '80vh',
                           aspectRatio: '2/3',
                           overflow: 'hidden',
-                          margin: 'auto',  // Center
+                          margin: '0 auto',  // Top-aligned, horizontally centered
                           padding: '1.2rem 1.8rem',  // Side margins for annotations
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
