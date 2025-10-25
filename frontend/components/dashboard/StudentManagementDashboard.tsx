@@ -1745,22 +1745,31 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 color: '#000000',  // ALWAYS black text, never change
-                                paddingTop: '0px',     // Minimal top space - no vertical padding
-                                paddingBottom: '0px',  // Minimal bottom space - no vertical padding
                                 paddingLeft: '2px',    // Horizontal padding
                                 paddingRight: '2px',   // Horizontal padding
-                                lineHeight: '1.15',    // Compact line height to prevent overlap
+                                lineHeight: '1.3',     // Line height
                                 display: 'inline',     // Inline display
-                                verticalAlign: 'baseline',  // Baseline alignment
                                 ...(mistakes.length === 1 ? {
-                                  backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                  backgroundImage: `linear-gradient(${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
                                     mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
                                     mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
                                     mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
                                     mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  }, ${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  })`,
+                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center'
                                 } : mistakes.length > 1 ? {
-                                  background: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                                  backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                       m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
                                       m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
@@ -1770,6 +1779,9 @@ export default function StudentManagementDashboard() {
                                     const nextPercent = ((i + 1) * 100) / mistakes.length;
                                     return `${color} ${percent}%, ${color} ${nextPercent}%`;
                                   }).join(', ')})`,
+                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center',
                                   fontWeight: '600',
                                   border: '1px solid rgba(0,0,0,0.15)'
                                 } : {})
