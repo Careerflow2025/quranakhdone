@@ -1436,7 +1436,7 @@ export default function StudentManagementDashboard() {
 
                 {/* Page-like container */}
                 <div className="p-8" style={{
-                  minHeight: '800px',
+                  minHeight: 'auto',
                   backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
                   backgroundSize: '50px 50px',
                   pointerEvents: penMode ? 'none' : 'auto'
@@ -1531,18 +1531,17 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          maxHeight: '58vh',
-                          minHeight: '50vh',
+                          height: 'auto',
                           maxWidth: '90vw',
-                          overflow: 'hidden',
-                          margin: '2rem auto',  // Center with space around
-                          padding: '30px 80px',  // Generous side margins for annotations, smaller vertical
+                          overflow: 'visible',
+                          margin: '1rem auto',  // Minimal margin
+                          padding: '2rem 5rem',  // Generous side margins for annotations
                           backgroundColor: '#000000',  // Pure black background
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',  // Book depth shadow
                           border: '2px solid #1a1a1a',  // Darker border for book effect
-                          fontSize: `${30 * (zoomLevel / 100)}px`,  // Smaller text to fit more lines
-                          lineHeight: '2.0',  // Slightly tighter spacing to fit more content
+                          fontSize: `${22 * (zoomLevel / 100)}px`,  // Smaller text to fit 12-15 lines
+                          lineHeight: '1.8',  // Tighter spacing to fit complete page
                           textAlign: 'justify',  // Justified text like a book
                           color: '#FFFFFF',  // Pure white text color
                           transform: `scale(${zoomLevel / 100})`,
@@ -1711,7 +1710,7 @@ export default function StudentManagementDashboard() {
                 </div>
 
                 {/* Page Navigation */}
-                <div className="mt-8 flex items-center justify-between border-t pt-6" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
+                <div className="mt-4 flex items-center justify-between border-t pt-4" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
                   <button 
                     onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
                     disabled={currentMushafPage === 1}
