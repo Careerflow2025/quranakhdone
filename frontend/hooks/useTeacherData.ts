@@ -99,7 +99,7 @@ export function useTeacherData() {
         schoolId: user.schoolId
       });
 
-      // Fetch teacher's classes through class_teachers junction table
+      // Fetch teacher's classes through class_teachers junction table with complete details
       const { data: classTeachers, error: classTeachersError } = await supabase
         .from('class_teachers')
         .select('class_id')
@@ -118,7 +118,92 @@ export function useTeacherData() {
           .in('id', classIds);
 
         if (classesError) throw classesError;
-        classesData = fetchedClasses || [];
+
+        // Enhance each class with teacher and student details
+        if (fetchedClasses) {
+          classesData = await Promise.all(fetchedClasses.map(async (cls: any) => {
+            // Get all teachers for this class
+            const { data: classTeacherRelations } = await supabase
+              .from('class_teachers')
+              .select(`
+                teacher_id,
+                teachers!inner(
+                  id,
+                  user_id,
+                  bio,
+                  subject,
+                  qualification,
+                  experience,
+                  phone,
+                  profiles:user_id(display_name, email)
+                )
+              `)
+              .eq('class_id', cls.id);
+
+            const teachers = classTeacherRelations?.map((rel: any) => ({
+              id: rel.teachers.id,
+              name: rel.teachers.profiles?.display_name || rel.teachers.profiles?.email?.split('@')[0] || 'Unknown',
+              email: rel.teachers.profiles?.email || '',
+              bio: rel.teachers.bio,
+              subject: rel.teachers.subject,
+              qualification: rel.teachers.qualification,
+              experience: rel.teachers.experience,
+              phone: rel.teachers.phone
+            })) || [];
+
+            // Get all students enrolled in this class
+            const { data: enrollments } = await supabase
+              .from('class_enrollments')
+              .select(`
+                student_id,
+                students!inner(
+                  id,
+                  user_id,
+                  dob,
+                  gender,
+                  age,
+                  active,
+                  phone,
+                  parent_phone,
+                  profiles:user_id(display_name, email)
+                )
+              `)
+              .eq('class_id', cls.id);
+
+            const enrolledStudents = enrollments?.map((enr: any) => {
+              // Calculate age if not present
+              let calculatedAge = enr.students.age;
+              if (!calculatedAge && enr.students.dob) {
+                const today = new Date();
+                const birthDate = new Date(enr.students.dob);
+                calculatedAge = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                  calculatedAge--;
+                }
+              }
+
+              return {
+                id: enr.students.id,
+                name: enr.students.profiles?.display_name || 'Unknown',
+                email: enr.students.profiles?.email || '',
+                age: calculatedAge,
+                gender: enr.students.gender,
+                phone: enr.students.phone,
+                parent_phone: enr.students.parent_phone,
+                status: enr.students.active ? 'active' : 'inactive'
+              };
+            }) || [];
+
+            return {
+              ...cls,
+              teachers,
+              students: enrolledStudents,
+              studentCount: enrolledStudents.length,
+              teacherCount: teachers.length
+            };
+          }));
+        }
       }
 
       setClasses(classesData);

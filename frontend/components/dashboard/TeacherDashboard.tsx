@@ -57,6 +57,9 @@ export default function TeacherDashboard() {
   const [homeworkFilter, setHomeworkFilter] = useState('all');
   const [showHomeworkDetail, setShowHomeworkDetail] = useState<any>(null);
 
+  // Class Details State
+  const [selectedClassDetails, setSelectedClassDetails] = useState<any>(null);
+
   // Navigation tabs
   const tabs = ['overview', 'my classes', 'students', 'assignments', 'gradebook', 'mastery', 'homework', 'targets', 'attendance', 'messages', 'events'];
 
@@ -534,7 +537,10 @@ export default function TeacherDashboard() {
                         </div>
                       )}
                     </div>
-                    <button className="mt-4 w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                    <button
+                      onClick={() => setSelectedClassDetails(cls)}
+                      className="mt-4 w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
                       View Details
                     </button>
                   </div>
@@ -657,6 +663,164 @@ export default function TeacherDashboard() {
           <MasteryPanel userRole="teacher" />
         )}
       </main>
+
+      {/* Class Details Modal */}
+      {selectedClassDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">{selectedClassDetails.name}</h2>
+                  {selectedClassDetails.room && (
+                    <p className="text-blue-100">Room: {selectedClassDetails.room}</p>
+                  )}
+                  {selectedClassDetails.grade_level && (
+                    <p className="text-blue-100">Grade Level: {selectedClassDetails.grade_level}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setSelectedClassDetails(null)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Class Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Class ID</p>
+                  <p className="font-mono text-xs text-gray-900">{selectedClassDetails.id}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">School ID</p>
+                  <p className="font-mono text-xs text-gray-900">{selectedClassDetails.school_id}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Capacity</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {selectedClassDetails.studentCount || 0} / {selectedClassDetails.capacity || 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Created</p>
+                  <p className="text-sm text-gray-900">
+                    {selectedClassDetails.created_at ? new Date(selectedClassDetails.created_at).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Teachers Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
+                  Assigned Teachers ({selectedClassDetails.teachers?.length || 0})
+                </h3>
+                {selectedClassDetails.teachers && selectedClassDetails.teachers.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedClassDetails.teachers.map((teacher: any) => (
+                      <div key={teacher.id} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">{teacher.name}</p>
+                            <p className="text-sm text-gray-600">{teacher.email}</p>
+                            {teacher.subject && (
+                              <p className="text-sm text-gray-600 mt-1">Subject: {teacher.subject}</p>
+                            )}
+                            {teacher.qualification && (
+                              <p className="text-sm text-gray-600">Qualification: {teacher.qualification}</p>
+                            )}
+                          </div>
+                          {teacher.phone && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Phone className="w-4 h-4 mr-1" />
+                              {teacher.phone}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No teachers assigned</p>
+                )}
+              </div>
+
+              {/* Students Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-purple-600" />
+                  Enrolled Students ({selectedClassDetails.students?.length || 0})
+                </h3>
+                {selectedClassDetails.students && selectedClassDetails.students.length > 0 ? (
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {selectedClassDetails.students.map((student: any) => (
+                          <tr key={student.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{student.name}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600">{student.email}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600">{student.age || 'N/A'}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600">{student.gender || 'N/A'}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {student.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No students enrolled</p>
+                )}
+              </div>
+
+              {/* Schedule Section */}
+              {selectedClassDetails.schedule_json && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-green-600" />
+                    Class Schedule
+                  </h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {JSON.stringify(selectedClassDetails.schedule_json, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex justify-end">
+              <button
+                onClick={() => setSelectedClassDetails(null)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
