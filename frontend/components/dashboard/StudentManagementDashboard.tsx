@@ -1745,11 +1745,13 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 color: '#000000',  // ALWAYS black text, never change
-                                paddingTop: '1px',     // Reduced top space (15% less)
-                                paddingBottom: '2px',  // Balanced bottom space
+                                paddingTop: '0px',     // Minimal top space - no vertical padding
+                                paddingBottom: '0px',  // Minimal bottom space - no vertical padding
                                 paddingLeft: '2px',    // Horizontal padding
                                 paddingRight: '2px',   // Horizontal padding
-                                lineHeight: '1.4',     // Controlled line height
+                                lineHeight: '1.15',    // Compact line height to prevent overlap
+                                display: 'inline',     // Inline display
+                                verticalAlign: 'baseline',  // Baseline alignment
                                 ...(mistakes.length === 1 ? {
                                   backgroundColor: mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
