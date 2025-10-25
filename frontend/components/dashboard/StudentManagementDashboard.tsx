@@ -560,18 +560,24 @@ export default function StudentManagementDashboard() {
         }
       } else {
         // Full ayah highlight (word_start and word_end are NULL)
-        // Only create a single marker, not individual word highlights
-        pageHighlights.push({
-          id: `${dbH.id}-full-ayah`,
-          dbId: dbH.id,
-          ayahIndex,
-          wordIndex: null, // null indicates full ayah
-          mistakeType: dbH.type || dbH.color,
-          color: dbH.color,
-          timestamp: dbH.created_at,
-          isCompleted: dbH.completed_at !== null,
-          isFullAyah: true
-        });
+        // Create highlight for each word in the ayah so they all show color
+        const ayah = quranText.ayahs[ayahIndex];
+        if (ayah && ayah.words) {
+          const ayahWords = ayah.words.length;
+          for (let wordIdx = 0; wordIdx < ayahWords; wordIdx++) {
+            pageHighlights.push({
+              id: `${dbH.id}-${wordIdx}`,
+              dbId: dbH.id,
+              ayahIndex,
+              wordIndex: wordIdx,
+              mistakeType: dbH.type || dbH.color,
+              color: dbH.color,
+              timestamp: dbH.created_at,
+              isCompleted: dbH.completed_at !== null,
+              isFullAyah: true  // Flag to indicate this is part of full ayah highlight
+            });
+          }
+        }
       }
     });
 
@@ -1674,59 +1680,6 @@ export default function StudentManagementDashboard() {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
                             return (
                               <span key={ayah.number} className="inline relative group">
-                        {/* Compact Full Ayah Indicator - Show for recap, homework and tajweed */}
-                        {highlightMode && (selectedMistakeType === 'recap' || selectedMistakeType === 'homework' || selectedMistakeType === 'tajweed') && (() => {
-                          // Check if full ayah highlight exists for this ayah and type
-                          const hasFullAyahHighlight = highlights.some(
-                            h => h.ayahIndex === ayahIndex && h.isFullAyah && h.mistakeType === selectedMistakeType
-                          );
-                          return !hasFullAyahHighlight; // Only show if not already highlighted
-                        })() && (
-                          <button
-                            onClick={() => highlightEntireAyah(ayahIndex)}
-                            className={`absolute -left-12 top-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-90 transition-all z-10 ${
-                              selectedMistakeType === 'recap'
-                                ? 'bg-purple-500 hover:bg-purple-600'
-                                : selectedMistakeType === 'homework'
-                                ? 'bg-green-500 hover:bg-green-600'
-                                : 'bg-orange-500 hover:bg-orange-600'
-                            }`}
-                            style={{
-                              width: '8px',
-                              height: '32px',
-                              borderRadius: '4px',
-                              border: '1px solid rgba(0,0,0,0.2)',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                            }}
-                            title="Select entire ayah"
-                          />
-                        )}
-                        {/* Show compact filled indicator when full ayah is highlighted */}
-                        {(() => {
-                          const fullAyahHighlight = highlights.find(
-                            h => h.ayahIndex === ayahIndex && h.isFullAyah && h.mistakeType === selectedMistakeType
-                          );
-                          return fullAyahHighlight;
-                        })() && (
-                          <button
-                            onClick={() => highlightEntireAyah(ayahIndex)}
-                            className={`absolute -left-12 top-1/2 -translate-y-1/2 opacity-70 group-hover:opacity-100 transition-all z-10 ${
-                              selectedMistakeType === 'recap'
-                                ? 'bg-purple-600'
-                                : selectedMistakeType === 'homework'
-                                ? 'bg-green-600'
-                                : 'bg-orange-600'
-                            }`}
-                            style={{
-                              width: '10px',
-                              height: '36px',
-                              borderRadius: '4px',
-                              border: '2px solid rgba(255,255,255,0.5)',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-                            }}
-                            title="Remove full ayah highlight"
-                          />
-                        )}
                         {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
                           const wordHighlights = highlights.filter(
@@ -1849,7 +1802,44 @@ export default function StudentManagementDashboard() {
                           }}
                         >
                           {ayah.number}
-                        </span>{' '}
+                        </span>
+                        {/* Colored Boxes beside ayah number - one for each mistake type */}
+                        {highlightMode && (() => {
+                          // Get all mistake types available
+                          const availableTypes = mistakeTypes.filter((m: any) =>
+                            m.id === 'recap' || m.id === 'homework' || m.id === 'tajweed'
+                          );
+
+                          return availableTypes.map((mistakeType: any) => {
+                            // Check if this ayah has this color applied
+                            const hasThisColor = highlights.some(
+                              h => h.ayahIndex === ayahIndex && h.mistakeType === mistakeType.id && h.isFullAyah
+                            );
+
+                            // Only show box if currently selecting this type
+                            if (selectedMistakeType !== mistakeType.id) return null;
+
+                            return (
+                              <button
+                                key={mistakeType.id}
+                                onClick={() => highlightEntireAyah(ayahIndex)}
+                                className={`inline-flex mx-0.5 transition-all ${hasThisColor ? 'opacity-80 hover:opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                                style={{
+                                  width: hasThisColor ? '10px' : '8px',
+                                  height: hasThisColor ? '16px' : '14px',
+                                  borderRadius: '2px',
+                                  backgroundColor: mistakeType.color === 'bg-purple-500' ? 'rgb(168, 85, 247)' :
+                                    mistakeType.color === 'bg-green-500' ? 'rgb(34, 197, 94)' :
+                                    'rgb(249, 115, 22)',
+                                  border: hasThisColor ? '1.5px solid rgba(255,255,255,0.6)' : '1px solid rgba(0,0,0,0.2)',
+                                  boxShadow: hasThisColor ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.2)',
+                                  verticalAlign: 'middle'
+                                }}
+                                title={hasThisColor ? `Remove ${mistakeType.id} highlight` : `Highlight entire ayah as ${mistakeType.id}`}
+                              />
+                            );
+                          });
+                        })()}{' '}
                               </span>
                             );
                           })}
