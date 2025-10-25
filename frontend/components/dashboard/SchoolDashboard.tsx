@@ -846,7 +846,7 @@ export default function SchoolDashboard() {
   const loadHomework = async () => {
     try {
       // Homework comes from highlights where teachers mark Quran verses
-      const { data, error } = await (supabase as any)
+      const { data, error} = await (supabase as any)
         .from('highlights')
         .select(`
           *,
@@ -856,7 +856,7 @@ export default function SchoolDashboard() {
           notes(text, audio_url)
         `)
         .eq('school_id', user?.schoolId || '')
-        .eq('mistake_type', 'recap') // Green highlights for memorization
+        .eq('type', 'homework') // ✅ FIXED: Green highlights are homework, not recap
         .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
