@@ -206,14 +206,16 @@ export function useNotifications(autoFetch: boolean = true) {
     if (autoFetch) {
       fetchNotifications(true);
     }
-  }, [autoFetch, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch]);
 
   // Fetch more when offset changes
   useEffect(() => {
     if (offset > 0) {
       fetchNotifications(false);
     }
-  }, [offset, fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offset]);
 
   return {
     notifications: state.notifications,

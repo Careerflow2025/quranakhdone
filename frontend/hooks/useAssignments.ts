@@ -754,6 +754,7 @@ export function useAssignments(initialStudentId?: string) {
     if (user) {
       fetchAssignments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, filters, currentPage]);
 
   // ============================================================================

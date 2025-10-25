@@ -400,7 +400,8 @@ export function useTeacherData() {
       setError('No user ID found. Please login again.');
       setIsLoading(false);
     }
-  }, [authInitialized, user?.id, fetchTeacherData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authInitialized, user?.id]);
 
   // Refresh data function
   const refreshData = async () => {
