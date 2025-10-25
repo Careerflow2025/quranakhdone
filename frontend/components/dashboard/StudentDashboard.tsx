@@ -207,6 +207,9 @@ export default function StudentDashboard() {
     refreshHighlights
   } = useHighlights(studentId);
 
+  // Safety check: ensure dbHighlights is always an array
+  const safeHighlights = dbHighlights || [];
+
   // Mock messages
   const [messages, setMessages] = useState({
     inbox: [
@@ -304,7 +307,7 @@ export default function StudentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    const highlight = dbHighlights.find((h: any) => h.id === highlightId);
+    const highlight = safeHighlights.find((h: any) => h.id === highlightId);
     if (highlight) {
       setShowNoteReply(highlight);
     }
@@ -699,9 +702,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <BookOpen className="w-4 h-4" />
                 <span>Homework</span>
-                {dbHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
+                {safeHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
                   <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {dbHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
+                    {safeHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -718,9 +721,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <FileText className="w-4 h-4" />
                 <span>Assignments</span>
-                {dbHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
+                {safeHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
                   <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {dbHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
+                    {safeHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
                   </span>
                 )}
               </span>
@@ -892,7 +895,7 @@ export default function StudentDashboard() {
                     {currentAyahs.map((ayah: any, displayIndex: any) => {
                       const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
                       // Filter highlights for current surah and ayah
-                      const ayahHighlights = dbHighlights.filter((h: any) =>
+                      const ayahHighlights = safeHighlights.filter((h: any) =>
                         h.surah === currentSurah && h.ayahIndex === ayahIndex
                       );
 
@@ -1008,7 +1011,7 @@ export default function StudentDashboard() {
                 <BookOpen className="w-6 h-6 mr-2 text-green-600" />
                 My Homework
                 <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                  {dbHighlights.filter((h: any) => h.type === 'homework').length} Total
+                  {safeHighlights.filter((h: any) => h.type === 'homework').length} Total
                 </span>
               </h2>
             </div>

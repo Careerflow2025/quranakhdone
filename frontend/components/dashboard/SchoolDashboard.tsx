@@ -103,6 +103,9 @@ export default function SchoolDashboard() {
     refreshHighlights
   } = useHighlights(null); // null = all school highlights
 
+  // Safety check: ensure allHighlights is always an array
+  const safeHighlights = allHighlights || [];
+
   // Get reports data with date filtering
   const {
     isLoading: reportsLoading,
@@ -3624,30 +3627,30 @@ export default function SchoolDashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Total</p>
-                    <p className="text-2xl font-bold">{allHighlights.length}</p>
+                    <p className="text-2xl font-bold">{safeHighlights.length}</p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Homework</p>
                     <p className="text-2xl font-bold text-green-200">
-                      {allHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
+                      {safeHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Recap</p>
                     <p className="text-2xl font-bold text-purple-200">
-                      {allHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
+                      {safeHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Tajweed</p>
                     <p className="text-2xl font-bold text-orange-200">
-                      {allHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
+                      {safeHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Completed</p>
                     <p className="text-2xl font-bold text-yellow-200">
-                      {allHighlights.filter((h: any) => h.completed_at !== null).length}
+                      {safeHighlights.filter((h: any) => h.completed_at !== null).length}
                     </p>
                   </div>
                 </div>
@@ -3674,7 +3677,7 @@ export default function SchoolDashboard() {
                       Try Again
                     </button>
                   </div>
-                ) : allHighlights.length === 0 ? (
+                ) : safeHighlights.length === 0 ? (
                   <div className="text-center py-12">
                     <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500 text-lg">No highlights yet</p>
@@ -3684,7 +3687,7 @@ export default function SchoolDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {allHighlights.slice(0, 20).map((highlight: any) => {
+                    {safeHighlights.slice(0, 20).map((highlight: any) => {
                       const student = students.find((s: any) => s.id === highlight.student_id);
                       const teacher = teachers.find((t: any) => t.id === highlight.teacher_id);
 
@@ -3724,9 +3727,9 @@ export default function SchoolDashboard() {
                       );
                     })}
 
-                    {allHighlights.length > 20 && (
+                    {safeHighlights.length > 20 && (
                       <div className="text-center text-gray-500 text-sm pt-4">
-                        Showing 20 of {allHighlights.length} highlights
+                        Showing 20 of {safeHighlights.length} highlights
                       </div>
                     )}
                   </div>

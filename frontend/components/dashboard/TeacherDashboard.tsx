@@ -75,6 +75,9 @@ export default function TeacherDashboard() {
     refreshHighlights
   } = useHighlights(null); // null = fetch all highlights for this teacher's school
 
+  // Safety check: ensure allHighlights is always an array
+  const safeHighlights = allHighlights || [];
+
   // Navigation tabs
   const tabs = ['overview', 'my classes', 'students', 'assignments', 'gradebook', 'mastery', 'homework', 'highlights', 'targets', 'attendance', 'messages', 'events'];
 
@@ -526,30 +529,30 @@ export default function TeacherDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Total</p>
-                  <p className="text-2xl font-bold">{allHighlights.length}</p>
+                  <p className="text-2xl font-bold">{safeHighlights.length}</p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Homework (Green)</p>
                   <p className="text-2xl font-bold text-green-200">
-                    {allHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
+                    {safeHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
                   </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Recap (Purple)</p>
                   <p className="text-2xl font-bold text-purple-200">
-                    {allHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
+                    {safeHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
                   </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Tajweed (Orange)</p>
                   <p className="text-2xl font-bold text-orange-200">
-                    {allHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
+                    {safeHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
                   </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Completed (Gold)</p>
                   <p className="text-2xl font-bold text-yellow-200">
-                    {allHighlights.filter((h: any) => h.completed_at !== null).length}
+                    {safeHighlights.filter((h: any) => h.completed_at !== null).length}
                   </p>
                 </div>
               </div>
@@ -632,7 +635,7 @@ export default function TeacherDashboard() {
             {/* Highlights Display - Grouped by Student */}
             {!highlightsLoading && !highlightsError && (() => {
               // Filter highlights
-              const filteredHighlights = allHighlights.filter((h: any) => {
+              const filteredHighlights = safeHighlights.filter((h: any) => {
                 // Student filter
                 if (selectedStudentFilter !== 'all' && h.student_id !== selectedStudentFilter) return false;
 
