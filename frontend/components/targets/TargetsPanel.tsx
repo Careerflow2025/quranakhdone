@@ -24,6 +24,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useTargets } from '@/hooks/useTargets';
+import { supabase } from '@/lib/supabase';
 import {
   TargetWithDetails,
   CreateTargetRequest,
@@ -87,6 +88,14 @@ export default function TargetsPanel({
   const [formData, setFormData] = useState<Partial<CreateTargetRequest>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // Teacher's classes and students for dynamic dropdowns
+  const [teacherClasses, setTeacherClasses] = useState<any[]>([]);
+  const [teacherStudents, setTeacherStudents] = useState<any[]>([]);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [studentSearchFilter, setStudentSearchFilter] = useState('');
+  const [schoolInfo, setSchoolInfo] = useState<{ id: string; name: string } | null>(null);
+
   // Check user role
   const userRole = user?.role || 'student';
   const canCreate = ['teacher', 'admin', 'owner'].includes(userRole);
@@ -106,6 +115,70 @@ export default function TargetsPanel({
       updateFilters({ class_id: classId });
     }
   }, [studentId, classId, updateFilters]);
+
+  // Fetch teacher's classes and students for dynamic dropdowns
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (!canCreate) return; // Only fetch for teachers/admins
+
+      try {
+        // Get auth session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        // Fetch teacher's classes
+        setIsLoadingClasses(true);
+        const classesResponse = await fetch('/api/classes/my-classes', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (classesResponse.ok) {
+          const classesData = await classesResponse.json();
+          setTeacherClasses(classesData.data || []);
+
+          // Extract all students from all classes
+          const allStudents: any[] = [];
+          (classesData.data || []).forEach((cls: any) => {
+            if (cls.students) {
+              cls.students.forEach((student: any) => {
+                // Avoid duplicates
+                if (!allStudents.find(s => s.id === student.id)) {
+                  allStudents.push(student);
+                }
+              });
+            }
+          });
+          setTeacherStudents(allStudents);
+        }
+        setIsLoadingClasses(false);
+
+        // Fetch school info for school targets
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('school_id, schools!profiles_school_id_fkey(id, name)')
+          .eq('user_id', user?.id)
+          .single();
+
+        if (profile && profile.schools) {
+          setSchoolInfo({
+            id: profile.schools.id,
+            name: profile.schools.name
+          });
+        }
+
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+        setIsLoadingClasses(false);
+      }
+    };
+
+    fetchTeacherData();
+  }, [canCreate, user?.id]);
 
   // ============================================================================
   // HANDLERS - NAVIGATION
@@ -937,6 +1010,105 @@ export default function TargetsPanel({
                 </select>
               </div>
             </div>
+
+            {/* Dynamic dropdowns based on target type */}
+            {formData.type === 'individual' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Student <span className="text-red-500">*</span>
+                </label>
+                {isLoadingClasses ? (
+                  <div className="px-3 py-2 border border-gray-300 rounded-lg text-gray-500">
+                    Loading students...
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Search student by name..."
+                      value={studentSearchFilter}
+                      onChange={(e) => setStudentSearchFilter(e.target.value)}
+                      className="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <select
+                      value={formData.student_id || ''}
+                      onChange={(e) => handleFormChange('student_id', e.target.value || undefined)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+                        formErrors.student_id ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select a student...</option>
+                      {teacherStudents
+                        .filter((student) =>
+                          !studentSearchFilter ||
+                          (student.name || '').toLowerCase().includes(studentSearchFilter.toLowerCase())
+                        )
+                        .map((student) => (
+                          <option key={student.id} value={student.id}>
+                            {student.name || student.email || 'Unnamed Student'}
+                          </option>
+                        ))}
+                    </select>
+                    {formErrors.student_id && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.student_id}</p>
+                    )}
+                    {teacherStudents.length === 0 && (
+                      <p className="mt-1 text-sm text-gray-500">No students found in your classes.</p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {formData.type === 'class' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Class <span className="text-red-500">*</span>
+                </label>
+                {isLoadingClasses ? (
+                  <div className="px-3 py-2 border border-gray-300 rounded-lg text-gray-500">
+                    Loading classes...
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={formData.class_id || ''}
+                      onChange={(e) => handleFormChange('class_id', e.target.value || undefined)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${
+                        formErrors.class_id ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select a class...</option>
+                      {teacherClasses.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.name} ({cls.students?.length || 0} students)
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors.class_id && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.class_id}</p>
+                    )}
+                    {teacherClasses.length === 0 && (
+                      <p className="mt-1 text-sm text-gray-500">No classes found. Create a class first.</p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {formData.type === 'school' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  School
+                </label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
+                  🏫 {schoolInfo?.name || 'Loading school...'}
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  This target will be visible to all students in your school.
+                </p>
+              </div>
+            )}
 
             {/* Dates Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
