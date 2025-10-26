@@ -472,11 +472,12 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
  * Get DYNAMIC font sizing based on page content length
  * Automatically scales font down for longer pages to fit everything on screen WITHOUT SCROLLING
  *
- * CRITICAL UX RULE: Everything must be visible without scrolling
- * - Short pages (< 800 chars): Use full 24px font
- * - Medium pages (800-1200 chars): Scale down to 22px
- * - Long pages (1200-1600 chars): Scale down to 20px
- * - Very long pages (> 1600 chars): Scale down to 18px minimum
+ * CRITICAL UX RULE: Everything must be visible without scrolling - AGGRESSIVE SCALING
+ * - Very short pages (< 600 chars): 18px
+ * - Short pages (600-900 chars): 16px
+ * - Medium pages (900-1200 chars): 15px
+ * - Long pages (1200-1500 chars): 14px
+ * - Very long pages (> 1500 chars): 13px minimum
  *
  * @param textContent - The full text content of the current page
  * @param scriptId - The Qira'at script ID
@@ -485,17 +486,19 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
 export function getDynamicScriptStyling(textContent: string, scriptId: string) {
   const contentLength = textContent.length;
 
-  // Calculate optimal font size based on content length
-  let baseFontSize = '24px';
+  // AGGRESSIVE font scaling to ensure NO SCROLLING on any page
+  let baseFontSize = '18px';
 
-  if (contentLength > 1600) {
-    baseFontSize = '18px';  // Very long pages
+  if (contentLength > 1500) {
+    baseFontSize = '13px';  // Very long pages - most aggressive
   } else if (contentLength > 1200) {
-    baseFontSize = '20px';  // Long pages
-  } else if (contentLength > 800) {
-    baseFontSize = '22px';  // Medium pages
+    baseFontSize = '14px';  // Long pages
+  } else if (contentLength > 900) {
+    baseFontSize = '15px';  // Medium pages
+  } else if (contentLength > 600) {
+    baseFontSize = '16px';  // Short pages
   } else {
-    baseFontSize = '24px';  // Short pages
+    baseFontSize = '18px';  // Very short pages
   }
 
   // Get base styling and override with dynamic font size

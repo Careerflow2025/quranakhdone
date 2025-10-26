@@ -1692,20 +1692,20 @@ export default function StudentManagementDashboard() {
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
                           width: '45vw',
                           maxWidth: '600px',
-                          minHeight: '68vh',
-                          maxHeight: 'none',  // Allow content to expand to fit
-                          overflow: 'visible',  // Show all content, no cutoff
-                          margin: '0 auto',  // Horizontally centered
-                          padding: '1.2rem 1.8rem',  // Side margins for annotations
-                          backgroundColor: '#FFFFFF',  // Pure white background
+                          minHeight: '50vh',  // REDUCED: Fit more compactly in viewport
+                          maxHeight: '58vh',  // ADDED: Hard limit to prevent overflow
+                          overflow: 'hidden',  // NO scrolling inside container
+                          margin: '0 auto',
+                          padding: '0.8rem 1rem',  // REDUCED: Less padding for space efficiency
+                          backgroundColor: '#FFFFFF',
                           borderRadius: '8px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
-                          border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+                          border: '2px solid #40826D',
                           ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
-                          textAlign: 'right',  // Right-aligned for RTL, natural spacing
-                          lineHeight: '1.8'  // Normal book spacing
+                          textAlign: 'right',
+                          lineHeight: '1.4'  // REDUCED: Tighter line spacing for compactness
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
