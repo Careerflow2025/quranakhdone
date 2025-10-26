@@ -424,6 +424,51 @@ export function getScriptStyling(scriptId: string) {
 }
 
 /**
+ * Get responsive script styling for Mushaf page view
+ * Normalizes font size to prevent overflow while preserving font-family diversity
+ *
+ * Problem solved: Different Qira'at fonts (27px Hafs, 24px Warsh, 23px Qunbul)
+ * caused inconsistent content display - large fonts overflow, small fonts waste space.
+ *
+ * Solution: Use SAME normalized font size (24px) for all scripts but KEEP different
+ * font families for visual diversity. This ensures consistent layout while preserving
+ * authentic Qira'at appearance.
+ *
+ * @param scriptId - The Qira'at script ID
+ * @param baseFontSize - Normalized base font size (default: 24px for consistent layout)
+ * @returns CSS properties with normalized fontSize but authentic fontFamily
+ */
+export function getResponsiveScriptStyling(scriptId: string, baseFontSize: string = '24px') {
+  const script = quranScripts[scriptId as keyof typeof quranScripts];
+
+  if (!script) {
+    // Default fallback
+    return {
+      fontFamily: "'Traditional Arabic', serif",
+      fontSize: baseFontSize,
+      lineHeight: '2.0',
+      letterSpacing: 'normal',
+      wordSpacing: 'normal',
+      direction: 'rtl' as const,
+      color: '#000000',
+      fontWeight: 'normal'
+    };
+  }
+
+  // Return fontFamily from script (visual diversity) but normalized fontSize (consistent layout)
+  return {
+    fontFamily: script.fontFamily,  // Authentic font for each Qira'at (visual uniqueness)
+    fontSize: baseFontSize,  // Normalized size prevents overflow/underflow
+    lineHeight: '2.0',  // Consistent line spacing for all scripts
+    letterSpacing: script.letterSpacing || 'normal',
+    wordSpacing: script.wordSpacing || 'normal',
+    direction: script.direction as 'rtl',
+    color: script.textColor || '#000000',
+    fontWeight: script.fontWeight || 'normal'
+  };
+}
+
+/**
  * Get Quran by script ID (ASYNC)
  * Returns the full Quran with styling and unique data
  */

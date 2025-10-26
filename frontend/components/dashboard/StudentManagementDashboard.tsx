@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { useHighlights } from '@/hooks/useHighlights';
-import { 
-  getQuranByScriptId, 
-  getSurahByNumber, 
-  getAllQuranScripts, 
-  getScriptStyling
+import {
+  getQuranByScriptId,
+  getSurahByNumber,
+  getAllQuranScripts,
+  getScriptStyling,
+  getResponsiveScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
@@ -1646,7 +1647,7 @@ export default function StudentManagementDashboard() {
                   `}</style>
 
                   <div className="mushaf-page-text" style={{
-                    ...getScriptStyling(selectedScript || 'uthmani-hafs'),
+                    ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),
                     lineHeight: '2.8',
                     textAlign: 'justify',
                     wordSpacing: '0.1em',
@@ -1701,7 +1702,7 @@ export default function StudentManagementDashboard() {
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
                           border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
-                          ...getScriptStyling(selectedScript || 'uthmani-hafs'),  // Use script-specific styling
+                          ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),  // Responsive sizing for consistent layout
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           textAlign: 'justify',  // Justified text like a book
