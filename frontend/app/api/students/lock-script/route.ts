@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSb } from '@/lib/supabase/server';
+import { createAdminSb } from '@/lib/supabase/server';
 
 /**
  * POST /api/students/lock-script
@@ -10,10 +10,12 @@ import { createSb } from '@/lib/supabase/server';
  * Body:
  * - studentId: UUID of the student
  * - scriptId: ID of the Quran script (e.g., 'uthmani-hafs', 'warsh', etc.)
+ *
+ * Note: Uses admin client to bypass RLS since teacher access is verified on frontend
  */
 export async function POST(req: Request) {
   try {
-    const sb = createSb();
+    const sb = createAdminSb();
 
     // Parse request body
     const { studentId, scriptId } = await req.json();
