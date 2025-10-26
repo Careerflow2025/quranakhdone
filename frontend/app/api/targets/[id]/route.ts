@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   canViewTarget,
   canDeleteTarget,
@@ -37,28 +37,43 @@ export async function GET(
   try {
     const targetId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<TargetErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -75,10 +90,10 @@ export async function GET(
       );
     }
 
-    // 4. Get teacher_id if applicable
+    // 5. Get teacher_id if applicable
     let teacherId: string | undefined;
     if (['teacher', 'admin', 'owner'].includes(profile.role)) {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -89,10 +104,10 @@ export async function GET(
       }
     }
 
-    // 5. Get student_id if applicable
+    // 6. Get student_id if applicable
     let studentId: string | undefined;
     if (profile.role === 'student') {
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('id')
         .eq('user_id', user.id)
@@ -103,8 +118,8 @@ export async function GET(
       }
     }
 
-    // 6. Fetch target with relations
-    const { data: target, error: targetError } = await supabase
+    // 7. Fetch target with relations
+    const { data: target, error: targetError } = await supabaseAdmin
       .from('targets')
       .select(
         `
@@ -133,7 +148,7 @@ export async function GET(
       );
     }
 
-    // 7. Check permissions
+    // 8. Check permissions
     const hasPermission = canViewTarget(
       {
         userId: user.id,
@@ -162,24 +177,24 @@ export async function GET(
       );
     }
 
-    // 8. Fetch milestones (from JSONB meta field or separate table when available)
+    // 9. Fetch milestones (from JSONB meta field or separate table when available)
     // TODO: Replace with actual milestone fetching logic
     const milestones: Milestone[] = [];
 
-    // 9. For individual targets, get student info
+    // 10. For individual targets, get student info
     let studentInfo;
     if (target.type === 'individual') {
       // TODO: Fetch from target_students table when available
       // For now, would need to be passed or fetched from notifications/meta
     }
 
-    // 10. For class targets, get class info
+    // 11. For class targets, get class info
     let classInfo;
     if (target.type === 'class') {
       // TODO: Fetch class details and student count
     }
 
-    // 11. Build response with complete details
+    // 12. Build response with complete details
     const targetWithDetails: TargetWithDetails = {
       ...target,
       teacher: target.teacher
@@ -207,7 +222,7 @@ export async function GET(
       },
     };
 
-    // 12. Return response
+    // 13. Return response
     return NextResponse.json<GetTargetResponse>(
       {
         success: true,
@@ -240,28 +255,43 @@ export async function DELETE(
   try {
     const targetId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<TargetErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -278,10 +308,10 @@ export async function DELETE(
       );
     }
 
-    // 4. Get teacher_id (only teachers can delete)
+    // 5. Get teacher_id (only teachers can delete)
     let teacherId: string | undefined;
     if (['teacher', 'admin', 'owner'].includes(profile.role)) {
-      const { data: teacher } = await supabase
+      const { data: teacher } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -303,8 +333,8 @@ export async function DELETE(
       );
     }
 
-    // 5. Fetch existing target
-    const { data: target, error: targetError } = await supabase
+    // 6. Fetch existing target
+    const { data: target, error: targetError } = await supabaseAdmin
       .from('targets')
       .select('*')
       .eq('id', targetId)
@@ -321,7 +351,7 @@ export async function DELETE(
       );
     }
 
-    // 6. Check permissions
+    // 7. Check permissions
     const hasPermission = canDeleteTarget(
       {
         userId: user.id,
@@ -347,8 +377,8 @@ export async function DELETE(
       );
     }
 
-    // 7. Delete target (cascades to related data via foreign keys)
-    const { error: deleteError } = await supabase
+    // 8. Delete target (cascades to related data via foreign keys)
+    const { error: deleteError } = await supabaseAdmin
       .from('targets')
       .delete()
       .eq('id', targetId);
@@ -366,7 +396,7 @@ export async function DELETE(
       );
     }
 
-    // 8. Return success response
+    // 9. Return success response
     return NextResponse.json<DeleteTargetResponse>(
       {
         success: true,
