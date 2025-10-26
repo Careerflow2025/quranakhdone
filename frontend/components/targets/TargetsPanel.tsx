@@ -586,6 +586,39 @@ export default function TargetsPanel({
                     </p>
                   )}
 
+                  {/* For/Assigned To Information */}
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    {target.type === 'individual' && target.students && (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm">
+                        <span className="text-blue-600">👤</span>
+                        <span className="font-medium text-blue-900">
+                          For: {target.students.profiles?.display_name || 'Student'}
+                        </span>
+                        {target.students.class_enrollments && target.students.class_enrollments.length > 0 && (
+                          <span className="text-blue-700">
+                            ({target.students.class_enrollments.map((enrollment: any) => enrollment.classes?.name).filter(Boolean).join(', ')})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {target.type === 'class' && target.classes && (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-purple-50 border border-purple-200 rounded-full text-sm">
+                        <span className="text-purple-600">👥</span>
+                        <span className="font-medium text-purple-900">
+                          For: {target.classes.name}
+                        </span>
+                      </div>
+                    )}
+                    {target.type === 'school' && (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-green-50 border border-green-200 rounded-full text-sm">
+                        <span className="text-green-600">🏫</span>
+                        <span className="font-medium text-green-900">
+                          For: Entire School
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Metadata */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                     {target.category && (

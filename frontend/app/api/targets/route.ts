@@ -483,6 +483,12 @@ export async function GET(request: NextRequest) {
           profiles:user_id (
             display_name,
             email
+          ),
+          class_enrollments (
+            classes (
+              id,
+              name
+            )
           )
         ),
         classes (
