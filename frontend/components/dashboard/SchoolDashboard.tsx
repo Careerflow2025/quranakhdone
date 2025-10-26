@@ -6,6 +6,7 @@ import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useHighlights } from '@/hooks/useHighlights';
+import { useTargets } from '@/hooks/useTargets';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
 import { useAuthStore } from '@/store/authStore';
@@ -201,8 +202,10 @@ export default function SchoolDashboard() {
   // Homework, Assignments & Targets State
   const [homeworkList, setHomeworkList] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
-  const [targets, setTargets] = useState<any[]>([]);
   const [assignmentFilter, setAssignmentFilter] = useState('all');
+
+  // Use targets hook to fetch ALL targets for the school
+  const { targets, isLoading: targetsLoading, fetchTargets } = useTargets();
   const [editingAssignment, setEditingAssignment] = useState<any>(null);
   const [viewingAssignment, setViewingAssignment] = useState<any>(null);
   const [viewingHomework, setViewingHomework] = useState<any>(null);
@@ -951,38 +954,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Load learning targets from ayah_mastery
-  const loadTargets = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('ayah_mastery')
-        .select(`
-          *,
-          students(name, email),
-          quran_ayahs(surah, ayah)
-        `)
-        .order('last_updated', { ascending: false }) as any;
-
-      if (error) throw error;
-
-      // Transform mastery data into targets format
-      const transformedTargets = (data || []).map((mastery: any) => ({
-        id: mastery.id,
-        studentName: mastery.students?.name || 'Unknown Student',
-        student_id: mastery.student_id,
-        title: `Surah ${mastery.quran_ayahs?.surah} Mastery`,
-        description: `Mastery level: ${mastery.level}`,
-        progress: mastery.level === 'mastered' ? 100 :
-                  mastery.level === 'proficient' ? 75 :
-                  mastery.level === 'learning' ? 50 : 0,
-        deadline: mastery.last_updated
-      }));
-
-      setTargets(transformedTargets);
-    } catch (error: any) {
-      console.error('Error loading targets:', error);
-    }
-  };
+  // Targets are now loaded via useTargets hook (removed incorrect loadTargets function)
 
   // Load credentials data
   const loadCredentials = async () => {
@@ -1383,10 +1355,10 @@ export default function SchoolDashboard() {
     if (user?.schoolId) {
       loadHomework();
       loadAssignments();
-      loadTargets();
+      fetchTargets(); // Use hook's fetchTargets instead of loadTargets
       loadMessages();
     }
-  }, [user?.schoolId]);
+  }, [user?.schoolId, fetchTargets]);
 
   // Load credentials when tab changes to credentials
   useEffect(() => {
@@ -3982,11 +3954,16 @@ export default function SchoolDashboard() {
                           <div className="flex items-center justify-between text-sm text-gray-500">
                             <span className="flex items-center">
                               <User className="w-3 h-3 mr-1" />
-                              {target.studentName}
+                              {target.type === 'individual'
+                                ? (target.student?.display_name || 'Unknown Student')
+                                : target.type === 'class'
+                                ? (target.class?.name || 'Class Target')
+                                : 'School Target'
+                              }
                             </span>
                             <span className="flex items-center">
                               <Calendar className="w-3 h-3 mr-1" />
-                              {new Date(target.deadline).toLocaleDateString()}
+                              {target.due_date ? new Date(target.due_date).toLocaleDateString() : 'No deadline'}
                             </span>
                           </div>
 
