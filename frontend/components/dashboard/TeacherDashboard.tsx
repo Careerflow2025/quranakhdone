@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTeacherData } from '@/hooks/useTeacherData';
@@ -56,6 +56,24 @@ export default function TeacherDashboard() {
       fetchHomework({ teacher_id: teacherInfo.id, include_completed: true });
     }
   }, [teacherInfo?.id, fetchHomework]);
+
+  // Transform homework data to match UI expectations
+  const transformedHomework = useMemo(() => {
+    return (homeworkData || []).map((hw: any) => ({
+      id: hw.id,
+      studentId: hw.student_id,
+      studentName: hw.student?.display_name || 'Unknown Student',
+      class: 'N/A', // Class info not available in highlights table
+      surah: hw.surah ? `Surah ${hw.surah}` : 'Unknown Surah',
+      ayahRange: hw.ayah_start && hw.ayah_end ? `${hw.ayah_start}-${hw.ayah_end}` : 'N/A',
+      note: hw.note || '',
+      assignedDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      dueDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      replies: hw.notes?.length || 0,
+      status: hw.status || 'pending',
+      color: hw.color,
+    }));
+  }, [homeworkData]);
 
   // State Management
   const [activeTab, setActiveTab] = useState('overview');
@@ -435,7 +453,7 @@ export default function TeacherDashboard() {
 
             {/* Homework Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {homeworkData
+              {transformedHomework
                 .filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter)
                 .map((homework: any) => (
                 <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -508,7 +526,7 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Empty State */}
-            {homeworkData.filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter).length === 0 && (
+            {transformedHomework.filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter).length === 0 && (
               <div className="text-center py-12 bg-white rounded-xl">
                 <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No homework found</p>
