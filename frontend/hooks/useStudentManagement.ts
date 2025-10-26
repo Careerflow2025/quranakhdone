@@ -46,10 +46,10 @@ export function useStudentManagement(studentId: string | null) {
       console.log('🔍 Fetching student data for:', studentId);
       console.log('👤 Current user:', user.id, 'Role:', user.role);
 
-      // STEP 1: Fetch student record (including preferred_script_id and last page tracking)
+      // STEP 1: Fetch student record (including preferred_script code via join)
       const { data: student, error: studentError } = await supabase
         .from('students')
-        .select('*, preferred_script_id, last_page_visited, last_surah_visited')
+        .select('*, quran_scripts(code), last_page_visited, last_surah_visited')
         .eq('id', studentId)
         .eq('school_id', user.schoolId) // Ensure same school
         .single();
@@ -80,7 +80,7 @@ export function useStudentManagement(studentId: string | null) {
         }
       }
 
-      // Set student info (including preferred_script_id for Quran version locking)
+      // Set student info (including preferred_script CODE for Quran version locking)
       setStudentInfo({
         id: student.id,
         userId: student.user_id,
@@ -93,7 +93,7 @@ export function useStudentManagement(studentId: string | null) {
         address: student.address,
         active: student.active,
         schoolId: student.school_id,
-        preferredScriptId: student.preferred_script_id, // Quran version lock
+        preferredScriptId: student.quran_scripts?.code || null, // Quran version lock (code not UUID)
         lastPageVisited: student.last_page_visited,     // Last Mushaf page for session resumption
         lastSurahVisited: student.last_surah_visited    // Last Surah for session resumption
       });
