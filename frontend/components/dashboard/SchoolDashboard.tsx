@@ -891,8 +891,22 @@ export default function SchoolDashboard() {
         .from('assignments')
         .select(`
           *,
-          students(name),
-          teachers(name),
+          student:students!student_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
+          teacher:teachers!created_by_teacher_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
           assignment_submissions(count)
         `)
         .eq('school_id', user?.schoolId || '')
@@ -900,11 +914,15 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
-      // Transform data to include student and teacher names
+      // Transform data to include student and teacher names from profiles
       const transformedAssignments = (data || []).map((assignment: any) => ({
         ...assignment,
-        studentName: assignment.students?.name || 'Unknown Student',
-        teacherName: assignment.teachers?.name || 'Unknown Teacher',
+        studentName: assignment.student?.profiles?.display_name ||
+                     assignment.student?.profiles?.email?.split('@')[0] ||
+                     'Unknown Student',
+        teacherName: assignment.teacher?.profiles?.display_name ||
+                     assignment.teacher?.profiles?.email?.split('@')[0] ||
+                     'Unknown Teacher',
         submissions_count: assignment.assignment_submissions?.[0]?.count || 0
       }));
 
