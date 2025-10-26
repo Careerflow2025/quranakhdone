@@ -247,9 +247,11 @@ async function loadScriptData(scriptId: string): Promise<any> {
   const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/${apiEdition}.min.json`;
 
   console.log('🔄 Loading Quran data from fawazahmed0 API:', apiEdition);
+  console.log('   📍 Script ID:', scriptId);
+  console.log('   🌐 URL:', url);
 
   // Create loading promise
-  const loadPromise = fetch(url)
+  const loadPromise = fetch(url, { cache: 'no-store' })
     .then(response => {
       if (!response.ok) {
         throw new Error(`Failed to load ${apiEdition}: ${response.status} ${response.statusText}`);
@@ -295,6 +297,12 @@ async function loadScriptData(scriptId: string): Promise<any> {
       const surahs = Array.from(surahsMap.values()).sort((a, b) => a.number - b.number);
 
       console.log('✅ Successfully loaded', surahs.length, 'surahs for', scriptId);
+
+      // Log sample verse to verify unique text per version
+      const sampleVerse = surahs[0]?.ayahs?.find((a: any) => a.numberInSurah === 4);
+      if (sampleVerse) {
+        console.log('   📝 Sample (Fatiha 1:4):', sampleVerse.text);
+      }
 
       // Cache the surahs data
       scriptDataCache[scriptId] = surahs;
