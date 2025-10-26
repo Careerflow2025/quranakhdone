@@ -472,12 +472,13 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
  * Get DYNAMIC font sizing based on page content length
  * Automatically scales font down for longer pages to fit everything on screen WITHOUT SCROLLING
  *
- * CRITICAL UX RULE: Everything must be visible without scrolling - AGGRESSIVE SCALING
- * - Very short pages (< 600 chars): 18px
- * - Short pages (600-900 chars): 16px
- * - Medium pages (900-1200 chars): 15px
- * - Long pages (1200-1500 chars): 14px
- * - Very long pages (> 1500 chars): 13px minimum
+ * CRITICAL UX RULE: Everything must be visible without scrolling
+ * Optimized for PORTRAIT/VERTICAL container (65-72vh height)
+ * - Very short pages (< 700 chars): 17px
+ * - Short pages (700-1000 chars): 16px
+ * - Medium pages (1000-1400 chars): 15px
+ * - Long pages (1400-1800 chars): 14px
+ * - Very long pages (> 1800 chars): 13px minimum
  *
  * @param textContent - The full text content of the current page
  * @param scriptId - The Qira'at script ID
@@ -486,19 +487,19 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
 export function getDynamicScriptStyling(textContent: string, scriptId: string) {
   const contentLength = textContent.length;
 
-  // AGGRESSIVE font scaling to ensure NO SCROLLING on any page
-  let baseFontSize = '18px';
+  // Balanced font scaling for vertical/portrait container
+  let baseFontSize = '17px';
 
-  if (contentLength > 1500) {
-    baseFontSize = '13px';  // Very long pages - most aggressive
-  } else if (contentLength > 1200) {
+  if (contentLength > 1800) {
+    baseFontSize = '13px';  // Very long pages
+  } else if (contentLength > 1400) {
     baseFontSize = '14px';  // Long pages
-  } else if (contentLength > 900) {
+  } else if (contentLength > 1000) {
     baseFontSize = '15px';  // Medium pages
-  } else if (contentLength > 600) {
+  } else if (contentLength > 700) {
     baseFontSize = '16px';  // Short pages
   } else {
-    baseFontSize = '18px';  // Very short pages
+    baseFontSize = '17px';  // Very short pages
   }
 
   // Get base styling and override with dynamic font size

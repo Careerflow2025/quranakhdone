@@ -1690,13 +1690,13 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
                         <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          width: '45vw',
-                          maxWidth: '600px',
-                          minHeight: '50vh',  // REDUCED: Fit more compactly in viewport
-                          maxHeight: '58vh',  // ADDED: Hard limit to prevent overflow
+                          width: '38vw',  // NARROWER: More vertical/portrait-like proportions
+                          maxWidth: '480px',  // REDUCED: Traditional book page width
+                          minHeight: '65vh',  // INCREASED: Use available bottom space
+                          maxHeight: '72vh',  // INCREASED: Taller to look like a real page
                           overflow: 'hidden',  // NO scrolling inside container
                           margin: '0 auto',
-                          padding: '0.8rem 1rem',  // REDUCED: Less padding for space efficiency
+                          padding: '0.8rem 1rem',
                           backgroundColor: '#FFFFFF',
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
@@ -1705,7 +1705,7 @@ export default function StudentManagementDashboard() {
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           textAlign: 'right',
-                          lineHeight: '1.4'  // REDUCED: Tighter line spacing for compactness
+                          lineHeight: '1.5'  // Slightly more breathing room with vertical space
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
