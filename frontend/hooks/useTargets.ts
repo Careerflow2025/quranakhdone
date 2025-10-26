@@ -519,6 +519,13 @@ export function useTargets(): UseTargetsReturn {
     }
   }, [user]); // Only run on mount and when user changes
 
+  // Re-fetch when filters change
+  useEffect(() => {
+    if (user) {
+      fetchTargets(filters, 1);
+    }
+  }, [filters.type, filters.status, filters.category]); // Watch filter changes
+
   // ============================================================================
   // REAL-TIME SUBSCRIPTIONS
   // ============================================================================

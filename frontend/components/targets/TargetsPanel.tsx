@@ -441,7 +441,7 @@ export default function TargetsPanel({
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Type Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -472,7 +472,7 @@ export default function TargetsPanel({
               <option value="">All Statuses</option>
               <option value="active">Active</option>
               <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="archived">Archived</option>
             </select>
           </div>
 
@@ -493,19 +493,6 @@ export default function TargetsPanel({
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Include Completed */}
-          <div className="flex items-end">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filters.include_completed || false}
-                onChange={(e) => updateFilters({ include_completed: e.target.checked })}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="text-sm text-gray-700">Include Completed</span>
-            </label>
           </div>
         </div>
 
