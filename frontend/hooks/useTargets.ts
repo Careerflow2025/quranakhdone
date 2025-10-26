@@ -52,6 +52,17 @@ interface TargetPagination {
   total_pages: number;
 }
 
+interface UpdateTargetRequest {
+  title?: string;
+  description?: string;
+  type?: TargetType;
+  category?: string;
+  student_id?: string;
+  class_id?: string;
+  start_date?: string;
+  due_date?: string;
+}
+
 interface UseTargetsReturn {
   // State
   targets: TargetWithDetails[];
@@ -66,6 +77,7 @@ interface UseTargetsReturn {
   fetchTargets: (customFilters?: TargetFilters, page?: number) => Promise<{ success: boolean; data?: TargetWithDetails[]; error?: string }>;
   fetchTargetById: (targetId: string) => Promise<{ success: boolean; data?: TargetWithDetails; error?: string }>;
   createTarget: (data: CreateTargetRequest) => Promise<{ success: boolean; data?: TargetWithDetails; error?: string }>;
+  updateTarget: (targetId: string, data: UpdateTargetRequest) => Promise<{ success: boolean; data?: TargetWithDetails; error?: string }>;
   updateTargetProgress: (targetId: string, data: UpdateTargetProgressRequest) => Promise<{ success: boolean; data?: TargetWithDetails; error?: string }>;
   deleteTarget: (targetId: string) => Promise<{ success: boolean; error?: string }>;
 
@@ -276,6 +288,70 @@ export function useTargets(): UseTargetsReturn {
   );
 
   // ============================================================================
+  // UPDATE TARGET
+  // ============================================================================
+
+  const updateTarget = useCallback(
+    async (targetId: string, data: UpdateTargetRequest) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get session for authorization
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          const errorMessage = 'Please login to update target';
+          setError(errorMessage);
+          setIsLoading(false);
+          return { success: false, error: errorMessage };
+        }
+
+        const response = await fetch(`/api/targets/${targetId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          const errorMessage = result.error || 'Failed to update target';
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
+        }
+
+        // Update local state
+        setTargets((prev) =>
+          prev.map((target) =>
+            target.id === targetId ? { ...target, ...result.target } : target
+          )
+        );
+
+        if (selectedTarget?.id === targetId) {
+          setSelectedTarget((prev) => (prev ? { ...prev, ...result.target } : null));
+        }
+
+        // Refresh targets list to get updated data
+        await fetchTargets(filters, pagination.page);
+
+        return { success: true, data: result.target };
+      } catch (err: any) {
+        const errorMessage = err.message || 'An unexpected error occurred';
+        setError(errorMessage);
+        console.error('Error updating target:', err);
+        return { success: false, error: errorMessage };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectedTarget, fetchTargets, filters, pagination.page]
+  );
+
+  // ============================================================================
   // UPDATE TARGET PROGRESS
   // ============================================================================
 
@@ -461,6 +537,7 @@ export function useTargets(): UseTargetsReturn {
     fetchTargets,
     fetchTargetById,
     createTarget,
+    updateTarget,
     updateTargetProgress,
     deleteTarget,
 

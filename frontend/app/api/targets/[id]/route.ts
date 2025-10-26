@@ -1,6 +1,7 @@
 /**
  * Single Target API
  * GET /api/targets/:id - Get single target with full details and milestones
+ * PATCH /api/targets/:id - Update target details (title, description, dates, etc.)
  * DELETE /api/targets/:id - Delete target
  *
  * Created: 2025-10-20
@@ -13,6 +14,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   canViewTarget,
   canDeleteTarget,
+  canUpdateTarget,
 } from '@/lib/validators/targets';
 import {
   GetTargetResponse,
@@ -232,6 +234,187 @@ export async function GET(
     );
   } catch (error) {
     console.error('Unexpected error in GET /api/targets/:id:', error);
+    return NextResponse.json<TargetErrorResponse>(
+      {
+        success: false,
+        error: 'Internal server error',
+        code: 'INTERNAL_ERROR',
+        details: { error: String(error) },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================================
+// PATCH /api/targets/:id - Update Target Details
+// ============================================================================
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const targetId = params.id;
+
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('user_id, school_id, role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'User profile not found',
+          code: 'NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 5. Get teacher_id (only teachers can update targets)
+    let teacherId: string | undefined;
+    if (['teacher', 'admin', 'owner'].includes(profile.role)) {
+      const { data: teacher } = await supabaseAdmin
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (teacher) {
+        teacherId = teacher.id;
+      }
+    }
+
+    if (!teacherId) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Only teachers can update targets',
+          code: 'FORBIDDEN',
+        },
+        { status: 403 }
+      );
+    }
+
+    // 6. Parse request body
+    const body = await request.json();
+    const { title, description, type, category, student_id, class_id, start_date, due_date } = body;
+
+    // 7. Fetch existing target to check permissions
+    const { data: target, error: targetError } = await supabaseAdmin
+      .from('targets')
+      .select('*')
+      .eq('id', targetId)
+      .single();
+
+    if (targetError || !target) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Target not found',
+          code: 'NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 8. Check permissions (only creator or admin can update)
+    const isCreator = target.teacher_id === teacherId;
+    const isAdmin = ['admin', 'owner'].includes(profile.role);
+
+    if (!isCreator && !isAdmin) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Only the creator or admin can update this target',
+          code: 'FORBIDDEN',
+        },
+        { status: 403 }
+      );
+    }
+
+    // 9. Build update object (only include provided fields)
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (type !== undefined) updateData.type = type;
+    if (category !== undefined) updateData.category = category;
+    if (student_id !== undefined) updateData.student_id = student_id;
+    if (class_id !== undefined) updateData.class_id = class_id;
+    if (start_date !== undefined) updateData.start_date = start_date;
+    if (due_date !== undefined) updateData.due_date = due_date;
+
+    // 10. Update target in database
+    const { data: updatedTarget, error: updateError } = await supabaseAdmin
+      .from('targets')
+      .update(updateData)
+      .eq('id', targetId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Target update error:', updateError);
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Failed to update target',
+          code: 'DATABASE_ERROR',
+          details: { updateError },
+        },
+        { status: 500 }
+      );
+    }
+
+    // 11. Return updated target
+    return NextResponse.json(
+      {
+        success: true,
+        target: updatedTarget,
+        message: 'Target updated successfully',
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Unexpected error in PATCH /api/targets/:id:', error);
     return NextResponse.json<TargetErrorResponse>(
       {
         success: false,
