@@ -240,6 +240,12 @@ export default function StudentManagementDashboard() {
     }
   }, [currentMushafPage]);
 
+  // Update Mushaf page when Surah changes (not when script changes)
+  useEffect(() => {
+    const mushafPage = getPageBySurahAyah(currentSurah, 1);
+    setCurrentMushafPage(mushafPage);
+  }, [currentSurah]);
+
   // Update Quran text when Surah or Script changes
   useEffect(() => {
     const loadQuranText = async () => {
@@ -259,10 +265,6 @@ export default function StudentManagementDashboard() {
               words: ayah.text.split(' ')
             }))
           });
-          // Reset to first page when Surah changes
-          // Set to the correct mushaf page for this surah
-          const mushafPage = getPageBySurahAyah(currentSurah, 1);
-          setCurrentMushafPage(mushafPage);
         }
       } catch (error) {
         console.error('Error loading Quran text:', error);
