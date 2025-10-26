@@ -1910,24 +1910,29 @@ export default function StudentManagementDashboard() {
 
                       return (
                         <>
+                          {/* Previous Arrow - Just Icon */}
                           <button
                             onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
                             disabled={isFirstPage}
-                            className={`px-4 py-2 text-sm ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                            <ChevronLeft className="w-4 h-4" />
-                            <span>Previous</span>
+                            className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
+                            title="Previous Page">
+                            <ChevronLeft className="w-5 h-5" />
                           </button>
+
+                          {/* Page Info */}
                           <div className="text-center">
                             <span className="text-sm font-semibold text-gray-700">
                               Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
                             </span>
                           </div>
+
+                          {/* Next Arrow - Just Icon */}
                           <button
                             onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
                             disabled={isLastPage}
-                            className={`px-4 py-2 text-sm ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-md flex items-center space-x-1 shadow-sm transition`}>
-                            <span>Next</span>
-                            <ChevronRight className="w-4 h-4" />
+                            className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
+                            title="Next Page">
+                            <ChevronRight className="w-5 h-5" />
                           </button>
                         </>
                       );
