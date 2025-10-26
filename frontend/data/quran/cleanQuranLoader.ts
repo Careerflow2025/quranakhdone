@@ -136,25 +136,34 @@ async function loadScriptData(scriptId: string): Promise<any> {
       }
       return response.json();
     })
-    .then(data => {
-      // Validate data structure
-      if (!Array.isArray(data)) {
-        throw new Error(`Invalid data format for ${scriptId}: expected array, got ${typeof data}`);
+    .then(responseData => {
+      // Extract surahs from API response format
+      let surahs;
+
+      // Handle both formats:
+      // 1. API response: { "code": 200, "status": "OK", "data": { "surahs": [...] } }
+      // 2. Plain array: [...]
+      if (Array.isArray(responseData)) {
+        surahs = responseData;
+      } else if (responseData?.data?.surahs && Array.isArray(responseData.data.surahs)) {
+        surahs = responseData.data.surahs;
+      } else {
+        throw new Error(`Invalid data format for ${scriptId}: could not find surahs array`);
       }
 
-      if (data.length === 0) {
-        throw new Error(`Empty data for ${scriptId}`);
+      if (surahs.length === 0) {
+        throw new Error(`Empty surahs data for ${scriptId}`);
       }
 
-      console.log('✅ Successfully loaded', data.length, 'surahs for', scriptId);
+      console.log('✅ Successfully loaded', surahs.length, 'surahs for', scriptId);
 
-      // Cache the data
-      scriptDataCache[scriptId] = data;
+      // Cache the surahs data
+      scriptDataCache[scriptId] = surahs;
 
       // Clean up loading promise
       delete loadingPromises[scriptId];
 
-      return data;
+      return surahs;
     })
     .catch(error => {
       console.error(`❌ Error loading ${scriptId}:`, error);
@@ -185,24 +194,28 @@ export async function getSurahByNumber(scriptId: string, surahNumber: number) {
     const scriptData = await loadScriptData(scriptId);
 
     // Find the surah in the script-specific data
-    const surah = scriptData.find((s: any) => s.id === surahNumber);
+    // API format uses "number" field instead of "id"
+    const surah = scriptData.find((s: any) => (s.number || s.id) === surahNumber);
 
     if (!surah) {
       console.warn(`⚠️ Surah ${surahNumber} not found in ${scriptId}`);
       return null;
     }
 
-    console.log('✅ Found surah:', surah.name);
+    console.log('✅ Found surah:', surah.name || surah.englishName);
+
+    // Handle both API format (ayahs) and legacy format (verses)
+    const verses = surah.ayahs || surah.verses || [];
 
     return {
-      number: surah.id,
-      name: surah.name,
-      transliteration: surah.transliteration || '',
-      translation: surah.translation || '',
-      type: surah.type,
-      total_verses: surah.total_verses,
-      ayahs: surah.verses.map((verse: any) => ({
-        numberInSurah: verse.id,
+      number: surah.number || surah.id,
+      name: surah.name || surah.englishName,
+      transliteration: surah.englishNameTranslation || surah.transliteration || '',
+      translation: surah.englishNameTranslation || surah.translation || '',
+      type: surah.revelationType || surah.type,
+      total_verses: verses.length,
+      ayahs: verses.map((verse: any) => ({
+        numberInSurah: verse.numberInSurah || verse.number || verse.id,
         text: verse.text,
         translation: verse.translation || '',
         transliteration: verse.transliteration || ''
