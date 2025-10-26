@@ -589,6 +589,30 @@ export default function TargetsPanel({
                       </div>
                     )}
                   </div>
+
+                  {/* Milestones List Preview */}
+                  {target.milestones && target.milestones.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <div className="text-xs font-medium text-gray-700 mb-2">Milestones:</div>
+                      <div className="space-y-1.5">
+                        {target.milestones.slice(0, 3).map((milestone) => (
+                          <div key={milestone.id} className="flex items-start gap-2 text-sm">
+                            <span className={`mt-0.5 flex-shrink-0 ${milestone.completed ? 'text-green-600' : 'text-gray-400'}`}>
+                              {milestone.completed ? '✓' : '○'}
+                            </span>
+                            <span className={`flex-1 ${milestone.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
+                              {milestone.title}
+                            </span>
+                          </div>
+                        ))}
+                        {target.milestones.length > 3 && (
+                          <div className="text-xs text-gray-500 pl-6">
+                            +{target.milestones.length - 3} more...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress Circle */}
