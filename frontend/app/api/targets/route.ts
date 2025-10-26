@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateCreateTargetRequest,
   canCreateTarget,
@@ -36,30 +37,45 @@ type TargetRow = Database['public']['Tables']['targets']['Row'];
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<TargetErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile with school_id and role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('user_id, school_id, role')
+      .select('user_id, school_id, role, display_name')
       .eq('user_id', user.id)
       .single();
 
@@ -75,8 +91,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Check if user is a teacher (only teachers can create targets)
-    const { data: teacher, error: teacherError } = await supabase
+    // 5. Check if user is a teacher (only teachers can create targets)
+    const { data: teacher, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .select('id')
       .eq('user_id', user.id)
@@ -115,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // 6. For individual targets, verify student exists and is in same school
     if (type === 'individual' && student_id) {
-      const { data: student, error: studentError } = await supabase
+      const { data: student, error: studentError } = await supabaseAdmin
         .from('students')
         .select('id, user_id')
         .eq('id', student_id)
@@ -132,7 +148,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { data: studentProfile } = await supabase
+      const { data: studentProfile } = await supabaseAdmin
         .from('profiles')
         .select('school_id')
         .eq('user_id', student.user_id)
@@ -152,7 +168,7 @@ export async function POST(request: NextRequest) {
 
     // 7. For class targets, verify class exists and is in same school
     if (type === 'class' && class_id) {
-      const { data: classData, error: classError } = await supabase
+      const { data: classData, error: classError } = await supabaseAdmin
         .from('classes')
         .select('id, school_id')
         .eq('id', class_id)
@@ -214,7 +230,7 @@ export async function POST(request: NextRequest) {
 
     // 10. Insert target into database
     // Note: Milestones stored as JSONB in meta field until separate table is created
-    const { data: target, error: insertError } = await supabase
+    const { data: target, error: insertError } = await supabaseAdmin
       .from('targets')
       .insert({
         school_id: profile.school_id,
@@ -243,19 +259,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 11. For individual targets, create target_students link (if table exists)
-    // For now, we'll store student_id in a separate lookup or track via notifications
+    // 11. Populate target_students junction table for cross-dashboard visibility
+    // This is CRITICAL for student/parent visibility
+    if (type === 'individual' && student_id) {
+      // Individual target: link to specific student
+      await supabaseAdmin.from('target_students').insert({
+        target_id: target.id,
+        student_id: student_id,
+        progress: 0
+      });
+    } else if (type === 'class' && class_id) {
+      // Class target: link to ALL students in the class
+      const { data: classStudents } = await supabaseAdmin
+        .from('class_enrollments')
+        .select('student_id')
+        .eq('class_id', class_id);
+
+      if (classStudents && classStudents.length > 0) {
+        const targetStudentLinks = classStudents.map(enrollment => ({
+          target_id: target.id,
+          student_id: enrollment.student_id,
+          progress: 0
+        }));
+
+        await supabaseAdmin.from('target_students').insert(targetStudentLinks);
+      }
+    }
+    // Note: School targets don't need target_students links (visible to all)
 
     // 12. Create notification based on target type
     if (type === 'individual' && student_id) {
-      const { data: student } = await supabase
+      const { data: student } = await supabaseAdmin
         .from('students')
         .select('user_id')
         .eq('id', student_id)
         .single();
 
       if (student) {
-        await supabase.from('notifications').insert({
+        await supabaseAdmin.from('notifications').insert({
           school_id: profile.school_id,
           user_id: student.user_id,
           channel: 'in_app',
@@ -321,28 +362,43 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<TargetErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<TargetErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile with school_id and role
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -393,8 +449,9 @@ export async function GET(request: NextRequest) {
       sort_order,
     } = queryValidation.data;
 
-    // 5. Build Supabase query with RLS enforcement
-    let query = supabase
+    // 5. Build Supabase query with role-based filtering
+    // CRITICAL: Ensure school isolation
+    let query = supabaseAdmin
       .from('targets')
       .select(
         `
@@ -409,11 +466,70 @@ export async function GET(request: NextRequest) {
         )
       `,
         { count: 'exact' }
-      );
+      )
+      .eq('school_id', profile.school_id); // Multi-tenant isolation
 
-    // Apply filters
+    // Role-based filtering for cross-dashboard visibility
+    if (profile.role === 'student') {
+      // Students only see targets assigned to them via target_students
+      const { data: studentRecord } = await supabaseAdmin
+        .from('students')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (studentRecord) {
+        const { data: targetStudents } = await supabaseAdmin
+          .from('target_students')
+          .select('target_id')
+          .eq('student_id', studentRecord.id);
+
+        const targetIds = (targetStudents || []).map(ts => ts.target_id);
+        query = query.in('id', targetIds.length > 0 ? targetIds : ['00000000-0000-0000-0000-000000000000']); // Dummy UUID if no targets
+      }
+    } else if (profile.role === 'parent') {
+      // Parents see targets for their linked children
+      const { data: parentRecord } = await supabaseAdmin
+        .from('parents')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (parentRecord) {
+        const { data: children } = await supabaseAdmin
+          .from('parent_students')
+          .select('student_id')
+          .eq('parent_id', parentRecord.id);
+
+        const childIds = (children || []).map(c => c.student_id);
+
+        if (childIds.length > 0) {
+          const { data: targetStudents } = await supabaseAdmin
+            .from('target_students')
+            .select('target_id')
+            .in('student_id', childIds);
+
+          const targetIds = (targetStudents || []).map(ts => ts.target_id);
+          query = query.in('id', targetIds.length > 0 ? targetIds : ['00000000-0000-0000-0000-000000000000']);
+        }
+      }
+    }
+    // Teachers and admins see all targets in their school (already filtered by school_id above)
+
+    // Apply additional filters
     if (teacher_id) {
       query = query.eq('teacher_id', teacher_id);
+    }
+
+    if (student_id) {
+      // Filter by specific student via target_students junction
+      const { data: studentTargets } = await supabaseAdmin
+        .from('target_students')
+        .select('target_id')
+        .eq('student_id', student_id);
+
+      const targetIds = (studentTargets || []).map(st => st.target_id);
+      query = query.in('id', targetIds.length > 0 ? targetIds : ['00000000-0000-0000-0000-000000000000']);
     }
 
     if (type) {
