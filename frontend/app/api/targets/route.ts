@@ -235,6 +235,8 @@ export async function POST(request: NextRequest) {
       .insert({
         school_id: profile.school_id,
         teacher_id: teacher.id,
+        student_id: student_id || null, // For individual targets
+        class_id: class_id || null,     // For class targets
         title,
         description: description || null,
         type,
