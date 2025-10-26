@@ -1892,7 +1892,6 @@ export default function StudentManagementDashboard() {
                       );
                     })()}
                   </div>
-                  </div>
                 </div>
 
                 {/* Page Navigation */}
