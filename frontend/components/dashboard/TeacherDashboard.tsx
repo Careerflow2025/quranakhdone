@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTeacherData } from '@/hooks/useTeacherData';
+import { useHomework } from '@/hooks/useHomework';
 import { useHighlights } from '@/hooks/useHighlights';
 import {
   Users, BookOpen, Calendar, Bell, Settings, FileText, Clock, TrendingUp,
@@ -36,11 +37,25 @@ export default function TeacherDashboard() {
     students,
     classes: myClasses,
     assignments,
-    homework: homeworkData,
     targets,
     messages: teacherMessages,
     refreshData
   } = useTeacherData();
+
+  // Get homework data using proper API hook (bypasses RLS)
+  const {
+    homeworkList: homeworkData,
+    isLoading: homeworkLoading,
+    error: homeworkError,
+    fetchHomework
+  } = useHomework();
+
+  // Fetch homework when teacher info is available
+  useEffect(() => {
+    if (teacherInfo?.id) {
+      fetchHomework({ teacher_id: teacherInfo.id, include_completed: true });
+    }
+  }, [teacherInfo?.id, fetchHomework]);
 
   // State Management
   const [activeTab, setActiveTab] = useState('overview');
