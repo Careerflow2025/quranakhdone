@@ -74,6 +74,7 @@ export default function TargetsPanel({
     fetchTargets,
     fetchTargetById,
     createTarget,
+    updateTarget,
     updateTargetProgress,
     deleteTarget,
     updateFilters,
@@ -254,12 +255,20 @@ export default function TargetsPanel({
         return;
       }
 
-      const result = await createTarget(formData as CreateTargetRequest);
+      // Check if editing or creating
+      let result;
+      if (viewMode === 'edit' && selectedTarget) {
+        result = await updateTarget(selectedTarget.id, formData);
+      } else {
+        result = await createTarget(formData as CreateTargetRequest);
+      }
 
       if (result.success) {
         handleBackToList();
       } else {
-        setFormErrors({ general: result.error || 'Failed to create target' });
+        setFormErrors({
+          general: result.error || `Failed to ${viewMode === 'edit' ? 'update' : 'create'} target`
+        });
       }
     } catch (err: any) {
       setFormErrors({ general: err.message || 'An error occurred' });
