@@ -1,9 +1,9 @@
 // QuranAkh Service Worker - Professional Offline Support
-// Caches Quran JSON files for offline reading
+// Caches Quran data from fawazahmed0 API for offline reading
 
-const CACHE_VERSION = 'quranakh-v1';
-const QURAN_CACHE = 'quran-data-v1';
-const APP_CACHE = 'app-shell-v1';
+const CACHE_VERSION = 'quranakh-v2-api';
+const QURAN_CACHE = 'quran-api-v2';
+const APP_CACHE = 'app-shell-v2';
 
 // Files to cache on install
 const APP_SHELL = [
@@ -11,14 +11,15 @@ const APP_SHELL = [
   '/manifest.json'
 ];
 
-// Quran JSON files to cache
-const QURAN_FILES = [
-  '/quran/uthmani-hafs-full.json',
-  '/quran/warsh.json',
-  '/quran/qaloon.json',
-  '/quran/uthmani.json',
-  '/quran/tajweed.json',
-  '/quran/simple.json'
+// Quran API endpoints to cache (fawazahmed0/quran-api via CDN)
+const API_BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/';
+const QURAN_API_URLS = [
+  `${API_BASE}ara-quranuthmanihaf.min.json`,  // Hafs
+  `${API_BASE}ara-quranwarsh.min.json`,       // Warsh
+  `${API_BASE}ara-quranqaloon.min.json`,      // Qaloon
+  `${API_BASE}ara-qurandoori.min.json`,       // Al-Duri
+  `${API_BASE}ara-quranbazzi.min.json`,       // Al-Bazzi
+  `${API_BASE}ara-quranqumbul.min.json`       // Qunbul
 ];
 
 // Install event - cache app shell
@@ -56,31 +57,40 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle Quran JSON files - Cache First strategy
-  if (url.pathname.startsWith('/quran/') && url.pathname.endsWith('.json')) {
+  // Handle fawazahmed0 Quran API - Stale-While-Revalidate strategy
+  if (url.hostname === 'cdn.jsdelivr.net' && url.pathname.includes('/quran-api@1/editions/')) {
     event.respondWith(
       caches.open(QURAN_CACHE).then((cache) => {
         return cache.match(request).then((cached) => {
+          // Fetch fresh version in background
+          const fetchPromise = fetch(request).then((response) => {
+            // Update cache with fresh version
+            if (response && response.status === 200) {
+              const responseToCache = response.clone();
+              cache.put(request, responseToCache);
+              console.log('[SW] Updated cache:', url.pathname.split('/').pop());
+            }
+            return response;
+          }).catch((error) => {
+            console.log('[SW] Fetch failed (offline?):', error.message);
+            return cached; // Return cached version if fetch fails
+          });
+
+          // Return cached version immediately (if available), or wait for network
           if (cached) {
-            console.log('[SW] Serving from cache:', url.pathname);
+            console.log('[SW] Serving from cache (stale-while-revalidate):', url.pathname.split('/').pop());
             return cached;
           }
 
-          // Not in cache, fetch and cache
-          console.log('[SW] Fetching and caching:', url.pathname);
-          return fetch(request).then((response) => {
-            // Clone response before caching
-            const responseToCache = response.clone();
-            cache.put(request, responseToCache);
-            return response;
-          });
+          console.log('[SW] No cache, waiting for network:', url.pathname.split('/').pop());
+          return fetchPromise;
         });
       })
     );
     return;
   }
 
-  // Handle API requests - Network Only (always fresh data)
+  // Handle internal API requests - Network Only (always fresh data)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request));
     return;
@@ -123,11 +133,22 @@ self.addEventListener('message', (event) => {
   }
 
   if (event.data.action === 'cacheQuran') {
-    // Preload all Quran files
+    // Preload all Quran API versions for offline use
     event.waitUntil(
-      caches.open(QURAN_CACHE).then((cache) => {
-        console.log('[SW] Preloading all Quran versions...');
-        return cache.addAll(QURAN_FILES);
+      caches.open(QURAN_CACHE).then(async (cache) => {
+        console.log('[SW] Preloading all Quran versions from API...');
+        const cachePromises = QURAN_API_URLS.map(async (url) => {
+          try {
+            const response = await fetch(url);
+            if (response.status === 200) {
+              await cache.put(url, response);
+              console.log('[SW] Cached:', url.split('/').pop());
+            }
+          } catch (error) {
+            console.error('[SW] Failed to cache:', url, error);
+          }
+        });
+        return Promise.all(cachePromises);
       })
     );
   }
@@ -135,8 +156,12 @@ self.addEventListener('message', (event) => {
   if (event.data.action === 'clearCache') {
     event.waitUntil(
       caches.keys().then((cacheNames) => {
+        console.log('[SW] Clearing all caches...');
         return Promise.all(
-          cacheNames.map((name) => caches.delete(name))
+          cacheNames.map((name) => {
+            console.log('[SW] Deleting cache:', name);
+            return caches.delete(name);
+          })
         );
       })
     );

@@ -174,6 +174,38 @@ curl "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwars
 **Files Removed**: 6 files (qaloon.json, simple.json, tajweed.json, uthmani.json, uthmani-hafs-full.json, warsh.json)
 **Space Saved**: ~26MB
 **Reason**: All Qira'at data now fetched from fawazahmed0 API instead of local files
+**Commit**: ee454b5
+
+### ✅ Update Service Worker for API Caching
+**File**: `frontend/public/sw.js`
+**Task**: Update PWA service worker to cache fawazahmed0 API URLs instead of deleted local files
+
+**Status**: ✅ COMPLETED
+**Changes Made**:
+- Updated cache version to `v2-api` (forces refresh of old caches)
+- Replaced local file URLs with 6 fawazahmed0 CDN API endpoints
+- Implemented Stale-While-Revalidate caching strategy for API data
+- Added CORS handling for external API requests
+- Updated message handlers for API URL preloading
+
+**Caching Strategy**:
+- **Stale-While-Revalidate**: Serves cached version immediately, updates cache in background
+- **Offline Support**: Falls back to cached version if network unavailable
+- **Manual Preload**: `postMessage({action: 'cacheQuran'})` to preload all 6 versions
+
+**API URLs Cached**:
+1. `ara-quranuthmanihaf.min.json` (Hafs - 5.8MB)
+2. `ara-quranwarsh.min.json` (Warsh - 5.8MB)
+3. `ara-quranqaloon.min.json` (Qaloon - 5.8MB)
+4. `ara-qurandoori.min.json` (Al-Duri - 5.8MB)
+5. `ara-quranbazzi.min.json` (Al-Bazzi - 5.8MB)
+6. `ara-quranqumbul.min.json` (Qunbul - 5.8MB)
+
+**Benefits**:
+- ✅ Offline Quran reading with all 6 authentic Qira'at versions
+- ✅ Fast loading (serves from cache, updates in background)
+- ✅ Automatic cache updates when online
+- ✅ CDN reliability with jsdelivr.net
 
 ## Remaining Tasks
 
@@ -200,12 +232,12 @@ curl "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwars
 ## Production Deployment Checklist
 
 - [x] Complete surah metadata array (all 114 surahs) ✅ COMPLETED (Commit: 1a2ae75)
-- [x] Remove old JSON files from `public/quran/` folder ✅ COMPLETED (~26MB saved)
+- [x] Remove old JSON files from `public/quran/` folder ✅ COMPLETED (Commit: ee454b5)
+- [x] Update Service Worker to cache API URLs ✅ COMPLETED (PWA offline support)
 - [ ] Test all 6 Qira'at versions load correctly
 - [ ] Verify different Arabic text for each version
 - [ ] Test version locking functionality
-- [ ] Test PWA caching with new API URLs
-- [ ] Update Service Worker to cache API URLs
+- [ ] Test PWA offline functionality with API caching
 - [ ] Create comprehensive test suite
 - [ ] Performance testing (API load times)
 - [ ] User acceptance testing
