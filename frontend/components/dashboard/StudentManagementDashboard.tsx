@@ -1646,11 +1646,9 @@ export default function StudentManagementDashboard() {
                   `}</style>
 
                   <div className="mushaf-page-text" style={{
-                    fontSize: '26px',
+                    ...getScriptStyling(selectedScript || 'uthmani-hafs'),
                     lineHeight: '2.8',
-                    fontFamily: "'Amiri Quran', 'KFGQPC Uthman Taha Naskh', 'Traditional Arabic', serif",
                     textAlign: 'justify',
-                    direction: 'rtl',
                     wordSpacing: '0.1em',
                     letterSpacing: 'normal'
                   }}>
@@ -1703,16 +1701,11 @@ export default function StudentManagementDashboard() {
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
                           border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
-                          fontSize: `${20 * (zoomLevel / 100)}px`,  // 12% larger for better readability
-                          lineHeight: '2.0',  // Compact but readable line spacing
-                          textAlign: 'justify',  // Justified text like a book
-                          color: '#000000',  // Pure black text color
+                          ...getScriptStyling(selectedScript || 'uthmani-hafs'),  // Use script-specific styling
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
-                          direction: 'rtl',  // Right-to-left for Arabic
-                          fontFamily: '"Amiri Quran", "Traditional Arabic", "Arial Unicode MS", sans-serif',  // Traditional Quran font
-                          letterSpacing: '0.02em',  // Slight letter spacing for clarity
-                          wordSpacing: '0.1em'  // Word spacing for justified text
+                          textAlign: 'justify',  // Justified text like a book
+                          lineHeight: '2.0'  // Compact but readable line spacing
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
