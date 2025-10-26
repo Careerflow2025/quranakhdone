@@ -463,6 +463,18 @@ export async function GET(request: NextRequest) {
             display_name,
             email
           )
+        ),
+        students (
+          id,
+          user_id,
+          profiles:user_id (
+            display_name,
+            email
+          )
+        ),
+        classes (
+          id,
+          name
         )
       `,
         { count: 'exact' }
@@ -586,6 +598,20 @@ export async function GET(request: NextRequest) {
                 id: target.teacher.id,
                 display_name: target.teacher.profiles?.display_name || 'Unknown',
                 email: target.teacher.profiles?.email || '',
+              }
+            : undefined,
+          student: target.students
+            ? {
+                id: target.students.id,
+                display_name: target.students.profiles?.display_name || 'Unknown Student',
+                email: target.students.profiles?.email || '',
+              }
+            : undefined,
+          class: target.classes
+            ? {
+                id: target.classes.id,
+                name: target.classes.name || 'Unknown Class',
+                student_count: 0, // TODO: Add student count if needed
               }
             : undefined,
           milestones,

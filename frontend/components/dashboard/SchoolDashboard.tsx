@@ -3967,20 +3967,23 @@ export default function SchoolDashboard() {
                             </span>
                           </div>
 
-                          <div className="flex space-x-2 mt-3 pt-3 border-t">
-                            <button
-                              onClick={() => handleUpdateTargetProgress(target.id)}
-                              className="flex-1 px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-xs font-medium"
-                            >
-                              Update Progress
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTarget(target.id, target.title)}
-                              className="flex-1 px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 text-xs font-medium"
-                            >
-                              Remove
-                            </button>
+                          {/* Show teacher info for school admin (read-only view) */}
+                          <div className="flex items-center justify-between text-xs text-gray-400 mt-2 pt-2 border-t">
+                            <span className="flex items-center">
+                              <GraduationCap className="w-3 h-3 mr-1" />
+                              Created by: {target.teacher?.display_name || 'Unknown Teacher'}
+                            </span>
+                            <span className={`px-2 py-1 rounded-full ${
+                              target.status === 'active' ? 'bg-green-50 text-green-700' :
+                              target.status === 'completed' ? 'bg-blue-50 text-blue-700' :
+                              'bg-gray-50 text-gray-700'
+                            }`}>
+                              {target.status}
+                            </span>
                           </div>
+
+                          {/* Note: School admin has READ-ONLY access to targets
+                              Only teachers can update/delete their own targets */}
                         </div>
                       ))}
                     </div>
