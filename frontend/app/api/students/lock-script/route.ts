@@ -75,8 +75,7 @@ export async function POST(req: Request) {
     const { data: updated, error: updateError } = await sb
       .from('students')
       .update({
-        preferred_script_id: scriptExists.id,
-        updated_at: new Date().toISOString()
+        preferred_script_id: scriptExists.id
       })
       .eq('id', studentId)
       .select('id, preferred_script_id')
