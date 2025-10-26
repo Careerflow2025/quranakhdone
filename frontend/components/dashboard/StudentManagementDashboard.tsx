@@ -9,7 +9,8 @@ import {
   getSurahByNumber,
   getAllQuranScripts,
   getScriptStyling,
-  getResponsiveScriptStyling
+  getResponsiveScriptStyling,
+  getDynamicScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
@@ -1646,20 +1647,13 @@ export default function StudentManagementDashboard() {
                     }
                   `}</style>
 
-                  <div className="mushaf-page-text" style={{
-                    ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),
-                    lineHeight: '1.8',  // Normal book spacing, not huge gaps
-                    textAlign: 'right',  // Right-aligned for RTL, not justified (causes word gaps)
-                    wordSpacing: 'normal',  // Normal spacing, not forced
-                    letterSpacing: 'normal'
-                  }}>
-                    {(() => {
-                      // Get the current mushaf page data
-                      const pageData = getPageContent(currentMushafPage);
-                      if (!pageData) return <div>Loading page...</div>;
+                  {(() => {
+                    // Get the current mushaf page data
+                    const pageData = getPageContent(currentMushafPage);
+                    if (!pageData) return <div>Loading page...</div>;
 
-                      // Determine which ayahs to show based on real mushaf page
-                      let pageAyahs = [];
+                    // Determine which ayahs to show based on real mushaf page
+                    let pageAyahs = [];
 
                       // Check if current surah is on this page
                       if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
@@ -1686,6 +1680,12 @@ export default function StudentManagementDashboard() {
                         pageAyahs = quranText.ayahs;
                       }
 
+                      // Calculate total page content length for DYNAMIC FONT SIZING
+                      // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
+                      const pageContent = pageAyahs.map((ayah: any) =>
+                        ayah.words.map((word: any) => word.text).join(' ')
+                      ).join(' ');
+
                       // Render the page with traditional Mushaf formatting
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       return (
@@ -1701,7 +1701,7 @@ export default function StudentManagementDashboard() {
                           borderRadius: '8px',
                           boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',  // Depth + subtle inner glow
                           border: '2px solid #40826D',  // Thin teal border - traditional Mushaf style
-                          ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),  // Responsive sizing for consistent layout
+                          ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
                           textAlign: 'right',  // Right-aligned for RTL, natural spacing

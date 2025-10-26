@@ -469,6 +469,40 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
 }
 
 /**
+ * Get DYNAMIC font sizing based on page content length
+ * Automatically scales font down for longer pages to fit everything on screen WITHOUT SCROLLING
+ *
+ * CRITICAL UX RULE: Everything must be visible without scrolling
+ * - Short pages (< 800 chars): Use full 24px font
+ * - Medium pages (800-1200 chars): Scale down to 22px
+ * - Long pages (1200-1600 chars): Scale down to 20px
+ * - Very long pages (> 1600 chars): Scale down to 18px minimum
+ *
+ * @param textContent - The full text content of the current page
+ * @param scriptId - The Qira'at script ID
+ * @returns CSS properties with DYNAMICALLY SCALED font size
+ */
+export function getDynamicScriptStyling(textContent: string, scriptId: string) {
+  const contentLength = textContent.length;
+
+  // Calculate optimal font size based on content length
+  let baseFontSize = '24px';
+
+  if (contentLength > 1600) {
+    baseFontSize = '18px';  // Very long pages
+  } else if (contentLength > 1200) {
+    baseFontSize = '20px';  // Long pages
+  } else if (contentLength > 800) {
+    baseFontSize = '22px';  // Medium pages
+  } else {
+    baseFontSize = '24px';  // Short pages
+  }
+
+  // Get base styling and override with dynamic font size
+  return getResponsiveScriptStyling(scriptId, baseFontSize);
+}
+
+/**
  * Get Quran by script ID (ASYNC)
  * Returns the full Quran with styling and unique data
  */
