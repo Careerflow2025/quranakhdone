@@ -300,17 +300,40 @@ export default function TargetsPanel({
   };
 
   const handleMarkCancelled = async (targetId: string) => {
-    if (!confirm('Are you sure you want to cancel this target?')) {
+    if (!confirm('Are you sure you want to archive this target?')) {
       return;
     }
 
     const result = await updateTargetProgress(targetId, {
-      status: 'cancelled',
+      status: 'archived',
     });
 
     if (result.success) {
       // Refresh target details
       await fetchTargetById(targetId);
+    }
+  };
+
+  const handleToggleMilestone = async (milestoneId: string, currentCompleted: boolean) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(`/api/targets/milestones/${milestoneId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ completed: !currentCompleted }),
+      });
+
+      if (response.ok && selectedTarget) {
+        // Refresh target to get updated milestones and progress
+        await fetchTargetById(selectedTarget.id);
+      }
+    } catch (error) {
+      console.error('Failed to toggle milestone:', error);
     }
   };
 
@@ -741,7 +764,7 @@ export default function TargetsPanel({
                     onClick={() => handleMarkCancelled(target.id)}
                     className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                   >
-                    Cancel Target
+                    Archive Target
                   </button>
                 </>
               )}
@@ -871,49 +894,63 @@ export default function TargetsPanel({
 
           {target.milestones && target.milestones.length > 0 ? (
             <div className="space-y-3">
+              {canEdit && (
+                <p className="text-sm text-gray-500 mb-2">
+                  💡 Click on a milestone to toggle its completion status
+                </p>
+              )}
               {target.milestones
                 .sort((a, b) => a.order - b.order)
                 .map((milestone, index) => (
                   <div
                     key={milestone.id}
-                    className={`p-4 rounded-lg border-2 ${
+                    onClick={() => canEdit && handleToggleMilestone(milestone.id, milestone.completed)}
+                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                       milestone.completed
                         ? 'bg-green-50 border-green-200'
                         : 'bg-white border-gray-200'
+                    } ${
+                      canEdit
+                        ? 'cursor-pointer hover:shadow-md hover:scale-[1.01] active:scale-[0.99]'
+                        : ''
+                    } ${
+                      !milestone.completed && canEdit
+                        ? 'hover:border-indigo-300 hover:bg-indigo-50/30'
+                        : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <div className="mt-1">
                           {milestone.completed ? (
-                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-sm">
+                            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
                               ✓
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 text-sm">
+                            <div className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 text-sm font-medium">
                               {index + 1}
                             </div>
                           )}
                         </div>
                         <div className="flex-1">
-                          <h3 className={`font-medium ${milestone.completed ? 'text-green-900' : 'text-gray-900'}`}>
+                          <h3 className={`font-semibold text-base ${milestone.completed ? 'text-green-900' : 'text-gray-900'}`}>
                             {milestone.title}
                           </h3>
                           {milestone.description && (
-                            <p className={`text-sm mt-1 ${milestone.completed ? 'text-green-700' : 'text-gray-600'}`}>
+                            <p className={`text-sm mt-1.5 ${milestone.completed ? 'text-green-700' : 'text-gray-600'}`}>
                               {milestone.description}
                             </p>
                           )}
                           {milestone.target_value && (
                             <div className="mt-2 text-sm">
-                              <span className={milestone.completed ? 'text-green-700' : 'text-gray-600'}>
+                              <span className={`font-medium ${milestone.completed ? 'text-green-700' : 'text-gray-600'}`}>
                                 Progress: {milestone.current_value || 0} / {milestone.target_value}
                               </span>
                             </div>
                           )}
                           {milestone.completed_at && (
-                            <p className="text-xs text-green-600 mt-1">
-                              Completed on {formatDate(milestone.completed_at)}
+                            <p className="text-xs text-green-600 mt-1.5 font-medium">
+                              ✓ Completed on {formatDate(milestone.completed_at)}
                             </p>
                           )}
                         </div>
