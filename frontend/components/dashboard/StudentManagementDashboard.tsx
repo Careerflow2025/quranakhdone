@@ -201,7 +201,8 @@ export default function StudentManagementDashboard() {
       document.removeEventListener('keypress', handleActivity);
       clearInterval(idleInterval);
 
-      // End session when component unmounts
+      // End session when component unmounts (not on re-render)
+      // Note: sessionStartTime and pageViews are captured in closure
       if (sessionStartTime) {
         const sessionEnd = new Date();
         const totalDuration = (sessionEnd.getTime() - sessionStartTime.getTime()) / 1000 / 60; // minutes
@@ -209,7 +210,7 @@ export default function StudentManagementDashboard() {
         console.log('Pages viewed:', pageViews);
       }
     };
-  }, [lastActivityTime, isIdle, sessionStartTime, pageViews]);
+  }, []); // Empty array = run once on mount, cleanup on unmount only
 
   // Track page changes
   useEffect(() => {
