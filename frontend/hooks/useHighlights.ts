@@ -1,25 +1,37 @@
-// Hook to fetch and manage student-specific highlights from database
+// Hook to fetch and manage student-specific or teacher-wide highlights from database
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export function useHighlights(studentId: string | null) {
+interface UseHighlightsOptions {
+  studentId?: string | null;
+  teacherId?: string | null;
+}
+
+export function useHighlights(
+  studentIdOrOptions?: string | null | UseHighlightsOptions
+) {
+  // Support both old signature (studentId) and new signature (options)
+  let studentId: string | null = null;
+  let teacherId: string | null = null;
+
+  if (typeof studentIdOrOptions === 'string') {
+    studentId = studentIdOrOptions;
+  } else if (studentIdOrOptions && typeof studentIdOrOptions === 'object') {
+    studentId = studentIdOrOptions.studentId ?? null;
+    teacherId = studentIdOrOptions.teacherId ?? null;
+  }
+
   const [highlights, setHighlights] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch highlights from database
   const fetchHighlights = useCallback(async () => {
-    if (!studentId) {
-      setHighlights([]);
-      setIsLoading(false);
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching highlights for student:', studentId);
+      console.log('🔍 Fetching highlights - student:', studentId, 'teacher:', teacherId);
 
       // Get auth session for authorization
       const { data: { session } } = await supabase.auth.getSession();
@@ -27,8 +39,17 @@ export function useHighlights(studentId: string | null) {
         throw new Error('No active session');
       }
 
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (studentId) {
+        params.append('student_id', studentId);
+      }
+      if (teacherId) {
+        params.append('teacher_id', teacherId);
+      }
+
       // Call API with authorization header
-      const response = await fetch(`/api/highlights?student_id=${studentId}`, {
+      const response = await fetch(`/api/highlights?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -53,7 +74,7 @@ export function useHighlights(studentId: string | null) {
     } finally {
       setIsLoading(false);
     }
-  }, [studentId]);
+  }, [studentId, teacherId]);
 
   // Create new highlight
   const createHighlight = useCallback(async (highlightData: {

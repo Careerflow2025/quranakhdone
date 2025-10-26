@@ -268,9 +268,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get student_id from query params
+    // Get student_id and teacher_id from query params
     const { searchParams } = new URL(req.url);
     const student_id = searchParams.get('student_id');
+    const teacher_id = searchParams.get('teacher_id');
 
     let query = supabaseAdmin
       .from('highlights')
@@ -290,6 +291,11 @@ export async function GET(req: NextRequest) {
     // Filter by student if provided
     if (student_id) {
       query = query.eq('student_id', student_id);
+    }
+
+    // Filter by teacher if provided (get highlights created by this teacher)
+    if (teacher_id) {
+      query = query.eq('teacher_id', teacher_id);
     }
 
     // If user is a student, only show their own highlights

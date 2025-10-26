@@ -98,7 +98,7 @@ export default function TeacherDashboard() {
   // Class Details State
   const [selectedClassDetails, setSelectedClassDetails] = useState<any>(null);
 
-  // Highlights State - fetch all highlights for teacher's students
+  // Highlights State - fetch all highlights for this teacher
   const [highlightsFilter, setHighlightsFilter] = useState('all');
   const [selectedStudentFilter, setSelectedStudentFilter] = useState('all');
   const {
@@ -106,7 +106,7 @@ export default function TeacherDashboard() {
     isLoading: highlightsLoading,
     error: highlightsError,
     refreshHighlights
-  } = useHighlights(null); // null = fetch all highlights for this teacher's school
+  } = useHighlights({ teacherId: teacherInfo?.id || null }); // Fetch all highlights created by this teacher
 
   // Safety check: ensure allHighlights is always an array
   const safeHighlights = allHighlights || [];
