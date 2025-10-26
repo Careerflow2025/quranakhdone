@@ -1648,9 +1648,9 @@ export default function StudentManagementDashboard() {
 
                   <div className="mushaf-page-text" style={{
                     ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),
-                    lineHeight: '2.8',
-                    textAlign: 'justify',
-                    wordSpacing: '0.1em',
+                    lineHeight: '1.8',  // Normal book spacing, not huge gaps
+                    textAlign: 'right',  // Right-aligned for RTL, not justified (causes word gaps)
+                    wordSpacing: 'normal',  // Normal spacing, not forced
                     letterSpacing: 'normal'
                   }}>
                     {(() => {
@@ -1693,10 +1693,9 @@ export default function StudentManagementDashboard() {
                           width: '45vw',
                           maxWidth: '600px',
                           minHeight: '68vh',
-                          maxHeight: '72vh',
-                          aspectRatio: '2/3',
-                          overflow: 'hidden',
-                          margin: '0 auto',  // Top-aligned, horizontally centered
+                          maxHeight: 'none',  // Allow content to expand to fit
+                          overflow: 'visible',  // Show all content, no cutoff
+                          margin: '0 auto',  // Horizontally centered
                           padding: '1.2rem 1.8rem',  // Side margins for annotations
                           backgroundColor: '#FFFFFF',  // Pure white background
                           borderRadius: '8px',
@@ -1705,8 +1704,8 @@ export default function StudentManagementDashboard() {
                           ...getResponsiveScriptStyling(selectedScript || 'uthmani-hafs'),  // Responsive sizing for consistent layout
                           transform: `scale(${zoomLevel / 100})`,
                           transformOrigin: 'top center',
-                          textAlign: 'justify',  // Justified text like a book
-                          lineHeight: '2.0'  // Compact but readable line spacing
+                          textAlign: 'right',  // Right-aligned for RTL, natural spacing
+                          lineHeight: '1.8'  // Normal book spacing
                         }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
