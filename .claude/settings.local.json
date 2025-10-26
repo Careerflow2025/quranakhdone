@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git reset \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquransimple.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\" \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquranuthmani.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\" \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquranwarsh.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\")"
+      "Bash(git reset \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquransimple.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\" \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquranuthmani.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\" \"frontend/public/quran\\357\\200\\242 && cp C\\357\\200\\272quranakhfinalproductionfrontenddataquranwarsh.json C\\357\\200\\272quranakhfinalproductionfrontendpublicquran\\357\\200\\242\")",
+      "Bash(for file in uthmani-hafs-full.json warsh.json qaloon.json)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
