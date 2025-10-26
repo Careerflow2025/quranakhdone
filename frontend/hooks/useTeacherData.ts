@@ -337,17 +337,61 @@ export function useTeacherData() {
         setStats(prev => ({ ...prev, activeAssignments: activeAssignments.length }));
       }
 
-      // Fetch homework (we'll use assignments table for now as homework system)
+      // Fetch homework from highlights table (green = pending, gold = completed)
       const { data: homeworkData } = await supabase
-        .from('assignments')
-        .select('*')
-        .eq('created_by_teacher_id', teacher.id)
+        .from('highlights')
+        .select(`
+          *,
+          student:students!student_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
+          teacher:teachers!teacher_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
+          quran_ayahs(surah, ayah),
+          notes(text, audio_url)
+        `)
+        .eq('teacher_id', teacher.id)
         .eq('school_id', user.schoolId)
-        .eq('status', 'assigned');
+        .in('color', ['green', 'gold']); // Green = pending, Gold = completed
 
       if (homeworkData) {
-        setHomework(homeworkData);
-        setStats(prev => ({ ...prev, activeHomework: homeworkData.length }));
+        // Transform to match expected format
+        const transformedHomework = homeworkData.map((hw: any) => ({
+          id: hw.id,
+          studentId: hw.student_id,
+          studentName: hw.student?.profiles?.display_name ||
+                       hw.student?.profiles?.email?.split('@')[0] ||
+                       'Unknown Student',
+          teacherId: hw.teacher_id,
+          teacherName: hw.teacher?.profiles?.display_name ||
+                       hw.teacher?.profiles?.email?.split('@')[0] ||
+                       'Unknown Teacher',
+          surah: `Surah ${hw.quran_ayahs?.surah || '?'}`,
+          ayahRange: hw.quran_ayahs?.ayah ? `${hw.quran_ayahs.ayah}` : 'Unknown',
+          note: hw.notes?.[0]?.text || 'No note provided',
+          assignedDate: new Date(hw.created_at).toLocaleDateString(),
+          dueDate: new Date(hw.created_at).toLocaleDateString(),
+          status: hw.color === 'gold' ? 'completed' : 'pending',
+          color: hw.color,
+          replies: hw.notes?.length || 0,
+          class: 'N/A' // Will be populated if needed
+        }));
+
+        setHomework(transformedHomework);
+        // Count only pending (green) homework for stats
+        const pendingCount = transformedHomework.filter((hw: any) => hw.color === 'green').length;
+        setStats(prev => ({ ...prev, activeHomework: pendingCount }));
       }
 
       // Fetch targets for teacher's students

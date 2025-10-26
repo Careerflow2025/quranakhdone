@@ -845,18 +845,32 @@ export default function SchoolDashboard() {
   // Load homework from highlights (green highlighting for memorization)
   const loadHomework = async () => {
     try {
-      // Homework comes from highlights where teachers mark Quran verses
+      // Homework comes from highlights table (green = pending, gold = completed)
       const { data, error} = await (supabase as any)
         .from('highlights')
         .select(`
           *,
-          students(name, email),
-          teachers(name, email),
+          student:students!student_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
+          teacher:teachers!teacher_id (
+            id,
+            user_id,
+            profiles:user_id (
+              display_name,
+              email
+            )
+          ),
           quran_ayahs(surah, ayah),
           notes(text, audio_url)
         `)
         .eq('school_id', user?.schoolId || '')
-        .eq('type', 'homework') // ✅ FIXED: Green highlights are homework, not recap
+        .in('color', ['green', 'gold']) // Green = pending homework, Gold = completed homework
         .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
@@ -865,16 +879,21 @@ export default function SchoolDashboard() {
       const transformedHomework = (data || []).map((highlight: any) => ({
         id: highlight.id,
         studentId: highlight.student_id,
-        studentName: highlight.students?.name || 'Unknown Student',
+        studentName: highlight.student?.profiles?.display_name ||
+                     highlight.student?.profiles?.email?.split('@')[0] ||
+                     'Unknown Student',
         teacherId: highlight.teacher_id,
-        teacherName: highlight.teachers?.name || 'Unknown Teacher',
+        teacherName: highlight.teacher?.profiles?.display_name ||
+                     highlight.teacher?.profiles?.email?.split('@')[0] ||
+                     'Unknown Teacher',
         surah: highlight.quran_ayahs?.surah || 'Unknown Surah',
+        ayah: highlight.quran_ayahs?.ayah || 0,
         startVerse: highlight.token_start,
         endVerse: highlight.token_end,
         type: 'memorization',
         dueDate: highlight.created_at,
-        highlights: 1,
-        completed: false,
+        color: highlight.color,
+        completed: highlight.color === 'gold',
         late: false
       }));
 
