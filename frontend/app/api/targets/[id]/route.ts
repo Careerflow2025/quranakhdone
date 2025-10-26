@@ -346,7 +346,7 @@ export async function PATCH(
 
     // 6. Parse request body
     const body = await request.json();
-    const { title, description, type, category, student_id, class_id, start_date, due_date } = body;
+    const { title, description, type, category, student_id, class_id, start_date, due_date, milestones } = body;
 
     // 7. Fetch existing target to check permissions
     const { data: target, error: targetError } = await supabaseAdmin
@@ -413,11 +413,66 @@ export async function PATCH(
       );
     }
 
-    // 11. Return updated target
+    // 11. Handle milestone updates if provided
+    if (milestones !== undefined) {
+      // Delete existing milestones
+      await supabaseAdmin
+        .from('target_milestones')
+        .delete()
+        .eq('target_id', targetId);
+
+      // Insert new milestones
+      if (milestones && milestones.length > 0) {
+        const milestoneRecords = milestones.map((m: any, index: number) => ({
+          target_id: targetId,
+          title: m.title,
+          description: m.description || null,
+          sequence_order: m.sequence_order ?? index + 1,
+          completed: m.completed || false,
+        }));
+
+        const { error: milestoneError } = await supabaseAdmin
+          .from('target_milestones')
+          .insert(milestoneRecords);
+
+        if (milestoneError) {
+          console.error('Milestone update error:', milestoneError);
+        }
+      }
+    }
+
+    // 12. Fetch updated target with milestones
+    const { data: finalTarget } = await supabaseAdmin
+      .from('targets')
+      .select(`
+        *,
+        teacher:teachers!teacher_id (
+          id,
+          user_id,
+          profiles:user_id (
+            display_name,
+            email
+          )
+        )
+      `)
+      .eq('id', targetId)
+      .single();
+
+    // Fetch milestones
+    const { data: fetchedMilestones } = await supabaseAdmin
+      .from('target_milestones')
+      .select('*')
+      .eq('target_id', targetId)
+      .order('sequence_order', { ascending: true });
+
+    // 13. Return updated target with milestones
     return NextResponse.json(
       {
         success: true,
-        target: updatedTarget,
+        target: {
+          ...finalTarget,
+          milestones: fetchedMilestones || [],
+        },
         message: 'Target updated successfully',
       },
       { status: 200 }
