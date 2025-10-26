@@ -7,7 +7,10 @@
       "Bash(git commit:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__list_tables",
+      "Bash(curl:*)",
+      "mcp__supabase__apply_migration"
     ],
     "deny": [],
     "ask": []

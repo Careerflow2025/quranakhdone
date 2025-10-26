@@ -216,20 +216,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9. Create milestones array for storage (will be JSONB initially)
-    const initialMilestones: Milestone[] = (milestones || []).map((m, index) => ({
-      id: crypto.randomUUID(),
-      title: m.title,
-      description: m.description,
-      target_value: m.target_value,
-      current_value: 0,
-      completed: false,
-      order: m.order || index + 1,
-      created_at: new Date().toISOString(),
-    }));
-
-    // 10. Insert target into database
-    // Note: Milestones stored as JSONB in meta field until separate table is created
+    // 9. Insert target into database
     const { data: target, error: insertError } = await supabaseAdmin
       .from('targets')
       .insert({
@@ -259,6 +246,30 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    // 10. Insert milestones into target_milestones table
+    let savedMilestones: Milestone[] = [];
+    if (milestones && milestones.length > 0) {
+      const milestoneRecords = milestones.map((m, index) => ({
+        target_id: target.id,
+        title: m.title,
+        description: m.description || null,
+        sequence_order: m.sequence_order ?? index + 1,
+        completed: false,
+      }));
+
+      const { data: insertedMilestones, error: milestoneError } = await supabaseAdmin
+        .from('target_milestones')
+        .insert(milestoneRecords)
+        .select();
+
+      if (milestoneError) {
+        console.error('Milestone creation error:', milestoneError);
+        // Don't fail the whole request if milestones fail, just log it
+      } else if (insertedMilestones) {
+        savedMilestones = insertedMilestones as Milestone[];
+      }
     }
 
     // 11. Populate target_students junction table for cross-dashboard visibility
@@ -309,7 +320,7 @@ export async function POST(request: NextRequest) {
             target_type: type,
             teacher_name: profile.display_name || 'Your teacher',
             due_date: due_date,
-            milestone_count: initialMilestones.length,
+            milestone_count: savedMilestones.length,
           },
           sent_at: new Date().toISOString(),
         });
@@ -319,14 +330,14 @@ export async function POST(request: NextRequest) {
     // 13. Build response with details
     const targetWithDetails: TargetWithDetails = {
       ...target,
-      milestones: initialMilestones,
-      progress_percentage: calculateTargetProgress(initialMilestones),
+      milestones: savedMilestones,
+      progress_percentage: calculateTargetProgress(savedMilestones),
       is_overdue: isTargetOverdue(target),
       days_remaining: getDaysRemaining(target.due_date),
-      total_milestones: initialMilestones.length,
+      total_milestones: savedMilestones.length,
       completed_milestones: 0,
       stats: {
-        total_milestones: initialMilestones.length,
+        total_milestones: savedMilestones.length,
         completed_milestones: 0,
         progress_percentage: 0,
         days_since_created: 0,

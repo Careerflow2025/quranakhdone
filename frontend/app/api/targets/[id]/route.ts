@@ -179,9 +179,18 @@ export async function GET(
       );
     }
 
-    // 9. Fetch milestones (from JSONB meta field or separate table when available)
-    // TODO: Replace with actual milestone fetching logic
-    const milestones: Milestone[] = [];
+    // 9. Fetch milestones from target_milestones table
+    const { data: milestones, error: milestonesError } = await supabaseAdmin
+      .from('target_milestones')
+      .select('*')
+      .eq('target_id', targetId)
+      .order('sequence_order', { ascending: true });
+
+    if (milestonesError) {
+      console.error('Milestones fetch error:', milestonesError);
+    }
+
+    const fetchedMilestones: Milestone[] = (milestones || []) as Milestone[];
 
     // 10. For individual targets, get student info
     let studentInfo;
@@ -208,16 +217,16 @@ export async function GET(
         : undefined,
       student: studentInfo,
       class: classInfo,
-      milestones,
-      progress_percentage: calculateTargetProgress(milestones),
+      milestones: fetchedMilestones,
+      progress_percentage: calculateTargetProgress(fetchedMilestones),
       is_overdue: isTargetOverdue(target),
       days_remaining: getDaysRemaining(target.due_date),
-      total_milestones: milestones.length,
-      completed_milestones: milestones.filter(m => m.completed).length,
+      total_milestones: fetchedMilestones.length,
+      completed_milestones: fetchedMilestones.filter(m => m.completed).length,
       stats: {
-        total_milestones: milestones.length,
-        completed_milestones: milestones.filter(m => m.completed).length,
-        progress_percentage: calculateTargetProgress(milestones),
+        total_milestones: fetchedMilestones.length,
+        completed_milestones: fetchedMilestones.filter(m => m.completed).length,
+        progress_percentage: calculateTargetProgress(fetchedMilestones),
         days_since_created: getDaysSinceCreated(target.created_at),
         days_until_due: getDaysRemaining(target.due_date),
         is_overdue: isTargetOverdue(target),

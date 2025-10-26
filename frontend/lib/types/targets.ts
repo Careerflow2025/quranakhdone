@@ -28,30 +28,29 @@ export type TargetStatus = 'active' | 'completed' | 'cancelled';
 
 /**
  * Milestone definition
- * Can be stored as JSONB in targets table or separate table when available
+ * Matches target_milestones database table schema
  */
 export interface Milestone {
   id: string;
+  target_id: string;
   title: string;
   description?: string;
-  target_value?: number; // e.g., 10 surahs, 50 pages
-  current_value?: number; // Current progress
+  sequence_order: number; // Display/completion order
   completed: boolean;
-  completed_at?: string;
-  completed_by?: string; // user_id
-  order: number; // Display/completion order
   created_at: string;
 }
 
 export interface CreateMilestoneRequest {
   title: string;
   description?: string;
-  target_value?: number;
-  order?: number;
+  sequence_order?: number;
 }
 
-export interface UpdateMilestoneProgressRequest {
-  current_value: number;
+export interface UpdateMilestoneRequest {
+  title?: string;
+  description?: string;
+  sequence_order?: number;
+  completed?: boolean;
 }
 
 // ============================================================================
