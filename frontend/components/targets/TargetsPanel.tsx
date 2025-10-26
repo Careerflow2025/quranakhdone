@@ -441,6 +441,20 @@ export default function TargetsPanel({
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        {/* Search Bar */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Search
+          </label>
+          <input
+            type="text"
+            placeholder="Search by student name, class, title, description..."
+            value={filters.search || ''}
+            onChange={(e) => updateFilters({ search: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Type Filter */}
           <div>

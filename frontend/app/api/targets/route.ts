@@ -455,6 +455,7 @@ export async function GET(request: NextRequest) {
       type,
       status,
       category,
+      search,
       include_completed,
       page,
       limit,
@@ -573,6 +574,12 @@ export async function GET(request: NextRequest) {
 
     if (category) {
       query = query.eq('category', category);
+    }
+
+    // Text search across title and description
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
     }
 
     // Default behavior: only show active unless include_completed is true

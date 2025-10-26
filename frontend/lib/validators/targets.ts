@@ -34,7 +34,7 @@ const targetTypeSchema = z.enum(['individual', 'class', 'school']);
 /**
  * Target status validation
  */
-const targetStatusSchema = z.enum(['active', 'completed', 'cancelled']);
+const targetStatusSchema = z.enum(['draft', 'active', 'paused', 'completed', 'archived']);
 
 /**
  * Target category validation
@@ -178,6 +178,7 @@ export const listTargetsQuerySchema = z.object({
   type: targetTypeSchema.optional(),
   status: targetStatusSchema.optional(),
   category: targetCategorySchema.optional(),
+  search: z.string().optional(),
   include_completed: z
     .string()
     .transform((val) => val === 'true')
@@ -223,10 +224,10 @@ export function validateCompletion(target: Target): ValidationResult {
     };
   }
 
-  if (target.status === 'cancelled') {
+  if (target.status === 'archived') {
     return {
       valid: false,
-      error: 'Cannot complete a cancelled target',
+      error: 'Cannot complete an archived target',
     };
   }
 
@@ -241,27 +242,27 @@ export function validateCompletion(target: Target): ValidationResult {
 }
 
 /**
- * Validates target can be cancelled
+ * Validates target can be archived
  */
-export function validateCancellation(target: Target): ValidationResult {
+export function validateArchiving(target: Target): ValidationResult {
   if (target.status === 'completed') {
     return {
       valid: false,
-      error: 'Cannot cancel a completed target',
+      error: 'Cannot archive a completed target',
     };
   }
 
-  if (target.status === 'cancelled') {
+  if (target.status === 'archived') {
     return {
       valid: false,
-      error: 'Target is already cancelled',
+      error: 'Target is already archived',
     };
   }
 
   if (target.status !== 'active') {
     return {
       valid: false,
-      error: 'Only active targets can be cancelled',
+      error: 'Only active targets can be archived',
     };
   }
 

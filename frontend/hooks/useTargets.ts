@@ -40,6 +40,7 @@ interface TargetFilters {
   type?: TargetType;
   status?: TargetStatus;
   category?: string;
+  search?: string;
   include_completed?: boolean;
   sort_by?: 'created_at' | 'due_date' | 'title' | 'progress';
   sort_order?: 'asc' | 'desc';
@@ -137,6 +138,7 @@ export function useTargets(): UseTargetsReturn {
         if (activeFilters.type) params.append('type', activeFilters.type);
         if (activeFilters.status) params.append('status', activeFilters.status);
         if (activeFilters.category) params.append('category', activeFilters.category);
+        if (activeFilters.search) params.append('search', activeFilters.search);
         if (activeFilters.include_completed !== undefined) {
           params.append('include_completed', String(activeFilters.include_completed));
         }
@@ -524,7 +526,7 @@ export function useTargets(): UseTargetsReturn {
     if (user) {
       fetchTargets(filters, 1);
     }
-  }, [filters.type, filters.status, filters.category]); // Watch filter changes
+  }, [filters.type, filters.status, filters.category, filters.search]); // Watch filter changes
 
   // ============================================================================
   // REAL-TIME SUBSCRIPTIONS
