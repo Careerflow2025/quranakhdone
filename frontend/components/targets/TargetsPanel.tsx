@@ -23,7 +23,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import useTargets from '@/hooks/useTargets';
+import { useTargets } from '@/hooks/useTargets';
 import {
   TargetWithDetails,
   CreateTargetRequest,
