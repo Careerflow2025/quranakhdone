@@ -466,7 +466,7 @@ export async function GET(request: NextRequest) {
             email
           )
         ),
-        students (
+        students!targets_student_id_fkey (
           id,
           user_id,
           profiles:user_id (
