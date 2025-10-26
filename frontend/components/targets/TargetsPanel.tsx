@@ -331,6 +331,8 @@ export default function TargetsPanel({
       if (response.ok && selectedTarget) {
         // Refresh target to get updated milestones and progress
         await fetchTargetById(selectedTarget.id);
+        // Also refresh the targets list to update progress in cards
+        await refreshTargets();
       }
     } catch (error) {
       console.error('Failed to toggle milestone:', error);
@@ -639,47 +641,45 @@ export default function TargetsPanel({
                 </div>
 
                 {/* Progress Circle */}
-                {target.stats && (
-                  <div className="ml-4 flex flex-col items-center">
-                    <div className="relative w-20 h-20">
-                      <svg className="transform -rotate-90 w-20 h-20">
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="36"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          fill="none"
-                          className="text-gray-200"
-                        />
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="36"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          fill="none"
-                          strokeDasharray={`${2 * Math.PI * 36}`}
-                          strokeDashoffset={`${2 * Math.PI * 36 * (1 - target.stats.progress_percentage / 100)}`}
-                          className={
-                            target.stats.progress_percentage === 100
-                              ? 'text-green-500'
-                              : target.stats.progress_percentage >= 50
-                              ? 'text-blue-500'
-                              : 'text-yellow-500'
-                          }
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-gray-900">
-                          {target.stats.progress_percentage}%
-                        </span>
-                      </div>
+                <div className="ml-4 flex flex-col items-center">
+                  <div className="relative w-20 h-20">
+                    <svg className="transform -rotate-90 w-20 h-20">
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="36"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        className="text-gray-200"
+                      />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="36"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 36}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - (target.progress || 0) / 100)}`}
+                        className={
+                          (target.progress || 0) === 100
+                            ? 'text-green-500'
+                            : (target.progress || 0) >= 50
+                            ? 'text-blue-500'
+                            : 'text-yellow-500'
+                        }
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-gray-900">
+                        {target.progress || 0}%
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Progress</span>
                   </div>
-                )}
+                  <span className="text-xs text-gray-600 mt-1">Progress</span>
+                </div>
               </div>
             </div>
           ))}

@@ -112,7 +112,7 @@ export function useTargets(): UseTargetsReturn {
     total_pages: 0,
   });
   const [filters, setFilters] = useState<TargetFilters>({
-    include_completed: false,
+    include_completed: true,
     sort_by: 'created_at',
     sort_order: 'desc',
   });
@@ -478,7 +478,7 @@ export function useTargets(): UseTargetsReturn {
 
   const clearFilters = useCallback(() => {
     setFilters({
-      include_completed: false,
+      include_completed: true,
       sort_by: 'created_at',
       sort_order: 'desc',
     });
@@ -518,6 +518,60 @@ export function useTargets(): UseTargetsReturn {
       fetchTargets(filters, 1);
     }
   }, [user]); // Only run on mount and when user changes
+
+  // ============================================================================
+  // REAL-TIME SUBSCRIPTIONS
+  // ============================================================================
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to targets table changes
+    const targetsChannel = supabase
+      .channel('targets-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'targets',
+        },
+        (payload) => {
+          console.log('Targets change received:', payload);
+          // Refresh targets list when any change occurs
+          refreshTargets();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to target_milestones table changes
+    const milestonesChannel = supabase
+      .channel('milestones-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'target_milestones',
+        },
+        (payload) => {
+          console.log('Milestones change received:', payload);
+          // Refresh targets list when any change occurs
+          refreshTargets();
+          // Also refresh selected target if it's open
+          if (selectedTarget) {
+            fetchTargetById(selectedTarget.id);
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(targetsChannel);
+      supabase.removeChannel(milestonesChannel);
+    };
+  }, [user, selectedTarget]); // Re-subscribe when user or selectedTarget changes
 
   // ============================================================================
   // RETURN HOOK INTERFACE
