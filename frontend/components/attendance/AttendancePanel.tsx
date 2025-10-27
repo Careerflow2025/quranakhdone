@@ -19,9 +19,16 @@ import { useSchoolStore } from '@/store/schoolStore';
 interface AttendancePanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
   studentId?: string; // For student/parent views
+  teacherClasses?: any[]; // Classes from teacher dashboard
+  teacherStudents?: any[]; // Students from teacher dashboard
 }
 
-export default function AttendancePanel({ userRole = 'teacher', studentId }: AttendancePanelProps) {
+export default function AttendancePanel({
+  userRole = 'teacher',
+  studentId,
+  teacherClasses,
+  teacherStudents
+}: AttendancePanelProps) {
   const {
     isLoading,
     error,
@@ -43,7 +50,10 @@ export default function AttendancePanel({ userRole = 'teacher', studentId }: Att
     refreshData,
   } = useAttendance();
 
-  const { classes, students } = useSchoolStore();
+  const schoolStore = useSchoolStore();
+  // Use teacher-provided classes/students if available, otherwise use store (for admin/owner)
+  const classes = teacherClasses || schoolStore.classes || [];
+  const students = teacherStudents || schoolStore.students || [];
 
   // View state
   const [activeView, setActiveView] = useState<'take' | 'history' | 'summary'>('take');
