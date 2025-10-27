@@ -5260,63 +5260,116 @@ export default function SchoolDashboard() {
                 </div>
               </div>
 
-              {/* Charts Section */}
+              {/* ENHANCED Charts Section - Rebuilt from scratch */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Assignment Trend Chart */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Assignment Trend (Last 7 Days)</h3>
-                  {/* DEBUG: Show what data we have */}
-                  <div className="text-xs text-gray-500 mb-2">
-                    DEBUG: {reportData?.assignmentsTrend ? `${reportData.assignmentsTrend.length} days of data` : 'No data'}
-                    {reportData?.assignmentsTrend && ` - Total: ${reportData.assignmentsTrend.reduce((sum: number, d: any) => sum + (d.count || 0), 0)} assignments`}
+                {/* Assignment Trend Chart - ENHANCED */}
+                <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">📚 Assignment Activity</h3>
+                    <span className="text-sm text-blue-600 font-medium">Last 7 Days</span>
                   </div>
-                  <div className="h-64 flex items-end justify-between gap-2">
-                    {(reportData?.assignmentsTrend?.length > 0
+
+                  {/* Total Count Badge */}
+                  <div className="mb-4 inline-block">
+                    <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                      Total: {reportData?.assignmentsTrend?.reduce((sum: number, d: any) => sum + (d.count || 0), 0) || 0} Assignments
+                    </div>
+                  </div>
+
+                  {/* Enhanced Bar Chart */}
+                  <div className="h-64 flex items-end justify-between gap-3 bg-white rounded-lg p-4 border border-gray-100">
+                    {(reportData?.assignmentsTrend && reportData.assignmentsTrend.length > 0
                       ? reportData.assignmentsTrend
-                      : Array<any>(7).fill({ count: 0 })
-                    ).map((item: any, index: any) => {
-                      const maxCount = Math.max(...(reportData?.assignmentsTrend?.map((t: any) => t.count) || [1]), 1);
-                      const height = item.count ? (item.count / maxCount) * 100 : 0;
+                      : Array(7).fill({ count: 0, date: '' })
+                    ).map((item: any, index: number) => {
+                      const maxCount = Math.max(...(reportData?.assignmentsTrend?.map((t: any) => t.count || 0) || [1]), 1);
+                      // Ensure minimum visible height for non-zero values
+                      const percentage = item.count > 0 ? Math.max((item.count / maxCount) * 100, 10) : 0;
+                      const dateLabel = item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : `Day ${index + 1}`;
+
                       return (
-                        <div key={index} className="flex-1 flex flex-col items-center">
-                          <div
-                            className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-500"
-                            style={{ height: `${height}%` }}
-                          />
-                          <span className="text-xs text-gray-500 mt-2">
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                          </span>
-                          <span className="text-xs text-gray-400">{item.count || 0}</span>
+                        <div key={index} className="flex-1 flex flex-col items-center group">
+                          {/* Count Label Above Bar */}
+                          <div className="text-xs font-semibold text-blue-600 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.count > 0 ? item.count : ''}
+                          </div>
+
+                          {/* Bar */}
+                          <div className="w-full relative">
+                            <div
+                              className="w-full bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400 rounded-lg transition-all duration-300 group-hover:from-blue-700 group-hover:via-blue-600 group-hover:to-blue-500 shadow-sm hover:shadow-md"
+                              style={{
+                                height: `${percentage}%`,
+                                minHeight: percentage > 0 ? '20px' : '0px'
+                              }}
+                            />
+                          </div>
+
+                          {/* Date Label */}
+                          <span className="text-xs text-gray-600 mt-2 font-medium">{dateLabel}</span>
+
+                          {/* Count Below */}
+                          <span className="text-xs text-gray-500 mt-1">{item.count || 0}</span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Attendance Trend Chart */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Trend (Last 7 Days)</h3>
-                  {/* DEBUG: Show what data we have */}
-                  <div className="text-xs text-gray-500 mb-2">
-                    DEBUG: {reportData?.attendanceTrend ? `${reportData.attendanceTrend.length} days of data` : 'No data'}
-                    {reportData?.attendanceTrend && ` - Avg rate: ${Math.round(reportData.attendanceTrend.reduce((sum: number, d: any) => sum + (d.rate || 0), 0) / reportData.attendanceTrend.length)}%`}
+                {/* Attendance Trend Chart - ENHANCED */}
+                <div className="bg-gradient-to-br from-green-50 to-white rounded-xl shadow-sm border border-green-100 p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">👥 Attendance Trend</h3>
+                    <span className="text-sm text-green-600 font-medium">Last 7 Days</span>
                   </div>
-                  <div className="h-64 flex items-end justify-between gap-2">
-                    {(reportData?.attendanceTrend?.length > 0
+
+                  {/* Average Rate Badge */}
+                  <div className="mb-4 inline-block">
+                    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                      Average: {reportData?.attendanceTrend && reportData.attendanceTrend.length > 0
+                        ? Math.round(reportData.attendanceTrend.reduce((sum: number, d: any) => sum + (d.rate || 0), 0) / reportData.attendanceTrend.length)
+                        : 0}% Attendance
+                    </div>
+                  </div>
+
+                  {/* Enhanced Bar Chart */}
+                  <div className="h-64 flex items-end justify-between gap-3 bg-white rounded-lg p-4 border border-gray-100">
+                    {(reportData?.attendanceTrend && reportData.attendanceTrend.length > 0
                       ? reportData.attendanceTrend
-                      : Array<any>(7).fill({ rate: 0 })
-                    ).map((item: any, index: any) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div
-                          className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t-lg transition-all duration-300 hover:from-green-600 hover:to-green-500"
-                          style={{ height: `${item.rate || 0}%` }}
-                        />
-                        <span className="text-xs text-gray-500 mt-2">
-                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                        </span>
-                        <span className="text-xs text-gray-400">{item.rate || 0}%</span>
-                      </div>
-                    ))}
+                      : Array(7).fill({ rate: 0, date: '' })
+                    ).map((item: any, index: number) => {
+                      // Rate is already a percentage (0-100)
+                      const rate = item.rate || 0;
+                      // Ensure minimum visible height for non-zero values
+                      const percentage = rate > 0 ? Math.max(rate, 10) : 0;
+                      const dateLabel = item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : `Day ${index + 1}`;
+
+                      return (
+                        <div key={index} className="flex-1 flex flex-col items-center group">
+                          {/* Rate Label Above Bar */}
+                          <div className="text-xs font-semibold text-green-600 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {rate > 0 ? `${rate}%` : ''}
+                          </div>
+
+                          {/* Bar */}
+                          <div className="w-full relative">
+                            <div
+                              className="w-full bg-gradient-to-t from-green-600 via-green-500 to-green-400 rounded-lg transition-all duration-300 group-hover:from-green-700 group-hover:via-green-600 group-hover:to-green-500 shadow-sm hover:shadow-md"
+                              style={{
+                                height: `${percentage}%`,
+                                minHeight: percentage > 0 ? '20px' : '0px'
+                              }}
+                            />
+                          </div>
+
+                          {/* Date Label */}
+                          <span className="text-xs text-gray-600 mt-2 font-medium">{dateLabel}</span>
+
+                          {/* Rate Below */}
+                          <span className="text-xs text-gray-500 mt-1">{rate}%</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
