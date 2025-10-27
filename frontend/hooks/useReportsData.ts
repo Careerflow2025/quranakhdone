@@ -47,7 +47,12 @@ export interface ReportData {
 }
 
 export function useReportsData(startDate?: Date, endDate?: Date) {
+  console.log('🎯 [REPORTS HOOK] useReportsData MOUNTED/CALLED');
+  console.log('📅 [REPORTS HOOK] Dates passed:', { startDate, endDate });
+
   const { user } = useAuthStore();
+  console.log('👤 [REPORTS HOOK] user from authStore:', user?.schoolId ? 'HAS schoolId: ' + user.schoolId : 'NO schoolId');
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fetchInProgress = useRef(false);
@@ -378,8 +383,13 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
   }, [user?.schoolId, startTimestamp, endTimestamp]); // Use timestamps for stable comparison
 
   useEffect(() => {
+    console.log('🔥 [REPORTS HOOK] useEffect TRIGGERED');
+    console.log('👤 [REPORTS HOOK] user?.schoolId in useEffect:', user?.schoolId);
     if (user?.schoolId) {
+      console.log('✅ [REPORTS HOOK] Calling fetchReportData()...');
       fetchReportData();
+    } else {
+      console.log('❌ [REPORTS HOOK] NOT calling fetchReportData - no schoolId');
     }
   }, [user?.schoolId, fetchReportData]);
 
