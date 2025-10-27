@@ -123,6 +123,9 @@ export default function SchoolDashboard() {
   // Get current user from auth store (needed before useReportsData)
   const { user, logout } = useAuthStore();
 
+  // Active tab state (needed before useEffect that checks it)
+  const [activeTab, setActiveTab] = useState('overview');
+
   // Get reports data with date filtering
   const {
     isLoading: reportsLoading,
@@ -153,7 +156,6 @@ export default function SchoolDashboard() {
   const settingsRef = useRef<HTMLDivElement>(null);
 
   // State Management (keeping ALL the beautiful UI states)
-  const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Attendance filter states
