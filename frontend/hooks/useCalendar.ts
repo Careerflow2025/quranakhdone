@@ -236,13 +236,20 @@ export function useCalendar(initialView: CalendarView = 'month') {
           return false;
         }
 
+        // Convert datetime-local format to ISO 8601 with timezone
+        const formattedEventData: CreateEventRequest = {
+          ...eventData,
+          start_date: new Date(eventData.start_date).toISOString(),
+          end_date: new Date(eventData.end_date).toISOString(),
+        };
+
         const response = await fetch('/api/events', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify(eventData),
+          body: JSON.stringify(formattedEventData),
         });
 
         if (!response.ok) {
@@ -289,13 +296,20 @@ export function useCalendar(initialView: CalendarView = 'month') {
           return false;
         }
 
+        // Convert datetime-local format to ISO 8601 with timezone if dates provided
+        const formattedUpdates: UpdateEventRequest = {
+          ...updates,
+          ...(updates.start_date && { start_date: new Date(updates.start_date).toISOString() }),
+          ...(updates.end_date && { end_date: new Date(updates.end_date).toISOString() }),
+        };
+
         const response = await fetch(`/api/events/${eventId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify(updates),
+          body: JSON.stringify(formattedUpdates),
         });
 
         if (!response.ok) {
