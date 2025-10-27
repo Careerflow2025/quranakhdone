@@ -122,6 +122,14 @@ export function useAttendance() {
       setIsLoading(true);
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to access attendance');
+        setIsLoading(false);
+        return;
+      }
+
       const filtersToUse = customFilters || filters;
 
       // Build query string
@@ -136,13 +144,12 @@ export function useAttendance() {
 
       const url = `/api/attendance?${params.toString()}`;
 
-      // Cookies will be sent automatically by browser
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -181,13 +188,19 @@ export function useAttendance() {
     try {
       setError(null);
 
-      // Cookies will be sent automatically by browser
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to mark attendance');
+        return false;
+      }
+
       const response = await fetch('/api/attendance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -222,13 +235,19 @@ export function useAttendance() {
     try {
       setError(null);
 
-      // Cookies will be sent automatically by browser
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to update attendance');
+        return false;
+      }
+
       const response = await fetch(`/api/attendance/${recordId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -272,6 +291,14 @@ export function useAttendance() {
       setIsLoadingSummary(true);
       setError(null);
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setError('Please login to access attendance summary');
+        setIsLoadingSummary(false);
+        return;
+      }
+
       // Build query string
       const params = new URLSearchParams();
       params.append('class_id', class_id);
@@ -282,13 +309,12 @@ export function useAttendance() {
 
       const url = `/api/attendance/summary?${params.toString()}`;
 
-      // Cookies will be sent automatically by browser
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -347,6 +373,12 @@ export function useAttendance() {
     }
   ) => {
     try {
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to export attendance data');
+      }
+
       // Fetch all records for export (no pagination)
       const params = new URLSearchParams();
       params.append('class_id', class_id);
@@ -355,12 +387,11 @@ export function useAttendance() {
       if (options?.end_date) params.append('end_date', options.end_date);
       params.append('limit', '1000'); // Large limit for export
 
-      // Cookies will be sent automatically by browser
       const response = await fetch(`/api/attendance?${params.toString()}`, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        credentials: 'include',
       });
       const data = await response.json();
 

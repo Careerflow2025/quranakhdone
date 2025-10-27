@@ -10,7 +10,7 @@
  * School Isolation: Enforced via class.school_id
  */
 
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { NextRequest, NextResponse } from 'next/server';
 
 // ============================================================================
@@ -106,19 +106,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ✅ CORRECT - Cookie-based authentication
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<ErrorResponse>(
+        { success: false, error: 'Unauthorized - Missing authorization header', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Get authenticated user using admin client
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<ErrorResponse>(
-        { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { success: false, error: 'Unauthorized - Invalid token', code: 'UNAUTHORIZED' },
         { status: 401 }
       );
     }
 
     // Get user profile with school_id and role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role, display_name, email')
       .eq('user_id', user.id)
@@ -132,14 +143,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query with school isolation
-    let query = supabase
+    let query = supabaseAdmin
       .from('attendance')
       .select('*', { count: 'exact' });
 
     // Apply filters based on user role
     if (class_id) {
       // Verify class belongs to user's school
-      const { data: classData, error: classError } = await supabase
+      const { data: classData, error: classError } = await supabaseAdminAdmin
         .from('classes')
         .select('id, school_id, name')
         .eq('id', class_id)
@@ -155,14 +166,14 @@ export async function GET(request: NextRequest) {
 
       // Verify teacher has access to this class if they're a teacher
       if (profile.role === 'teacher') {
-        const { data: teacherData } = await supabase
+        const { data: teacherData } = await supabaseAdmin
           .from('teachers')
           .select('id')
           .eq('user_id', user.id)
           .single();
 
         if (teacherData) {
-          const { data: classTeacher } = await supabase
+          const { data: classTeacher } = await supabaseAdmin
             .from('class_teachers')
             .select('teacher_id')
             .eq('class_id', class_id)
@@ -183,7 +194,7 @@ export async function GET(request: NextRequest) {
 
     if (student_id) {
       // Verify student belongs to user's school
-      const { data: studentData, error: studentError } = await supabase
+      const { data: studentData, error: studentError } = await supabaseAdmin
         .from('students')
         .select('id, user_id')
         .eq('id', student_id)
@@ -197,7 +208,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Verify student's profile is in same school
-      const { data: studentProfile } = await supabase
+      const { data: studentProfile } = await supabaseAdmin
         .from('profiles')
         .select('school_id')
         .eq('user_id', studentData.user_id)
@@ -243,14 +254,14 @@ export async function GET(request: NextRequest) {
     const populatedRecords = await Promise.all(
       (records || []).map(async (record) => {
         // Get class name
-        const { data: classData } = await supabase
+        const { data: classData } = await supabaseAdmin
           .from('classes')
           .select('name')
           .eq('id', record.class_id)
           .single();
 
         // Get student name and email
-        const { data: studentData } = await supabase
+        const { data: studentData } = await supabaseAdmin
           .from('students')
           .select('user_id')
           .eq('id', record.student_id)
@@ -260,7 +271,7 @@ export async function GET(request: NextRequest) {
         let student_email = '';
 
         if (studentData) {
-          const { data: studentProfile } = await supabase
+          const { data: studentProfile } = await supabaseAdmin
             .from('profiles')
             .select('display_name, email')
             .eq('user_id', studentData.user_id)
@@ -377,28 +388,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ✅ CORRECT - Cookie-based authentication
-    const supabase = createClient();
+    // Get authorization header and extract token (matching targets pattern)
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<ErrorResponse>(
+        { success: false, error: 'Unauthorized - Missing authorization header', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
 
-    // DEBUG: Log authentication attempt
-    console.log('[POST /api/attendance] Attempting auth.getUser()...');
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    console.log('[POST /api/attendance] Auth result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      authError: authError?.message
-    });
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // Get authenticated user using admin client
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('[POST /api/attendance] UNAUTHORIZED:', authError?.message);
       return NextResponse.json<ErrorResponse>(
-        { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { success: false, error: 'Unauthorized - Invalid token', code: 'UNAUTHORIZED' },
         { status: 401 }
       );
     }
 
     // Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -412,7 +425,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify class exists and belongs to school
-    const { data: classData, error: classError } = await supabase
+    const { data: classData, error: classError } = await supabaseAdmin
       .from('classes')
       .select('id, school_id, name')
       .eq('id', class_id)
@@ -464,7 +477,7 @@ export async function POST(request: NextRequest) {
 
     // Verify all students are enrolled in the class
     for (const record of records) {
-      const { data: enrollment } = await supabase
+      const { data: enrollment } = await supabaseAdmin
         .from('class_enrollments')
         .select('student_id')
         .eq('class_id', class_id)
@@ -490,7 +503,7 @@ export async function POST(request: NextRequest) {
 
     // Check if records already exist and delete them (for upsert behavior)
     for (const record of records) {
-      await supabase
+      await supabaseAdmin
         .from('attendance')
         .delete()
         .eq('class_id', class_id)
@@ -499,7 +512,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new records
-    const { data: newRecords, error: insertError } = await supabase
+    const { data: newRecords, error: insertError } = await supabaseAdmin
       .from('attendance')
       .insert(attendanceData)
       .select();
