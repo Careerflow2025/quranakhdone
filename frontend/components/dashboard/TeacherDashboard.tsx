@@ -1036,7 +1036,7 @@ export default function TeacherDashboard() {
         )}
 
         {activeTab === 'attendance' && (
-          <AttendancePanel userRole="teacher" teacherClasses={classes} teacherStudents={students} />
+          <AttendancePanel userRole="teacher" teacherClasses={myClasses} teacherStudents={students} />
         )}
 
         {activeTab === 'classes' && (
