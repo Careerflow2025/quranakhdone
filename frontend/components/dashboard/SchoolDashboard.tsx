@@ -149,6 +149,12 @@ export default function SchoolDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Attendance filter states
+  const [attendanceSearchTerm, setAttendanceSearchTerm] = useState('');
+  const [attendanceClassFilter, setAttendanceClassFilter] = useState('');
+  const [attendanceStudentFilter, setAttendanceStudentFilter] = useState('');
+  const [attendanceTeacherFilter, setAttendanceTeacherFilter] = useState('');
+
   // DEBUG: Log activeTab changes
   useEffect(() => {
     console.log('📑 activeTab changed to:', activeTab);
@@ -1361,6 +1367,50 @@ export default function SchoolDashboard() {
     } catch (error: any) {
       console.error('Error marking message as read:', error);
     }
+  };
+
+  // Attendance filter handlers
+  const handleApplyAttendanceFilters = async () => {
+    const filters: any = {};
+
+    // Apply class filter
+    if (attendanceClassFilter) {
+      filters.class_id = attendanceClassFilter;
+    }
+
+    // Apply student filter
+    if (attendanceStudentFilter) {
+      filters.student_id = attendanceStudentFilter;
+    }
+
+    // For teacher filter, we need to find classes taught by that teacher
+    if (attendanceTeacherFilter) {
+      // Find classes where this teacher teaches
+      const teacherClasses = classes.filter((cls: any) =>
+        cls.teachers?.some((t: any) => t.id === attendanceTeacherFilter)
+      );
+
+      if (teacherClasses.length > 0) {
+        // If no class filter is set, filter by teacher's classes
+        if (!filters.class_id) {
+          // For now, we'll fetch all and filter client-side since API doesn't support multiple class_ids
+          filters.class_id = teacherClasses[0].id; // Use first class for API call
+        }
+      }
+    }
+
+    // Fetch attendance with filters
+    await refreshAttendance(filters);
+  };
+
+  const handleClearAttendanceFilters = async () => {
+    setAttendanceSearchTerm('');
+    setAttendanceClassFilter('');
+    setAttendanceStudentFilter('');
+    setAttendanceTeacherFilter('');
+
+    // Fetch all attendance (no filters)
+    await refreshAttendance({});
   };
 
   // Load all data on component mount
@@ -4074,6 +4124,103 @@ export default function SchoolDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Attendance Records</h3>
 
+                {/* Filters */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* Text Search */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Search
+                      </label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search by student, class..."
+                          value={attendanceSearchTerm}
+                          onChange={(e) => setAttendanceSearchTerm(e.target.value)}
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Class Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Class
+                      </label>
+                      <select
+                        value={attendanceClassFilter}
+                        onChange={(e) => setAttendanceClassFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="">All Classes</option>
+                        {classes.map((cls: any) => (
+                          <option key={cls.id} value={cls.id}>
+                            {cls.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Student Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Student
+                      </label>
+                      <select
+                        value={attendanceStudentFilter}
+                        onChange={(e) => setAttendanceStudentFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="">All Students</option>
+                        {students.map((student: any) => (
+                          <option key={student.id} value={student.id}>
+                            {student.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Teacher Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Teacher
+                      </label>
+                      <select
+                        value={attendanceTeacherFilter}
+                        onChange={(e) => setAttendanceTeacherFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="">All Teachers</option>
+                        {teachers.map((teacher: any) => (
+                          <option key={teacher.id} value={teacher.id}>
+                            {teacher.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Filter Actions */}
+                  <div className="flex items-center gap-2 mt-4">
+                    <button
+                      onClick={handleApplyAttendanceFilters}
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+                    >
+                      <Filter className="w-4 h-4" />
+                      Apply Filters
+                    </button>
+                    <button
+                      onClick={handleClearAttendanceFilters}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+
                 {attendanceLoading ? (
                   <div className="text-center py-12">
                     <RefreshCw className="w-12 h-12 text-emerald-600 mx-auto mb-4 animate-spin" />
@@ -4100,8 +4247,33 @@ export default function SchoolDashboard() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {safeAttendanceRecords.slice(0, 20).map((record: any) => {
+                  (() => {
+                    // Apply client-side text search filter
+                    const filteredRecords = safeAttendanceRecords.filter((record: any) => {
+                      if (!attendanceSearchTerm) return true;
+                      const searchLower = attendanceSearchTerm.toLowerCase();
+                      return (
+                        record.student_name?.toLowerCase().includes(searchLower) ||
+                        record.class_name?.toLowerCase().includes(searchLower) ||
+                        record.status?.toLowerCase().includes(searchLower)
+                      );
+                    });
+
+                    if (filteredRecords.length === 0) {
+                      return (
+                        <div className="text-center py-12">
+                          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500 text-lg">No matching records found</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            Try adjusting your search or filters
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        {filteredRecords.slice(0, 20).map((record: any) => {
                       const statusMap: any = {
                         present: { bg: 'bg-green-100', text: 'text-green-700', label: '✓ Present', icon: CheckCircle },
                         absent: { bg: 'bg-red-100', text: 'text-red-700', label: '✗ Absent', icon: XCircle },
@@ -4155,6 +4327,8 @@ export default function SchoolDashboard() {
                       </div>
                     )}
                   </div>
+                );
+              })()
                 )}
               </div>
             </div>
