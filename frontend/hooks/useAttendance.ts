@@ -110,7 +110,7 @@ export function useAttendance() {
   // Filters state
   const [filters, setFilters] = useState<AttendanceFilters>({});
 
-  // Fetch attendance records with filters
+  // Fetch attendance records with filters (filters are optional for admin/owner school-wide view)
   const fetchAttendance = useCallback(async (customFilters?: AttendanceFilters, page: number = 1) => {
     if (!user) {
       setError('User not authenticated');
@@ -130,9 +130,9 @@ export function useAttendance() {
         return;
       }
 
-      const filtersToUse = customFilters || filters;
+      const filtersToUse = customFilters !== undefined ? customFilters : filters;
 
-      // Build query string
+      // Build query string - filters are now optional for admin/owner
       const params = new URLSearchParams();
       if (filtersToUse.class_id) params.append('class_id', filtersToUse.class_id);
       if (filtersToUse.student_id) params.append('student_id', filtersToUse.student_id);
@@ -616,9 +616,14 @@ export function useAttendance() {
   }, []);
 
   // Auto-fetch on mount and filter changes
+  // Note: For admin/owner, filters are optional (school-wide view)
+  // For teachers, filters (class_id or student_id) are required by API
   useEffect(() => {
-    if (user && (filters.class_id || filters.student_id)) {
-      fetchAttendance(filters, currentPage);
+    if (user) {
+      // Only auto-fetch if filters are set, otherwise manual call needed
+      if (filters.class_id || filters.student_id) {
+        fetchAttendance(filters, currentPage);
+      }
     }
   }, [user, filters, currentPage]);
 

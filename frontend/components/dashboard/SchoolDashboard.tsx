@@ -7,6 +7,7 @@ import { useReportsData } from '@/hooks/useReportsData';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useHighlights } from '@/hooks/useHighlights';
 import { useTargets } from '@/hooks/useTargets';
+import { useAttendance } from '@/hooks/useAttendance';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
 import { useAuthStore } from '@/store/authStore';
@@ -19,7 +20,7 @@ import {
   TrendingUp, Eye, Mail, Phone, MapPin, BarChart3, ChevronRight, ChevronLeft, Folder, FolderOpen, LogOut,
   Menu, Shield, Key, CreditCard, DollarSign, Target, Activity, Zap, Package, Grid, List,
   ChevronDown, School, PieChart, Move, ArrowRight, X, XCircle, CheckCircle, RefreshCw, Send, Plus, Info,
-  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark
+  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare
 } from 'lucide-react';
 
 const ClassBuilder = dynamic(() => import('./ClassBuilder'), {
@@ -106,6 +107,18 @@ export default function SchoolDashboard() {
 
   // Safety check: ensure allHighlights is always an array
   const safeHighlights = allHighlights || [];
+
+  // Get attendance data for all school (no filters for admin/owner)
+  const {
+    records: attendanceRecords,
+    stats: attendanceStats,
+    isLoading: attendanceLoading,
+    error: attendanceError,
+    fetchAttendance: refreshAttendance
+  } = useAttendance();
+
+  // Safety check: ensure attendanceRecords is always an array
+  const safeAttendanceRecords = attendanceRecords || [];
 
   // Get reports data with date filtering
   const {
@@ -1357,8 +1370,9 @@ export default function SchoolDashboard() {
       loadAssignments();
       fetchTargets(); // Use hook's fetchTargets instead of loadTargets
       loadMessages();
+      refreshAttendance({}); // Fetch all school attendance (no filters for admin/owner)
     }
-  }, [user?.schoolId, fetchTargets]);
+  }, [user?.schoolId, fetchTargets, refreshAttendance]);
 
   // Load credentials when tab changes to credentials
   useEffect(() => {
@@ -2180,6 +2194,7 @@ export default function SchoolDashboard() {
             { id: 'highlights', label: 'Highlights', icon: Bookmark },
             { id: 'assignments', label: 'Assignments', icon: FileText },
             { id: 'targets', label: 'Targets', icon: Target },
+            { id: 'attendance', label: 'Attendance', icon: CheckSquare },
             { id: 'messages', label: 'Messages', icon: Mail },
             { id: 'calendar', label: 'Calendar', icon: Calendar },
             { id: 'reports', label: 'Reports', icon: BarChart3 },
@@ -3996,6 +4011,151 @@ export default function SchoolDashboard() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Attendance Tab - Shows all attendance marked across school */}
+          {activeTab === 'attendance' && (
+            <div className="space-y-6">
+              {/* Header with Stats */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center">
+                      <CheckSquare className="w-7 h-7 mr-3" />
+                      School-wide Attendance
+                    </h2>
+                    <p className="text-emerald-100 mt-1">All attendance records marked by teachers across the school</p>
+                  </div>
+                  <button
+                    onClick={() => refreshAttendance({})}
+                    className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition flex items-center"
+                  >
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    Refresh
+                  </button>
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-emerald-100 text-sm">Total Records</p>
+                    <p className="text-2xl font-bold">{attendanceStats?.total_records || 0}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-emerald-100 text-sm">Present</p>
+                    <p className="text-2xl font-bold text-green-200">
+                      {attendanceStats?.present_count || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-emerald-100 text-sm">Absent</p>
+                    <p className="text-2xl font-bold text-red-200">
+                      {attendanceStats?.absent_count || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-emerald-100 text-sm">Late</p>
+                    <p className="text-2xl font-bold text-yellow-200">
+                      {attendanceStats?.late_count || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-emerald-100 text-sm">Excused</p>
+                    <p className="text-2xl font-bold text-blue-200">
+                      {attendanceStats?.excused_count || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Records */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Attendance Records</h3>
+
+                {attendanceLoading ? (
+                  <div className="text-center py-12">
+                    <RefreshCw className="w-12 h-12 text-emerald-600 mx-auto mb-4 animate-spin" />
+                    <p className="text-gray-600">Loading attendance records...</p>
+                  </div>
+                ) : attendanceError ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+                    <p className="text-red-600 font-semibold mb-2">Error loading attendance</p>
+                    <p className="text-gray-600 mb-4">{attendanceError}</p>
+                    <button
+                      onClick={() => refreshAttendance({})}
+                      className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : safeAttendanceRecords.length === 0 ? (
+                  <div className="text-center py-12">
+                    <CheckSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No attendance records yet</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Teachers can mark attendance in their Teacher Dashboard
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {safeAttendanceRecords.slice(0, 20).map((record: any) => {
+                      const statusMap: any = {
+                        present: { bg: 'bg-green-100', text: 'text-green-700', label: '✓ Present', icon: CheckCircle },
+                        absent: { bg: 'bg-red-100', text: 'text-red-700', label: '✗ Absent', icon: XCircle },
+                        late: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: '⏰ Late', icon: Clock },
+                        excused: { bg: 'bg-blue-100', text: 'text-blue-700', label: '✓ Excused', icon: CheckCircle },
+                      };
+
+                      const statusStyle = statusMap[record.status] || statusMap.present;
+                      const StatusIcon = statusStyle.icon;
+
+                      return (
+                        <div key={record.id} className={`${statusStyle.bg} border-l-4 border-${statusStyle.text.replace('text-', '')} p-4 rounded-r-lg`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusStyle.text} flex items-center gap-1`}>
+                                  <StatusIcon className="w-3 h-3" />
+                                  {statusStyle.label}
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  📅 {new Date(record.session_date).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <span>
+                                  <User className="w-4 h-4 inline mr-1" />
+                                  {record.student_name || 'Unknown Student'}
+                                </span>
+                                <span>
+                                  <School className="w-4 h-4 inline mr-1" />
+                                  {record.class_name || 'Unknown Class'}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  Marked: {new Date(record.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {record.notes && (
+                                <div className="mt-2 text-sm text-gray-600 italic">
+                                  Note: {record.notes}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {safeAttendanceRecords.length > 20 && (
+                      <div className="text-center text-gray-500 text-sm pt-4">
+                        Showing 20 of {safeAttendanceRecords.length} attendance records
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
