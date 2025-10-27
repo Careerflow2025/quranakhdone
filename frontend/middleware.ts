@@ -66,7 +66,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // CRITICAL: Refresh session to ensure cookies are up to date
+  // Skip route protection for API routes, static files, and auth pages
+  // BUT still refresh session for API routes!
+  const isApiRoute = pathname.startsWith('/api/');
+  const isStaticFile = pathname.startsWith('/_next/') || pathname.startsWith('/favicon.ico');
+  const isAuthPage = pathname.startsWith('/auth/');
+
+  // CRITICAL: Refresh session to ensure cookies are up to date (for ALL routes)
   console.log('[Middleware] Calling getUser()...');
   const { data: { user }, error } = await supabase.auth.getUser();
   console.log('[Middleware] Auth result:', {
@@ -75,13 +81,9 @@ export async function middleware(request: NextRequest) {
     error: error?.message
   });
 
-  // Skip route protection for API routes, static files, and auth pages
-  if (
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/favicon.ico') ||
-    pathname.startsWith('/auth/')
-  ) {
+  // Skip route protection logic for API routes, static files, and auth pages
+  if (isApiRoute || isStaticFile || isAuthPage) {
+    console.log('[Middleware] Skipping route protection, returning response with refreshed cookies');
     return response;
   }
 
