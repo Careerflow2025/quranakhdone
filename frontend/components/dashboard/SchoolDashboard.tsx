@@ -128,6 +128,13 @@ export default function SchoolDashboard() {
     refreshData: refreshReports
   } = useReportsData(reportStartDate, reportEndDate);
 
+  // Refresh reports data when Reports tab is opened
+  useEffect(() => {
+    if (activeTab === 'reports' && user?.schoolId) {
+      refreshReports();
+    }
+  }, [activeTab, refreshReports, user?.schoolId]);
+
   // Get current user from auth store
   const { user, logout } = useAuthStore();
 
