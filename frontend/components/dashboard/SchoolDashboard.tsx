@@ -120,6 +120,9 @@ export default function SchoolDashboard() {
   // Safety check: ensure attendanceRecords is always an array
   const safeAttendanceRecords = attendanceRecords || [];
 
+  // Get current user from auth store (needed before useReportsData)
+  const { user, logout } = useAuthStore();
+
   // Get reports data with date filtering
   const {
     isLoading: reportsLoading,
@@ -134,9 +137,6 @@ export default function SchoolDashboard() {
       refreshReports();
     }
   }, [activeTab, refreshReports, user?.schoolId]);
-
-  // Get current user from auth store
-  const { user, logout } = useAuthStore();
 
   // Get notifications from API
   const {
