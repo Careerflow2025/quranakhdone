@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
     // Apply filters based on user role
     if (class_id) {
       // Verify class belongs to user's school
-      const { data: classData, error: classError } = await supabaseAdminAdmin
+      const { data: classData, error: classError } = await supabaseAdmin
         .from('classes')
         .select('id, school_id, name')
         .eq('id', class_id)
