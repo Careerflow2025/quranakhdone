@@ -3,10 +3,13 @@
  * GET /api/attendance/student/[id] - Get student's attendance history with statistics
  *
  * Created: 2025-10-22
+ * Authentication: Cookie-based (createClient)
+ * Authorization: Teachers can view their students, students can view their own
+ * School Isolation: Enforced via school_id
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { createClient } from '@/lib/supabase-server';
 
 // ============================================================================
 // GET /api/attendance/student/[id] - Student Attendance History
@@ -17,19 +20,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-
-    // Auth
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    // ✅ CORRECT - Cookie-based authentication
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -38,7 +31,7 @@ export async function GET(
       );
     }
 
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -58,7 +51,7 @@ export async function GET(
     const class_id = searchParams.get('class_id');
 
     // Verify student exists and belongs to same school
-    const { data: student, error: studentError } = await supabaseAdmin
+    const { data: student, error: studentError } = await supabase
       .from('students')
       .select('id, user_id, profiles:user_id(school_id, display_name, email)')
       .eq('id', params.id)
@@ -80,7 +73,7 @@ export async function GET(
     }
 
     // Build query for attendance records
-    let query = supabaseAdmin
+    let query = supabase
       .from('attendance')
       .select(
         `

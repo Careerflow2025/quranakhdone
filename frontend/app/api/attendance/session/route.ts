@@ -4,10 +4,13 @@
  *
  * Created: 2025-10-22
  * Purpose: Efficiently mark attendance for all students in a class at once
+ * Authentication: Cookie-based (createClient)
+ * Authorization: Teachers can mark for their classes
+ * School Isolation: Enforced via class.school_id
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { createClient } from '@/lib/supabase-server';
 
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
@@ -29,19 +32,9 @@ interface CreateSessionRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-
-    // Auth
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    // ✅ CORRECT - Cookie-based authentication
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -50,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -90,7 +83,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify class belongs to same school
-    const { data: classData, error: classError } = await supabaseAdmin
+    const { data: classData, error: classError } = await supabase
       .from('classes')
       .select('id, school_id, name')
       .eq('id', class_id)
@@ -128,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing attendance records for this session
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await supabase
       .from('attendance')
       .select('student_id')
       .eq('class_id', class_id)
@@ -161,7 +154,7 @@ export async function POST(request: NextRequest) {
     }));
 
     // Bulk insert
-    const { data: created, error: insertError } = await supabaseAdmin
+    const { data: created, error: insertError } = await supabase
       .from('attendance')
       .insert(attendanceRecords)
       .select();
