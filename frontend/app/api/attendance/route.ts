@@ -441,7 +441,7 @@ export async function POST(request: NextRequest) {
 
     // Verify teacher teaches this class (teachers only)
     if (profile.role === 'teacher') {
-      const { data: teacherData } = await supabase
+      const { data: teacherData } = await supabaseAdmin
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
@@ -454,7 +454,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { data: classTeacher } = await supabase
+      const { data: classTeacher } = await supabaseAdmin
         .from('class_teachers')
         .select('teacher_id')
         .eq('class_id', class_id)
