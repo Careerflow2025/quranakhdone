@@ -86,6 +86,16 @@ export default function AttendancePanel({ userRole = 'teacher', studentId }: Att
     });
   };
 
+  // Auto-select first class on mount if available
+  useEffect(() => {
+    if (classes.length > 0 && !selectedClass && !historyClassFilter && !summaryClass) {
+      const firstClass = classes[0].id;
+      setSelectedClass(firstClass);
+      setHistoryClassFilter(firstClass);
+      setSummaryClass(firstClass);
+    }
+  }, [classes]);
+
   // Initialize attendance map when class changes
   useEffect(() => {
     const enrolledStudents = getEnrolledStudents();
@@ -177,6 +187,13 @@ export default function AttendancePanel({ userRole = 'teacher', studentId }: Att
     updateFilters(newFilters);
   };
 
+  // Auto-apply filters when historyClassFilter changes for history view
+  useEffect(() => {
+    if (historyClassFilter && activeView === 'history') {
+      applyHistoryFilters();
+    }
+  }, [historyClassFilter, activeView]);
+
   // Load summary
   const loadSummary = () => {
     if (!summaryClass) {
@@ -190,6 +207,13 @@ export default function AttendancePanel({ userRole = 'teacher', studentId }: Att
 
     fetchSummary(summaryClass, options);
   };
+
+  // Auto-load summary when summaryClass changes for summary view
+  useEffect(() => {
+    if (summaryClass && activeView === 'summary') {
+      loadSummary();
+    }
+  }, [summaryClass, summaryMonth, summaryStudent, activeView]);
 
   // Export attendance
   const handleExport = async () => {
