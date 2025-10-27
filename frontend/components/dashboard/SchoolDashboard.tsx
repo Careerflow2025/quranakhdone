@@ -137,9 +137,22 @@ export default function SchoolDashboard() {
   // Refresh reports data when Reports tab is opened
   useEffect(() => {
     if (activeTab === 'reports' && user?.schoolId) {
+      console.log('🔄 Reports tab opened - refreshing data...');
       refreshReports();
     }
   }, [activeTab, refreshReports, user?.schoolId]);
+
+  // DEBUG: Log reportData changes
+  useEffect(() => {
+    if (activeTab === 'reports' && reportData) {
+      console.log('📊 reportData updated:', {
+        assignmentsTrend: reportData.assignmentsTrend?.length,
+        attendanceTrend: reportData.attendanceTrend?.length,
+        assignmentsTotal: reportData.assignmentsTrend?.reduce((sum: number, d: any) => sum + (d.count || 0), 0),
+        attendanceAvg: reportData.attendanceTrend?.length ? Math.round(reportData.attendanceTrend.reduce((sum: number, d: any) => sum + (d.rate || 0), 0) / reportData.attendanceTrend.length) : 0
+      });
+    }
+  }, [activeTab, reportData]);
 
   // Get notifications from API
   const {
@@ -5252,6 +5265,11 @@ export default function SchoolDashboard() {
                 {/* Assignment Trend Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Assignment Trend (Last 7 Days)</h3>
+                  {/* DEBUG: Show what data we have */}
+                  <div className="text-xs text-gray-500 mb-2">
+                    DEBUG: {reportData?.assignmentsTrend ? `${reportData.assignmentsTrend.length} days of data` : 'No data'}
+                    {reportData?.assignmentsTrend && ` - Total: ${reportData.assignmentsTrend.reduce((sum: number, d: any) => sum + (d.count || 0), 0)} assignments`}
+                  </div>
                   <div className="h-64 flex items-end justify-between gap-2">
                     {(reportData?.assignmentsTrend?.length > 0
                       ? reportData.assignmentsTrend
@@ -5278,6 +5296,11 @@ export default function SchoolDashboard() {
                 {/* Attendance Trend Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Trend (Last 7 Days)</h3>
+                  {/* DEBUG: Show what data we have */}
+                  <div className="text-xs text-gray-500 mb-2">
+                    DEBUG: {reportData?.attendanceTrend ? `${reportData.attendanceTrend.length} days of data` : 'No data'}
+                    {reportData?.attendanceTrend && ` - Avg rate: ${Math.round(reportData.attendanceTrend.reduce((sum: number, d: any) => sum + (d.rate || 0), 0) / reportData.attendanceTrend.length)}%`}
+                  </div>
                   <div className="h-64 flex items-end justify-between gap-2">
                     {(reportData?.attendanceTrend?.length > 0
                       ? reportData.attendanceTrend
