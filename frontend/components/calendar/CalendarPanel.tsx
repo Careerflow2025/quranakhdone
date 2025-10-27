@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useCalendar, CreateEventData, EventFilters, CalendarView } from '@/hooks/useCalendar';
+import { useAuthStore } from '@/store/authStore';
 import {
   Calendar as CalendarIcon,
   Plus,
@@ -42,6 +43,9 @@ interface CalendarPanelProps {
 }
 
 export default function CalendarPanel({ userRole = 'teacher' }: CalendarPanelProps) {
+  // Auth store for user info
+  const { user } = useAuthStore();
+
   // Hook integration
   const {
     isLoading,
@@ -1005,8 +1009,10 @@ export default function CalendarPanel({ userRole = 'teacher' }: CalendarPanelPro
               )}
             </div>
 
-            {/* Modal footer */}
-            {(userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') && (
+            {/* Modal footer - Only show delete for event creator (teachers) or admins/owners */}
+            {((userRole === 'teacher' && currentEvent.creator && currentEvent.creator.id === user?.id) ||
+              userRole === 'admin' ||
+              userRole === 'owner') && (
               <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex justify-end gap-3">
                 <button
                   onClick={() => handleDeleteEvent(currentEvent.id, currentEvent.is_recurring)}
