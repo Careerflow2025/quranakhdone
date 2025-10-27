@@ -186,7 +186,7 @@ export default function AttendancePanel({
   };
 
   // Apply history filters
-  const applyHistoryFilters = () => {
+  const applyHistoryFilters = async () => {
     const newFilters: any = {};
     if (historyClassFilter) newFilters.class_id = historyClassFilter;
     if (studentId) newFilters.student_id = studentId; // For student/parent views
@@ -194,7 +194,8 @@ export default function AttendancePanel({
     if (historyEndDate) newFilters.end_date = historyEndDate;
     if (historyStatusFilter) newFilters.status = historyStatusFilter;
 
-    updateFilters(newFilters);
+    // Fetch attendance records with the new filters
+    await fetchAttendance(newFilters, 1);
   };
 
   // Auto-apply filters when historyClassFilter changes for history view

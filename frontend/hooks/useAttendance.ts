@@ -212,8 +212,8 @@ export function useAttendance() {
       const result = await response.json();
 
       if (result.success) {
-        // Refresh attendance data after marking
-        await fetchAttendance(filters, currentPage);
+        // Refresh attendance data after marking - use class_id from the data we just submitted
+        await fetchAttendance({ class_id: data.class_id }, 1);
         return true;
       } else {
         throw new Error(result.error || 'Failed to mark attendance');
