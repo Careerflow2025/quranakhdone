@@ -193,53 +193,34 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
       }).reverse();
 
       // Assignments trend
-      console.log('📊 Fetching assignment trends for last 7 days:', last7Days);
-      console.log('🏫 School ID:', user.schoolId);
       const assignmentsTrend = await Promise.all(
         last7Days.map(async (date) => {
-          const { count, error } = await supabase
+          const { count } = await supabase
             .from('assignments')
             .select('*', { count: 'exact', head: true })
             .eq('school_id', user.schoolId!)
             .gte('created_at', `${date}T00:00:00`)
             .lte('created_at', `${date}T23:59:59`);
-
-          if (error) {
-            console.error(`❌ Error fetching assignments for ${date}:`, error);
-          } else {
-            console.log(`✅ ${date}: ${count} assignments`);
-          }
-
           return { date, count: count || 0 };
         })
       );
-      console.log('📈 Assignment trend data:', assignmentsTrend);
 
       // Attendance trend - RLS scoped, no school_id filter
-      console.log('📊 Fetching attendance trends for last 7 days:', last7Days);
       const attendanceTrend = await Promise.all(
         last7Days.map(async (date) => {
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from('attendance')
             .select('status')
             .eq('session_date', date);
             // RLS policies filter by school automatically
 
-          if (error) {
-            console.error(`❌ Error fetching attendance for ${date}:`, error);
-          } else {
-            console.log(`✅ ${date}: ${data?.length || 0} attendance records`);
-          }
-
           const present = data?.filter((a: any) => a.status === 'present').length || 0;
           const total = data?.length || 0;
           const rate = total > 0 ? Math.round((present / total) * 100) : 0;
 
-          console.log(`  Present: ${present}/${total} = ${rate}%`);
           return { date, rate };
         })
       );
-      console.log('📈 Attendance trend data:', attendanceTrend);
 
       // Class-wise breakdown
       const { data: classes } = await supabase
