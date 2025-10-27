@@ -103,8 +103,11 @@ export default function AttendancePanel({
       setSelectedClass(firstClass);
       setHistoryClassFilter(firstClass);
       setSummaryClass(firstClass);
+
+      // CRITICAL: Also set filters in useAttendance hook so all fetch calls have class_id
+      updateFilters({ class_id: firstClass });
     }
-  }, [classes]);
+  }, [classes, selectedClass, historyClassFilter, summaryClass, updateFilters]);
 
   // Initialize attendance map when class changes
   useEffect(() => {
@@ -155,6 +158,9 @@ export default function AttendancePanel({
       return;
     }
 
+    // CRITICAL: Update filters BEFORE marking to ensure hook has class_id for refresh
+    updateFilters({ class_id: selectedClass });
+
     setIsMarkingAttendance(true);
 
     const attendanceData: MarkAttendanceData = {
@@ -174,6 +180,7 @@ export default function AttendancePanel({
     setIsMarkingAttendance(false);
 
     if (success) {
+
       alert(`Attendance marked successfully for ${enrolledStudents.length} students`);
       // Reset form
       setAttendanceMap(new Map());
