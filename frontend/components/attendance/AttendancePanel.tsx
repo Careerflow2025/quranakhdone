@@ -44,6 +44,7 @@ export default function AttendancePanel({
     updateAttendance,
     fetchSummary,
     exportToCSV,
+    exportToExcel,
     updateFilters,
     clearFilters,
     changePage,
@@ -205,6 +206,17 @@ export default function AttendancePanel({
     await fetchAttendance(newFilters, 1);
   };
 
+  // Filter records based on search query (client-side filtering)
+  const filteredRecords = records.filter((record) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      record.student_name.toLowerCase().includes(query) ||
+      record.student_email.toLowerCase().includes(query) ||
+      record.class_name.toLowerCase().includes(query)
+    );
+  });
+
   // Auto-apply filters when historyClassFilter changes for history view
   useEffect(() => {
     if (historyClassFilter && activeView === 'history') {
@@ -243,9 +255,10 @@ export default function AttendancePanel({
     const options: any = {};
     if (historyStartDate) options.start_date = historyStartDate;
     if (historyEndDate) options.end_date = historyEndDate;
+    if (historyStatusFilter) options.status = historyStatusFilter;
     if (studentId) options.student_id = studentId;
 
-    await exportToCSV(historyClassFilter, options);
+    await exportToExcel(historyClassFilter, options);
   };
 
   // Open edit modal
@@ -543,6 +556,20 @@ export default function AttendancePanel({
           <div>
             {/* Filters */}
             <div className="mb-6 space-y-4">
+              {/* Search Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Search Student
+                </label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by student name or email..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -618,6 +645,7 @@ export default function AttendancePanel({
                     setHistoryStartDate('');
                     setHistoryEndDate('');
                     setHistoryStatusFilter('');
+                    setSearchQuery('');
                     clearFilters();
                   }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
@@ -629,7 +657,7 @@ export default function AttendancePanel({
                   className="ml-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
                 >
                   <Download className="w-4 h-4" />
-                  Export CSV
+                  Export Excel
                 </button>
               </div>
             </div>
@@ -666,11 +694,13 @@ export default function AttendancePanel({
                 <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">Loading attendance records...</p>
               </div>
-            ) : records.length === 0 ? (
+            ) : filteredRecords.length === 0 ? (
               <div className="text-center py-12">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No attendance records found</p>
-                <p className="text-sm text-gray-400 mt-2">Try adjusting your filters</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  {searchQuery ? 'No records match your search query' : 'Try adjusting your filters'}
+                </p>
               </div>
             ) : (
               <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -701,7 +731,7 @@ export default function AttendancePanel({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {records.map((record) => (
+                      {filteredRecords.map((record) => (
                         <tr key={record.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {formatDate(record.session_date)}

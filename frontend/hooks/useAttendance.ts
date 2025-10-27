@@ -397,7 +397,7 @@ export function useAttendance() {
 
       if (data.success && data.data.records.length > 0) {
         const csvRows = [];
-        
+
         // Header row
         csvRows.push('Date,Student Name,Student Email,Class,Status,Notes');
 
@@ -437,6 +437,184 @@ export function useAttendance() {
     }
   }, []);
 
+  // Export to Excel with colors and formatting
+  const exportToExcel = useCallback(async (
+    class_id: string,
+    options?: {
+      start_date?: string;
+      end_date?: string;
+      student_id?: string;
+      status?: string;
+    }
+  ) => {
+    try {
+      // Dynamically import xlsx
+      const XLSX = await import('xlsx');
+
+      // Get session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Please login to export attendance data');
+      }
+
+      // Fetch all records for export (no pagination)
+      const params = new URLSearchParams();
+      params.append('class_id', class_id);
+      if (options?.student_id) params.append('student_id', options.student_id);
+      if (options?.start_date) params.append('start_date', options.start_date);
+      if (options?.end_date) params.append('end_date', options.end_date);
+      if (options?.status) params.append('status', options.status);
+      params.append('limit', '1000'); // Large limit for export
+
+      const response = await fetch(`/api/attendance?${params.toString()}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+      const result = await response.json();
+
+      if (result.success && result.data.records.length > 0) {
+        const records = result.data.records;
+        const stats = result.data.stats;
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+
+        // Prepare data for worksheet
+        const wsData: any[] = [];
+
+        // Title row
+        wsData.push(['Attendance Report']);
+        wsData.push([]);
+
+        // Summary statistics
+        wsData.push(['Summary Statistics']);
+        wsData.push(['Total Records', stats.total_records]);
+        wsData.push(['Total Sessions', stats.total_sessions]);
+        wsData.push(['Present', stats.present_count]);
+        wsData.push(['Absent', stats.absent_count]);
+        wsData.push(['Late', stats.late_count]);
+        wsData.push(['Excused', stats.excused_count]);
+        wsData.push([]);
+
+        // Filter information
+        wsData.push(['Filter Details']);
+        if (options?.start_date) wsData.push(['Start Date', options.start_date]);
+        if (options?.end_date) wsData.push(['End Date', options.end_date]);
+        if (options?.status) wsData.push(['Status Filter', options.status]);
+        wsData.push([]);
+
+        // Headers for attendance records
+        wsData.push(['Date', 'Student Name', 'Student Email', 'Class', 'Status', 'Notes']);
+
+        // Data rows
+        records.forEach((record: AttendanceWithDetails) => {
+          wsData.push([
+            record.session_date,
+            record.student_name,
+            record.student_email,
+            record.class_name,
+            record.status.toUpperCase(),
+            record.notes || '',
+          ]);
+        });
+
+        // Create worksheet from data
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Set column widths
+        ws['!cols'] = [
+          { wch: 12 }, // Date
+          { wch: 25 }, // Student Name
+          { wch: 30 }, // Student Email
+          { wch: 20 }, // Class
+          { wch: 10 }, // Status
+          { wch: 40 }, // Notes
+        ];
+
+        // Apply cell styles (basic styling for xlsx)
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+
+        // Style title row (A1)
+        if (ws['A1']) {
+          ws['A1'].s = {
+            font: { bold: true, sz: 16, color: { rgb: '1F4788' } },
+            alignment: { horizontal: 'center' },
+          };
+        }
+
+        // Style summary section headers (A3, A12)
+        ['A3', 'A12'].forEach(cell => {
+          if (ws[cell]) {
+            ws[cell].s = {
+              font: { bold: true, sz: 12, color: { rgb: '1F4788' } },
+              fill: { fgColor: { rgb: 'E3F2FD' } },
+            };
+          }
+        });
+
+        // Find the header row (Date, Student Name, etc.)
+        let headerRowIndex = -1;
+        for (let R = 0; R <= range.e.r; ++R) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: 0 });
+          if (ws[cellAddress] && ws[cellAddress].v === 'Date') {
+            headerRowIndex = R;
+            break;
+          }
+        }
+
+        // Style header row
+        if (headerRowIndex >= 0) {
+          for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cellAddress = XLSX.utils.encode_cell({ r: headerRowIndex, c: C });
+            if (ws[cellAddress]) {
+              ws[cellAddress].s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '1976D2' } },
+                alignment: { horizontal: 'center' },
+              };
+            }
+          }
+
+          // Style status cells with colors based on value
+          for (let R = headerRowIndex + 1; R <= range.e.r; ++R) {
+            const statusCellAddress = XLSX.utils.encode_cell({ r: R, c: 4 }); // Status column
+            if (ws[statusCellAddress]) {
+              const status = ws[statusCellAddress].v;
+              let color = 'FFFFFF';
+
+              if (status === 'PRESENT') color = 'C8E6C9'; // Light green
+              else if (status === 'ABSENT') color = 'FFCDD2'; // Light red
+              else if (status === 'LATE') color = 'FFE082'; // Light yellow
+              else if (status === 'EXCUSED') color = 'B3E5FC'; // Light blue
+
+              ws[statusCellAddress].s = {
+                fill: { fgColor: { rgb: color } },
+                alignment: { horizontal: 'center' },
+                font: { bold: true },
+              };
+            }
+          }
+        }
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
+
+        // Generate Excel file and trigger download
+        XLSX.writeFile(wb, `attendance-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        return true;
+      } else {
+        throw new Error('No records to export');
+      }
+    } catch (err: any) {
+      console.error('Error exporting to Excel:', err);
+      setError(err.message || 'Failed to export attendance data');
+      return false;
+    }
+  }, []);
+
   // Auto-fetch on mount and filter changes
   useEffect(() => {
     if (user && (filters.class_id || filters.student_id)) {
@@ -463,6 +641,7 @@ export function useAttendance() {
     updateAttendance,
     fetchSummary,
     exportToCSV,
+    exportToExcel,
 
     // Filter management
     updateFilters,
