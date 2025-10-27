@@ -98,14 +98,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    // Validation
-    if (!class_id && !student_id) {
-      return NextResponse.json<ErrorResponse>(
-        { success: false, error: 'Either class_id or student_id is required', code: 'MISSING_FILTER' },
-        { status: 400 }
-      );
-    }
-
     // Get authorization header and extract token
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -142,10 +134,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Validation - Only admins/owners can fetch all school attendance without filters
+    if (!class_id && !student_id && profile.role !== 'owner' && profile.role !== 'admin') {
+      return NextResponse.json<ErrorResponse>(
+        { success: false, error: 'Either class_id or student_id is required for teachers', code: 'MISSING_FILTER' },
+        { status: 400 }
+      );
+    }
+
     // Build query with school isolation
     let query = supabaseAdmin
       .from('attendance')
       .select('*', { count: 'exact' });
+
+    // If no filters provided (school-wide view for admin/owner), filter by school's classes
+    if (!class_id && !student_id) {
+      // Get all class IDs for this school
+      const { data: schoolClasses } = await supabaseAdmin
+        .from('classes')
+        .select('id')
+        .eq('school_id', profile.school_id);
+
+      const schoolClassIds = (schoolClasses || []).map((c: any) => c.id);
+
+      if (schoolClassIds.length === 0) {
+        // No classes in school, return empty result
+        return NextResponse.json<ListAttendanceResponse>({
+          success: true,
+          data: {
+            records: [],
+            stats: {
+              total_records: 0,
+              total_sessions: 0,
+              present_count: 0,
+              absent_count: 0,
+              late_count: 0,
+              excused_count: 0,
+            },
+            pagination: {
+              page,
+              total_pages: 0,
+              total: 0,
+              limit,
+            },
+          },
+        });
+      }
+
+      query = query.in('class_id', schoolClassIds);
+    }
 
     // Apply filters based on user role
     if (class_id) {
