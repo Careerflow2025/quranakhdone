@@ -200,7 +200,7 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
             .select('*', { count: 'exact', head: true })
             .eq('school_id', user.schoolId!)
             .gte('created_at', `${date}T00:00:00`)
-            .lt('created_at', `${date}T23:59:59`);
+            .lte('created_at', `${date}T23:59:59`);
           return { date, count: count || 0 };
         })
       );
@@ -230,20 +230,34 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
 
       const classwiseData = await Promise.all(
         (classes || []).map(async (cls: any) => {
+          // Get student count for this class
           const { count: studentCount } = await supabase
             .from('class_enrollments')
             .select('*', { count: 'exact', head: true })
             .eq('class_id', cls.id);
 
-          const { count: assignmentCount } = await supabase
-            .from('assignments')
-            .select('*', { count: 'exact', head: true })
+          // Get student IDs enrolled in this class
+          const { data: enrollments } = await supabase
+            .from('class_enrollments')
+            .select('student_id')
             .eq('class_id', cls.id);
+
+          const studentIds = enrollments?.map((e: any) => e.student_id) || [];
+
+          // Count assignments for students in this class
+          let assignmentCount = 0;
+          if (studentIds.length > 0) {
+            const { count } = await supabase
+              .from('assignments')
+              .select('*', { count: 'exact', head: true })
+              .in('student_id', studentIds);
+            assignmentCount = count || 0;
+          }
 
           return {
             className: cls.name,
             students: studentCount || 0,
-            assignments: assignmentCount || 0
+            assignments: assignmentCount
           };
         })
       );
