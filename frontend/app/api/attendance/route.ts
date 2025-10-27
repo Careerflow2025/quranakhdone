@@ -379,9 +379,18 @@ export async function POST(request: NextRequest) {
 
     // ✅ CORRECT - Cookie-based authentication
     const supabase = createClient();
+
+    // DEBUG: Log authentication attempt
+    console.log('[POST /api/attendance] Attempting auth.getUser()...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('[POST /api/attendance] Auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message
+    });
 
     if (authError || !user) {
+      console.error('[POST /api/attendance] UNAUTHORIZED:', authError?.message);
       return NextResponse.json<ErrorResponse>(
         { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
         { status: 401 }

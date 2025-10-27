@@ -5,6 +5,10 @@ import type { NextRequest } from 'next/server';
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // DEBUG: Log middleware execution
+  console.log('[Middleware] Processing:', pathname);
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -18,9 +22,12 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value;
+          const cookie = request.cookies.get(name)?.value;
+          console.log('[Middleware] Cookie get:', name, cookie ? 'EXISTS' : 'MISSING');
+          return cookie;
         },
         set(name: string, value: string, options: CookieOptions) {
+          console.log('[Middleware] Cookie set:', name);
           request.cookies.set({
             name,
             value,
@@ -38,6 +45,7 @@ export async function middleware(request: NextRequest) {
           });
         },
         remove(name: string, options: CookieOptions) {
+          console.log('[Middleware] Cookie remove:', name);
           request.cookies.set({
             name,
             value: '',
@@ -59,7 +67,13 @@ export async function middleware(request: NextRequest) {
   );
 
   // CRITICAL: Refresh session to ensure cookies are up to date
-  await supabase.auth.getUser();
+  console.log('[Middleware] Calling getUser()...');
+  const { data: { user }, error } = await supabase.auth.getUser();
+  console.log('[Middleware] Auth result:', {
+    hasUser: !!user,
+    userId: user?.id,
+    error: error?.message
+  });
 
   // Skip route protection for API routes, static files, and auth pages
   if (
