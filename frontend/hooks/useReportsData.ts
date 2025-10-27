@@ -85,15 +85,30 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
   const endTimestamp = endDate?.getTime() || null;
 
   const fetchReportData = useCallback(async () => {
-    if (!user?.schoolId) return;
+    console.log('🚀 [REPORTS] fetchReportData CALLED');
+    console.log('👤 [REPORTS] user.schoolId:', user?.schoolId);
+    console.log('📅 [REPORTS] Date range:', { startTimestamp, endTimestamp });
+    console.log('🔄 [REPORTS] fetchInProgress:', fetchInProgress.current);
+    console.log('💾 [REPORTS] lastFetchParams:', lastFetchParams.current);
+
+    if (!user?.schoolId) {
+      console.log('❌ [REPORTS] EARLY RETURN: No schoolId');
+      return;
+    }
 
     // Create cache key from school ID and timestamps
     const cacheKey = `${user.schoolId}_${startTimestamp}_${endTimestamp}`;
+    console.log('🔑 [REPORTS] Cache key:', cacheKey);
 
     // Prevent concurrent fetches and re-fetching same data
     if (fetchInProgress.current || lastFetchParams.current === cacheKey) {
+      console.log('❌ [REPORTS] EARLY RETURN: Already fetched or in progress');
+      console.log('   - fetchInProgress:', fetchInProgress.current);
+      console.log('   - Cache match:', lastFetchParams.current === cacheKey);
       return;
     }
+
+    console.log('✅ [REPORTS] Proceeding with data fetch...');
 
     fetchInProgress.current = true;
     lastFetchParams.current = cacheKey;
