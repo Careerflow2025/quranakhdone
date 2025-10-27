@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateUpdateEventRequest,
   validateDeleteEventRequest,
@@ -34,20 +34,30 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<EventErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -55,7 +65,7 @@ export async function GET(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -73,7 +83,7 @@ export async function GET(
     }
 
     // 4. Get event
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await supabaseAdmin
       .from('events')
       .select(
         `
@@ -108,7 +118,7 @@ export async function GET(
     let relatedEvents: EventWithDetails[] | undefined;
     if (event.is_recurring && !event.recurrence_parent_id) {
       // This is a parent event, get all instances
-      const { data: instances } = await supabase
+      const { data: instances } = await supabaseAdmin
         .from('events')
         .select('*')
         .eq('recurrence_parent_id', event.id)
@@ -117,7 +127,7 @@ export async function GET(
       relatedEvents = instances || [];
     } else if (event.recurrence_parent_id) {
       // This is an instance, get parent and siblings
-      const { data: siblings } = await supabase
+      const { data: siblings } = await supabaseAdmin
         .from('events')
         .select('*')
         .eq('recurrence_parent_id', event.recurrence_parent_id)
@@ -184,20 +194,30 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<EventErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -205,7 +225,7 @@ export async function PATCH(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -223,7 +243,7 @@ export async function PATCH(
     }
 
     // 4. Get existing event
-    const { data: existingEvent, error: existingError } = await supabase
+    const { data: existingEvent, error: existingError } = await supabaseAdmin
       .from('events')
       .select('*')
       .eq('id', params.id)
@@ -293,7 +313,7 @@ export async function PATCH(
     // 9. Execute update
     if (updateSeries && existingEvent.is_recurring && !existingEvent.recurrence_parent_id) {
       // Update parent event and all future instances
-      const { error: parentError } = await supabase
+      const { error: parentError } = await supabaseAdmin
         .from('events')
         .update(updateData)
         .eq('id', params.id);
@@ -314,7 +334,7 @@ export async function PATCH(
       updatedCount++;
 
       // Update all instances
-      const { data: instances, error: instancesError } = await supabase
+      const { data: instances, error: instancesError } = await supabaseAdmin
         .from('events')
         .update(updateData)
         .eq('recurrence_parent_id', params.id)
@@ -327,7 +347,7 @@ export async function PATCH(
       }
     } else {
       // Update single event only
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('events')
         .update(updateData)
         .eq('id', params.id);
@@ -349,7 +369,7 @@ export async function PATCH(
     }
 
     // 10. Get updated event with details
-    const { data: updatedEvent } = await supabase
+    const { data: updatedEvent } = await supabaseAdmin
       .from('events')
       .select(
         `
@@ -432,20 +452,30 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<EventErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<EventErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -453,7 +483,7 @@ export async function DELETE(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -471,7 +501,7 @@ export async function DELETE(
     }
 
     // 4. Get existing event
-    const { data: existingEvent, error: existingError } = await supabase
+    const { data: existingEvent, error: existingError } = await supabaseAdmin
       .from('events')
       .select('*')
       .eq('id', params.id)
@@ -517,7 +547,7 @@ export async function DELETE(
     if (deleteSeries && existingEvent.is_recurring && !existingEvent.recurrence_parent_id) {
       // Delete parent event and all instances
       // First delete all instances
-      const { data: instances, error: instancesDeleteError } = await supabase
+      const { data: instances, error: instancesDeleteError } = await supabaseAdmin
         .from('events')
         .delete()
         .eq('recurrence_parent_id', params.id)
@@ -530,7 +560,7 @@ export async function DELETE(
       }
 
       // Then delete parent
-      const { error: parentDeleteError } = await supabase
+      const { error: parentDeleteError } = await supabaseAdmin
         .from('events')
         .delete()
         .eq('id', params.id);
@@ -551,7 +581,7 @@ export async function DELETE(
       deletedCount++;
     } else {
       // Delete single event only
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await supabaseAdmin
         .from('events')
         .delete()
         .eq('id', params.id);
