@@ -5158,7 +5158,7 @@ export default function SchoolDashboard() {
                           <p className="text-sm text-gray-500">Successfully finished</p>
                         </div>
                       </div>
-                      <p className="text-2xl font-bold text-green-600">0</p>
+                      <p className="text-2xl font-bold text-green-600">{reportData?.completedAssignments || 0}</p>
                     </div>
 
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -5171,7 +5171,7 @@ export default function SchoolDashboard() {
                           <p className="text-sm text-gray-500">In progress</p>
                         </div>
                       </div>
-                      <p className="text-2xl font-bold text-yellow-600">0</p>
+                      <p className="text-2xl font-bold text-yellow-600">{reportData?.pendingAssignments || 0}</p>
                     </div>
 
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -5184,7 +5184,7 @@ export default function SchoolDashboard() {
                           <p className="text-sm text-gray-500">Past deadline</p>
                         </div>
                       </div>
-                      <p className="text-2xl font-bold text-red-600">0</p>
+                      <p className="text-2xl font-bold text-red-600">{reportData?.overdueAssignments || 0}</p>
                     </div>
                   </div>
 
@@ -5192,12 +5192,12 @@ export default function SchoolDashboard() {
                   <div className="mt-6">
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
                       <span>Completion Rate</span>
-                      <span className="font-medium">0%</span>
+                      <span className="font-medium">{reportData?.averageCompletionRate || 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
-                        style={{ width: `0%` }}
+                        style={{ width: `${reportData?.averageCompletionRate || 0}%` }}
                       />
                     </div>
                   </div>
@@ -5208,23 +5208,22 @@ export default function SchoolDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Class Performance</h3>
 
                   <div className="space-y-3">
-                    {classes.length > 0 ? (
-                      classes.slice(0, 5).map((cls: any, index: any) => (
-                        <div key={cls.id} className="p-3 bg-gray-50 rounded-lg">
+                    {reportData?.classwiseData && reportData.classwiseData.length > 0 ? (
+                      reportData.classwiseData.slice(0, 5).map((cls: any, index: any) => (
+                        <div key={index} className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
-                            <p className="font-medium text-gray-900">{cls.name}</p>
-                            <span className="text-sm text-gray-500">{cls.student_count || 0} students</span>
+                            <p className="font-medium text-gray-900">{cls.className}</p>
+                            <span className="text-sm text-gray-500">{cls.students || 0} students</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <div className="flex gap-4 text-sm">
-                              <span className="text-gray-600">Assignments: {cls.assignment_count || 0}</span>
-                              <span className="text-gray-600">Avg Grade: {cls.average_grade || 0}%</span>
+                              <span className="text-gray-600">Assignments: {cls.assignments || 0}</span>
                             </div>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div
                               className="bg-blue-500 h-2 rounded-full"
-                              style={{ width: `${cls.average_grade || 0}%` }}
+                              style={{ width: `${Math.min((cls.assignments / Math.max(...(reportData.classwiseData.map((c: any) => c.assignments) || [1]))) * 100, 100)}%` }}
                             />
                           </div>
                         </div>
@@ -5307,8 +5306,8 @@ export default function SchoolDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {teachers.length > 0 ? (
-                        teachers.slice(0, 5).map((teacher: any) => (
+                      {reportData?.teacherPerformance && reportData.teacherPerformance.length > 0 ? (
+                        reportData.teacherPerformance.slice(0, 5).map((teacher: any) => (
                           <tr key={teacher.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
@@ -5364,7 +5363,59 @@ export default function SchoolDashboard() {
                     <button
                       onClick={() => {
                         // Export as CSV
-                        showNotification('CSV export coming soon!', 'info');
+                        const csvContent = [
+                          ['School Report'],
+                          ['School:', schoolInfo?.name || 'N/A'],
+                          ['Period:', reportPeriod === 'today' ? 'Today' : reportPeriod === 'week' ? 'Last 7 Days' : reportPeriod === 'month' ? 'Last 30 Days' : reportPeriod === 'year' ? 'Last Year' : 'Custom Period'],
+                          ['Generated:', new Date().toLocaleString()],
+                          [],
+                          ['Overview Metrics'],
+                          ['Total Students', reportData?.totalStudents || 0],
+                          ['Total Teachers', reportData?.totalTeachers || 0],
+                          ['Total Classes', reportData?.totalClasses || 0],
+                          ['Total Parents', reportData?.totalParents || 0],
+                          [],
+                          ['Assignment Metrics'],
+                          ['Total Assignments', reportData?.totalAssignments || 0],
+                          ['Completed Assignments', reportData?.completedAssignments || 0],
+                          ['Pending Assignments', reportData?.pendingAssignments || 0],
+                          ['Overdue Assignments', reportData?.overdueAssignments || 0],
+                          ['Average Completion Rate', `${reportData?.averageCompletionRate || 0}%`],
+                          [],
+                          ['Attendance Metrics'],
+                          ['Total Attendance Records', reportData?.totalAttendanceRecords || 0],
+                          ['Present Count', reportData?.presentCount || 0],
+                          ['Absent Count', reportData?.absentCount || 0],
+                          ['Attendance Rate', `${reportData?.attendanceRate || 0}%`],
+                          [],
+                          ['Class Performance'],
+                          ['Class Name', 'Students', 'Assignments'],
+                          ...(reportData?.classwiseData || []).map((cls: any) => [
+                            cls.className,
+                            cls.students || 0,
+                            cls.assignments || 0
+                          ]),
+                          [],
+                          ['Teacher Performance'],
+                          ['Teacher Name', 'Classes', 'Assignments Created', 'Completion Rate'],
+                          ...(reportData?.teacherPerformance || []).map((teacher: any) => [
+                            teacher.name,
+                            teacher.class_count || 0,
+                            teacher.assignmentsCreated || 0,
+                            `${teacher.completionRate || 0}%`
+                          ])
+                        ].map(row => row.join(',')).join('\n');
+
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `school_report_${new Date().toISOString().split('T')[0]}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showNotification('CSV report downloaded successfully!', 'success');
                       }}
                       className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
                     >
@@ -5373,8 +5424,62 @@ export default function SchoolDashboard() {
                     </button>
                     <button
                       onClick={() => {
-                        // Export as Excel
-                        showNotification('Excel export coming soon!', 'info');
+                        // Export as Excel (simple HTML table-based approach)
+                        const excelContent = `
+                          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                          <head><meta charset="utf-8"><title>School Report</title></head>
+                          <body>
+                            <table>
+                              <tr><td colspan="4"><b>School Report</b></td></tr>
+                              <tr><td>School:</td><td>${schoolInfo?.name || 'N/A'}</td></tr>
+                              <tr><td>Period:</td><td>${reportPeriod === 'today' ? 'Today' : reportPeriod === 'week' ? 'Last 7 Days' : reportPeriod === 'month' ? 'Last 30 Days' : reportPeriod === 'year' ? 'Last Year' : 'Custom Period'}</td></tr>
+                              <tr><td>Generated:</td><td>${new Date().toLocaleString()}</td></tr>
+                              <tr><td colspan="4"></td></tr>
+                              <tr><td colspan="4"><b>Overview Metrics</b></td></tr>
+                              <tr><td>Total Students</td><td>${reportData?.totalStudents || 0}</td></tr>
+                              <tr><td>Total Teachers</td><td>${reportData?.totalTeachers || 0}</td></tr>
+                              <tr><td>Total Classes</td><td>${reportData?.totalClasses || 0}</td></tr>
+                              <tr><td>Total Parents</td><td>${reportData?.totalParents || 0}</td></tr>
+                              <tr><td colspan="4"></td></tr>
+                              <tr><td colspan="4"><b>Assignment Metrics</b></td></tr>
+                              <tr><td>Total Assignments</td><td>${reportData?.totalAssignments || 0}</td></tr>
+                              <tr><td>Completed Assignments</td><td>${reportData?.completedAssignments || 0}</td></tr>
+                              <tr><td>Pending Assignments</td><td>${reportData?.pendingAssignments || 0}</td></tr>
+                              <tr><td>Overdue Assignments</td><td>${reportData?.overdueAssignments || 0}</td></tr>
+                              <tr><td>Average Completion Rate</td><td>${reportData?.averageCompletionRate || 0}%</td></tr>
+                              <tr><td colspan="4"></td></tr>
+                              <tr><td colspan="4"><b>Attendance Metrics</b></td></tr>
+                              <tr><td>Total Attendance Records</td><td>${reportData?.totalAttendanceRecords || 0}</td></tr>
+                              <tr><td>Present Count</td><td>${reportData?.presentCount || 0}</td></tr>
+                              <tr><td>Absent Count</td><td>${reportData?.absentCount || 0}</td></tr>
+                              <tr><td>Attendance Rate</td><td>${reportData?.attendanceRate || 0}%</td></tr>
+                              <tr><td colspan="4"></td></tr>
+                              <tr><td colspan="4"><b>Class Performance</b></td></tr>
+                              <tr><th>Class Name</th><th>Students</th><th>Assignments</th></tr>
+                              ${(reportData?.classwiseData || []).map((cls: any) =>
+                                `<tr><td>${cls.className}</td><td>${cls.students || 0}</td><td>${cls.assignments || 0}</td></tr>`
+                              ).join('')}
+                              <tr><td colspan="4"></td></tr>
+                              <tr><td colspan="4"><b>Teacher Performance</b></td></tr>
+                              <tr><th>Teacher Name</th><th>Classes</th><th>Assignments Created</th><th>Completion Rate</th></tr>
+                              ${(reportData?.teacherPerformance || []).map((teacher: any) =>
+                                `<tr><td>${teacher.name}</td><td>${teacher.class_count || 0}</td><td>${teacher.assignmentsCreated || 0}</td><td>${teacher.completionRate || 0}%</td></tr>`
+                              ).join('')}
+                            </table>
+                          </body>
+                          </html>
+                        `;
+
+                        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `school_report_${new Date().toISOString().split('T')[0]}.xls`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showNotification('Excel report downloaded successfully!', 'success');
                       }}
                       className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
                     >
