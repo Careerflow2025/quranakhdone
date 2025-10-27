@@ -3954,9 +3954,16 @@ export default function SchoolDashboard() {
                           <div className="flex items-center justify-between text-sm text-gray-500">
                             <span className="flex items-center">
                               <User className="w-3 h-3 mr-1" />
-                              {target.type === 'individual'
-                                ? (target.student?.display_name || 'Unknown Student')
-                                : target.type === 'class'
+                              {target.type === 'individual' ? (
+                                <span>
+                                  {target.student?.display_name || 'Unknown Student'}
+                                  {target.students?.class_enrollments && target.students.class_enrollments.length > 0 && (
+                                    <span className="text-gray-400 ml-1">
+                                      ({target.students.class_enrollments.map((enrollment: any) => enrollment.classes?.name).filter(Boolean).join(', ')})
+                                    </span>
+                                  )}
+                                </span>
+                              ) : target.type === 'class'
                                 ? (target.class?.name || 'Class Target')
                                 : 'School Target'
                               }

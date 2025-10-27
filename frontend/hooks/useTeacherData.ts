@@ -90,13 +90,23 @@ export function useTeacherData() {
 
       console.log('✅ Teacher record found:', teacher.id);
 
+      // Fetch school information including logo
+      const { data: school, error: schoolError } = await supabase
+        .from('schools')
+        .select('id, name, logo_url')
+        .eq('id', user.schoolId)
+        .single();
+
+      if (schoolError) console.warn('Could not fetch school info:', schoolError);
+
       setTeacherInfo({
         id: teacher.id,
         userId: teacher.user_id,
         name: user.fullName || 'Teacher',
         bio: teacher.bio || '',
         active: teacher.active,
-        schoolId: user.schoolId
+        schoolId: user.schoolId,
+        school: school || null
       });
 
       // Fetch teacher's classes through class_teachers junction table with complete details

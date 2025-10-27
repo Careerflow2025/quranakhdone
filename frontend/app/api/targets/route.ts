@@ -576,12 +576,6 @@ export async function GET(request: NextRequest) {
       query = query.eq('category', category);
     }
 
-    // Text search across title and description
-    if (search && search.trim()) {
-      const searchTerm = `%${search.trim()}%`;
-      query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
-    }
-
     // Default behavior: only show active unless include_completed is true
     if (!include_completed && !status) {
       query = query.eq('status', 'active');
@@ -590,13 +584,14 @@ export async function GET(request: NextRequest) {
     // Apply sorting
     query = query.order(sort_by, { ascending: sort_order === 'asc' });
 
-    // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+    // Apply pagination (but fetch more if searching to allow in-memory filtering)
+    const fetchLimit = search && search.trim() ? 1000 : limit; // Fetch more for search
+    const from = (page - 1) * fetchLimit;
+    const to = from + fetchLimit - 1;
     query = query.range(from, to);
 
     // 6. Execute query
-    const { data: targets, error: queryError, count } = await query;
+    let { data: targets, error: queryError, count } = await query;
 
     if (queryError) {
       console.error('Targets query error:', queryError);
@@ -609,6 +604,36 @@ export async function GET(request: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    // Text search filter (applied in-memory after query)
+    if (search && search.trim() && targets) {
+      const searchLower = search.trim().toLowerCase();
+      targets = targets.filter((target: any) => {
+        // Search in title
+        if (target.title?.toLowerCase().includes(searchLower)) return true;
+
+        // Search in description
+        if (target.description?.toLowerCase().includes(searchLower)) return true;
+
+        // Search in student name (individual targets)
+        if (target.students?.profiles?.display_name?.toLowerCase().includes(searchLower)) return true;
+
+        // Search in class name (class targets)
+        if (target.classes?.name?.toLowerCase().includes(searchLower)) return true;
+
+        // Search in student's classes (individual targets showing which class student belongs to)
+        if (target.students?.class_enrollments) {
+          for (const enrollment of target.students.class_enrollments) {
+            if (enrollment.classes?.name?.toLowerCase().includes(searchLower)) return true;
+          }
+        }
+
+        return false;
+      });
+
+      // Update count for filtered results
+      count = targets.length;
     }
 
     // 7. Transform results to TargetWithDetails format

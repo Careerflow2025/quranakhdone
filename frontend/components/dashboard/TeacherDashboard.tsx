@@ -162,7 +162,15 @@ export default function TeacherDashboard() {
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <School className="w-8 h-8 text-blue-600 mr-3" />
+              {teacherInfo?.school?.logo_url ? (
+                <img
+                  src={teacherInfo.school.logo_url}
+                  alt="School Logo"
+                  className="w-8 h-8 rounded-lg object-cover mr-3"
+                />
+              ) : (
+                <School className="w-8 h-8 text-blue-600 mr-3" />
+              )}
               <h1 className="text-xl font-bold text-gray-900">Teacher Dashboard</h1>
             </div>
 
@@ -291,7 +299,7 @@ export default function TeacherDashboard() {
 
         {/* Tab Navigation */}
         <div className="px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8 overflow-x-auto">
+          <nav className="flex justify-center space-x-8 overflow-x-auto">
             {tabs.map((tab: any) => (
               <button
                 key={tab}
