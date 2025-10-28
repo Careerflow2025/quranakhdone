@@ -39,7 +39,7 @@ export async function GET(
       : undefined;
 
     // 1. Initialize Supabase admin client
-    const supabaseAdminAdmin = getSupabaseAdmin();
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 2. Get authorization header and extract token
     const authHeader = request.headers.get('authorization');
@@ -60,7 +60,7 @@ export async function GET(
     const {
       data: { user },
       error: authError,
-    } = await supabaseAdminAdmin.auth.getUser(token);
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<MasteryErrorResponse>(
