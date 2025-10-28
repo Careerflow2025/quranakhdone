@@ -30,8 +30,10 @@ import {
   Star,
   FileText,
   Target,
+  ClipboardCheck,
 } from 'lucide-react';
 import { RubricWithDetails, GradeWithDetails, StudentGradebookEntry } from '@/lib/types/gradebook';
+import GradingInterface from './GradingInterface';
 
 interface GradebookPanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
@@ -72,6 +74,7 @@ export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelP
   } = useGradebook(userRole === 'teacher' ? 'rubrics' : userRole === 'student' ? 'student-view' : 'parent-view');
 
   // UI State
+  const [activeTab, setActiveTab] = useState<'rubrics' | 'grade-students'>('rubrics');
   const [showCreateRubricModal, setShowCreateRubricModal] = useState(false);
   const [showRubricDetailsModal, setShowRubricDetailsModal] = useState(false);
   const [showGradeSubmissionModal, setShowGradeSubmissionModal] = useState(false);
@@ -342,6 +345,36 @@ export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelP
         </div>
       </div>
 
+      {/* TAB NAVIGATION - TEACHER ONLY */}
+      {userRole === 'teacher' && (
+        <div className="border-b border-gray-200 px-6">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('rubrics')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition ${
+                activeTab === 'rubrics'
+                  ? 'border-purple-600 text-purple-600 font-medium'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              Rubrics
+            </button>
+            <button
+              onClick={() => setActiveTab('grade-students')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition ${
+                activeTab === 'grade-students'
+                  ? 'border-purple-600 text-purple-600 font-medium'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              Grade Students
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ERROR STATE */}
       {error && (
         <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
@@ -351,7 +384,7 @@ export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelP
       )}
 
       {/* TEACHER VIEW - RUBRICS */}
-      {userRole === 'teacher' && (
+      {userRole === 'teacher' && activeTab === 'rubrics' && (
         <>
           {/* Search */}
           <div className="p-6 border-b border-gray-200">
@@ -460,6 +493,11 @@ export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelP
             </div>
           )}
         </>
+      )}
+
+      {/* TEACHER VIEW - GRADE STUDENTS */}
+      {userRole === 'teacher' && activeTab === 'grade-students' && (
+        <GradingInterface />
       )}
 
       {/* STUDENT VIEW - GRADEBOOK */}

@@ -26,28 +26,43 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
+    // 1. Initialize Supabase admin client
     const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseAdmin.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<GradebookErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<GradebookErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role, display_name, email')
       .eq('user_id', user.id)
@@ -64,7 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Check permissions (only teachers can submit grades)
+    // 5. Check permissions (only teachers can submit grades)
     if (!canSubmitGrade({
       userId: user.id,
       userRole: profile.role,
@@ -80,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Parse and validate request body
+    // 6. Parse and validate request body
     const body = await request.json();
     const validation = validateSubmitGradeRequest(body);
 
@@ -99,8 +114,8 @@ export async function POST(request: NextRequest) {
     const { assignment_id, student_id, criterion_id, score, max_score, comments } =
       validation.data;
 
-    // 6. Verify assignment exists and belongs to same school
-    const { data: assignment, error: assignmentError } = await supabase
+    // 7. Verify assignment exists and belongs to same school
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('id, school_id')
       .eq('id', assignment_id)
@@ -128,8 +143,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Verify student exists and belongs to same school
-    const { data: student } = await supabase
+    // 8. Verify student exists and belongs to same school
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id, user_id')
       .eq('id', student_id)
@@ -146,7 +161,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: studentProfile } = await supabase
+    const { data: studentProfile } = await supabaseAdmin
       .from('profiles')
       .select('school_id, display_name, email')
       .eq('user_id', student.user_id)
@@ -163,8 +178,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Verify criterion exists and get its details
-    const { data: criterion, error: criterionError } = await supabase
+    // 9. Verify criterion exists and get its details
+    const { data: criterion, error: criterionError } = await supabaseAdmin
       .from('rubric_criteria')
       .select('id, name, weight, max_score, rubric_id')
       .eq('id', criterion_id)
@@ -181,8 +196,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9. Verify criterion belongs to assignment's rubric
-    const { data: assignmentRubric } = await supabase
+    // 10. Verify criterion belongs to assignment's rubric
+    const { data: assignmentRubric } = await supabaseAdmin
       .from('assignment_rubrics')
       .select('rubric_id')
       .eq('assignment_id', assignment_id)
@@ -199,7 +214,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 10. Validate score is in range
+    // 11. Validate score is in range
     const scoreValidation = validateScoreInRange(score, max_score);
     if (!scoreValidation.valid) {
       return NextResponse.json<GradebookErrorResponse>(
@@ -212,8 +227,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 11. Check if grade already exists for this criterion
-    const { data: existingGrade } = await supabase
+    // 12. Check if grade already exists for this criterion
+    const { data: existingGrade } = await supabaseAdmin
       .from('grades')
       .select('id')
       .eq('assignment_id', assignment_id)
@@ -223,7 +238,7 @@ export async function POST(request: NextRequest) {
 
     if (existingGrade) {
       // Update existing grade
-      const { data: updatedGrade, error: updateError } = await supabase
+      const { data: updatedGrade, error: updateError } = await supabaseAdmin
         .from('grades')
         .update({
           score,
@@ -272,12 +287,12 @@ export async function POST(request: NextRequest) {
       };
 
       // Calculate progress
-      const { count: totalCriteria } = await supabase
+      const { count: totalCriteria } = await supabaseAdmin
         .from('rubric_criteria')
         .select('id', { count: 'exact', head: true })
         .eq('rubric_id', criterion.rubric_id);
 
-      const { count: gradedCriteria } = await supabase
+      const { count: gradedCriteria } = await supabaseAdmin
         .from('grades')
         .select('id', { count: 'exact', head: true })
         .eq('assignment_id', assignment_id)
@@ -300,7 +315,7 @@ export async function POST(request: NextRequest) {
       );
     } else {
       // Create new grade
-      const { data: newGrade, error: insertError } = await supabase
+      const { data: newGrade, error: insertError } = await supabaseAdmin
         .from('grades')
         .insert({
           assignment_id,
@@ -350,12 +365,12 @@ export async function POST(request: NextRequest) {
       };
 
       // Calculate progress
-      const { count: totalCriteria } = await supabase
+      const { count: totalCriteria } = await supabaseAdmin
         .from('rubric_criteria')
         .select('id', { count: 'exact', head: true })
         .eq('rubric_id', criterion.rubric_id);
 
-      const { count: gradedCriteria } = await supabase
+      const { count: gradedCriteria } = await supabaseAdmin
         .from('grades')
         .select('id', { count: 'exact', head: true })
         .eq('assignment_id', assignment_id)
