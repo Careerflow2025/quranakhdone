@@ -20,7 +20,7 @@ import {
   TrendingUp, Eye, Mail, Phone, MapPin, BarChart3, ChevronRight, ChevronLeft, Folder, FolderOpen, LogOut,
   Menu, Shield, Key, CreditCard, DollarSign, Target, Activity, Zap, Package, Grid, List,
   ChevronDown, School, PieChart, Move, ArrowRight, X, XCircle, CheckCircle, RefreshCw, Send, Plus, Info,
-  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare
+  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare, Brain
 } from 'lucide-react';
 
 const ClassBuilder = dynamic(() => import('./ClassBuilder'), {
@@ -141,6 +141,14 @@ export default function SchoolDashboard() {
       refreshReports();
     }
   }, [activeTab, refreshReports, user?.schoolId]);
+
+  // Refresh mastery data when Mastery tab is opened
+  useEffect(() => {
+    if (activeTab === 'mastery' && user?.schoolId) {
+      console.log('🔄 Mastery tab opened - refreshing data...');
+      fetchMasteryData();
+    }
+  }, [activeTab, user?.schoolId]);
 
   // DEBUG: Log reportData changes
   useEffect(() => {
@@ -342,6 +350,13 @@ export default function SchoolDashboard() {
     teacher: 'all'
   });
   const [targetsSearchTerm, setTargetsSearchTerm] = useState('');
+
+  // Mastery State (view-only for school)
+  const [masteryData, setMasteryData] = useState<any>(null);
+  const [masteryLoading, setMasteryLoading] = useState(false);
+  const [masteryError, setMasteryError] = useState<string | null>(null);
+  const [masterySearchTerm, setMasterySearchTerm] = useState('');
+  const [masteryStudentFilter, setMasteryStudentFilter] = useState('all');
 
   // Additional Credential State
   const [showAddCredential, setShowAddCredential] = useState(false);
@@ -1024,6 +1039,43 @@ export default function SchoolDashboard() {
       showNotification('Failed to load credentials', 'error');
     } finally {
       setLoadingCredentials(false);
+    }
+  };
+
+  // Fetch mastery data for school
+  const fetchMasteryData = async () => {
+    if (!user?.schoolId) return;
+
+    setMasteryLoading(true);
+    setMasteryError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setMasteryError('Please login to view mastery data');
+        return;
+      }
+
+      const response = await fetch('/api/mastery/school', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch mastery data');
+      }
+
+      const result = await response.json();
+      setMasteryData(result.data);
+    } catch (error: any) {
+      console.error('Error fetching mastery data:', error);
+      setMasteryError(error.message || 'Failed to load mastery data');
+      showNotification('Failed to load mastery data', 'error');
+    } finally {
+      setMasteryLoading(false);
     }
   };
 
@@ -2267,6 +2319,7 @@ export default function SchoolDashboard() {
             { id: 'assignments', label: 'Assignments', icon: FileText },
             { id: 'targets', label: 'Targets', icon: Target },
             { id: 'attendance', label: 'Attendance', icon: CheckSquare },
+            { id: 'mastery', label: 'Mastery', icon: Brain },
             { id: 'messages', label: 'Messages', icon: Mail },
             { id: 'calendar', label: 'Calendar', icon: Calendar },
             { id: 'reports', label: 'Reports', icon: BarChart3 },
@@ -4353,6 +4406,247 @@ export default function SchoolDashboard() {
               })()
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Mastery Tab - Shows all mastery tracking across school */}
+          {activeTab === 'mastery' && (
+            <div className="space-y-6">
+              {/* Header with Stats */}
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center">
+                      <Brain className="w-7 h-7 mr-3" />
+                      School-wide Mastery Tracking
+                    </h2>
+                    <p className="text-blue-100 mt-1">All mastery data tracked by teachers across the school</p>
+                  </div>
+                  <button
+                    onClick={fetchMasteryData}
+                    disabled={masteryLoading}
+                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-5 h-5 mr-2 ${masteryLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {/* Stats Row */}
+                {masteryData && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-blue-100 text-sm">Students Tracked</p>
+                      <p className="text-2xl font-bold">{masteryData.total_students_with_mastery || 0}</p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-blue-100 text-sm">Total Ayahs</p>
+                      <p className="text-2xl font-bold">
+                        {masteryData.total_ayahs_tracked || 0}
+                      </p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-blue-100 text-sm">Mastered</p>
+                      <p className="text-2xl font-bold text-green-200">
+                        {masteryData.school_wide_summary?.mastered_count || 0}
+                      </p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-blue-100 text-sm">Proficient</p>
+                      <p className="text-2xl font-bold text-yellow-200">
+                        {masteryData.school_wide_summary?.proficient_count || 0}
+                      </p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-blue-100 text-sm">Overall Progress</p>
+                      <p className="text-2xl font-bold text-blue-100">
+                        {Math.round(masteryData.school_wide_summary?.overall_progress_percentage || 0)}%
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mastery Data Display */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                {/* Search and Filters */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={masterySearchTerm}
+                        onChange={(e) => setMasterySearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {masteryLoading ? (
+                  <div className="text-center py-12">
+                    <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
+                    <p className="text-gray-600">Loading mastery data...</p>
+                  </div>
+                ) : masteryError ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+                    <p className="text-red-600 font-semibold mb-2">Error loading mastery data</p>
+                    <p className="text-gray-600 mb-4">{masteryError}</p>
+                    <button
+                      onClick={fetchMasteryData}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : !masteryData || masteryData.students?.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No mastery data yet</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Teachers can track mastery in their Teacher Dashboard
+                    </p>
+                  </div>
+                ) : (
+                  (() => {
+                    // Apply client-side search filter
+                    const filteredStudents = masteryData.students.filter((student: any) => {
+                      if (!masterySearchTerm) return true;
+                      const searchLower = masterySearchTerm.toLowerCase();
+                      return (
+                        student.student_name?.toLowerCase().includes(searchLower) ||
+                        student.student_email?.toLowerCase().includes(searchLower)
+                      );
+                    });
+
+                    if (filteredStudents.length === 0) {
+                      return (
+                        <div className="text-center py-12">
+                          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500 text-lg">No matching students found</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            Try adjusting your search term
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Student Mastery Cards */}
+                        {filteredStudents.map((student: any) => (
+                          <div
+                            key={student.student_id}
+                            className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                    {student.student_name?.charAt(0) || 'S'}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900">{student.student_name}</h4>
+                                    <p className="text-sm text-gray-500">{student.student_email}</p>
+                                  </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="mb-3">
+                                  <div className="flex items-center justify-between text-sm mb-1">
+                                    <span className="text-gray-600">Overall Progress</span>
+                                    <span className="font-semibold text-blue-600">
+                                      {Math.round(student.overall_progress_percentage || 0)}%
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all"
+                                      style={{ width: `${student.overall_progress_percentage || 0}%` }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Mastery Stats */}
+                                <div className="grid grid-cols-4 gap-3">
+                                  <div className="bg-green-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-green-700 font-medium mb-1">Mastered</p>
+                                    <p className="text-lg font-bold text-green-600">{student.mastered_count || 0}</p>
+                                  </div>
+                                  <div className="bg-yellow-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-yellow-700 font-medium mb-1">Proficient</p>
+                                    <p className="text-lg font-bold text-yellow-600">{student.proficient_count || 0}</p>
+                                  </div>
+                                  <div className="bg-blue-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-blue-700 font-medium mb-1">Learning</p>
+                                    <p className="text-lg font-bold text-blue-600">{student.learning_count || 0}</p>
+                                  </div>
+                                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-gray-700 font-medium mb-1">Total Ayahs</p>
+                                    <p className="text-lg font-bold text-gray-600">{student.total_ayahs_tracked || 0}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Last Updated */}
+                            <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                              <span className="flex items-center">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Last updated: {new Date(student.last_updated).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+
+                        {masteryData.students.length > 20 && (
+                          <div className="text-center text-gray-500 text-sm pt-4">
+                            Showing {Math.min(20, filteredStudents.length)} of {masteryData.students.length} students
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
+
+              {/* Recent Updates Section */}
+              {masteryData && masteryData.recent_updates && masteryData.recent_updates.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-blue-600" />
+                    Recent Mastery Updates
+                  </h3>
+                  <div className="space-y-3">
+                    {masteryData.recent_updates.slice(0, 10).map((update: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                            {update.student_name?.charAt(0) || 'S'}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{update.student_name}</p>
+                            <p className="text-xs text-gray-500">
+                              Ayah {update.ayah_reference} → <span className={`font-semibold ${
+                                update.level === 'mastered' ? 'text-green-600' :
+                                update.level === 'proficient' ? 'text-yellow-600' :
+                                update.level === 'learning' ? 'text-blue-600' :
+                                'text-gray-600'
+                              }`}>{update.level}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {new Date(update.updated_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
