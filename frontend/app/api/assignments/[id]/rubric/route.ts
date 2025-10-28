@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateAttachRubricRequest,
   canAttachRubric,
@@ -32,28 +32,43 @@ export async function POST(
   try {
     const assignmentId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<GradebookErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<GradebookErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -70,7 +85,7 @@ export async function POST(
       );
     }
 
-    // 4. Check permissions (only teachers can attach rubrics)
+    // 5. Check permissions (only teachers can attach rubrics)
     if (!canAttachRubric({
       userId: user.id,
       userRole: profile.role,
@@ -86,7 +101,7 @@ export async function POST(
       );
     }
 
-    // 5. Parse and validate request body
+    // 6. Parse and validate request body
     const body = await request.json();
     const validation = validateAttachRubricRequest(body);
 
@@ -104,8 +119,8 @@ export async function POST(
 
     const { rubric_id } = validation.data;
 
-    // 6. Verify assignment exists and belongs to same school
-    const { data: assignment, error: assignmentError } = await supabase
+    // 7. Verify assignment exists and belongs to same school
+    const { data: assignment, error: assignmentError } = await supabaseAdmin
       .from('assignments')
       .select('id, school_id, created_by_teacher_id')
       .eq('id', assignmentId)
@@ -135,8 +150,8 @@ export async function POST(
       );
     }
 
-    // 7. Verify rubric exists and belongs to same school
-    const { data: rubric, error: rubricError } = await supabase
+    // 8. Verify rubric exists and belongs to same school
+    const { data: rubric, error: rubricError } = await supabaseAdmin
       .from('rubrics')
       .select('*, rubric_criteria(*)')
       .eq('id', rubric_id)
@@ -198,7 +213,7 @@ export async function POST(
     }
 
     // 10. Check if assignment already has a rubric
-    const { data: existingAttachment } = await supabase
+    const { data: existingAttachment } = await supabaseAdmin
       .from('assignment_rubrics')
       .select('rubric_id')
       .eq('assignment_id', assignmentId)
@@ -206,7 +221,7 @@ export async function POST(
 
     if (existingAttachment) {
       // Update existing attachment
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('assignment_rubrics')
         .update({ rubric_id })
         .eq('assignment_id', assignmentId);
@@ -225,7 +240,7 @@ export async function POST(
       }
     } else {
       // Create new attachment
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseAdmin
         .from('assignment_rubrics')
         .insert({
           assignment_id: assignmentId,
