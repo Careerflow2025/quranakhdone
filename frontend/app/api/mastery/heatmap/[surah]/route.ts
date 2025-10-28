@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin-admin';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { canViewStudentMastery } from '@/lib/validators/mastery';
 import {
   GetHeatmapResponse,
