@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useMastery, UpdateMasteryData } from '@/hooks/useMastery';
-import { createClient } from '@/lib/supabase-client';
+import { supabase } from '@/lib/supabase';
 import {
   BookOpen, ChevronLeft, ChevronRight, TrendingUp, Target,
   Award, Loader, AlertCircle, X, Check, RefreshCw, Users,
@@ -74,7 +74,6 @@ export default function MasteryPanel({ userRole = 'teacher', studentId }: Master
       setIsLoadingStudents(true);
       setStudentsError(null);
 
-      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
