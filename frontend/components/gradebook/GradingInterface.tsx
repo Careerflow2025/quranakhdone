@@ -363,10 +363,10 @@ export default function GradingInterface() {
                 <p className="text-sm text-gray-400">
                   No assignments available for your students yet
                 </p>
-            </div>
-          ) : (
-            assignments
-              .filter((assignment) => {
+              </div>
+            ) : (() => {
+              // Filter assignments based on search query
+              const filteredAssignments = assignments.filter((assignment) => {
                 if (!searchQuery.trim()) return true;
                 const query = searchQuery.toLowerCase();
                 return (
@@ -374,84 +374,91 @@ export default function GradingInterface() {
                   assignment.title.toLowerCase().includes(query) ||
                   (assignment.rubric_name && assignment.rubric_name.toLowerCase().includes(query))
                 );
-              })
-              .map((assignment) => (
-              <div
-                key={assignment.id}
-                onClick={() => assignment.has_rubric && handleSelectAssignment(assignment)}
-                className={`p-4 transition ${
-                  assignment.has_rubric
-                    ? 'cursor-pointer hover:bg-gray-50'
-                    : 'cursor-not-allowed opacity-75 bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`p-2 rounded ${
-                        assignment.has_rubric ? 'bg-emerald-100' : 'bg-gray-200'
-                      }`}>
-                        <FileText className={`w-4 h-4 ${
-                          assignment.has_rubric ? 'text-emerald-600' : 'text-gray-500'
-                        }`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
-                          {!assignment.has_rubric && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                              Needs Rubric
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          <span className="inline-flex items-center gap-1">
-                            <User className="w-3 h-3" />
-                            {assignment.student_name}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
+              });
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      {assignment.has_rubric ? (
-                        <>
-                          <div className="flex items-center gap-1">
-                            <Award className="w-4 h-4" />
-                            {assignment.rubric_name}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <FileText className="w-4 h-4" />
-                            {assignment.criteria.length} criteria
-                          </div>
-                          {assignment.existing_grades && assignment.existing_grades.length > 0 && (
-                            <div className="flex items-center gap-1 text-emerald-600">
-                              <CheckCircle className="w-4 h-4" />
-                              Graded
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-1 text-amber-600">
-                          <AlertCircle className="w-4 h-4" />
-                          Attach a rubric to this assignment before grading
+              // Show "no matches" message if filter removed everything
+              if (filteredAssignments.length === 0 && searchQuery.trim()) {
+                return (
+                  <div className="p-12 text-center">
+                    <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500 mb-2">No matching assignments found</p>
+                    <p className="text-sm text-gray-400">
+                      Try searching by student name, assignment title, or rubric name
+                    </p>
+                  </div>
+                );
+              }
+
+              // Render filtered assignments
+              return filteredAssignments.map((assignment) => (
+                <div
+                  key={assignment.id}
+                  onClick={() => assignment.has_rubric && handleSelectAssignment(assignment)}
+                  className={`p-4 transition ${
+                    assignment.has_rubric
+                      ? 'cursor-pointer hover:bg-gray-50'
+                      : 'cursor-not-allowed opacity-75 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded ${
+                          assignment.has_rubric ? 'bg-emerald-100' : 'bg-gray-200'
+                        }`}>
+                          <FileText className={`w-4 h-4 ${
+                            assignment.has_rubric ? 'text-emerald-600' : 'text-gray-500'
+                          }`} />
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
+                            {!assignment.has_rubric && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                Needs Rubric
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            <span className="inline-flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {assignment.student_name}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        {assignment.has_rubric ? (
+                          <>
+                            <div className="flex items-center gap-1">
+                              <Award className="w-4 h-4" />
+                              {assignment.rubric_name}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <FileText className="w-4 h-4" />
+                              {assignment.criteria.length} criteria
+                            </div>
+                            {assignment.existing_grades && assignment.existing_grades.length > 0 && (
+                              <div className="flex items-center gap-1 text-emerald-600">
+                                <CheckCircle className="w-4 h-4" />
+                                Graded
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-1 text-amber-600">
+                            <AlertCircle className="w-4 h-4" />
+                            Attach a rubric to this assignment before grading
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )).length === 0 && searchQuery.trim() && (
-              <div className="p-12 text-center">
-                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 mb-2">No matching assignments found</p>
-                <p className="text-sm text-gray-400">
-                  Try searching by student name, assignment title, or rubric name
-                </p>
-              </div>
-            )
-          )}
-        </div>
+              ));
+            })()}
+          </div>
         </>
       )}
 
