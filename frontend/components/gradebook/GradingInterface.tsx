@@ -22,6 +22,8 @@ import {
   ArrowLeft,
   TrendingUp,
   Search,
+  X,
+  Link,
 } from 'lucide-react';
 
 interface Assignment {
@@ -46,6 +48,13 @@ interface Assignment {
   }>;
 }
 
+interface Rubric {
+  id: string;
+  name: string;
+  description: string;
+  total_criteria: number;
+}
+
 export default function GradingInterface() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
@@ -54,6 +63,12 @@ export default function GradingInterface() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Rubric attachment modal state
+  const [showRubricModal, setShowRubricModal] = useState(false);
+  const [assignmentToAttach, setAssignmentToAttach] = useState<Assignment | null>(null);
+  const [availableRubrics, setAvailableRubrics] = useState<Rubric[]>([]);
+  const [isAttaching, setIsAttaching] = useState(false);
 
   // Scores state: { criterion_id: { score: number, comments: string } }
   const [scores, setScores] = useState<Record<string, { score: number; comments: string }>>({});
@@ -250,6 +265,78 @@ export default function GradingInterface() {
   };
 
   /**
+   * Fetch available rubrics for attaching
+   */
+  const fetchAvailableRubrics = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/rubrics', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableRubrics(data.rubrics || []);
+      }
+    } catch (err) {
+      console.error('Error fetching rubrics:', err);
+    }
+  };
+
+  /**
+   * Open rubric attachment modal
+   */
+  const handleOpenRubricModal = (assignment: Assignment) => {
+    setAssignmentToAttach(assignment);
+    setShowRubricModal(true);
+    fetchAvailableRubrics();
+  };
+
+  /**
+   * Attach rubric to assignment
+   */
+  const handleAttachRubric = async (rubricId: string) => {
+    if (!assignmentToAttach) return;
+
+    setIsAttaching(true);
+    setError(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await fetch(`/api/assignments/${assignmentToAttach.id}/rubric`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ rubric_id: rubricId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to attach rubric');
+      }
+
+      setSuccessMessage('Rubric attached successfully!');
+      setShowRubricModal(false);
+      setAssignmentToAttach(null);
+
+      // Refresh assignments list
+      await fetchAssignmentsWithRubrics();
+
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to attach rubric');
+    } finally {
+      setIsAttaching(false);
+    }
+  };
+
+  /**
    * Get letter grade
    */
   const getLetterGrade = (percentage: number): string => {
@@ -393,12 +480,14 @@ export default function GradingInterface() {
               return filteredAssignments.map((assignment) => (
                 <div
                   key={assignment.id}
-                  onClick={() => assignment.has_rubric && handleSelectAssignment(assignment)}
-                  className={`p-4 transition ${
-                    assignment.has_rubric
-                      ? 'cursor-pointer hover:bg-gray-50'
-                      : 'cursor-not-allowed opacity-75 bg-gray-50'
-                  }`}
+                  onClick={() => {
+                    if (assignment.has_rubric) {
+                      handleSelectAssignment(assignment);
+                    } else {
+                      handleOpenRubricModal(assignment);
+                    }
+                  }}
+                  className="p-4 cursor-pointer transition hover:bg-gray-50"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -601,6 +690,75 @@ export default function GradingInterface() {
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* RUBRIC ATTACHMENT MODAL */}
+      {showRubricModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="border-b border-gray-200 p-6 flex items-center justify-between sticky top-0 bg-white">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Attach Rubric</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {assignmentToAttach?.title} • {assignmentToAttach?.student_name}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowRubricModal(false);
+                  setAssignmentToAttach(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {availableRubrics.length === 0 ? (
+                <div className="text-center py-8">
+                  <Award className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500 mb-2">No rubrics available</p>
+                  <p className="text-sm text-gray-400">
+                    Create a rubric first from the Rubrics tab
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableRubrics.map((rubric) => (
+                    <div
+                      key={rubric.id}
+                      onClick={() => !isAttaching && handleAttachRubric(rubric.id)}
+                      className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{rubric.name}</h4>
+                          {rubric.description && (
+                            <p className="text-sm text-gray-600 mt-1">{rubric.description}</p>
+                          )}
+                          <p className="text-sm text-gray-500 mt-2">
+                            {rubric.total_criteria} criteria
+                          </p>
+                        </div>
+                        <Link className="w-5 h-5 text-emerald-600" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isAttaching && (
+                <div className="mt-4 p-4 bg-emerald-50 rounded-lg flex items-center gap-3">
+                  <Loader className="w-5 h-5 text-emerald-600 animate-spin" />
+                  <p className="text-emerald-700">Attaching rubric...</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
