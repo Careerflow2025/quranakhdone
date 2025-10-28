@@ -4729,19 +4729,13 @@ export default function SchoolDashboard() {
                 {gradebookData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                      <p className="text-orange-100 text-sm">Students with Grades</p>
+                      <p className="text-orange-100 text-sm">Students Graded</p>
                       <p className="text-2xl font-bold">{gradebookData.total_students_with_grades || 0}</p>
                     </div>
                     <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                      <p className="text-orange-100 text-sm">Total Assignments</p>
+                      <p className="text-orange-100 text-sm">Graded Assignments</p>
                       <p className="text-2xl font-bold">
                         {gradebookData.total_assignments || 0}
-                      </p>
-                    </div>
-                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                      <p className="text-orange-100 text-sm">Total Grades</p>
-                      <p className="text-2xl font-bold">
-                        {gradebookData.total_grades || 0}
                       </p>
                     </div>
                     <div className="bg-white bg-opacity-20 rounded-lg p-4">
@@ -4750,8 +4744,33 @@ export default function SchoolDashboard() {
                         {gradebookData.school_wide_average || 0}%
                       </p>
                     </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-orange-100 text-sm">Overall Performance</p>
+                      <p className="text-lg font-bold text-green-200">
+                        {gradebookData.school_wide_average >= 90 ? 'Excellent' :
+                         gradebookData.school_wide_average >= 80 ? 'Very Good' :
+                         gradebookData.school_wide_average >= 70 ? 'Good' :
+                         gradebookData.school_wide_average >= 60 ? 'Fair' : 'Needs Improvement'}
+                      </p>
+                    </div>
                   </div>
                 )}
+              </div>
+
+              {/* Info Banner - How Grading Works */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-blue-900 mb-1">How Grading Works</h4>
+                    <p className="text-sm text-blue-700 leading-relaxed">
+                      Each assignment is graded using a <span className="font-semibold">rubric with multiple criteria</span>.
+                      For example, a Tajweed assignment might have 3 criteria: pronunciation, rules, and fluency.
+                      The student's <span className="font-semibold">average score</span> is calculated across all criteria
+                      from all their graded assignments to give their overall performance.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Gradebook Data Display */}
@@ -4864,18 +4883,19 @@ export default function SchoolDashboard() {
                                 </div>
 
                                 {/* Grade Stats */}
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                   <div className="bg-orange-50 rounded-lg p-3 text-center">
-                                    <p className="text-xs text-orange-700 font-medium mb-1">Assignments</p>
+                                    <p className="text-xs text-orange-700 font-medium mb-1">Assignments Graded</p>
                                     <p className="text-lg font-bold text-orange-600">{student.total_assignments || 0}</p>
                                   </div>
-                                  <div className="bg-red-50 rounded-lg p-3 text-center">
-                                    <p className="text-xs text-red-700 font-medium mb-1">Graded</p>
-                                    <p className="text-lg font-bold text-red-600">{student.graded_assignments || 0}</p>
-                                  </div>
-                                  <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                    <p className="text-xs text-gray-700 font-medium mb-1">Total Grades</p>
-                                    <p className="text-lg font-bold text-gray-600">{student.total_grades || 0}</p>
+                                  <div className="bg-green-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-green-700 font-medium mb-1">Performance</p>
+                                    <p className="text-lg font-bold text-green-600">
+                                      {student.average_score >= 90 ? 'Excellent' :
+                                       student.average_score >= 80 ? 'Very Good' :
+                                       student.average_score >= 70 ? 'Good' :
+                                       student.average_score >= 60 ? 'Fair' : 'Needs Work'}
+                                    </p>
                                   </div>
                                 </div>
                               </div>
