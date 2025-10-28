@@ -365,7 +365,7 @@ export function validateBulkUpdateCount(
 
 export interface PermissionContext {
   userId: string;
-  userRole: 'school' | 'teacher' | 'student' | 'parent';
+  userRole: 'school' | 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
   schoolId: string;
   studentId?: string; // For students, this is their own ID
   teacherClassIds?: string[]; // For teachers, their class IDs
@@ -378,10 +378,11 @@ export interface MasteryPermissionContext {
 }
 
 /**
- * Check if user can update mastery (teachers only)
+ * Check if user can update mastery (teachers, owners, admins)
  */
 export function canUpdateMastery(ctx: PermissionContext): boolean {
-  return ['teacher', 'school'].includes(ctx.userRole);
+  const allowedRoles = ['teacher', 'school', 'owner', 'admin'] as const;
+  return allowedRoles.some(role => ctx.userRole.includes(role));
 }
 
 /**
@@ -396,14 +397,11 @@ export function canViewStudentMastery(
     return false;
   }
 
-  // School/admin can view all students
-  if (ctx.userRole === 'school') {
+  // Owner/admin/teacher can view all students in their school
+  // This matches gradebook permissions pattern - simpler than class-based checks
+  const allowedRoles = ['school', 'teacher', 'owner', 'admin'] as const;
+  if (allowedRoles.some(role => ctx.userRole.includes(role))) {
     return true;
-  }
-
-  // Teachers can view students in their classes
-  if (ctx.userRole === 'teacher' && masteryCtx.targetClassId) {
-    return ctx.teacherClassIds?.includes(masteryCtx.targetClassId) || false;
   }
 
   // Students can view their own mastery
