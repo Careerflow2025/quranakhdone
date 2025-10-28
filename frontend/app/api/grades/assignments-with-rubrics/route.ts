@@ -149,6 +149,14 @@ export async function GET(request: NextRequest) {
         .map(async (assignment: any) => {
           const hasRubric = assignment.assignment_rubrics && assignment.assignment_rubrics.length > 0;
 
+          // Fetch student's class IDs for filtering
+          const { data: studentClasses } = await supabaseAdmin
+            .from('class_enrollments')
+            .select('class_id')
+            .eq('student_id', assignment.student_id);
+
+          const studentClassIds = (studentClasses || []).map((sc: any) => sc.class_id);
+
           if (hasRubric) {
             const rubricData = assignment.assignment_rubrics[0].rubrics;
             const criteria = rubricData.rubric_criteria || [];
@@ -165,6 +173,7 @@ export async function GET(request: NextRequest) {
               title: assignment.title,
               student_id: assignment.student_id,
               student_name: assignment.students?.profiles?.display_name || 'Unknown Student',
+              student_class_ids: studentClassIds,
               rubric_id: rubricData.id,
               rubric_name: rubricData.name,
               criteria: criteria.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
@@ -178,6 +187,7 @@ export async function GET(request: NextRequest) {
               title: assignment.title,
               student_id: assignment.student_id,
               student_name: assignment.students?.profiles?.display_name || 'Unknown Student',
+              student_class_ids: studentClassIds,
               rubric_id: null,
               rubric_name: null,
               criteria: [],

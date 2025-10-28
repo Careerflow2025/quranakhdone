@@ -24,6 +24,7 @@ import {
   Search,
   X,
   Link,
+  Filter,
 } from 'lucide-react';
 
 interface Assignment {
@@ -31,6 +32,7 @@ interface Assignment {
   title: string;
   student_id: string;
   student_name: string;
+  student_class_ids?: string[]; // Array of class IDs this student belongs to
   rubric_id: string | null;
   rubric_name: string | null;
   has_rubric: boolean;
@@ -55,6 +57,13 @@ interface Rubric {
   total_criteria: number;
 }
 
+interface Class {
+  id: string;
+  name: string;
+}
+
+type StatusFilter = 'all' | 'graded' | 'ready' | 'needs_rubric';
+
 export default function GradingInterface() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
@@ -63,6 +72,11 @@ export default function GradingInterface() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [selectedClassId, setSelectedClassId] = useState<string>('all');
+  const [classes, setClasses] = useState<Class[]>([]);
 
   // Rubric attachment modal state
   const [showRubricModal, setShowRubricModal] = useState(false);
@@ -73,9 +87,10 @@ export default function GradingInterface() {
   // Scores state: { criterion_id: { score: number, comments: string } }
   const [scores, setScores] = useState<Record<string, { score: number; comments: string }>>({});
 
-  // Fetch assignments with rubrics on mount
+  // Fetch assignments and classes on mount
   useEffect(() => {
     fetchAssignmentsWithRubrics();
+    fetchTeacherClasses();
   }, []);
 
   /**
@@ -111,6 +126,27 @@ export default function GradingInterface() {
       setError(err.message || 'Failed to load assignments');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * Fetch teacher's classes
+   */
+  const fetchTeacherClasses = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/teacher/classes', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setClasses(data.classes || []);
+      }
+    } catch (err) {
+      console.error('Error fetching classes:', err);
     }
   };
 
@@ -361,6 +397,43 @@ export default function GradingInterface() {
     return 'text-red-600 bg-red-50';
   };
 
+  /**
+   * Apply filters to assignments
+   */
+  const getFilteredAssignments = () => {
+    return assignments.filter((assignment) => {
+      // Status filter
+      if (statusFilter === 'graded' && (!assignment.existing_grades || assignment.existing_grades.length === 0)) {
+        return false;
+      }
+      if (statusFilter === 'ready' && (!assignment.has_rubric || (assignment.existing_grades && assignment.existing_grades.length > 0))) {
+        return false;
+      }
+      if (statusFilter === 'needs_rubric' && assignment.has_rubric) {
+        return false;
+      }
+
+      // Class filter
+      if (selectedClassId !== 'all') {
+        if (!assignment.student_class_ids || !assignment.student_class_ids.includes(selectedClassId)) {
+          return false;
+        }
+      }
+
+      // Search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        return (
+          assignment.student_name.toLowerCase().includes(query) ||
+          assignment.title.toLowerCase().includes(query) ||
+          (assignment.rubric_name && assignment.rubric_name.toLowerCase().includes(query))
+        );
+      }
+
+      return true;
+    });
+  };
+
   const { total: totalScore, percentage: totalPercentage } = calculateTotalScore();
 
   // ============================================================================
@@ -429,18 +502,85 @@ export default function GradingInterface() {
       {/* ASSIGNMENT LIST VIEW */}
       {!isLoading && !selectedAssignment && (
         <>
-          {/* Search Bar */}
+          {/* Filters Section */}
           {assignments.length > 0 && (
-            <div className="p-6 border-b border-gray-200">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by student name or assignment title..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+            <div className="p-6 border-b border-gray-200 space-y-4">
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-3">
+                <Filter className="w-5 h-5 text-gray-500" />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setStatusFilter('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      statusFilter === 'all'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    All ({assignments.length})
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter('ready')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      statusFilter === 'ready'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Ready to Grade ({assignments.filter(a => a.has_rubric && (!a.existing_grades || a.existing_grades.length === 0)).length})
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter('graded')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      statusFilter === 'graded'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Graded ({assignments.filter(a => a.existing_grades && a.existing_grades.length > 0).length})
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter('needs_rubric')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      statusFilter === 'needs_rubric'
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Needs Rubric ({assignments.filter(a => !a.has_rubric).length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Class Filter Dropdown and Search */}
+              <div className="flex items-center gap-3">
+                {/* Class Dropdown */}
+                {classes.length > 0 && (
+                  <select
+                    value={selectedClassId}
+                    onChange={(e) => setSelectedClassId(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  >
+                    <option value="all">All Classes</option>
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Search Bar */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by student name or assignment title..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -455,25 +595,17 @@ export default function GradingInterface() {
                 </p>
               </div>
             ) : (() => {
-              // Filter assignments based on search query
-              const filteredAssignments = assignments.filter((assignment) => {
-                if (!searchQuery.trim()) return true;
-                const query = searchQuery.toLowerCase();
-                return (
-                  assignment.student_name.toLowerCase().includes(query) ||
-                  assignment.title.toLowerCase().includes(query) ||
-                  (assignment.rubric_name && assignment.rubric_name.toLowerCase().includes(query))
-                );
-              });
+              // Get filtered assignments
+              const filteredAssignments = getFilteredAssignments();
 
               // Show "no matches" message if filter removed everything
-              if (filteredAssignments.length === 0 && searchQuery.trim()) {
+              if (filteredAssignments.length === 0) {
                 return (
                   <div className="p-12 text-center">
                     <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                     <p className="text-gray-500 mb-2">No matching assignments found</p>
                     <p className="text-sm text-gray-400">
-                      Try searching by student name, assignment title, or rubric name
+                      Try adjusting your filters or search query
                     </p>
                   </div>
                 );
