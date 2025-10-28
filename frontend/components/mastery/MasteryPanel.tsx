@@ -207,7 +207,7 @@ export default function MasteryPanel({ userRole = 'teacher', studentId }: Master
   }
 
   // Student selector for teachers (show before data loads)
-  if ((userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') && !studentId) {
+  if ((userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') && !selectedStudent) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center gap-3 mb-6">
