@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useMastery, UpdateMasteryData } from '@/hooks/useMastery';
+import { createClient } from '@/lib/supabase-client';
 import {
   BookOpen, ChevronLeft, ChevronRight, TrendingUp, Target,
-  Award, Loader, AlertCircle, X, Check, RefreshCw,
+  Award, Loader, AlertCircle, X, Check, RefreshCw, Users,
 } from 'lucide-react';
 import {
   MasteryLevel,
@@ -14,6 +15,12 @@ import {
   getSurahName,
   getAyahCount,
 } from '@/lib/types/mastery';
+
+interface Student {
+  id: string;
+  display_name: string;
+  email: string;
+}
 
 interface MasteryPanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
@@ -50,12 +57,72 @@ export default function MasteryPanel({ userRole = 'teacher', studentId }: Master
   } | null>(null);
   const [newMasteryLevel, setNewMasteryLevel] = useState<MasteryLevel>('unknown');
 
+  // Student selection state (for teachers)
+  const [studentsList, setStudentsList] = useState<Student[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [studentsError, setStudentsError] = useState<string | null>(null);
+
+  // Fetch students list for teachers
+  useEffect(() => {
+    if (userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') {
+      fetchStudentsList();
+    }
+  }, [userRole]);
+
+  const fetchStudentsList = async () => {
+    try {
+      setIsLoadingStudents(true);
+      setStudentsError(null);
+
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        setStudentsError('Please login to access students');
+        return;
+      }
+
+      const response = await fetch('/api/teacher/students', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to fetch students');
+      }
+
+      setStudentsList(result.students || []);
+
+      // Auto-select first student if none selected
+      if (result.students && result.students.length > 0 && !selectedStudent) {
+        changeStudent(result.students[0].id);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch students:', err);
+      setStudentsError(err.message || 'Failed to fetch students');
+    } finally {
+      setIsLoadingStudents(false);
+    }
+  };
+
   // Initialize student if provided
   useEffect(() => {
     if (studentId && studentId !== selectedStudent) {
       changeStudent(studentId);
     }
   }, [studentId, selectedStudent, changeStudent]);
+
+  // Handle student selection change
+  const handleStudentChange = (newStudentId: string) => {
+    if (newStudentId) {
+      changeStudent(newStudentId);
+    }
+  };
 
   // Handle ayah click - teachers can update, students/parents view-only
   const handleAyahClick = (
@@ -140,7 +207,65 @@ export default function MasteryPanel({ userRole = 'teacher', studentId }: Master
     );
   }
 
-  // No student selected state
+  // Student selector for teachers (show before data loads)
+  if ((userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') && !studentId) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-purple-100 rounded-lg">
+            <Users className="w-6 h-6 text-purple-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Mastery Tracking</h2>
+            <p className="text-sm text-gray-500">Select a student to view their mastery progress</p>
+          </div>
+        </div>
+
+        {isLoadingStudents ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader className="w-8 h-8 text-purple-600 animate-spin" />
+          </div>
+        ) : studentsError ? (
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <p className="text-red-600 font-medium mb-2">Error loading students</p>
+            <p className="text-gray-600 text-sm mb-4">{studentsError}</p>
+            <button
+              onClick={fetchStudentsList}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : studentsList.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">No students found in your classes</p>
+          </div>
+        ) : (
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Student
+            </label>
+            <select
+              value={selectedStudent || ''}
+              onChange={(e) => handleStudentChange(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+            >
+              <option value="">Choose a student...</option>
+              {studentsList.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.display_name} ({student.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // No student selected state (after teacher selects from dropdown)
   if (!studentOverview) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -179,6 +304,26 @@ export default function MasteryPanel({ userRole = 'teacher', studentId }: Master
             <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
+
+        {/* STUDENT SELECTOR FOR TEACHERS */}
+        {(userRole === 'teacher' || userRole === 'admin' || userRole === 'owner') && !studentId && studentsList.length > 0 && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Switch Student
+            </label>
+            <select
+              value={selectedStudent || ''}
+              onChange={(e) => handleStudentChange(e.target.value)}
+              className="max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+            >
+              {studentsList.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.display_name} ({student.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* PROGRESS OVERVIEW */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
