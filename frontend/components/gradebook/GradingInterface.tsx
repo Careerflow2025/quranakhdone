@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import {
   GraduationCap,
   BookOpen,
@@ -20,6 +21,7 @@ import {
   MessageSquare,
   ArrowLeft,
   TrendingUp,
+  Search,
 } from 'lucide-react';
 
 interface Assignment {
@@ -50,6 +52,7 @@ export default function GradingInterface() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Scores state: { criterion_id: { score: number, comments: string } }
   const [scores, setScores] = useState<Record<string, { score: number; comments: string }>>({});
@@ -67,25 +70,28 @@ export default function GradingInterface() {
     setError(null);
 
     try {
-      // Get auth token from session
-      const token = localStorage.getItem('supabase.auth.token');
-      if (!token) {
-        throw new Error('Not authenticated');
+      // Get current session from Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error('Not authenticated. Please log in.');
       }
 
       const response = await fetch('/api/grades/assignments-with-rubrics', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch assignments');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch assignments');
       }
 
       const data = await response.json();
       setAssignments(data.assignments || []);
     } catch (err: any) {
+      console.error('Error fetching assignments:', err);
       setError(err.message || 'Failed to load assignments');
     } finally {
       setIsLoading(false);
@@ -188,44 +194,54 @@ export default function GradingInterface() {
     setSuccessMessage(null);
 
     try {
-      // Get auth token
-      const token = localStorage.getItem('supabase.auth.token');
-      if (!token) {
-        throw new Error('Not authenticated');
+      // Get current session from Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error('Not authenticated. Please log in.');
       }
 
-      // Prepare grades array
-      const gradesToSave = selectedAssignment.criteria.map((criterion) => ({
-        assignment_id: selectedAssignment.id,
-        student_id: selectedAssignment.student_id,
-        criterion_id: criterion.id,
-        score: scores[criterion.id]?.score || 0,
-        max_score: criterion.max_score,
-        comments: scores[criterion.id]?.comments || null,
-      }));
+      // Save each criterion grade individually
+      const savePromises = selectedAssignment.criteria.map(async (criterion) => {
+        const response = await fetch('/api/grades', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            assignment_id: selectedAssignment.id,
+            student_id: selectedAssignment.student_id,
+            criterion_id: criterion.id,
+            score: scores[criterion.id]?.score || 0,
+            max_score: criterion.max_score,
+            comments: scores[criterion.id]?.comments || '',
+          }),
+        });
 
-      // Save to API
-      const response = await fetch('/api/grades', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          grades: gradesToSave,
-        }),
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to save grade for ${criterion.name}`);
+        }
+
+        return response.json();
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save grades');
-      }
+      // Wait for all grades to be saved
+      await Promise.all(savePromises);
 
       setSuccessMessage('Grades saved successfully!');
 
       // Refresh assignments to get updated existing grades
       await fetchAssignmentsWithRubrics();
+
+      // Go back to assignment list
+      setTimeout(() => {
+        setSelectedAssignment(null);
+        setSuccessMessage(null);
+      }, 2000);
     } catch (err: any) {
+      console.error('Error saving grades:', err);
       setError(err.message || 'Failed to save grades');
     } finally {
       setIsSaving(false);
@@ -321,17 +337,44 @@ export default function GradingInterface() {
 
       {/* ASSIGNMENT LIST VIEW */}
       {!isLoading && !selectedAssignment && (
-        <div className="divide-y divide-gray-100">
-          {assignments.length === 0 ? (
-            <div className="p-12 text-center">
-              <BookOpen className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500 mb-2">No assignments with rubrics found</p>
-              <p className="text-sm text-gray-400">
-                Assignments must have rubrics attached before they can be graded here
-              </p>
+        <>
+          {/* Search Bar */}
+          {assignments.length > 0 && (
+            <div className="p-6 border-b border-gray-200">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by student name or assignment title..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="divide-y divide-gray-100">
+            {assignments.length === 0 ? (
+              <div className="p-12 text-center">
+                <BookOpen className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">No assignments with rubrics found</p>
+                <p className="text-sm text-gray-400">
+                  Assignments must have rubrics attached before they can be graded here
+                </p>
             </div>
           ) : (
-            assignments.map((assignment) => (
+            assignments
+              .filter((assignment) => {
+                if (!searchQuery.trim()) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  assignment.student_name.toLowerCase().includes(query) ||
+                  assignment.title.toLowerCase().includes(query) ||
+                  assignment.rubric_name.toLowerCase().includes(query)
+                );
+              })
+              .map((assignment) => (
               <div
                 key={assignment.id}
                 onClick={() => handleSelectAssignment(assignment)}
@@ -373,9 +416,18 @@ export default function GradingInterface() {
                   </div>
                 </div>
               </div>
-            ))
+            )).length === 0 && searchQuery.trim() && (
+              <div className="p-12 text-center">
+                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">No matching assignments found</p>
+                <p className="text-sm text-gray-400">
+                  Try searching by student name, assignment title, or rubric name
+                </p>
+              </div>
+            )
           )}
         </div>
+        </>
       )}
 
       {/* GRADING VIEW */}
