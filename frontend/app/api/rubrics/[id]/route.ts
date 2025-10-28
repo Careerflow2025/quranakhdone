@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateUpdateRubricRequest,
   canViewRubric,
@@ -37,20 +37,35 @@ export async function GET(
   try {
     const rubricId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<GradebookErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdminAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -58,7 +73,7 @@ export async function GET(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -76,7 +91,7 @@ export async function GET(
     }
 
     // 4. Fetch rubric with criteria and creator info
-    const { data: rubric, error: rubricError } = await supabase
+    const { data: rubric, error: rubricError } = await supabaseAdmin
       .from('rubrics')
       .select(`
         *,
@@ -130,14 +145,14 @@ export async function GET(
     }
 
     // 6. Get creator details
-    const { data: creator } = await supabase
+    const { data: creator } = await supabaseAdmin
       .from('profiles')
       .select('user_id, display_name, email')
       .eq('user_id', rubric.created_by)
       .single();
 
     // 7. Get assignment count (how many assignments use this rubric)
-    const { count: assignmentCount } = await supabase
+    const { count: assignmentCount } = await supabaseAdmin
       .from('assignment_rubrics')
       .select('assignment_id', { count: 'exact', head: true })
       .eq('rubric_id', rubricId);
@@ -204,20 +219,35 @@ export async function PATCH(
   try {
     const rubricId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<GradebookErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdminAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -225,7 +255,7 @@ export async function PATCH(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -243,7 +273,7 @@ export async function PATCH(
     }
 
     // 4. Fetch existing rubric
-    const { data: existingRubric, error: rubricError } = await supabase
+    const { data: existingRubric, error: rubricError } = await supabaseAdmin
       .from('rubrics')
       .select('*')
       .eq('id', rubricId)
@@ -316,7 +346,7 @@ export async function PATCH(
     }
 
     // 8. Update rubric
-    const { data: updatedRubric, error: updateError } = await supabase
+    const { data: updatedRubric, error: updateError } = await supabaseAdmin
       .from('rubrics')
       .update(updateData)
       .eq('id', rubricId)
@@ -337,7 +367,7 @@ export async function PATCH(
     }
 
     // 9. Fetch updated rubric with criteria
-    const { data: rubricWithCriteria } = await supabase
+    const { data: rubricWithCriteria } = await supabaseAdmin
       .from('rubrics')
       .select('*, rubric_criteria(*)')
       .eq('id', rubricId)
@@ -390,20 +420,35 @@ export async function DELETE(
   try {
     const rubricId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json<GradebookErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Missing authorization header',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user using admin client
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdminAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid token',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
@@ -411,7 +456,7 @@ export async function DELETE(
     }
 
     // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -429,7 +474,7 @@ export async function DELETE(
     }
 
     // 4. Fetch rubric with assignment count
-    const { data: rubric, error: rubricError } = await supabase
+    const { data: rubric, error: rubricError } = await supabaseAdmin
       .from('rubrics')
       .select('*, rubric_criteria(*)')
       .eq('id', rubricId)
@@ -471,7 +516,7 @@ export async function DELETE(
     }
 
     // 6. Check if rubric is in use
-    const { count: assignmentCount } = await supabase
+    const { count: assignmentCount } = await supabaseAdmin
       .from('assignment_rubrics')
       .select('assignment_id', { count: 'exact', head: true })
       .eq('rubric_id', rubricId);
@@ -494,7 +539,7 @@ export async function DELETE(
     }
 
     // 7. Delete rubric (criteria will be cascade deleted)
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseAdmin
       .from('rubrics')
       .delete()
       .eq('id', rubricId);
