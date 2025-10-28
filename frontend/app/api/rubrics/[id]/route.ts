@@ -59,7 +59,7 @@ export async function GET(
     const {
       data: { user },
       error: authError,
-    } = await supabaseAdminAdmin.auth.getUser(token);
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
@@ -241,7 +241,7 @@ export async function PATCH(
     const {
       data: { user },
       error: authError,
-    } = await supabaseAdminAdmin.auth.getUser(token);
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
@@ -442,7 +442,7 @@ export async function DELETE(
     const {
       data: { user },
       error: authError,
-    } = await supabaseAdminAdmin.auth.getUser(token);
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
