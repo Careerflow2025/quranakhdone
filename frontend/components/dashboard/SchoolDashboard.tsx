@@ -20,7 +20,7 @@ import {
   TrendingUp, Eye, Mail, Phone, MapPin, BarChart3, ChevronRight, ChevronLeft, Folder, FolderOpen, LogOut,
   Menu, Shield, Key, CreditCard, DollarSign, Target, Activity, Zap, Package, Grid, List,
   ChevronDown, School, PieChart, Move, ArrowRight, X, XCircle, CheckCircle, RefreshCw, Send, Plus, Info,
-  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare, Brain
+  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare, Brain, ClipboardCheck
 } from 'lucide-react';
 
 const ClassBuilder = dynamic(() => import('./ClassBuilder'), {
@@ -147,6 +147,14 @@ export default function SchoolDashboard() {
     if (activeTab === 'mastery' && user?.schoolId) {
       console.log('🔄 Mastery tab opened - refreshing data...');
       fetchMasteryData();
+    }
+  }, [activeTab, user?.schoolId]);
+
+  // Refresh gradebook data when Gradebook tab is opened
+  useEffect(() => {
+    if (activeTab === 'gradebook' && user?.schoolId) {
+      console.log('🔄 Gradebook tab opened - refreshing data...');
+      fetchGradebookData();
     }
   }, [activeTab, user?.schoolId]);
 
@@ -357,6 +365,12 @@ export default function SchoolDashboard() {
   const [masteryError, setMasteryError] = useState<string | null>(null);
   const [masterySearchTerm, setMasterySearchTerm] = useState('');
   const [masteryStudentFilter, setMasteryStudentFilter] = useState('all');
+
+  // Gradebook State (view-only for school)
+  const [gradebookData, setGradebookData] = useState<any>(null);
+  const [gradebookLoading, setGradebookLoading] = useState(false);
+  const [gradebookError, setGradebookError] = useState<string | null>(null);
+  const [gradebookSearchTerm, setGradebookSearchTerm] = useState('');
 
   // Additional Credential State
   const [showAddCredential, setShowAddCredential] = useState(false);
@@ -1076,6 +1090,43 @@ export default function SchoolDashboard() {
       showNotification('Failed to load mastery data', 'error');
     } finally {
       setMasteryLoading(false);
+    }
+  };
+
+  // Fetch gradebook data for school
+  const fetchGradebookData = async () => {
+    if (!user?.schoolId) return;
+
+    setGradebookLoading(true);
+    setGradebookError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setGradebookError('Please login to view gradebook data');
+        return;
+      }
+
+      const response = await fetch('/api/gradebook/school', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch gradebook data');
+      }
+
+      const result = await response.json();
+      setGradebookData(result.data);
+    } catch (error: any) {
+      console.error('Error fetching gradebook data:', error);
+      setGradebookError(error.message || 'Failed to load gradebook data');
+      showNotification('Failed to load gradebook data', 'error');
+    } finally {
+      setGradebookLoading(false);
     }
   };
 
@@ -2320,6 +2371,7 @@ export default function SchoolDashboard() {
             { id: 'targets', label: 'Targets', icon: Target },
             { id: 'attendance', label: 'Attendance', icon: CheckSquare },
             { id: 'mastery', label: 'Mastery', icon: Brain },
+            { id: 'gradebook', label: 'Gradebook', icon: ClipboardCheck },
             { id: 'messages', label: 'Messages', icon: Mail },
             { id: 'calendar', label: 'Calendar', icon: Calendar },
             { id: 'reports', label: 'Reports', icon: BarChart3 },
@@ -4642,6 +4694,251 @@ export default function SchoolDashboard() {
                         <span className="text-xs text-gray-400">
                           {new Date(update.updated_at).toLocaleDateString()}
                         </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Gradebook Tab - Shows all grades across school */}
+          {activeTab === 'gradebook' && (
+            <div className="space-y-6">
+              {/* Header with Stats */}
+              <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center">
+                      <ClipboardCheck className="w-7 h-7 mr-3" />
+                      School-wide Gradebook
+                    </h2>
+                    <p className="text-orange-100 mt-1">All grades assigned by teachers across the school</p>
+                  </div>
+                  <button
+                    onClick={fetchGradebookData}
+                    disabled={gradebookLoading}
+                    className="bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-orange-50 transition flex items-center disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-5 h-5 mr-2 ${gradebookLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {/* Stats Row */}
+                {gradebookData && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-orange-100 text-sm">Students with Grades</p>
+                      <p className="text-2xl font-bold">{gradebookData.total_students_with_grades || 0}</p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-orange-100 text-sm">Total Assignments</p>
+                      <p className="text-2xl font-bold">
+                        {gradebookData.total_assignments || 0}
+                      </p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-orange-100 text-sm">Total Grades</p>
+                      <p className="text-2xl font-bold">
+                        {gradebookData.total_grades || 0}
+                      </p>
+                    </div>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                      <p className="text-orange-100 text-sm">School Average</p>
+                      <p className="text-2xl font-bold text-yellow-200">
+                        {gradebookData.school_wide_average || 0}%
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Gradebook Data Display */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                {/* Search and Filters */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={gradebookSearchTerm}
+                        onChange={(e) => setGradebookSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {gradebookLoading ? (
+                  <div className="text-center py-12">
+                    <RefreshCw className="w-12 h-12 text-orange-600 mx-auto mb-4 animate-spin" />
+                    <p className="text-gray-600">Loading gradebook data...</p>
+                  </div>
+                ) : gradebookError ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+                    <p className="text-red-600 font-semibold mb-2">Error loading gradebook data</p>
+                    <p className="text-gray-600 mb-4">{gradebookError}</p>
+                    <button
+                      onClick={fetchGradebookData}
+                      className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : !gradebookData || gradebookData.students?.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ClipboardCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No gradebook data yet</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Teachers can grade assignments in their Teacher Dashboard
+                    </p>
+                  </div>
+                ) : (
+                  (() => {
+                    // Apply client-side search filter
+                    const filteredStudents = gradebookData.students.filter((student: any) => {
+                      if (!gradebookSearchTerm) return true;
+                      const searchLower = gradebookSearchTerm.toLowerCase();
+                      return (
+                        student.student_name?.toLowerCase().includes(searchLower) ||
+                        student.student_email?.toLowerCase().includes(searchLower)
+                      );
+                    });
+
+                    if (filteredStudents.length === 0) {
+                      return (
+                        <div className="text-center py-12">
+                          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500 text-lg">No matching students found</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            Try adjusting your search term
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Student Grade Cards */}
+                        {filteredStudents.map((student: any) => (
+                          <div
+                            key={student.student_id}
+                            className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                    {student.student_name?.charAt(0) || 'S'}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900">{student.student_name}</h4>
+                                    <p className="text-sm text-gray-500">{student.student_email}</p>
+                                  </div>
+                                </div>
+
+                                {/* Grade Summary */}
+                                <div className="mb-3 flex items-center gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600">Average Score:</span>
+                                    <span className="text-2xl font-bold text-orange-600">
+                                      {student.average_score || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600">Letter Grade:</span>
+                                    <span className={`text-2xl font-bold ${
+                                      student.letter_grade === 'A' ? 'text-green-600' :
+                                      student.letter_grade === 'B' ? 'text-blue-600' :
+                                      student.letter_grade === 'C' ? 'text-yellow-600' :
+                                      student.letter_grade === 'D' ? 'text-orange-600' :
+                                      'text-red-600'
+                                    }`}>
+                                      {student.letter_grade}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Grade Stats */}
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="bg-orange-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-orange-700 font-medium mb-1">Assignments</p>
+                                    <p className="text-lg font-bold text-orange-600">{student.total_assignments || 0}</p>
+                                  </div>
+                                  <div className="bg-red-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-red-700 font-medium mb-1">Graded</p>
+                                    <p className="text-lg font-bold text-red-600">{student.graded_assignments || 0}</p>
+                                  </div>
+                                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                    <p className="text-xs text-gray-700 font-medium mb-1">Total Grades</p>
+                                    <p className="text-lg font-bold text-gray-600">{student.total_grades || 0}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Last Graded */}
+                            <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                              <span className="flex items-center">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Last graded: {new Date(student.last_graded).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+
+                        {gradebookData.students.length > 20 && (
+                          <div className="text-center text-gray-500 text-sm pt-4">
+                            Showing {Math.min(20, filteredStudents.length)} of {gradebookData.students.length} students
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
+
+              {/* Recent Grades Section */}
+              {gradebookData && gradebookData.recent_grades && gradebookData.recent_grades.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-orange-600" />
+                    Recent Grades
+                  </h3>
+                  <div className="space-y-3">
+                    {gradebookData.recent_grades.slice(0, 10).map((grade: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                            {grade.student_name?.charAt(0) || 'S'}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{grade.student_name}</p>
+                            <p className="text-xs text-gray-500">
+                              {grade.assignment_title} - {grade.criterion_name}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-orange-600">
+                              {grade.percentage}%
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {grade.score}/{grade.max_score}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="ml-4 text-right">
+                          <p className="text-xs text-gray-500">
+                            by {grade.graded_by}
+                          </p>
+                          <span className="text-xs text-gray-400">
+                            {new Date(grade.graded_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
