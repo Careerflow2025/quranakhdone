@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin-admin';
 import { canViewStudentMastery } from '@/lib/validators/mastery';
 import {
   GetStudentMasteryResponse,
@@ -38,28 +38,43 @@ export async function GET(
       ? parseInt(searchParams.get('surah')!)
       : undefined;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdminAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<MasteryErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdminAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<MasteryErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -76,8 +91,8 @@ export async function GET(
       );
     }
 
-    // 4. Verify student exists and belongs to same school
-    const { data: student } = await supabase
+    // 5. Verify student exists and belongs to same school
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id, user_id')
       .eq('id', studentId)
@@ -94,7 +109,7 @@ export async function GET(
       );
     }
 
-    const { data: studentProfile } = await supabase
+    const { data: studentProfile } = await supabaseAdmin
       .from('profiles')
       .select('school_id, display_name, email')
       .eq('user_id', student.user_id)
@@ -111,7 +126,7 @@ export async function GET(
       );
     }
 
-    // 5. Check permissions
+    // 6. Check permissions
     const hasPermission = canViewStudentMastery(
       {
         userId: user.id,
@@ -135,10 +150,10 @@ export async function GET(
       );
     }
 
-    // 6. Get default script if not provided
+    // 7. Get default script if not provided
     let targetScriptId = script_id;
     if (!targetScriptId) {
-      const { data: defaultScript } = await supabase
+      const { data: defaultScript } = await supabaseAdmin
         .from('quran_scripts')
         .select('id')
         .eq('code', MASTERY_CONSTANTS.DEFAULT_SCRIPT)
@@ -157,8 +172,8 @@ export async function GET(
       );
     }
 
-    // 7. Get script details
-    const { data: script } = await supabase
+    // 8. Get script details
+    const { data: script } = await supabaseAdmin
       .from('quran_scripts')
       .select('id, code, display_name')
       .eq('id', targetScriptId)
@@ -175,8 +190,8 @@ export async function GET(
       );
     }
 
-    // 8. Build mastery query
-    let masteryQuery = supabase
+    // 9. Build mastery query
+    let masteryQuery = supabaseAdmin
       .from('ayah_mastery')
       .select(
         `
@@ -195,7 +210,7 @@ export async function GET(
 
     masteryQuery = masteryQuery.order('last_updated', { ascending: false });
 
-    // 9. Execute query
+    // 10. Execute query
     const { data: masteryRecords, error: masteryError } = await masteryQuery;
 
     if (masteryError) {
@@ -211,7 +226,7 @@ export async function GET(
       );
     }
 
-    // 10. Process mastery records
+    // 11. Process mastery records
     const allMasteryRecords = (masteryRecords || []).map((record: any) => ({
       id: record.id,
       student_id: record.student_id,
@@ -234,10 +249,10 @@ export async function GET(
       ? allMasteryRecords.filter((r) => r.ayah?.surah === surah)
       : allMasteryRecords;
 
-    // 11. Calculate mastery summary
+    // 12. Calculate mastery summary
     const masterySummary = calculateMasterySummary(filteredMasteryRecords);
 
-    // 12. Get recent updates (last 10)
+    // 13. Get recent updates (last 10)
     const recentUpdates: AyahMasteryWithDetails[] = filteredMasteryRecords
       .slice(0, 10)
       .map((record) => ({
@@ -254,7 +269,7 @@ export async function GET(
         },
       }));
 
-    // 13. Calculate surahs progress
+    // 14. Calculate surahs progress
     const surahsMap = new Map<number, AyahMasteryWithDetails[]>();
     filteredMasteryRecords.forEach((record) => {
       const surahNum = record.ayah?.surah;
@@ -293,7 +308,7 @@ export async function GET(
       })
       .sort((a, b) => b.completion_percentage - a.completion_percentage);
 
-    // 14. Build overview
+    // 15. Build overview
     const overview: StudentMasteryOverview = {
       student_id: studentId,
       student_name: studentProfile.display_name || 'Unknown',
@@ -305,7 +320,7 @@ export async function GET(
       surahs_progress: surahsProgress,
     };
 
-    // 15. Return success response
+    // 16. Return success response
     return NextResponse.json<GetStudentMasteryResponse>(
       {
         success: true,

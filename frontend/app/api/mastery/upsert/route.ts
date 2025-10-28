@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin-admin';
 import {
   validateUpsertMasteryRequest,
   canUpdateMastery,
@@ -27,28 +27,43 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdminAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<MasteryErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdminAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<MasteryErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -65,7 +80,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Check permissions (only teachers can update mastery)
+    // 5. Check permissions (only teachers can update mastery)
     if (
       !canUpdateMastery({
         userId: user.id,
@@ -83,7 +98,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Parse and validate request body
+    // 6. Parse and validate request body
     const body = await request.json();
     const validation = validateUpsertMasteryRequest(body);
 
@@ -101,8 +116,8 @@ export async function POST(request: NextRequest) {
 
     const { student_id, script_id, ayah_id, level } = validation.data;
 
-    // 6. Verify student exists and belongs to same school
-    const { data: student } = await supabase
+    // 7. Verify student exists and belongs to same school
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id, user_id')
       .eq('id', student_id)
@@ -119,7 +134,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: studentProfile } = await supabase
+    const { data: studentProfile } = await supabaseAdmin
       .from('profiles')
       .select('school_id, display_name, email')
       .eq('user_id', student.user_id)
@@ -136,8 +151,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Verify script exists
-    const { data: script, error: scriptError } = await supabase
+    // 8. Verify script exists
+    const { data: script, error: scriptError } = await supabaseAdmin
       .from('quran_scripts')
       .select('id, code, display_name')
       .eq('id', script_id)
@@ -154,8 +169,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Verify ayah exists
-    const { data: ayah, error: ayahError } = await supabase
+    // 9. Verify ayah exists
+    const { data: ayah, error: ayahError } = await supabaseAdmin
       .from('quran_ayahs')
       .select('id, surah, ayah, text')
       .eq('id', ayah_id)
@@ -173,8 +188,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9. Check if mastery record already exists (upsert behavior)
-    const { data: existingMastery } = await supabase
+    // 10. Check if mastery record already exists (upsert behavior)
+    const { data: existingMastery } = await supabaseAdmin
       .from('ayah_mastery')
       .select('id, level')
       .eq('student_id', student_id)
@@ -190,7 +205,7 @@ export async function POST(request: NextRequest) {
       previousLevel = existingMastery.level as MasteryLevel;
       improved = isMasteryImprovement(previousLevel, level);
 
-      const { data: updatedMastery, error: updateError } = await supabase
+      const { data: updatedMastery, error: updateError } = await supabaseAdmin
         .from('ayah_mastery')
         .update({
           level,
@@ -250,7 +265,7 @@ export async function POST(request: NextRequest) {
       );
     } else {
       // Create new mastery record
-      const { data: newMastery, error: insertError } = await supabase
+      const { data: newMastery, error: insertError } = await supabaseAdmin
         .from('ayah_mastery')
         .insert({
           student_id,

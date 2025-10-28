@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin-admin';
 import { canViewStudentMastery } from '@/lib/validators/mastery';
 import {
   GetHeatmapResponse,
@@ -60,28 +60,43 @@ export async function GET(
       );
     }
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase admin client
+    const supabaseAdminAdmin = getSupabaseAdmin();
 
-    // 2. Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // 2. Get authorization header and extract token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
       return NextResponse.json<MasteryErrorResponse>(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Missing authorization header',
           code: 'UNAUTHORIZED',
         },
         { status: 401 }
       );
     }
 
-    // 3. Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const token = authHeader.replace('Bearer ', '');
+
+    // 3. Get authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdminAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json<MasteryErrorResponse>(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid token',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 4. Get user profile
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_id, school_id, role')
       .eq('user_id', user.id)
@@ -98,8 +113,8 @@ export async function GET(
       );
     }
 
-    // 4. Verify student exists and belongs to same school
-    const { data: student } = await supabase
+    // 5. Verify student exists and belongs to same school
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id, user_id')
       .eq('id', student_id)
@@ -116,7 +131,7 @@ export async function GET(
       );
     }
 
-    const { data: studentProfile } = await supabase
+    const { data: studentProfile } = await supabaseAdmin
       .from('profiles')
       .select('school_id')
       .eq('user_id', student.user_id)
@@ -133,7 +148,7 @@ export async function GET(
       );
     }
 
-    // 5. Check permissions
+    // 6. Check permissions
     const hasPermission = canViewStudentMastery(
       {
         userId: user.id,
@@ -157,10 +172,10 @@ export async function GET(
       );
     }
 
-    // 6. Get default script if not provided
+    // 7. Get default script if not provided
     let targetScriptId = script_id;
     if (!targetScriptId) {
-      const { data: defaultScript } = await supabase
+      const { data: defaultScript } = await supabaseAdmin
         .from('quran_scripts')
         .select('id')
         .eq('code', MASTERY_CONSTANTS.DEFAULT_SCRIPT)
@@ -179,8 +194,8 @@ export async function GET(
       );
     }
 
-    // 7. Get all ayahs for this surah
-    const { data: ayahs, error: ayahsError } = await supabase
+    // 8. Get all ayahs for this surah
+    const { data: ayahs, error: ayahsError } = await supabaseAdmin
       .from('quran_ayahs')
       .select('id, surah, ayah, text')
       .eq('script_id', targetScriptId)
@@ -198,22 +213,22 @@ export async function GET(
       );
     }
 
-    // 8. Get mastery records for this student and surah
+    // 9. Get mastery records for this student and surah
     const ayahIds = ayahs.map((a) => a.id);
-    const { data: masteryRecords } = await supabase
+    const { data: masteryRecords } = await supabaseAdmin
       .from('ayah_mastery')
       .select('*')
       .eq('student_id', student_id)
       .eq('script_id', targetScriptId)
       .in('ayah_id', ayahIds);
 
-    // 9. Create mastery map for quick lookup
+    // 10. Create mastery map for quick lookup
     const masteryMap = new Map<string, any>();
     (masteryRecords || []).forEach((record) => {
       masteryMap.set(record.ayah_id, record);
     });
 
-    // 10. Build heatmap data (all ayahs with their mastery level)
+    // 11. Build heatmap data (all ayahs with their mastery level)
     const masteryByAyah: AyahMasteryEntry[] = ayahs.map((ayah) => {
       const masteryRecord = masteryMap.get(ayah.id);
       return {
@@ -225,14 +240,14 @@ export async function GET(
       };
     });
 
-    // 11. Calculate summary
+    // 12. Calculate summary
     const summary = calculateMasterySummary(masteryByAyah);
 
-    // 12. Get surah info
+    // 13. Get surah info
     const surahName = getSurahName(surahNumber);
     const totalAyahs = getAyahCount(surahNumber) || ayahs.length;
 
-    // 13. Build heatmap data
+    // 14. Build heatmap data
     const heatmapData: SurahMasteryData = {
       surah: surahNumber,
       surah_name: surahName,
@@ -241,7 +256,7 @@ export async function GET(
       summary,
     };
 
-    // 14. Return success response
+    // 15. Return success response
     return NextResponse.json<GetHeatmapResponse>(
       {
         success: true,
