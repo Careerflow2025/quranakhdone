@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
   validateUpdateCriterionRequest,
   canUpdateRubric,
@@ -33,13 +33,13 @@ export async function PATCH(
     const criterionId = params.id;
 
     // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 2. Get authenticated user
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdmin.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
@@ -257,13 +257,13 @@ export async function DELETE(
     const criterionId = params.id;
 
     // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 2. Get authenticated user
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdmin.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json<GradebookErrorResponse>(
