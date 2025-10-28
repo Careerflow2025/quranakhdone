@@ -56,13 +56,59 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 6. Fetch assignments with rubrics attached
+    // 6. Fetch ALL assignments for this teacher's students (with or without rubrics)
+    // First, get teacher record
+    const { data: teacher } = await supabaseAdmin
+      .from('teachers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!teacher) {
+      return NextResponse.json(
+        { success: false, error: 'Teacher profile not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get teacher's classes
+    const { data: teacherClasses } = await supabaseAdmin
+      .from('class_teachers')
+      .select('class_id')
+      .eq('teacher_id', teacher.id);
+
+    if (!teacherClasses || teacherClasses.length === 0) {
+      return NextResponse.json(
+        { success: true, assignments: [] },
+        { status: 200 }
+      );
+    }
+
+    const classIds = teacherClasses.map(tc => tc.class_id);
+
+    // Get students in these classes
+    const { data: classEnrollments } = await supabaseAdmin
+      .from('class_enrollments')
+      .select('student_id')
+      .in('class_id', classIds);
+
+    if (!classEnrollments || classEnrollments.length === 0) {
+      return NextResponse.json(
+        { success: true, assignments: [] },
+        { status: 200 }
+      );
+    }
+
+    const studentIds = classEnrollments.map(ce => ce.student_id);
+
+    // Get assignments for these students (with or without rubrics)
     const { data: assignments, error: assignmentsError } = await supabaseAdmin
       .from('assignments')
       .select(`
         id,
         title,
         student_id,
+        created_at,
         students (
           id,
           profiles:user_id (
@@ -85,8 +131,8 @@ export async function GET(request: NextRequest) {
           )
         )
       `)
+      .in('student_id', studentIds)
       .eq('school_id', profile.school_id)
-      .not('assignment_rubrics', 'is', null)
       .order('created_at', { ascending: false });
 
     if (assignmentsError) {
@@ -97,31 +143,48 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 7. Transform data and fetch existing grades
+    // 7. Transform data - return ALL assignments (with or without rubrics)
     const transformedAssignments = await Promise.all(
       (assignments || [])
-        .filter((a: any) => a.assignment_rubrics.length > 0) // Only assignments with rubrics
         .map(async (assignment: any) => {
-          const rubricData = assignment.assignment_rubrics[0].rubrics;
-          const criteria = rubricData.rubric_criteria || [];
+          const hasRubric = assignment.assignment_rubrics && assignment.assignment_rubrics.length > 0;
 
-          // Fetch existing grades for this assignment
-          const { data: existingGrades } = await supabaseAdmin
-            .from('grades')
-            .select('criterion_id, score, comments')
-            .eq('assignment_id', assignment.id)
-            .eq('student_id', assignment.student_id);
+          if (hasRubric) {
+            const rubricData = assignment.assignment_rubrics[0].rubrics;
+            const criteria = rubricData.rubric_criteria || [];
 
-          return {
-            id: assignment.id,
-            title: assignment.title,
-            student_id: assignment.student_id,
-            student_name: assignment.students?.profiles?.display_name || 'Unknown Student',
-            rubric_id: rubricData.id,
-            rubric_name: rubricData.name,
-            criteria: criteria.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
-            existing_grades: existingGrades || [],
-          };
+            // Fetch existing grades for this assignment
+            const { data: existingGrades } = await supabaseAdmin
+              .from('grades')
+              .select('criterion_id, score, comments')
+              .eq('assignment_id', assignment.id)
+              .eq('student_id', assignment.student_id);
+
+            return {
+              id: assignment.id,
+              title: assignment.title,
+              student_id: assignment.student_id,
+              student_name: assignment.students?.profiles?.display_name || 'Unknown Student',
+              rubric_id: rubricData.id,
+              rubric_name: rubricData.name,
+              criteria: criteria.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
+              existing_grades: existingGrades || [],
+              has_rubric: true,
+            };
+          } else {
+            // Assignment without rubric - return basic info
+            return {
+              id: assignment.id,
+              title: assignment.title,
+              student_id: assignment.student_id,
+              student_name: assignment.students?.profiles?.display_name || 'Unknown Student',
+              rubric_id: null,
+              rubric_name: null,
+              criteria: [],
+              existing_grades: [],
+              has_rubric: false,
+            };
+          }
         })
     );
 

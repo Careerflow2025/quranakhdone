@@ -29,8 +29,9 @@ interface Assignment {
   title: string;
   student_id: string;
   student_name: string;
-  rubric_id: string;
-  rubric_name: string;
+  rubric_id: string | null;
+  rubric_name: string | null;
+  has_rubric: boolean;
   criteria: Array<{
     id: string;
     name: string;
@@ -290,7 +291,7 @@ export default function GradingInterface() {
               <p className="text-sm text-gray-500">
                 {selectedAssignment
                   ? `Grading: ${selectedAssignment.title}`
-                  : `${assignments.length} assignments with rubrics`}
+                  : `${assignments.length} assignment${assignments.length !== 1 ? 's' : ''} • ${assignments.filter(a => a.has_rubric).length} ready to grade`}
               </p>
             </div>
           </div>
@@ -358,9 +359,9 @@ export default function GradingInterface() {
             {assignments.length === 0 ? (
               <div className="p-12 text-center">
                 <BookOpen className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 mb-2">No assignments with rubrics found</p>
+                <p className="text-gray-500 mb-2">No assignments found</p>
                 <p className="text-sm text-gray-400">
-                  Assignments must have rubrics attached before they can be graded here
+                  No assignments available for your students yet
                 </p>
             </div>
           ) : (
@@ -371,23 +372,38 @@ export default function GradingInterface() {
                 return (
                   assignment.student_name.toLowerCase().includes(query) ||
                   assignment.title.toLowerCase().includes(query) ||
-                  assignment.rubric_name.toLowerCase().includes(query)
+                  (assignment.rubric_name && assignment.rubric_name.toLowerCase().includes(query))
                 );
               })
               .map((assignment) => (
               <div
                 key={assignment.id}
-                onClick={() => handleSelectAssignment(assignment)}
-                className="p-4 cursor-pointer transition hover:bg-gray-50"
+                onClick={() => assignment.has_rubric && handleSelectAssignment(assignment)}
+                className={`p-4 transition ${
+                  assignment.has_rubric
+                    ? 'cursor-pointer hover:bg-gray-50'
+                    : 'cursor-not-allowed opacity-75 bg-gray-50'
+                }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-emerald-100 rounded">
-                        <FileText className="w-4 h-4 text-emerald-600" />
+                      <div className={`p-2 rounded ${
+                        assignment.has_rubric ? 'bg-emerald-100' : 'bg-gray-200'
+                      }`}>
+                        <FileText className={`w-4 h-4 ${
+                          assignment.has_rubric ? 'text-emerald-600' : 'text-gray-500'
+                        }`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
+                          {!assignment.has_rubric && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                              Needs Rubric
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">
                           <span className="inline-flex items-center gap-1">
                             <User className="w-3 h-3" />
@@ -398,18 +414,27 @@ export default function GradingInterface() {
                     </div>
 
                     <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Award className="w-4 h-4" />
-                        {assignment.rubric_name}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
-                        {assignment.criteria.length} criteria
-                      </div>
-                      {assignment.existing_grades && assignment.existing_grades.length > 0 && (
-                        <div className="flex items-center gap-1 text-emerald-600">
-                          <CheckCircle className="w-4 h-4" />
-                          Graded
+                      {assignment.has_rubric ? (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <Award className="w-4 h-4" />
+                            {assignment.rubric_name}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <FileText className="w-4 h-4" />
+                            {assignment.criteria.length} criteria
+                          </div>
+                          {assignment.existing_grades && assignment.existing_grades.length > 0 && (
+                            <div className="flex items-center gap-1 text-emerald-600">
+                              <CheckCircle className="w-4 h-4" />
+                              Graded
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1 text-amber-600">
+                          <AlertCircle className="w-4 h-4" />
+                          Attach a rubric to this assignment before grading
                         </div>
                       )}
                     </div>
