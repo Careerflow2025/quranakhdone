@@ -277,8 +277,11 @@ export default function GradingInterface() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setAvailableRubrics(data.rubrics || []);
+        const responseData = await response.json();
+        // API response format: { success: true, data: { rubrics: [...], pagination: {...} } }
+        setAvailableRubrics(responseData.data?.rubrics || []);
+      } else {
+        console.error('Failed to fetch rubrics:', response.status, response.statusText);
       }
     } catch (err) {
       console.error('Error fetching rubrics:', err);
