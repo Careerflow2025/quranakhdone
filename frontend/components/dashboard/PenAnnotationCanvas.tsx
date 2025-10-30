@@ -43,6 +43,7 @@ export default function PenAnnotationCanvas({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get script UUID from code
   useEffect(() => {
@@ -63,20 +64,35 @@ export default function PenAnnotationCanvas({
     }
   }, [scriptId]);
 
+  // CRITICAL: Toggle eraser mode using library's method
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.eraseMode(eraserMode);
+    }
+  }, [eraserMode]);
+
   // Load annotations from database on mount and when page/script changes
   useEffect(() => {
-    if (scriptUuid && studentId && pageNumber) {
-      loadAnnotations();
+    if (scriptUuid && studentId && pageNumber && canvasRef.current) {
+      // Small delay to ensure canvas is fully mounted
+      const timer = setTimeout(() => {
+        loadAnnotations();
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [studentId, pageNumber, scriptUuid]);
 
   // Load annotations from database
   const loadAnnotations = async () => {
-    if (!studentId || !pageNumber || !scriptUuid) return;
+    if (!studentId || !pageNumber || !scriptUuid || !canvasRef.current) return;
 
+    setIsLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setIsLoading(false);
+        return;
+      }
 
       const response = await fetch(
         `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptUuid}`,
@@ -89,17 +105,18 @@ export default function PenAnnotationCanvas({
 
       const result = await response.json();
       if (result.success && result.data.annotations && result.data.annotations.length > 0) {
-        // react-sketch-canvas can load from exported JSON
         const latestAnnotation = result.data.annotations[0];
         if (latestAnnotation.drawing_data && canvasRef.current) {
-          // Convert our format to react-sketch-canvas format
           await canvasRef.current.loadPaths(latestAnnotation.drawing_data);
           setHasUnsavedChanges(false);
+          console.log('✅ Annotations loaded successfully');
           onLoad?.();
         }
       }
     } catch (error) {
       console.error('Error loading annotations:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -213,8 +230,8 @@ export default function PenAnnotationCanvas({
     }}>
       <ReactSketchCanvas
         ref={canvasRef}
-        strokeColor={eraserMode ? "transparent" : penColor}
-        strokeWidth={eraserMode ? penWidth * 3 : penWidth}
+        strokeColor={penColor}
+        strokeWidth={penWidth}
         eraserWidth={penWidth * 3}
         canvasColor="transparent"
         style={{
