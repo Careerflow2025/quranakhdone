@@ -1400,46 +1400,47 @@ export default function StudentManagementDashboard() {
 
             {/* Main Quran Viewer */}
             <div className="col-span-8">
-              <div className="bg-white rounded-xl shadow-lg relative" style={{
+              <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
                 background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
                 maxHeight: '95vh',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative' // CRITICAL: Enable absolute positioning for canvas child
               }}>
-                {/* Page-like container - ref added for pen annotations */}
-                <div ref={quranContainerRef} className="p-1" style={{
+                {/* Professional Pen Annotations - ALWAYS visible, covers ENTIRE white viewer area */}
+                {studentInfo && teacherData && selectedScript && (
+                  <PenAnnotationCanvas
+                    studentId={studentInfo.id}
+                    teacherId={teacherData.id}
+                    pageNumber={currentMushafPage}
+                    scriptId={selectedScript}
+                    zoomLevel={zoomLevel}
+                    enabled={penMode}
+                    containerRef={quranContainerRef}
+                    penColor={penColor}
+                    setPenColor={setPenColor}
+                    penWidth={penWidth}
+                    setPenWidth={setPenWidth}
+                    eraserMode={eraserMode}
+                    setEraserMode={setEraserMode}
+                    onSave={() => {
+                      console.log('✅ Pen annotations saved successfully');
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Pen annotations loaded successfully');
+                    }}
+                    onClear={() => {
+                      console.log('🗑️ Pen annotations cleared');
+                    }}
+                  />
+                )}
+
+                {/* Page-like container for Quran text */}
+                <div className="p-1" style={{
                   backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
                   backgroundSize: '50px 50px',
-                  pointerEvents: penMode ? 'none' : 'auto',
-                  position: 'relative' // CRITICAL: Enable absolute positioning for canvas child
+                  pointerEvents: penMode ? 'none' : 'auto'
                 }}>
-                  {/* Professional Pen Annotations - ALWAYS visible, container-relative */}
-                  {studentInfo && teacherData && selectedScript && (
-                    <PenAnnotationCanvas
-                      studentId={studentInfo.id}
-                      teacherId={teacherData.id}
-                      pageNumber={currentMushafPage}
-                      scriptId={selectedScript}
-                      zoomLevel={zoomLevel}
-                      enabled={penMode}
-                      containerRef={quranContainerRef}
-                      penColor={penColor}
-                      setPenColor={setPenColor}
-                      penWidth={penWidth}
-                      setPenWidth={setPenWidth}
-                      eraserMode={eraserMode}
-                      setEraserMode={setEraserMode}
-                      onSave={() => {
-                        console.log('✅ Pen annotations saved successfully');
-                      }}
-                      onLoad={() => {
-                        console.log('✅ Pen annotations loaded successfully');
-                      }}
-                      onClear={() => {
-                        console.log('🗑️ Pen annotations cleared');
-                      }}
-                    />
-                  )}
 
                 {/* Basmala for new Surahs (except Surah 1 which has it in verse 1, and Surah 9 which doesn't have it) */}
                 {currentSurah !== 1 && currentSurah !== 9 && currentMushafPage === 1 && (
