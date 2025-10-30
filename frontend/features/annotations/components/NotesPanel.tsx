@@ -1,48 +1,323 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { MessageSquare, Send, Eye, EyeOff, Mic, MicOff, Play, Pause, User, Clock } from 'lucide-react';
+import VoiceNoteRecorder from '@/components/quran/VoiceNoteRecorder';
 
-export default function NotesPanel({ studentId }:{ studentId:string }){
-  const [notes,setNotes]=useState<any[]>([]);
-  const [text,setText]=useState('');
-  const [visible,setVisible]=useState(true);
-  async function load(){
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+interface Note {
+  id: string;
+  student_id: string;
+  author_id: string;
+  school_id: string;
+  text: string;
+  visible_to_parent: boolean;
+  created_at: string;
+  author?: {
+    display_name: string;
+    role: string;
+  };
+}
 
-    const res = await fetch(`/api/notes/list?studentId=${studentId}&all=1`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
+interface NotesPanelProps {
+  studentId: string;
+  highlightId?: string; // Optional: filter notes by specific highlight
+  mode?: 'sidebar' | 'modal'; // Display mode
+  onClose?: () => void; // For modal mode
+}
+
+export default function NotesPanel({
+  studentId,
+  highlightId,
+  mode = 'sidebar',
+  onClose
+}: NotesPanelProps) {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [text, setText] = useState('');
+  const [visible, setVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Get current user on mount
+  useEffect(() => {
+    async function getCurrentUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*, schools(id, name)')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (profile) {
+        setCurrentUser(profile);
       }
-    });
-    const j = await res.json(); if(j.ok) setNotes(j.notes);
-  }
-  useEffect(()=>{ load(); },[]);
-  async function add(){
+    }
+    getCurrentUser();
+  }, []);
+
+  // Load notes
+  async function load() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const res = await fetch('/api/notes/add',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body:JSON.stringify({ schoolId:'demo', studentId, authorId:'demo-teacher', text, visibleToParent:visible })
-    });
-    const j = await res.json(); if(j.ok){ setNotes([j.note,...notes]); setText(''); }
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/notes/list?studentId=${studentId}&all=1`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const j = await res.json();
+      if (j.ok) {
+        setNotes(j.notes || []);
+        // Scroll to bottom on new messages
+        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    } catch (error) {
+      console.error('Failed to load notes:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
+
+  useEffect(() => {
+    load();
+  }, [studentId]);
+
+  // Add note
+  async function add() {
+    if (!text.trim() || !currentUser) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/notes/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          schoolId: currentUser.school_id,
+          studentId,
+          authorId: session.user.id,
+          text: text.trim(),
+          visibleToParent: visible
+        })
+      });
+
+      const j = await res.json();
+      if (j.ok) {
+        setNotes([...notes, j.note]);
+        setText('');
+        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    } catch (error) {
+      console.error('Failed to add note:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // Handle voice note upload
+  const handleVoiceNoteReady = async (audioBlob: Blob) => {
+    console.log('📢 Voice note ready:', audioBlob);
+    // TODO: Upload to storage and create note with audio_url
+    // For now, close the recorder
+    setShowVoiceRecorder(false);
+  };
+
+  const isSidebarMode = mode === 'sidebar';
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <textarea className="border w-full p-2 rounded" value={text} onChange={e=>setText(e.target.value)} placeholder="Write feedback..." />
-        <label className="flex gap-2 text-sm"><input type="checkbox" checked={visible} onChange={e=>setVisible(e.target.checked)} /> Visible to parent</label>
-        <button className="border px-3 py-1 rounded" onClick={add}>Add Note</button>
+    <div className={`flex flex-col h-full ${isSidebarMode ? 'bg-white' : 'bg-white rounded-lg shadow-xl'}`}>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5" />
+          <div>
+            <h3 className="font-semibold">Teacher-Student Notes</h3>
+            <p className="text-xs opacity-90">Conversation thread</p>
+          </div>
+        </div>
+        {!isSidebarMode && onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-white/20 rounded transition"
+          >
+            ✕
+          </button>
+        )}
       </div>
-      <ul className="space-y-2">
-        {notes.map(n=>(<li key={n.id} className="border p-2 rounded"><div className="text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString()}</div><p>{n.text}</p><div className="text-xs">Visible: {String(n.visible_to_parent)}</div></li>))}
-      </ul>
+
+      {/* Conversation Thread (WhatsApp-like) */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        {isLoading && notes.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <div className="text-center">
+              <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Loading conversation...</p>
+            </div>
+          </div>
+        ) : notes.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <div className="text-center">
+              <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No messages yet</p>
+              <p className="text-xs mt-1">Start the conversation below</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {notes.map((note) => {
+              const isCurrentUser = currentUser && note.author_id === currentUser.user_id;
+              return (
+                <div
+                  key={note.id}
+                  className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[75%] rounded-lg p-3 ${
+                      isCurrentUser
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-white text-gray-800 border border-gray-200'
+                    }`}
+                  >
+                    {/* Author name for other users */}
+                    {!isCurrentUser && note.author && (
+                      <div className="flex items-center gap-1 mb-1">
+                        <User className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-600">
+                          {note.author.display_name || 'Teacher'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Message text */}
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {note.text}
+                    </p>
+
+                    {/* Timestamp and visibility */}
+                    <div className={`flex items-center justify-between gap-2 mt-2 text-xs ${
+                      isCurrentUser ? 'text-emerald-100' : 'text-gray-500'
+                    }`}>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}</span>
+                      </div>
+                      {note.visible_to_parent ? (
+                        <div className="flex items-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          <span>Parent</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <EyeOff className="w-3 h-3" />
+                          <span>Private</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={chatEndRef} />
+          </>
+        )}
+      </div>
+
+      {/* Voice Recorder (if active) */}
+      {showVoiceRecorder && (
+        <div className="border-t p-4 bg-white">
+          <VoiceNoteRecorder
+            onRecordingComplete={handleVoiceNoteReady}
+            onCancel={() => setShowVoiceRecorder(false)}
+          />
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="border-t p-4 bg-white space-y-3">
+        {/* Visibility toggle */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setVisible(!visible)}
+            className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-colors ${
+              visible
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-600'
+            }`}
+          >
+            {visible ? (
+              <>
+                <Eye className="w-3 h-3" />
+                <span>Visible to parent</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="w-3 h-3" />
+                <span>Teacher only</span>
+              </>
+            )}
+          </button>
+
+          {/* Voice note toggle */}
+          <button
+            onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
+            className={`p-2 rounded-full transition-colors ${
+              showVoiceRecorder
+                ? 'bg-red-100 text-red-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Voice note"
+          >
+            {showVoiceRecorder ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Text input */}
+        <div className="flex gap-2">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                add();
+              }
+            }}
+            placeholder="Type your message..."
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+            rows={2}
+            disabled={isLoading}
+          />
+          <button
+            onClick={add}
+            disabled={!text.trim() || isLoading}
+            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 text-center">
+          Press Enter to send • Shift+Enter for new line
+        </p>
+      </div>
     </div>
   );
 }
