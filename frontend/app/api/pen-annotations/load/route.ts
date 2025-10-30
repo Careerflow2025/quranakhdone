@@ -37,11 +37,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
-    // Get user's profile to determine their role and school
+    // FAST: Get user's profile to get school_id (1 query)
     const profileStart = Date.now();
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('role, school_id')
+      .select('school_id')
       .eq('user_id', user.id)
       .single();
 
@@ -51,30 +51,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    // Get student to verify they belong to the same school
-    const studentStart = Date.now();
-    const { data: student, error: studentError } = await supabaseAdmin
-      .from('students')
-      .select('school_id')
-      .eq('id', studentId)
-      .single();
-
-    console.log(`[API LOAD] Student query: ${Date.now() - studentStart}ms`);
-
-    if (studentError || !student) {
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
-    }
-
-    // Verify user has access to this student (same school)
-    if (student.school_id !== profile.school_id) {
-      return NextResponse.json({ error: 'Access denied - different school' }, { status: 403 });
-    }
-
-    // Query pen annotations for this student/page/script
+    // FAST: Query pen annotations with school_id filter (1 query)
+    // pen_annotations table has school_id column, so we can filter directly
     const queryStart = Date.now();
     const { data, error } = await supabaseAdmin
       .from('pen_annotations')
       .select('*')
+      .eq('school_id', profile.school_id)
       .eq('student_id', studentId)
       .eq('page_number', parseInt(pageNumber))
       .eq('script_id', scriptId)
