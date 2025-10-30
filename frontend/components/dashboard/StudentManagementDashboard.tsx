@@ -1161,7 +1161,7 @@ export default function StudentManagementDashboard() {
         {(scriptLocked || selectedScript) && (
           <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Mistake Types & Tools (Reduced) */}
-            <div className="col-span-2 space-y-3">
+            <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlighting Tools */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">

@@ -56,6 +56,7 @@ export default function PenAnnotationCanvas({
   const [isLoading, setIsLoading] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Look up script UUID from code on mount
   useEffect(() => {
@@ -233,6 +234,7 @@ export default function PenAnnotationCanvas({
     if (isDrawing && currentPath) {
       setPaths(prev => [...prev, currentPath]);
       setCurrentPath(null);
+      setHasUnsavedChanges(true); // Mark as having unsaved changes
     }
     setIsDrawing(false);
   }, [isDrawing, currentPath]);
@@ -394,6 +396,7 @@ export default function PenAnnotationCanvas({
       const result = await response.json();
       if (result.success) {
         console.log('✅ Annotations saved successfully');
+        setHasUnsavedChanges(false); // Clear unsaved changes flag
         onSave?.();
       }
     } catch (error) {
@@ -403,10 +406,54 @@ export default function PenAnnotationCanvas({
     }
   };
 
+  // Delete annotations from database
+  const deleteAnnotations = async () => {
+    if (!studentId || !pageNumber || !scriptUuid) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No auth session found');
+        return;
+      }
+
+      // Get the annotation ID first
+      const loadResponse = await fetch(
+        `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptUuid}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        }
+      );
+
+      if (!loadResponse.ok) return;
+
+      const loadResult = await loadResponse.json();
+      if (loadResult.success && loadResult.data.annotations && loadResult.data.annotations.length > 0) {
+        // Delete each annotation
+        for (const annotation of loadResult.data.annotations) {
+          await fetch(`/api/pen-annotations/delete?id=${annotation.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+        }
+      }
+
+      console.log('✅ Annotations deleted from database');
+    } catch (error) {
+      console.error('❌ Error deleting annotations:', error);
+    }
+  };
+
   // Clear all drawings (exposed to parent via onClear)
-  const clearDrawings = () => {
+  const clearDrawings = async () => {
     setPaths([]);
     setCurrentPath(null);
+    setHasUnsavedChanges(false);
+
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -414,6 +461,9 @@ export default function PenAnnotationCanvas({
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
+
+    // Delete from database
+    await deleteAnnotations();
   };
 
   // Expose clear function to parent
@@ -455,9 +505,9 @@ export default function PenAnnotationCanvas({
   // Expose save function for external button
   React.useEffect(() => {
     (window as any).__savePenAnnotations = saveAnnotations;
-    (window as any).__penAnnotationsHaveChanges = paths.length > 0 && !isSaving;
+    (window as any).__penAnnotationsHaveChanges = hasUnsavedChanges && !isSaving;
     (window as any).__penAnnotationsSaving = isSaving;
-  }, [paths, isSaving]);
+  }, [hasUnsavedChanges, isSaving]);
 
   return (
     <canvas
