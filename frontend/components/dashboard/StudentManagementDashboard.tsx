@@ -115,7 +115,12 @@ export default function StudentManagementDashboard() {
   
   // Pen Annotation States
   const [penMode, setPenMode] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(100); // Zoom percentage, default 100%
+  const [zoomLevel, setZoomLevel] = useState(100);
+
+  // Pen annotation controls state
+  const [penColor, setPenColor] = useState('#FF0000');
+  const [penWidth, setPenWidth] = useState(2);
+  const [eraserMode, setEraserMode] = useState(false); // Zoom percentage, default 100%
 
   // New: Quran container ref and teacher data for professional pen annotations
   const quranContainerRef = useRef<HTMLDivElement>(null);
@@ -1300,6 +1305,94 @@ export default function StudentManagementDashboard() {
                       <div className={`w-3 h-3 rounded-full ${penMode ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                     </div>
                   </button>
+
+                  {/* Pen Controls - Only show when pen mode is active */}
+                  {penMode && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">Pen Controls</div>
+
+                      {/* Color Picker */}
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1">Color</div>
+                        <div className="flex gap-1 flex-wrap">
+                          {['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#000000'].map(color => (
+                            <button
+                              key={color}
+                              className={`w-6 h-6 rounded border-2 transition ${
+                                penColor === color ? 'border-gray-400 scale-110' : 'border-transparent'
+                              }`}
+                              style={{ backgroundColor: color }}
+                              onClick={() => {
+                                setPenColor(color);
+                                setEraserMode(false);
+                              }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Width Selector */}
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1">Width: {penWidth}px</div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="10"
+                          value={penWidth}
+                          onChange={(e) => setPenWidth(parseInt(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Tool Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEraserMode(!eraserMode)}
+                          className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition ${
+                            eraserMode
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                          title="Eraser"
+                        >
+                          {eraserMode ? '✓ Eraser' : 'Eraser'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if ((window as any).__clearPenAnnotations) {
+                              (window as any).__clearPenAnnotations();
+                            }
+                          }}
+                          className="flex-1 px-2 py-1.5 rounded text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-red-50 hover:border-red-300 transition"
+                          title="Clear all"
+                        >
+                          Clear
+                        </button>
+                      </div>
+
+                      {/* Save Button */}
+                      <button
+                        onClick={() => {
+                          if ((window as any).__savePenAnnotations) {
+                            (window as any).__savePenAnnotations();
+                          }
+                        }}
+                        disabled={(window as any).__penAnnotationsSaving || !(window as any).__penAnnotationsHaveChanges}
+                        className="w-full px-3 py-2 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        title="Save annotations"
+                      >
+                        {(window as any).__penAnnotationsSaving ? 'Saving...' : 'Save Annotations'}
+                      </button>
+
+                      {(window as any).__penAnnotationsHaveChanges && !(window as any).__penAnnotationsSaving && (
+                        <div className="text-xs text-orange-600 flex items-center gap-1">
+                          <span>●</span>
+                          <span>Unsaved changes</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1330,11 +1423,20 @@ export default function StudentManagementDashboard() {
                       zoomLevel={zoomLevel}
                       enabled={penMode}
                       containerRef={quranContainerRef}
+                      penColor={penColor}
+                      setPenColor={setPenColor}
+                      penWidth={penWidth}
+                      setPenWidth={setPenWidth}
+                      eraserMode={eraserMode}
+                      setEraserMode={setEraserMode}
                       onSave={() => {
                         console.log('✅ Pen annotations saved successfully');
                       }}
                       onLoad={() => {
                         console.log('✅ Pen annotations loaded successfully');
+                      }}
+                      onClear={() => {
+                        console.log('🗑️ Pen annotations cleared');
                       }}
                     />
                   )}

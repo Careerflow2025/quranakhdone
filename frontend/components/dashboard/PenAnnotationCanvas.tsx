@@ -20,6 +20,14 @@ interface PenAnnotationCanvasProps {
   containerRef?: React.RefObject<HTMLDivElement>;
   onSave?: () => void;
   onLoad?: () => void;
+  // External control props (controls now in sidebar)
+  penColor: string;
+  setPenColor: (color: string) => void;
+  penWidth: number;
+  setPenWidth: (width: number) => void;
+  eraserMode: boolean;
+  setEraserMode: (mode: boolean) => void;
+  onClear?: () => void;
 }
 
 export default function PenAnnotationCanvas({
@@ -31,15 +39,19 @@ export default function PenAnnotationCanvas({
   enabled,
   containerRef,
   onSave,
-  onLoad
+  onLoad,
+  penColor,
+  setPenColor,
+  penWidth,
+  setPenWidth,
+  eraserMode,
+  setEraserMode,
+  onClear
 }: PenAnnotationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [paths, setPaths] = useState<PenPath[]>([]);
   const [currentPath, setCurrentPath] = useState<PenPath | null>(null);
-  const [eraserMode, setEraserMode] = useState(false);
-  const [penColor, setPenColor] = useState('#FF0000');
-  const [penWidth, setPenWidth] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
@@ -391,7 +403,7 @@ export default function PenAnnotationCanvas({
     }
   };
 
-  // Clear all drawings
+  // Clear all drawings (exposed to parent via onClear)
   const clearDrawings = () => {
     setPaths([]);
     setCurrentPath(null);
@@ -403,6 +415,13 @@ export default function PenAnnotationCanvas({
       }
     }
   };
+
+  // Expose clear function to parent
+  React.useEffect(() => {
+    if (onClear) {
+      (window as any).__clearPenAnnotations = clearDrawings;
+    }
+  }, [onClear]);
 
   // Add event listeners for drawing
   useEffect(() => {
@@ -433,99 +452,25 @@ export default function PenAnnotationCanvas({
     };
   }, [isDrawing, draw, stopDrawing]);
 
+  // Expose save function for external button
+  React.useEffect(() => {
+    (window as any).__savePenAnnotations = saveAnnotations;
+    (window as any).__penAnnotationsHaveChanges = paths.length > 0 && !isSaving;
+    (window as any).__penAnnotationsSaving = isSaving;
+  }, [paths, isSaving]);
+
   return (
-    <>
-      {/* Canvas overlay */}
-      <canvas
-        ref={canvasRef}
-        className={`absolute inset-0 w-full h-full ${
-          enabled ? 'pointer-events-auto' : 'pointer-events-none'
-        }`}
-        style={{
-          zIndex: enabled ? 20 : 10,
-          cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default'
-        }}
-        onMouseDown={startDrawing}
-        onTouchStart={startDrawing}
-      />
-
-      {/* Pen controls */}
-      {enabled && (
-        <div className="absolute top-4 right-4 z-30 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2">
-          {/* Color picker */}
-          <div className="flex gap-1">
-            {['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#000000'].map(color => (
-              <button
-                key={color}
-                className={`w-8 h-8 rounded ${penColor === color ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
-                style={{ backgroundColor: color }}
-                onClick={() => {
-                  setPenColor(color);
-                  setEraserMode(false);
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Width selector */}
-          <div className="flex gap-2 items-center">
-            <span className="text-xs text-gray-600">Width:</span>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={penWidth}
-              onChange={(e) => setPenWidth(parseInt(e.target.value))}
-              className="w-24"
-            />
-            <span className="text-xs text-gray-600 w-4">{penWidth}</span>
-          </div>
-
-          {/* Tool buttons */}
-          <div className="flex gap-1">
-            <button
-              onClick={() => setEraserMode(!eraserMode)}
-              className={`p-2 rounded ${eraserMode ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-              title="Eraser"
-            >
-              <Eraser className="w-4 h-4" />
-            </button>
-            <button
-              onClick={clearDrawings}
-              className="p-2 rounded hover:bg-gray-100"
-              title="Clear all"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={saveAnnotations}
-              disabled={isSaving || paths.length === 0}
-              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-              title="Save annotations"
-            >
-              {isSaving ? (
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-
-          {/* Status indicators */}
-          {isLoading && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <div className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              Loading...
-            </div>
-          )}
-          {paths.length > 0 && !isSaving && (
-            <div className="flex items-center gap-1 text-xs text-orange-600">
-              <AlertCircle className="w-3 h-3" />
-              Unsaved changes
-            </div>
-          )}
-        </div>
-      )}
-    </>
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 w-full h-full ${
+        enabled ? 'pointer-events-auto' : 'pointer-events-none'
+      }`}
+      style={{
+        zIndex: enabled ? 20 : 10,
+        cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default'
+      }}
+      onMouseDown={startDrawing}
+      onTouchStart={startDrawing}
+    />
   );
 }
