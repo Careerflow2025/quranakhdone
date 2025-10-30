@@ -10,15 +10,7 @@ interface PenAnnotationData {
   teacherId: string;
   pageNumber: number;
   scriptId: string;
-  paths: {
-    points: { x: number; y: number }[]; // Percentage-based coordinates (0-100)
-    color: string;
-    width: number;
-  }[];
-  containerDimensions: {
-    width: number;
-    height: number;
-  };
+  drawingData: any; // react-sketch-canvas exported JSON format
 }
 
 export async function POST(req: Request) {
@@ -66,13 +58,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Student not in your school' }, { status: 403 });
     }
 
-    // Prepare the drawing data with percentage-based coordinates
-    const drawingData = {
-      version: '2.0', // New version without Fabric.js
-      paths: body.paths,
-      containerDimensions: body.containerDimensions,
-      timestamp: new Date().toISOString()
-    };
+    // Store react-sketch-canvas exported data directly
+    const drawingData = body.drawingData;
 
     // Check if an annotation already exists for this page
     const { data: existingAnnotation } = await supabaseAdmin
@@ -91,8 +78,8 @@ export async function POST(req: Request) {
         .from('pen_annotations')
         .update({
           drawing_data: drawingData,
-          stroke_color: body.paths[body.paths.length - 1]?.color || '#FF0000',
-          stroke_width: body.paths[body.paths.length - 1]?.width || 2,
+          stroke_color: '#FF0000', // Default color (not used by react-sketch-canvas)
+          stroke_width: 2, // Default width (not used by react-sketch-canvas)
           updated_at: new Date().toISOString()
         })
         .eq('id', existingAnnotation.id)
@@ -112,8 +99,8 @@ export async function POST(req: Request) {
           page_number: body.pageNumber,
           script_id: body.scriptId,
           drawing_data: drawingData,
-          stroke_color: body.paths[0]?.color || '#FF0000',
-          stroke_width: body.paths[0]?.width || 2
+          stroke_color: '#FF0000', // Default color (not used by react-sketch-canvas)
+          stroke_width: 2 // Default width (not used by react-sketch-canvas)
         })
         .select()
         .single();

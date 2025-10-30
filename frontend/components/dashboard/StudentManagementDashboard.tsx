@@ -1414,7 +1414,6 @@ export default function StudentManagementDashboard() {
                     teacherId={teacherData.id}
                     pageNumber={currentMushafPage}
                     scriptId={selectedScript}
-                    zoomLevel={zoomLevel}
                     enabled={penMode}
                     containerRef={quranContainerRef}
                     penColor={penColor}
