@@ -9,6 +9,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/highlights/:id/notes - Create Note
 // ============================================================================

@@ -29,6 +29,10 @@ import {
 } from '@/lib/types/targets';
 import { Database } from '@/lib/database.types';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 type TargetRow = Database['public']['Tables']['targets']['Row'];
 
 // ============================================================================

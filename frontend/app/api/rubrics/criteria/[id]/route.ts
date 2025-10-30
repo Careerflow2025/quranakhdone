@@ -21,6 +21,10 @@ import {
   GradebookErrorResponse,
 } from '@/lib/types/gradebook';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // PATCH /api/rubrics/criteria/:id - Update Criterion
 // ============================================================================

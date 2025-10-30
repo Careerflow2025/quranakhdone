@@ -22,6 +22,10 @@ import {
   AssignmentStatus,
 } from '@/lib/types/assignments';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/assignments/:id/transition - Transition Assignment Status
 // ============================================================================

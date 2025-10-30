@@ -21,6 +21,10 @@ import {
   NOTIFICATION_CONSTANTS,
 } from '@/lib/types/notifications';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // GET /api/notifications - List Notifications
 // ============================================================================

@@ -2,6 +2,10 @@
 import { NextResponse } from 'next/server';
 import { createSb } from '@/lib/supabase/server';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 export async function POST(req: Request) {
   try {
     const sb = createSb();

@@ -3,6 +3,10 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { parseCsv } from '@/features/admin/imports/parseCsv';
 import { StudentCsvRow } from '@/features/admin/imports/schemas';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 interface ImportResult {
   inserted: number;
   skipped: number;

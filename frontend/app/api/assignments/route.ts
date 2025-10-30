@@ -23,6 +23,10 @@ import {
 } from '@/lib/types/assignments';
 import { Database } from '@/lib/database.types';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 type AssignmentRow = Database['public']['Tables']['assignments']['Row'];
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 type TeacherRow = Database['public']['Tables']['teachers']['Row'];

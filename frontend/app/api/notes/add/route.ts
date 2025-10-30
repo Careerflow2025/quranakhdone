@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { addNote } from '@/features/annotations/server/addNote';
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 export async function POST(req:Request){
   try{
     const body = await req.json();

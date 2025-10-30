@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminSb } from '@/lib/supabase/server';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 /**
  * POST /api/students/lock-script
  *

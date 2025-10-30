@@ -19,6 +19,10 @@ import {
   calculateCompletionRate,
 } from '@/lib/types/homework';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // GET /api/homework/student/:id - Get Student Homework
 // ============================================================================

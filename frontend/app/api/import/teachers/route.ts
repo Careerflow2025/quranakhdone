@@ -3,6 +3,10 @@ import { createSb } from '@/lib/supabase/server';
 import { parseCsv } from '@/features/admin/imports/parseCsv';
 import { TeacherCsvRow } from '@/features/admin/imports/schemas';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 export async function POST(req: Request){
   const sb = createSb();
   const body = await req.formData();

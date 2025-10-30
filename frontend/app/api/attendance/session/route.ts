@@ -12,6 +12,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 interface SessionAttendanceRecord {

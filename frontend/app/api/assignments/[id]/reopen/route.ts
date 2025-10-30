@@ -21,6 +21,10 @@ import {
   ASSIGNMENT_CONSTANTS,
 } from '@/lib/types/assignments';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/assignments/:id/reopen - Reopen Assignment
 // ============================================================================

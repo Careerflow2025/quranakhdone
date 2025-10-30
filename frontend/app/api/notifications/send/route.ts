@@ -24,6 +24,10 @@ import {
   getNotificationBody,
 } from '@/lib/types/notifications';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/notifications/send - Send Notification
 // ============================================================================

@@ -19,6 +19,10 @@ import {
   HomeworkErrorResponse,
 } from '@/lib/types/homework';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/homework/:id/reply - Add Note/Reply
 // ============================================================================

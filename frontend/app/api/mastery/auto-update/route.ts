@@ -24,6 +24,10 @@ import {
 } from '@/lib/types/mastery';
 import { calculateWeightedAverage } from '@/lib/types/gradebook';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // POST /api/mastery/auto-update - Auto-Update Mastery
 // ============================================================================

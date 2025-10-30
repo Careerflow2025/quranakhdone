@@ -18,6 +18,10 @@ import {
   NotificationErrorResponse,
 } from '@/lib/types/notifications';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // PATCH /api/notifications/read-all - Mark All Notifications as Read
 // ============================================================================

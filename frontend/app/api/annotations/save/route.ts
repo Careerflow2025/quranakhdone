@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { saveAnnotation } from '@/features/annotations/server/saveAnnotation';
 import { fabric } from 'fabric';
 
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req:Request){
   const body = await req.json();
   try{

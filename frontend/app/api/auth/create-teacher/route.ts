@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createTeacher } from '@/lib/credentials-system';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin();

@@ -23,6 +23,10 @@ import {
   calculateOverallScore,
 } from '@/lib/types/gradebook';
 
+
+// Force dynamic rendering - prevent static generation at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 // ============================================================================
 // GET /api/gradebook/export - Export Gradebook
 // ============================================================================
