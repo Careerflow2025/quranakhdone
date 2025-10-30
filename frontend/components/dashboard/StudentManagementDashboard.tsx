@@ -14,6 +14,7 @@ import {
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
+import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
 import {
   Book,
   Mic,
@@ -122,6 +123,20 @@ export default function StudentManagementDashboard() {
   const [currentPath, setCurrentPath] = useState<any[]>([]);
   const [eraserMode, setEraserMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100); // Zoom percentage, default 100%
+
+  // New: Quran container ref and teacher data for professional pen annotations
+  const quranContainerRef = useRef<HTMLDivElement>(null);
+  const [teacherData, setTeacherData] = useState<{ id: string; school_id: string } | null>(null);
+
+  // Fetch teacher data when teacherInfo is available
+  useEffect(() => {
+    if (teacherInfo?.id && studentInfo?.schoolId) {
+      setTeacherData({
+        id: teacherInfo.id,
+        school_id: studentInfo.schoolId
+      });
+    }
+  }, [teacherInfo, studentInfo]);
 
   // Real mushaf has 604 pages with specific ayah layouts
 
@@ -1585,26 +1600,27 @@ export default function StudentManagementDashboard() {
                 maxHeight: '95vh',
                 overflow: 'hidden'
               }}>
-                {/* Canvas Overlay for Pen Annotations */}
-                <canvas
-                  ref={canvasRef}
-                  className={`absolute inset-0 w-full h-full rounded-xl ${penMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
-                  style={{
-                    zIndex: penMode ? 20 : 10,
-                    transform: `scale(${zoomLevel / 100})`,
-                    transformOrigin: 'top center'
-                  }}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                  onTouchStart={startDrawing}
-                  onTouchMove={draw}
-                  onTouchEnd={stopDrawing}
-                />
+                {/* Professional Pen Annotations with Container-Relative Coordinates */}
+                {penMode && studentInfo && teacherData && selectedScript && (
+                  <PenAnnotationCanvas
+                    studentId={studentInfo.id}
+                    teacherId={teacherData.id}
+                    pageNumber={currentMushafPage}
+                    scriptId={selectedScript}
+                    zoomLevel={zoomLevel}
+                    enabled={penMode}
+                    containerRef={quranContainerRef}
+                    onSave={() => {
+                      console.log('✅ Pen annotations saved successfully');
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Pen annotations loaded successfully');
+                    }}
+                  />
+                )}
 
-                {/* Page-like container */}
-                <div className="p-1" style={{
+                {/* Page-like container - ref added for pen annotations */}
+                <div ref={quranContainerRef} className="p-1" style={{
                   backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
                   backgroundSize: '50px 50px',
                   pointerEvents: penMode ? 'none' : 'auto'
