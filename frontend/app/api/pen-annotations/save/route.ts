@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 // Force dynamic rendering - prevent static generation at build time
 export const dynamic = 'force-dynamic';
@@ -24,16 +23,23 @@ interface PenAnnotationData {
 
 export async function POST(req: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Get Bearer token from Authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized - Missing authorization header' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
     // Get the teacher profile
-    const { data: teacherData, error: teacherError } = await supabase
+    const { data: teacherData, error: teacherError } = await supabaseAdmin
       .from('teachers')
       .select('id, school_id')
       .eq('user_id', user.id)
@@ -46,7 +52,7 @@ export async function POST(req: Request) {
     const body: PenAnnotationData = await req.json();
 
     // Validate student belongs to the same school
-    const { data: studentData, error: studentError } = await supabase
+    const { data: studentData, error: studentError } = await supabaseAdmin
       .from('students')
       .select('school_id')
       .eq('id', body.studentId)
@@ -69,7 +75,7 @@ export async function POST(req: Request) {
     };
 
     // Check if an annotation already exists for this page
-    const { data: existingAnnotation } = await supabase
+    const { data: existingAnnotation } = await supabaseAdmin
       .from('pen_annotations')
       .select('id')
       .eq('student_id', body.studentId)
@@ -81,7 +87,7 @@ export async function POST(req: Request) {
     let result;
     if (existingAnnotation) {
       // Update existing annotation
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('pen_annotations')
         .update({
           drawing_data: drawingData,
@@ -97,7 +103,7 @@ export async function POST(req: Request) {
       result = data;
     } else {
       // Create new annotation
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('pen_annotations')
         .insert({
           student_id: body.studentId,

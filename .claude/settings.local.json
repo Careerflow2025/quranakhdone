@@ -11,7 +11,8 @@
       "mcp__supabase__list_tables",
       "Bash(curl:*)",
       "mcp__supabase__apply_migration",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(git cherry-pick:*)"
     ],
     "deny": [],
     "ask": []

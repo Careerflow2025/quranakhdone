@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 // Force dynamic rendering - prevent static generation at build time
 export const dynamic = 'force-dynamic';
@@ -8,7 +7,7 @@ export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabaseAdmin = getSupabaseAdmin();
     const url = new URL(req.url);
     const studentId = url.searchParams.get('studentId');
     const pageNumber = url.searchParams.get('pageNumber');
@@ -21,14 +20,21 @@ export async function GET(req: Request) {
       );
     }
 
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Get Bearer token from Authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized - Missing authorization header' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
     // Get the user's profile to check role and school
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role, school_id')
       .eq('user_id', user.id)
@@ -39,7 +45,7 @@ export async function GET(req: Request) {
     }
 
     // Build query based on role
-    let query = supabase
+    let query = supabaseAdmin
       .from('pen_annotations')
       .select('*')
       .eq('student_id', studentId)
@@ -52,7 +58,7 @@ export async function GET(req: Request) {
       query = query.eq('school_id', profile.school_id);
     } else if (profile.role === 'student') {
       // Students can only see their own annotations
-      const { data: studentData } = await supabase
+      const { data: studentData } = await supabaseAdmin
         .from('students')
         .select('id')
         .eq('user_id', user.id)
@@ -63,7 +69,7 @@ export async function GET(req: Request) {
       }
     } else if (profile.role === 'parent') {
       // Parents can see their children's annotations
-      const { data: linkedStudent } = await supabase
+      const { data: linkedStudent } = await supabaseAdmin
         .from('parent_students')
         .select('student_id')
         .eq('student_id', studentId)

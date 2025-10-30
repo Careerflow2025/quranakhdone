@@ -378,9 +378,7 @@ export default function PenAnnotationCanvas({
         }`}
         style={{
           zIndex: enabled ? 20 : 10,
-          cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default',
-          transform: `scale(${zoomLevel / 100})`,
-          transformOrigin: 'top center'
+          cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default'
         }}
         onMouseDown={startDrawing}
         onTouchStart={startDrawing}
