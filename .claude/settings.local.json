@@ -1,21 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git push:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nFIX: UUID to code conversion for locked Qira''at versions\n\n## Problem\nAfter locking Qira''at version, Quran text showed \"loading\" with error:\n\"Invalid script ID: a5610a99-31eb-4dc0-bd07-f29205e3f39f\"\n\n## Root Cause\n- Database stores UUID in preferred_script_id\n- Frontend cleanQuranLoader expects CODE (''uthmani-hafs'', ''warsh'', etc.)\n- Hook was passing UUID instead of code to frontend\n\n## Fix Applied\nFile: frontend/hooks/useStudentManagement.ts\n\n1. Line 52: Join quran_scripts table to get code\n   Before: .select(''*, preferred_script_id, ...'')\n   After: .select(''*, quran_scripts(code), ...'')\n\n2. Line 96: Use joined code instead of UUID\n   Before: preferredScriptId: student.preferred_script_id\n   After: preferredScriptId: student.quran_scripts?.code || null\n\n## How It Works\n- Supabase JOIN retrieves script code via foreign key relationship\n- Frontend receives ''uthmani-hafs'' instead of UUID\n- cleanQuranLoader can now properly load Quran text\n\n## Testing Required\n1. Lock Qira''at version for student\n2. Verify Quran text loads (not \"loading\" forever)\n3. Verify correct script displays\n4. Verify lock persists across refresh\n\nServer: http://localhost:3030\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npm run build:*)",
-      "mcp__supabase__execute_sql",
-      "mcp__supabase__list_tables",
-      "Bash(curl:*)",
-      "mcp__supabase__apply_migration",
-      "Bash(npx eslint:*)",
-      "Bash(git cherry-pick:*)",
-      "Bash(git revert:*)",
-      "Bash(and everything we have already about annotation and make sure when you get this tool)",
-      "Bash(you implement it right with no issues\"\n\nLibrary integration verified against existing:\n- Database: pen_annotations table with JSONB drawing_data column\n- API routes: save/load/delete endpoints unchanged (just format updated)\n- Sidebar controls: all existing controls maintained\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

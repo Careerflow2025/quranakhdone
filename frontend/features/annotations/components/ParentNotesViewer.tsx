@@ -5,74 +5,60 @@ import { MessageSquare, Eye, User, Clock } from 'lucide-react';
 
 interface Note {
   id: string;
-  student_id: string;
-  author_id: string;
-  school_id: string;
-  text: string;
+  parent_note_id: string | null;
+  author_user_id: string;
+  author_name: string;
+  author_role: string;
+  type: 'text' | 'audio';
+  text: string | null;
+  audio_url: string | null;
   visible_to_parent: boolean;
   created_at: string;
-  author?: {
-    display_name: string;
-    role: string;
-  };
+  reply_count: number;
+  depth: number;
 }
 
 interface ParentNotesViewerProps {
-  studentId: string;
-  highlightId?: string; // Optional: filter by highlight
+  highlightId: string; // REQUIRED: viewing conversation on a specific highlight
+  studentName?: string; // Optional: display name override
   mode?: 'sidebar' | 'modal';
   onClose?: () => void;
 }
 
 export default function ParentNotesViewer({
-  studentId,
   highlightId,
+  studentName: studentNameProp,
   mode = 'sidebar',
   onClose
 }: ParentNotesViewerProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [studentName, setStudentName] = useState('Student');
+  const [displayName, setDisplayName] = useState(studentNameProp || 'Student');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Load student name
-  useEffect(() => {
-    async function loadStudentName() {
-      const { data } = await supabase
-        .from('students')
-        .select('profiles(display_name)')
-        .eq('id', studentId)
-        .single();
-
-      if (data) {
-        setStudentName(data.profiles?.display_name || 'Student');
-      }
-    }
-    loadStudentName();
-  }, [studentId]);
-
-  // Load notes (only visible to parents)
+  // Load conversation thread (parents see only visible_to_parent notes)
   async function load() {
+    if (!highlightId) return;
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/notes/list?studentId=${studentId}&all=0`, {
+      const res = await fetch(`/api/highlights/${highlightId}/notes/thread`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         }
       });
       const j = await res.json();
-      if (j.ok) {
-        // Only show notes visible to parent
-        const parentVisibleNotes = (j.notes || []).filter((n: Note) => n.visible_to_parent);
-        setNotes(parentVisibleNotes);
+      if (j.success) {
+        // API already filters by visible_to_parent for parent role
+        setNotes(j.thread || []);
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     } catch (error) {
-      console.error('Failed to load notes:', error);
+      console.error('Failed to load conversation thread:', error);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +69,7 @@ export default function ParentNotesViewer({
     // Refresh every 30 seconds for real-time updates
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
-  }, [studentId]);
+  }, [highlightId]);
 
   const isSidebarMode = mode === 'sidebar';
 
@@ -95,7 +81,7 @@ export default function ParentNotesViewer({
           <MessageSquare className="w-5 h-5" />
           <div>
             <h3 className="font-semibold">Teacher-Student Notes</h3>
-            <p className="text-xs opacity-90">{studentName}'s conversation</p>
+            <p className="text-xs opacity-90">{displayName}'s conversation</p>
           </div>
         </div>
         {!isSidebarMode && onClose && (
@@ -139,11 +125,14 @@ export default function ParentNotesViewer({
             </div>
 
             {notes.map((note) => {
-              const isTeacher = note.author?.role === 'teacher';
+              const isTeacher = note.author_role === 'teacher';
+              const isReply = note.parent_note_id !== null;
+
               return (
                 <div
                   key={note.id}
                   className={`flex ${isTeacher ? 'justify-start' : 'justify-end'}`}
+                  style={{ marginLeft: isReply ? `${note.depth * 16}px` : '0' }}
                 >
                   <div
                     className={`max-w-[75%] rounded-lg p-3 ${
@@ -156,7 +145,10 @@ export default function ParentNotesViewer({
                     <div className="flex items-center gap-1 mb-1">
                       <User className="w-3 h-3 text-gray-500" />
                       <span className="text-xs font-medium text-gray-600">
-                        {isTeacher ? (note.author?.display_name || 'Teacher') : studentName}
+                        {note.author_name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({note.author_role})
                       </span>
                     </div>
 

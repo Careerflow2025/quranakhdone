@@ -6,27 +6,26 @@ import VoiceNoteRecorder from '@/components/quran/VoiceNoteRecorder';
 
 interface Note {
   id: string;
-  student_id: string;
-  author_id: string;
-  school_id: string;
-  text: string;
+  parent_note_id: string | null;
+  author_user_id: string;
+  author_name: string;
+  author_role: string;
+  type: 'text' | 'audio';
+  text: string | null;
+  audio_url: string | null;
   visible_to_parent: boolean;
   created_at: string;
-  author?: {
-    display_name: string;
-    role: string;
-  };
+  reply_count: number;
+  depth: number;
 }
 
 interface NotesPanelProps {
-  studentId: string;
-  highlightId?: string; // Optional: filter notes by specific highlight
+  highlightId: string; // REQUIRED: conversation is attached to a highlight
   mode?: 'sidebar' | 'modal'; // Display mode
   onClose?: () => void; // For modal mode
 }
 
 export default function NotesPanel({
-  studentId,
   highlightId,
   mode = 'sidebar',
   onClose
@@ -37,6 +36,7 @@ export default function NotesPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null); // For threading
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Get current user on mount
@@ -58,27 +58,29 @@ export default function NotesPanel({
     getCurrentUser();
   }, []);
 
-  // Load notes
+  // Load conversation thread
   async function load() {
+    if (!highlightId) return;
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/notes/list?studentId=${studentId}&all=1`, {
+      const res = await fetch(`/api/highlights/${highlightId}/notes/thread`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         }
       });
       const j = await res.json();
-      if (j.ok) {
-        setNotes(j.notes || []);
+      if (j.success) {
+        setNotes(j.thread || []);
         // Scroll to bottom on new messages
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     } catch (error) {
-      console.error('Failed to load notes:', error);
+      console.error('Failed to load conversation thread:', error);
     } finally {
       setIsLoading(false);
     }
@@ -86,37 +88,40 @@ export default function NotesPanel({
 
   useEffect(() => {
     load();
-  }, [studentId]);
+    // Refresh every 10 seconds for real-time updates
+    const interval = setInterval(load, 10000);
+    return () => clearInterval(interval);
+  }, [highlightId]);
 
-  // Add note
+  // Add note or reply
   async function add() {
-    if (!text.trim() || !currentUser) return;
+    if (!text.trim() || !currentUser || !highlightId) return;
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
     setIsLoading(true);
     try {
-      const res = await fetch('/api/notes/add', {
+      const res = await fetch(`/api/highlights/${highlightId}/notes/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          schoolId: currentUser.school_id,
-          studentId,
-          authorId: session.user.id,
+          type: 'text',
           text: text.trim(),
-          visibleToParent: visible
+          parent_note_id: replyingTo,
+          visible_to_parent: visible
         })
       });
 
       const j = await res.json();
-      if (j.ok) {
-        setNotes([...notes, j.note]);
+      if (j.success) {
+        // Reload full thread to show new note in correct position
+        await load();
         setText('');
-        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        setReplyingTo(null);
       }
     } catch (error) {
       console.error('Failed to add note:', error);
@@ -176,11 +181,14 @@ export default function NotesPanel({
         ) : (
           <>
             {notes.map((note) => {
-              const isCurrentUser = currentUser && note.author_id === currentUser.user_id;
+              const isCurrentUser = currentUser && note.author_user_id === currentUser.user_id;
+              const isReply = note.parent_note_id !== null;
+
               return (
                 <div
                   key={note.id}
                   className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                  style={{ marginLeft: isReply ? `${note.depth * 16}px` : '0' }}
                 >
                   <div
                     className={`max-w-[75%] rounded-lg p-3 ${
@@ -189,43 +197,56 @@ export default function NotesPanel({
                         : 'bg-white text-gray-800 border border-gray-200'
                     }`}
                   >
-                    {/* Author name for other users */}
-                    {!isCurrentUser && note.author && (
-                      <div className="flex items-center gap-1 mb-1">
-                        <User className="w-3 h-3 text-gray-500" />
-                        <span className="text-xs font-medium text-gray-600">
-                          {note.author.display_name || 'Teacher'}
-                        </span>
-                      </div>
-                    )}
+                    {/* Author name */}
+                    <div className="flex items-center gap-1 mb-1">
+                      <User className={`w-3 h-3 ${isCurrentUser ? 'text-emerald-100' : 'text-gray-500'}`} />
+                      <span className={`text-xs font-medium ${isCurrentUser ? 'text-emerald-100' : 'text-gray-600'}`}>
+                        {isCurrentUser ? 'You' : note.author_name}
+                      </span>
+                      <span className={`text-xs ${isCurrentUser ? 'text-emerald-100' : 'text-gray-500'}`}>
+                        ({note.author_role})
+                      </span>
+                    </div>
 
                     {/* Message text */}
                     <p className="text-sm whitespace-pre-wrap break-words">
                       {note.text}
                     </p>
 
-                    {/* Timestamp and visibility */}
+                    {/* Timestamp, visibility, and reply button */}
                     <div className={`flex items-center justify-between gap-2 mt-2 text-xs ${
                       isCurrentUser ? 'text-emerald-100' : 'text-gray-500'
                     }`}>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit'
-                        })}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit'
+                          })}</span>
+                        </div>
+                        {note.visible_to_parent ? (
+                          <div className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            <span>Parent</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <EyeOff className="w-3 h-3" />
+                            <span>Private</span>
+                          </div>
+                        )}
                       </div>
-                      {note.visible_to_parent ? (
-                        <div className="flex items-center gap-1">
-                          <Eye className="w-3 h-3" />
-                          <span>Parent</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <EyeOff className="w-3 h-3" />
-                          <span>Private</span>
-                        </div>
-                      )}
+
+                      {/* Reply button */}
+                      <button
+                        onClick={() => setReplyingTo(note.id)}
+                        className={`text-xs underline hover:no-underline ${
+                          isCurrentUser ? 'text-emerald-100' : 'text-emerald-600'
+                        }`}
+                      >
+                        Reply {note.reply_count > 0 && `(${note.reply_count})`}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -248,6 +269,21 @@ export default function NotesPanel({
 
       {/* Input Area */}
       <div className="border-t p-4 bg-white space-y-3">
+        {/* Reply indicator */}
+        {replyingTo && (
+          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-2">
+            <span className="text-xs text-blue-700">
+              Replying to {notes.find(n => n.id === replyingTo)?.author_name || 'message'}
+            </span>
+            <button
+              onClick={() => setReplyingTo(null)}
+              className="text-xs text-blue-700 hover:text-blue-900"
+            >
+              ✕ Cancel
+            </button>
+          </div>
+        )}
+
         {/* Visibility toggle */}
         <div className="flex items-center justify-between">
           <button
