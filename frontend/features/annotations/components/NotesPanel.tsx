@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Send, Eye, EyeOff, Mic, MicOff, Play, Pause, User, Clock } from 'lucide-react';
+import { MessageSquare, Send, Eye, EyeOff, Mic, MicOff, Play, Pause, User, Clock, Volume2 } from 'lucide-react';
 import VoiceNoteRecorder from '@/components/quran/VoiceNoteRecorder';
 
 interface Note {
@@ -132,10 +132,64 @@ export default function NotesPanel({
 
   // Handle voice note upload
   const handleVoiceNoteReady = async (audioBlob: Blob) => {
-    console.log('📢 Voice note ready:', audioBlob);
-    // TODO: Upload to storage and create note with audio_url
-    // For now, close the recorder
-    setShowVoiceRecorder(false);
+    if (!currentUser || !highlightId) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    setIsLoading(true);
+    try {
+      // Create form data with audio file
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice-note.m4a');
+      formData.append('highlightId', highlightId);
+
+      // Upload to storage
+      const uploadRes = await fetch('/api/voice-notes/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: formData
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadData.success) {
+        console.error('Failed to upload voice note:', uploadData.error);
+        alert('Failed to upload voice note. Please try again.');
+        return;
+      }
+
+      // Create note with audio URL
+      const res = await fetch(`/api/highlights/${highlightId}/notes/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          type: 'audio',
+          audio_url: uploadData.audioUrl,
+          parent_note_id: replyingTo,
+          visible_to_parent: visible
+        })
+      });
+
+      const j = await res.json();
+      if (j.success) {
+        // Reload full thread to show new note in correct position
+        await load();
+        setReplyingTo(null);
+        setShowVoiceRecorder(false);
+        console.log('✅ Voice note added successfully');
+      }
+    } catch (error) {
+      console.error('Failed to add voice note:', error);
+      alert('Failed to save voice note. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isSidebarMode = mode === 'sidebar';
@@ -208,10 +262,23 @@ export default function NotesPanel({
                       </span>
                     </div>
 
-                    {/* Message text */}
-                    <p className="text-sm whitespace-pre-wrap break-words">
-                      {note.text}
-                    </p>
+                    {/* Message content (text or audio) */}
+                    {note.type === 'text' && note.text && (
+                      <p className="text-sm whitespace-pre-wrap break-words">
+                        {note.text}
+                      </p>
+                    )}
+
+                    {note.type === 'audio' && note.audio_url && (
+                      <div className="flex items-center gap-2 bg-white/10 rounded-lg p-2">
+                        <Volume2 className="w-4 h-4" />
+                        <audio controls className="w-full max-w-xs">
+                          <source src={note.audio_url} type="audio/m4a" />
+                          <source src={note.audio_url} type="audio/webm" />
+                          Your browser does not support audio playback.
+                        </audio>
+                      </div>
+                    )}
 
                     {/* Timestamp, visibility, and reply button */}
                     <div className={`flex items-center justify-between gap-2 mt-2 text-xs ${

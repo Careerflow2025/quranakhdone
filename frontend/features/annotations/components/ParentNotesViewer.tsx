@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Eye, User, Clock } from 'lucide-react';
+import { MessageSquare, Eye, User, Clock, Volume2 } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -152,10 +152,23 @@ export default function ParentNotesViewer({
                       </span>
                     </div>
 
-                    {/* Message text */}
-                    <p className="text-sm whitespace-pre-wrap break-words">
-                      {note.text}
-                    </p>
+                    {/* Message content (text or audio) */}
+                    {note.type === 'text' && note.text && (
+                      <p className="text-sm whitespace-pre-wrap break-words">
+                        {note.text}
+                      </p>
+                    )}
+
+                    {note.type === 'audio' && note.audio_url && (
+                      <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                        <Volume2 className="w-4 h-4 text-blue-600" />
+                        <audio controls className="w-full max-w-xs">
+                          <source src={note.audio_url} type="audio/m4a" />
+                          <source src={note.audio_url} type="audio/webm" />
+                          Your browser does not support audio playback.
+                        </audio>
+                      </div>
+                    )}
 
                     {/* Timestamp */}
                     <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
