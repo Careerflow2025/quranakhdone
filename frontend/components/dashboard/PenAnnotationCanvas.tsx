@@ -2,7 +2,6 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Pen, Eraser, Save, Trash2, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface PenPath {
   points: { x: number; y: number }[]; // Percentage-based coordinates (0-100)
@@ -282,7 +281,6 @@ export default function PenAnnotationCanvas({
       }
     } catch (error) {
       console.error('Error loading annotations:', error);
-      toast.error('Failed to load annotations');
     } finally {
       setIsLoading(false);
     }
@@ -291,7 +289,7 @@ export default function PenAnnotationCanvas({
   // Save annotations to database
   const saveAnnotations = async () => {
     if (paths.length === 0) {
-      toast.info('No annotations to save');
+      console.log('No annotations to save');
       return;
     }
 
@@ -318,12 +316,11 @@ export default function PenAnnotationCanvas({
 
       const result = await response.json();
       if (result.success) {
-        toast.success('Annotations saved successfully');
+        console.log('✅ Annotations saved successfully');
         onSave?.();
       }
     } catch (error) {
-      console.error('Error saving annotations:', error);
-      toast.error('Failed to save annotations');
+      console.error('❌ Error saving annotations:', error);
     } finally {
       setIsSaving(false);
     }
