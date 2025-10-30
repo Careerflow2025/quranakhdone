@@ -250,13 +250,20 @@ export default function PenAnnotationCanvas({
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // DEBUG: Log what we're redrawing
+    const eraserPaths = paths.filter(p => p.color === 'eraser');
+    if (eraserPaths.length > 0) {
+      console.log('🎨 REDRAWING with', eraserPaths.length, 'eraser paths');
+    }
+
     // Redraw all paths
-    paths.forEach(path => {
+    paths.forEach((path, pathIndex) => {
       if (path.points.length < 2) return;
 
       // Set composite operation for eraser paths
       if (path.color === 'eraser') {
         ctx.globalCompositeOperation = 'destination-out';
+        console.log(`  Eraser path #${pathIndex} with ${path.points.length} points, width ${path.width}`);
       } else {
         ctx.globalCompositeOperation = 'source-over';
       }
@@ -342,6 +349,16 @@ export default function PenAnnotationCanvas({
 
       const result = await response.json();
       if (result.success && result.data.combinedPaths) {
+        // DEBUG: Log what we loaded
+        const loadedEraserPaths = result.data.combinedPaths.filter((p: any) => p.color === 'eraser');
+        const loadedRegularPaths = result.data.combinedPaths.filter((p: any) => p.color !== 'eraser');
+        console.log('📂 LOADED:', {
+          total: result.data.combinedPaths.length,
+          regular: loadedRegularPaths.length,
+          eraser: loadedEraserPaths.length,
+          eraserColors: loadedEraserPaths.map((p: any) => p.color)
+        });
+
         setPaths(result.data.combinedPaths);
         onLoad?.();
       }
@@ -363,6 +380,16 @@ export default function PenAnnotationCanvas({
       console.error('Script UUID not loaded yet');
       return;
     }
+
+    // DEBUG: Log what we're saving
+    const eraserPaths = paths.filter(p => p.color === 'eraser');
+    const regularPaths = paths.filter(p => p.color !== 'eraser');
+    console.log('💾 SAVING:', {
+      total: paths.length,
+      regular: regularPaths.length,
+      eraser: eraserPaths.length,
+      eraserColors: eraserPaths.map(p => p.color)
+    });
 
     setIsSaving(true);
     try {
