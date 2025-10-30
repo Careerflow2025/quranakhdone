@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Pen, Eraser, Save, Trash2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface PenPath {
   points: { x: number; y: number }[]; // Percentage-based coordinates (0-100)
@@ -266,8 +267,20 @@ export default function PenAnnotationCanvas({
 
     setIsLoading(true);
     try {
+      // Get the auth session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No auth session found');
+        return;
+      }
+
       const response = await fetch(
-        `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptId}`
+        `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        }
       );
 
       if (!response.ok) {
@@ -295,10 +308,18 @@ export default function PenAnnotationCanvas({
 
     setIsSaving(true);
     try {
+      // Get the auth session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No auth session found');
+        return;
+      }
+
       const response = await fetch('/api/pen-annotations/save', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           studentId,
