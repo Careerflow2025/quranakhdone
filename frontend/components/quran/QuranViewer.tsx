@@ -6,8 +6,9 @@ import { useQuran } from '@/hooks/useQuran';
 import { useHighlightStore } from '@/store/highlightStore';
 import { useAuthStore } from '@/store/authStore';
 import HighlightPopover from './HighlightPopover';
+import NotesPanel from '@/features/annotations/components/NotesPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, MessageSquare } from 'lucide-react';
 
 interface QuranViewerProps {
   surah: number;
@@ -38,6 +39,8 @@ const QuranViewer: React.FC<QuranViewerProps> = ({
   const [selection, setSelection] = useState<TextSelection | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
   const [showPopover, setShowPopover] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,6 +119,18 @@ const QuranViewer: React.FC<QuranViewerProps> = ({
     return highlights.filter(h => h.ayah_id === ayahId);
   };
 
+  const handleHighlightClick = (highlight: Highlight) => {
+    // Only open notes if highlight has notes
+    if (highlight.notes && highlight.notes.length > 0) {
+      setSelectedHighlightForNotes(highlight.id);
+      setShowNotesModal(true);
+    }
+  };
+
+  const hasNotes = (highlight: Highlight): boolean => {
+    return !!(highlight.notes && highlight.notes.length > 0);
+  };
+
   const renderAyahText = (ayahData: QuranAyah) => {
     const ayahHighlights = getAyahHighlights(ayahData.id);
 
@@ -131,32 +146,77 @@ const QuranViewer: React.FC<QuranViewerProps> = ({
       );
     }
 
-    let highlightedText = ayahData.text;
+    // Build text segments with highlights
     const sortedHighlights = [...ayahHighlights].sort((a, b) => a.token_start - b.token_start);
+    const segments: JSX.Element[] = [];
+    let lastPos = 0;
 
-    let offset = 0;
-    sortedHighlights.forEach(highlight => {
+    sortedHighlights.forEach((highlight, idx) => {
       const color = MISTAKE_COLORS[highlight.mistake];
-      const start = highlight.token_start + offset;
-      const end = highlight.token_end + offset;
+      const start = highlight.token_start;
+      const end = highlight.token_end;
 
-      const beforeText = highlightedText.slice(0, start);
-      const highlightText = highlightedText.slice(start, end);
-      const afterText = highlightedText.slice(end);
+      // Add text before highlight
+      if (start > lastPos) {
+        segments.push(
+          <span key={`text-${idx}`}>
+            {ayahData.text.slice(lastPos, start)}
+          </span>
+        );
+      }
 
-      const highlightSpan = `<mark class="highlight-${highlight.mistake}" style="background-color: ${color}33; border-left: 3px solid ${color};" title="${highlight.mistake}">${highlightText}</mark>`;
+      // Add highlighted text with click handler if it has notes
+      const highlightText = ayahData.text.slice(start, end);
+      const highlightHasNotes = hasNotes(highlight);
 
-      highlightedText = beforeText + highlightSpan + afterText;
-      offset += highlightSpan.length - highlightText.length;
+      segments.push(
+        <mark
+          key={`highlight-${idx}`}
+          className={`highlight-${highlight.mistake} ${highlightHasNotes ? 'cursor-pointer hover:opacity-80 relative' : ''}`}
+          style={{
+            backgroundColor: `${color}33`,
+            borderLeft: `3px solid ${color}`,
+            position: 'relative',
+            paddingRight: highlightHasNotes ? '20px' : '0'
+          }}
+          title={highlight.mistake}
+          onClick={() => highlightHasNotes && handleHighlightClick(highlight)}
+        >
+          {highlightText}
+          {highlightHasNotes && (
+            <MessageSquare
+              className="inline-block ml-1"
+              style={{
+                width: '14px',
+                height: '14px',
+                color: color,
+                verticalAlign: 'middle'
+              }}
+            />
+          )}
+        </mark>
+      );
+
+      lastPos = end;
     });
+
+    // Add remaining text
+    if (lastPos < ayahData.text.length) {
+      segments.push(
+        <span key="text-end">
+          {ayahData.text.slice(lastPos)}
+        </span>
+      );
+    }
 
     return (
       <span
         data-ayah-id={ayahData.id}
         className="quran-text"
         style={{ direction: 'rtl', textAlign: 'right' }}
-        dangerouslySetInnerHTML={{ __html: highlightedText }}
-      />
+      >
+        {segments}
+      </span>
     );
   };
 
@@ -239,24 +299,30 @@ const QuranViewer: React.FC<QuranViewerProps> = ({
                   {renderAyahText(ayahItem)}
                 </div>
 
-                {isTeacher && getAyahHighlights(ayahItem.id).length > 0 && (
+                {getAyahHighlights(ayahItem.id).length > 0 && (
                   <div className="mt-3 space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
                       Highlights ({getAyahHighlights(ayahItem.id).length}):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {getAyahHighlights(ayahItem.id).map(highlight => (
-                        <span
-                          key={highlight.id}
-                          className={`px-2 py-1 rounded text-xs highlight-${highlight.mistake}`}
-                          style={{ backgroundColor: `${MISTAKE_COLORS[highlight.mistake]}33` }}
-                        >
-                          {highlight.mistake}
-                          {highlight.notes && highlight.notes.length > 0 && (
-                            <span className="ml-1">📝</span>
-                          )}
-                        </span>
-                      ))}
+                      {getAyahHighlights(ayahItem.id).map(highlight => {
+                        const highlightHasNotes = hasNotes(highlight);
+                        return (
+                          <span
+                            key={highlight.id}
+                            className={`px-2 py-1 rounded text-xs highlight-${highlight.mistake} ${
+                              highlightHasNotes && !isTeacher ? 'cursor-pointer hover:opacity-80' : ''
+                            }`}
+                            style={{ backgroundColor: `${MISTAKE_COLORS[highlight.mistake]}33` }}
+                            onClick={() => !isTeacher && highlightHasNotes && handleHighlightClick(highlight)}
+                          >
+                            {highlight.mistake}
+                            {highlightHasNotes && (
+                              <MessageSquare className="inline-block ml-1 w-3 h-3" />
+                            )}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -287,6 +353,35 @@ const QuranViewer: React.FC<QuranViewerProps> = ({
           <p className="text-sm text-blue-700">
             Select any text in the Quran to create a highlight. Choose the mistake type and optionally add a note.
           </p>
+        </div>
+      )}
+
+      {!isTeacher && (
+        <div className="mt-8 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <h3 className="font-medium text-emerald-900 mb-2 flex items-center">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Viewing Teacher Notes
+          </h3>
+          <p className="text-sm text-emerald-700">
+            Click on highlighted text with the <MessageSquare className="inline w-3 h-3 mx-1" /> icon to view your teacher's notes and guidance.
+            You can also reply to notes to ask questions or confirm understanding.
+          </p>
+        </div>
+      )}
+
+      {/* Notes Modal */}
+      {showNotesModal && selectedHighlightForNotes && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl">
+            <NotesPanel
+              highlightId={selectedHighlightForNotes}
+              mode="modal"
+              onClose={() => {
+                setShowNotesModal(false);
+                setSelectedHighlightForNotes(null);
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

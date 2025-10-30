@@ -15,6 +15,7 @@ import {
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
+import NotesPanel from '@/features/annotations/components/NotesPanel';
 import {
   Book,
   Mic,
@@ -107,6 +108,10 @@ export default function StudentManagementDashboard() {
   const [selectedHighlightsForNote, setSelectedHighlightsForNote] = useState<any[]>([]);
   const [showNotePopup, setShowNotePopup] = useState<any>(null);
   const [noteMode, setNoteMode] = useState(false);
+
+  // NotesPanel modal state
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -942,7 +947,15 @@ export default function StudentManagementDashboard() {
         setSelectedHighlightsForNote(newSelection);
       }
     } else {
-      // Normal mode, show notes popup if notes exist
+      // Normal mode - open notes conversation modal
+      // Find the highlight to get its database ID
+      const clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+      if (clickedHighlight && clickedHighlight.dbId) {
+        setSelectedHighlightForNotes(clickedHighlight.dbId);
+        setShowNotesModal(true);
+      }
+
+      // Legacy note popup (kept for backwards compatibility)
       const relatedNotes = notes.filter((note: any) => note.highlightIds.includes(highlightId));
       if (relatedNotes.length > 0) {
         setShowNotePopup({ highlightId, notes: relatedNotes });
@@ -1650,11 +1663,24 @@ export default function StudentManagementDashboard() {
                               }}
                             >
                               {word}{' '}
-                              {wordHighlights.some((h: any) => notes.some((n: any) => n.highlightIds.includes(h.id))) && (
-                                <sup className="text-blue-300 ml-0.5" style={{ fontSize: '0.5em' }}>
-                                  <MessageSquare className="w-2.5 h-2.5 inline" />
-                                </sup>
-                              )}
+                              {(() => {
+                                // Check if any highlight on this word has notes from database
+                                const hasNotes = wordHighlights.some((h: any) => {
+                                  // Find database highlight by dbId
+                                  const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                  // Check if it has notes array with items
+                                  return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                                });
+
+                                if (hasNotes) {
+                                  return (
+                                    <sup className="text-blue-500 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                      <MessageSquare className="w-2.5 h-2.5 inline" />
+                                    </sup>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </span>
                           );
                         })}
@@ -2332,6 +2358,24 @@ export default function StudentManagementDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* NotesPanel Modal - WhatsApp-style conversation */}
+      {showNotesModal && selectedHighlightForNotes && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl">
+            <NotesPanel
+              highlightId={selectedHighlightForNotes}
+              mode="modal"
+              onClose={() => {
+                setShowNotesModal(false);
+                setSelectedHighlightForNotes(null);
+                // Refresh highlights to update note indicators
+                refreshHighlights();
+              }}
+            />
           </div>
         </div>
       )}
