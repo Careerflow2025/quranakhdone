@@ -91,14 +91,21 @@ export default function PenAnnotationCanvas({
   const loadAnnotations = async () => {
     if (!studentId || !pageNumber || !scriptUuid || !canvasRef.current) return;
 
+    console.log('🔄 [LOADING START] Time:', Date.now());
+    const startTime = Date.now();
     setIsLoading(true);
+
     try {
+      const sessionStart = Date.now();
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('⏱️ [SESSION] Took:', Date.now() - sessionStart, 'ms');
+
       if (!session) {
         setIsLoading(false);
         return;
       }
 
+      const fetchStart = Date.now();
       const response = await fetch(
         `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptUuid}`,
         {
@@ -107,19 +114,29 @@ export default function PenAnnotationCanvas({
           }
         }
       );
+      console.log('⏱️ [API FETCH] Took:', Date.now() - fetchStart, 'ms');
 
+      const parseStart = Date.now();
       const result = await response.json();
+      console.log('⏱️ [JSON PARSE] Took:', Date.now() - parseStart, 'ms');
+
       if (result.success && result.data.annotations && result.data.annotations.length > 0) {
         const latestAnnotation = result.data.annotations[0];
         if (latestAnnotation.drawing_data && canvasRef.current) {
+          const renderStart = Date.now();
           await canvasRef.current.loadPaths(latestAnnotation.drawing_data);
+          console.log('⏱️ [CANVAS RENDER] Took:', Date.now() - renderStart, 'ms');
+
           setHasUnsavedChanges(false);
-          console.log('✅ Annotations loaded successfully');
+          const totalTime = Date.now() - startTime;
+          console.log('✅ [TOTAL LOAD TIME]:', totalTime, 'ms');
           onLoad?.();
         }
+      } else {
+        console.log('ℹ️ No annotations to load');
       }
     } catch (error) {
-      console.error('Error loading annotations:', error);
+      console.error('❌ Error loading annotations:', error);
     } finally {
       setIsLoading(false);
     }
@@ -239,18 +256,13 @@ export default function PenAnnotationCanvas({
         strokeWidth={penWidth}
         eraserWidth={penWidth * 3}
         canvasColor="transparent"
-        preserveBackgroundImageAspectRatio="none"
-        width="100%"
-        height="100%"
         style={{
           border: 'none',
           width: '100%',
-          height: '100%',
-          touchAction: 'none'
+          height: '100%'
         }}
         onStroke={handleStroke}
         allowOnlyPointerType={enabled ? "all" : "none"}
-        withViewBox={true}
       />
     </div>
   );
