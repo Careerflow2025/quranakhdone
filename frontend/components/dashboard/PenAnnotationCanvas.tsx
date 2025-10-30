@@ -157,27 +157,17 @@ export default function PenAnnotationCanvas({
 
     const rect = canvas.getBoundingClientRect();
 
-    // When canvas is scaled with CSS transform:
-    // - rect gives VISUAL size (scaled)
-    // - canvas.width/height gives BITMAP size (unscaled)
-    // - We need to map visual click position to bitmap coordinates
-
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-    // Get position relative to visual canvas (0 to rect.width/height)
-    const visualX = clientX - rect.left;
-    const visualY = clientY - rect.top;
-
-    // Convert to percentage (0 to 1)
-    const percentX = visualX / rect.width;
-    const percentY = visualY / rect.height;
-
-    // Map to bitmap coordinates
-    return {
-      x: percentX * canvas.width,
-      y: percentY * canvas.height
-    };
+    if ('touches' in e) {
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    } else {
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
   };
 
   // Start drawing
@@ -195,7 +185,7 @@ export default function PenAnnotationCanvas({
       width: eraserMode ? penWidth * 3 : penWidth // Eraser is wider
     };
     setCurrentPath(newPath);
-  }, [enabled, eraserMode, penColor, penWidth, zoomLevel]);
+  }, [enabled, eraserMode, penColor, penWidth]);
 
   // Continue drawing
   const draw = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
@@ -325,10 +315,10 @@ export default function PenAnnotationCanvas({
     }
   }, [paths, currentPath]);
 
-  // Redraw when paths change or zoom changes
+  // Redraw when paths change
   useEffect(() => {
     redrawCanvas();
-  }, [paths, currentPath, zoomLevel, redrawCanvas]);
+  }, [paths, currentPath, redrawCanvas]);
 
   // Load annotations from database
   const loadAnnotations = async () => {
@@ -553,9 +543,8 @@ export default function PenAnnotationCanvas({
       }`}
       style={{
         zIndex: enabled ? 20 : 10,
-        cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default',
-        transform: `scale(${zoomLevel / 100})`,
-        transformOrigin: 'top center'
+        cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default'
+        // NO CSS transform - percentage-based coordinates handle all zoom (browser + app)
       }}
       onMouseDown={startDrawing}
       onTouchStart={startDrawing}
