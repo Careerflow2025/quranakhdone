@@ -73,12 +73,17 @@ export default function PenAnnotationCanvas({
 
   // Load annotations from database on mount and when page/script changes
   useEffect(() => {
-    if (scriptUuid && studentId && pageNumber && canvasRef.current) {
-      // Small delay to ensure canvas is fully mounted
-      const timer = setTimeout(() => {
-        loadAnnotations();
-      }, 100);
-      return () => clearTimeout(timer);
+    if (scriptUuid && studentId && pageNumber) {
+      // Wait for canvas to be fully ready before loading
+      const checkCanvasReady = setInterval(() => {
+        if (canvasRef.current) {
+          clearInterval(checkCanvasReady);
+          loadAnnotations();
+        }
+      }, 50);
+
+      // Cleanup if component unmounts
+      return () => clearInterval(checkCanvasReady);
     }
   }, [studentId, pageNumber, scriptUuid]);
 
@@ -234,13 +239,18 @@ export default function PenAnnotationCanvas({
         strokeWidth={penWidth}
         eraserWidth={penWidth * 3}
         canvasColor="transparent"
+        preserveBackgroundImageAspectRatio="none"
+        width="100%"
+        height="100%"
         style={{
           border: 'none',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          touchAction: 'none'
         }}
         onStroke={handleStroke}
         allowOnlyPointerType={enabled ? "all" : "none"}
+        withViewBox={true}
       />
     </div>
   );
