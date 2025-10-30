@@ -44,7 +44,6 @@ export default function PenAnnotationCanvas({
   const [isSaving, setIsSaving] = useState(false);
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [zoomScale, setZoomScale] = useState(1);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get script UUID from code
@@ -72,37 +71,6 @@ export default function PenAnnotationCanvas({
       canvasRef.current.eraseMode(eraserMode);
     }
   }, [eraserMode]);
-
-  // Browser zoom detection and compensation
-  useEffect(() => {
-    const updateZoom = () => {
-      if (window.visualViewport) {
-        const zoom = window.visualViewport.scale || 1;
-        setZoomScale(zoom);
-        console.log('📏 [ZOOM] Browser zoom detected:', zoom);
-      }
-    };
-
-    // Initial check
-    updateZoom();
-
-    // Listen for zoom changes
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateZoom);
-      window.visualViewport.addEventListener('scroll', updateZoom);
-    }
-
-    // Fallback: listen for window resize (Ctrl+/Ctrl-)
-    window.addEventListener('resize', updateZoom);
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateZoom);
-        window.visualViewport.removeEventListener('scroll', updateZoom);
-      }
-      window.removeEventListener('resize', updateZoom);
-    };
-  }, []);
 
   // Load annotations from database on mount and when page/script changes
   useEffect(() => {
@@ -299,32 +267,34 @@ export default function PenAnnotationCanvas({
   }, []);
 
   return (
-    <div className="absolute inset-0 w-full h-full" style={{
-      pointerEvents: enabled ? 'auto' : 'none',
-      zIndex: enabled ? 20 : 10
-    }}>
-      {/* Zoom compensation wrapper */}
-      <div style={{
-        transform: `scale(${1 / zoomScale})`,
-        transformOrigin: 'top left',
-        width: `${100 * zoomScale}%`,
-        height: `${100 * zoomScale}%`
-      }}>
-        <ReactSketchCanvas
-          ref={canvasRef}
-          strokeColor={penColor}
-          strokeWidth={penWidth}
-          eraserWidth={penWidth * 3}
-          canvasColor="transparent"
-          style={{
-            border: 'none',
-            width: '100%',
-            height: '100%'
-          }}
-          onStroke={handleStroke}
-          allowOnlyPointerType={enabled ? "all" : "none"}
-        />
-      </div>
+    <div
+      className="absolute inset-0 w-full h-full"
+      style={{
+        pointerEvents: enabled ? 'auto' : 'none',
+        zIndex: enabled ? 20 : 10,
+        touchAction: 'none', // Prevent pinch-to-zoom on touch devices
+      }}
+      onWheel={(e) => {
+        // Prevent Ctrl+scroll zoom on the canvas
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <ReactSketchCanvas
+        ref={canvasRef}
+        strokeColor={penColor}
+        strokeWidth={penWidth}
+        eraserWidth={penWidth * 3}
+        canvasColor="transparent"
+        style={{
+          border: 'none',
+          width: '100%',
+          height: '100%'
+        }}
+        onStroke={handleStroke}
+        allowOnlyPointerType={enabled ? "all" : "none"}
+      />
 
       {/* Save indicator */}
       {isSaving && (
