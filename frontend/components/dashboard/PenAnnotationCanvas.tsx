@@ -40,7 +40,7 @@ export default function PenAnnotationCanvas({
   onClear
 }: PenAnnotationCanvasProps) {
   const canvasRef = useRef<ReactSketchCanvasRef>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function PenAnnotationCanvas({
 
   // CRITICAL: Prevent browser zoom on canvas to avoid coordinate drift
   useEffect(() => {
-    const container = containerRef.current;
+    const container = canvasContainerRef.current;
     if (!container) return;
 
     const preventZoom = (e: WheelEvent) => {
@@ -299,7 +299,7 @@ export default function PenAnnotationCanvas({
 
   return (
     <div
-      ref={containerRef}
+      ref={canvasContainerRef}
       className="absolute inset-0 w-full h-full"
       style={{
         pointerEvents: enabled ? 'auto' : 'none',
