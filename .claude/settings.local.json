@@ -12,7 +12,8 @@
       "Bash(curl:*)",
       "mcp__supabase__apply_migration",
       "Bash(npx eslint:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(git revert:*)"
     ],
     "deny": [],
     "ask": []

@@ -156,19 +156,28 @@ export default function PenAnnotationCanvas({
     if (!canvas) return { x: 0, y: 0 };
 
     const rect = canvas.getBoundingClientRect();
-    const scale = zoomLevel / 100;
 
-    if ('touches' in e) {
-      return {
-        x: (e.touches[0].clientX - rect.left) / scale,
-        y: (e.touches[0].clientY - rect.top) / scale
-      };
-    } else {
-      return {
-        x: (e.clientX - rect.left) / scale,
-        y: (e.clientY - rect.top) / scale
-      };
-    }
+    // When canvas is scaled with CSS transform:
+    // - rect gives VISUAL size (scaled)
+    // - canvas.width/height gives BITMAP size (unscaled)
+    // - We need to map visual click position to bitmap coordinates
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    // Get position relative to visual canvas (0 to rect.width/height)
+    const visualX = clientX - rect.left;
+    const visualY = clientY - rect.top;
+
+    // Convert to percentage (0 to 1)
+    const percentX = visualX / rect.width;
+    const percentY = visualY / rect.height;
+
+    // Map to bitmap coordinates
+    return {
+      x: percentX * canvas.width,
+      y: percentY * canvas.height
+    };
   };
 
   // Start drawing
@@ -544,7 +553,9 @@ export default function PenAnnotationCanvas({
       }`}
       style={{
         zIndex: enabled ? 20 : 10,
-        cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default'
+        cursor: enabled ? (eraserMode ? 'crosshair' : 'default') : 'default',
+        transform: `scale(${zoomLevel / 100})`,
+        transformOrigin: 'top center'
       }}
       onMouseDown={startDrawing}
       onTouchStart={startDrawing}
