@@ -40,6 +40,7 @@ export default function PenAnnotationCanvas({
   onClear
 }: PenAnnotationCanvasProps) {
   const canvasRef = useRef<ReactSketchCanvasRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
@@ -71,6 +72,36 @@ export default function PenAnnotationCanvas({
       canvasRef.current.eraseMode(eraserMode);
     }
   }, [eraserMode]);
+
+  // CRITICAL: Prevent browser zoom on canvas to avoid coordinate drift
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const preventZoom = (e: WheelEvent) => {
+      // Prevent Ctrl+scroll zoom (Windows/Linux) and Cmd+scroll (Mac)
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const preventGesture = (e: Event) => {
+      // Prevent pinch-to-zoom gesture
+      e.preventDefault();
+    };
+
+    // Add listeners with passive:false to allow preventDefault
+    container.addEventListener('wheel', preventZoom, { passive: false });
+    container.addEventListener('gesturestart', preventGesture, { passive: false });
+    container.addEventListener('gesturechange', preventGesture, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', preventZoom);
+      container.removeEventListener('gesturestart', preventGesture);
+      container.removeEventListener('gesturechange', preventGesture);
+    };
+  }, []);
 
   // Load annotations from database on mount and when page/script changes
   useEffect(() => {
@@ -268,17 +299,12 @@ export default function PenAnnotationCanvas({
 
   return (
     <div
+      ref={containerRef}
       className="absolute inset-0 w-full h-full"
       style={{
         pointerEvents: enabled ? 'auto' : 'none',
         zIndex: enabled ? 20 : 10,
         touchAction: 'none', // Prevent pinch-to-zoom on touch devices
-      }}
-      onWheel={(e) => {
-        // Prevent Ctrl+scroll zoom on the canvas
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-        }
       }}
     >
       <ReactSketchCanvas
