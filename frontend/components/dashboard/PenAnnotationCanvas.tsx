@@ -252,24 +252,48 @@ export default function PenAnnotationCanvas({
 
     // DEBUG: Log what we're redrawing
     const eraserPaths = paths.filter(p => p.color === 'eraser');
+    const regularPaths = paths.filter(p => p.color !== 'eraser');
     if (eraserPaths.length > 0) {
-      console.log('🎨 REDRAWING with', eraserPaths.length, 'eraser paths');
+      console.log('🎨 REDRAWING:', {
+        regular: regularPaths.length,
+        eraser: eraserPaths.length,
+        total: paths.length
+      });
     }
 
-    // Redraw all paths
-    paths.forEach((path, pathIndex) => {
+    // CRITICAL: Draw in TWO passes to ensure eraser works correctly
+    // Pass 1: Draw ALL regular paths FIRST
+    ctx.globalCompositeOperation = 'source-over';
+    regularPaths.forEach((path, pathIndex) => {
       if (path.points.length < 2) return;
 
-      // Set composite operation for eraser paths
-      if (path.color === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-        console.log(`  Eraser path #${pathIndex} with ${path.points.length} points, width ${path.width}`);
-      } else {
-        ctx.globalCompositeOperation = 'source-over';
-      }
+      ctx.beginPath();
+      ctx.strokeStyle = path.color;
+      ctx.lineWidth = path.width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      path.points.forEach((point, index) => {
+        const absPoint = toAbsolute(point.x, point.y);
+        if (index === 0) {
+          ctx.moveTo(absPoint.x, absPoint.y);
+        } else {
+          ctx.lineTo(absPoint.x, absPoint.y);
+        }
+      });
+
+      ctx.stroke();
+    });
+
+    // Pass 2: Apply ALL eraser paths SECOND (now they have pixels to erase)
+    ctx.globalCompositeOperation = 'destination-out';
+    eraserPaths.forEach((path, pathIndex) => {
+      if (path.points.length < 2) return;
+
+      console.log(`  ✂️ Applying eraser path #${pathIndex}: ${path.points.length} points, width ${path.width}`);
 
       ctx.beginPath();
-      ctx.strokeStyle = path.color === 'eraser' ? 'rgba(0,0,0,1)' : path.color;
+      ctx.strokeStyle = 'rgba(0,0,0,1)'; // Color doesn't matter for destination-out
       ctx.lineWidth = path.width;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
