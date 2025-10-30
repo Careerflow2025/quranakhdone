@@ -43,11 +43,42 @@ export default function PenAnnotationCanvas({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [scriptUuid, setScriptUuid] = useState<string | null>(null);
+
+  // Look up script UUID from code on mount
+  useEffect(() => {
+    const fetchScriptUuid = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('quran_scripts')
+          .select('id')
+          .eq('code', scriptId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching script UUID:', error);
+          return;
+        }
+
+        if (data) {
+          setScriptUuid(data.id);
+        }
+      } catch (error) {
+        console.error('Error fetching script UUID:', error);
+      }
+    };
+
+    if (scriptId) {
+      fetchScriptUuid();
+    }
+  }, [scriptId]);
 
   // Load existing annotations on mount or page change
   useEffect(() => {
-    loadAnnotations();
-  }, [studentId, pageNumber, scriptId]);
+    if (scriptUuid) {
+      loadAnnotations();
+    }
+  }, [studentId, pageNumber, scriptUuid]);
 
   // Update canvas size when container changes
   useEffect(() => {
@@ -134,32 +165,14 @@ export default function PenAnnotationCanvas({
     const pos = getPosition(e);
     const percentPos = toPercentage(pos.x, pos.y);
 
-    if (eraserMode) {
-      // Eraser mode - remove paths near the click point
-      const eraserRadius = 10; // pixels
-      setPaths(prevPaths =>
-        prevPaths.filter(path => {
-          // Check if any point in the path is within eraser radius
-          return !path.points.some(point => {
-            const absPoint = toAbsolute(point.x, point.y);
-            const distance = Math.sqrt(
-              Math.pow(absPoint.x - pos.x, 2) +
-              Math.pow(absPoint.y - pos.y, 2)
-            );
-            return distance < eraserRadius;
-          });
-        })
-      );
-    } else {
-      // Drawing mode
-      setIsDrawing(true);
-      const newPath: PenPath = {
-        points: [percentPos],
-        color: penColor,
-        width: penWidth
-      };
-      setCurrentPath(newPath);
-    }
+    // Start drawing (pen or eraser - both work the same way)
+    setIsDrawing(true);
+    const newPath: PenPath = {
+      points: [percentPos],
+      color: eraserMode ? 'eraser' : penColor, // Special 'eraser' color marker
+      width: eraserMode ? penWidth * 3 : penWidth // Eraser is wider
+    };
+    setCurrentPath(newPath);
   }, [enabled, eraserMode, penColor, penWidth, zoomLevel]);
 
   // Continue drawing
@@ -182,14 +195,24 @@ export default function PenAnnotationCanvas({
       const lastPoint = currentPath.points[currentPath.points.length - 1];
       const lastAbs = toAbsolute(lastPoint.x, lastPoint.y);
 
+      // Set composite operation for eraser
+      if (currentPath.color === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
       ctx.beginPath();
       ctx.moveTo(lastAbs.x, lastAbs.y);
       ctx.lineTo(pos.x, pos.y);
-      ctx.strokeStyle = currentPath.color;
+      ctx.strokeStyle = currentPath.color === 'eraser' ? 'rgba(0,0,0,1)' : currentPath.color;
       ctx.lineWidth = currentPath.width;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
+
+      // Reset to normal
+      ctx.globalCompositeOperation = 'source-over';
     }
   }, [isDrawing, currentPath]);
 
@@ -217,8 +240,15 @@ export default function PenAnnotationCanvas({
     paths.forEach(path => {
       if (path.points.length < 2) return;
 
+      // Set composite operation for eraser paths
+      if (path.color === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
       ctx.beginPath();
-      ctx.strokeStyle = path.color;
+      ctx.strokeStyle = path.color === 'eraser' ? 'rgba(0,0,0,1)' : path.color;
       ctx.lineWidth = path.width;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -235,10 +265,18 @@ export default function PenAnnotationCanvas({
       ctx.stroke();
     });
 
+    // Reset to normal
+    ctx.globalCompositeOperation = 'source-over';
+
     // Draw current path if drawing
     if (currentPath && currentPath.points.length > 0) {
+      // Set composite operation for eraser
+      if (currentPath.color === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+      }
+
       ctx.beginPath();
-      ctx.strokeStyle = currentPath.color;
+      ctx.strokeStyle = currentPath.color === 'eraser' ? 'rgba(0,0,0,1)' : currentPath.color;
       ctx.lineWidth = currentPath.width;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -253,6 +291,7 @@ export default function PenAnnotationCanvas({
       });
 
       ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
     }
   }, [paths, currentPath]);
 
@@ -263,7 +302,7 @@ export default function PenAnnotationCanvas({
 
   // Load annotations from database
   const loadAnnotations = async () => {
-    if (!studentId || !pageNumber || !scriptId) return;
+    if (!studentId || !pageNumber || !scriptUuid) return;
 
     setIsLoading(true);
     try {
@@ -275,7 +314,7 @@ export default function PenAnnotationCanvas({
       }
 
       const response = await fetch(
-        `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptId}`,
+        `/api/pen-annotations/load?studentId=${studentId}&pageNumber=${pageNumber}&scriptId=${scriptUuid}`,
         {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
@@ -306,6 +345,11 @@ export default function PenAnnotationCanvas({
       return;
     }
 
+    if (!scriptUuid) {
+      console.error('Script UUID not loaded yet');
+      return;
+    }
+
     setIsSaving(true);
     try {
       // Get the auth session token
@@ -325,7 +369,7 @@ export default function PenAnnotationCanvas({
           studentId,
           teacherId,
           pageNumber,
-          scriptId,
+          scriptId: scriptUuid,
           paths,
           containerDimensions
         })
