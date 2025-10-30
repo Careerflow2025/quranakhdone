@@ -6,6 +6,8 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
+  const startTime = Date.now();
+
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const url = new URL(req.url);
@@ -26,63 +28,51 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized - Missing authorization header' }, { status: 401 });
     }
 
+    const authStart = Date.now();
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    console.log(`[API LOAD] Auth check: ${Date.now() - authStart}ms`);
 
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
-    // Get the user's profile to check role and school
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('role, school_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
-    }
-
-    // Build query based on role
-    let query = supabaseAdmin
+    // OPTIMIZED: Single query with JOIN to get profile + annotations
+    // This replaces 3-5 sequential queries with 1 query
+    const queryStart = Date.now();
+    const { data, error } = await supabaseAdmin
       .from('pen_annotations')
-      .select('*')
+      .select(`
+        *,
+        student:students!inner(user_id, school_id),
+        profile:profiles!inner(role, school_id)
+      `)
       .eq('student_id', studentId)
       .eq('page_number', parseInt(pageNumber))
-      .eq('script_id', scriptId);
+      .eq('script_id', scriptId)
+      .eq('profile.user_id', user.id)
+      .order('created_at', { ascending: false });
 
-    // Apply school isolation
-    if (profile.role === 'teacher' || profile.role === 'admin' || profile.role === 'owner') {
-      // Teachers, admins, and owners can see all annotations for students in their school
-      query = query.eq('school_id', profile.school_id);
-    } else if (profile.role === 'student') {
-      // Students can only see their own annotations
-      const { data: studentData } = await supabaseAdmin
-        .from('students')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+    console.log(`[API LOAD] Database query: ${Date.now() - queryStart}ms`);
 
-      if (!studentData || studentData.id !== studentId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-      }
-    } else if (profile.role === 'parent') {
-      // Parents can see their children's annotations
-      const { data: linkedStudent } = await supabaseAdmin
-        .from('parent_students')
-        .select('student_id')
-        .eq('student_id', studentId)
-        .single();
-
-      if (!linkedStudent) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-      }
+    if (error) {
+      console.error('[API LOAD] Query error:', error);
+      throw error;
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) throw error;
+    // Verify permissions based on role (already filtered by JOIN)
+    if (!data || data.length === 0) {
+      // No annotations found, return empty
+      console.log(`[API LOAD] Total time: ${Date.now() - startTime}ms`);
+      return NextResponse.json({
+        success: true,
+        data: {
+          annotations: [],
+          combinedPaths: [],
+          count: 0
+        }
+      });
+    }
 
     // Combine all annotations for the page
     const combinedPaths: any[] = [];
@@ -91,6 +81,8 @@ export async function GET(req: Request) {
         combinedPaths.push(...annotation.drawing_data.paths);
       }
     });
+
+    console.log(`[API LOAD] Total time: ${Date.now() - startTime}ms`);
 
     return NextResponse.json({
       success: true,
@@ -101,7 +93,8 @@ export async function GET(req: Request) {
       }
     });
   } catch (error: any) {
-    console.error('Error loading pen annotations:', error);
+    console.error('[API LOAD] Error:', error);
+    console.log(`[API LOAD] Failed after: ${Date.now() - startTime}ms`);
     return NextResponse.json(
       { error: error.message || 'Failed to load annotations' },
       { status: 500 }

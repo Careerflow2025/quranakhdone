@@ -44,6 +44,8 @@ export default function PenAnnotationCanvas({
   const [isSaving, setIsSaving] = useState(false);
   const [scriptUuid, setScriptUuid] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [zoomScale, setZoomScale] = useState(1);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get script UUID from code
   useEffect(() => {
@@ -70,6 +72,37 @@ export default function PenAnnotationCanvas({
       canvasRef.current.eraseMode(eraserMode);
     }
   }, [eraserMode]);
+
+  // Browser zoom detection and compensation
+  useEffect(() => {
+    const updateZoom = () => {
+      if (window.visualViewport) {
+        const zoom = window.visualViewport.scale || 1;
+        setZoomScale(zoom);
+        console.log('📏 [ZOOM] Browser zoom detected:', zoom);
+      }
+    };
+
+    // Initial check
+    updateZoom();
+
+    // Listen for zoom changes
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateZoom);
+      window.visualViewport.addEventListener('scroll', updateZoom);
+    }
+
+    // Fallback: listen for window resize (Ctrl+/Ctrl-)
+    window.addEventListener('resize', updateZoom);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateZoom);
+        window.visualViewport.removeEventListener('scroll', updateZoom);
+      }
+      window.removeEventListener('resize', updateZoom);
+    };
+  }, []);
 
   // Load annotations from database on mount and when page/script changes
   useEffect(() => {
@@ -240,30 +273,71 @@ export default function PenAnnotationCanvas({
     (window as any).__penAnnotationsSaving = isSaving;
   }, [hasUnsavedChanges, isSaving]);
 
-  // Track changes
+  // Track changes with auto-save (debounced)
   const handleStroke = () => {
     setHasUnsavedChanges(true);
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Auto-save after 2 seconds of no drawing
+    saveTimeoutRef.current = setTimeout(() => {
+      console.log('💾 [AUTO-SAVE] Triggered after 2s of inactivity');
+      saveAnnotations();
+    }, 2000);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="absolute inset-0 w-full h-full" style={{
       pointerEvents: enabled ? 'auto' : 'none',
       zIndex: enabled ? 20 : 10
     }}>
-      <ReactSketchCanvas
-        ref={canvasRef}
-        strokeColor={penColor}
-        strokeWidth={penWidth}
-        eraserWidth={penWidth * 3}
-        canvasColor="transparent"
-        style={{
-          border: 'none',
-          width: '100%',
-          height: '100%'
-        }}
-        onStroke={handleStroke}
-        allowOnlyPointerType={enabled ? "all" : "none"}
-      />
+      {/* Zoom compensation wrapper */}
+      <div style={{
+        transform: `scale(${1 / zoomScale})`,
+        transformOrigin: 'top left',
+        width: `${100 * zoomScale}%`,
+        height: `${100 * zoomScale}%`
+      }}>
+        <ReactSketchCanvas
+          ref={canvasRef}
+          strokeColor={penColor}
+          strokeWidth={penWidth}
+          eraserWidth={penWidth * 3}
+          canvasColor="transparent"
+          style={{
+            border: 'none',
+            width: '100%',
+            height: '100%'
+          }}
+          onStroke={handleStroke}
+          allowOnlyPointerType={enabled ? "all" : "none"}
+        />
+      </div>
+
+      {/* Save indicator */}
+      {isSaving && (
+        <div className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          Saving...
+        </div>
+      )}
+      {hasUnsavedChanges && !isSaving && (
+        <div className="absolute top-2 right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
+          Unsaved changes
+        </div>
+      )}
     </div>
   );
 }
