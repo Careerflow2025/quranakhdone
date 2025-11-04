@@ -129,11 +129,11 @@ BEGIN
     WHERE n.highlight_id = p_highlight_id
   ),
   reply_counts AS (
-    SELECT parent_note_id, COUNT(*) as count
-    FROM notes
-    WHERE highlight_id = p_highlight_id
-      AND parent_note_id IS NOT NULL
-    GROUP BY parent_note_id
+    SELECT n.parent_note_id, COUNT(*) as count
+    FROM notes n
+    WHERE n.highlight_id = p_highlight_id
+      AND n.parent_note_id IS NOT NULL
+    GROUP BY n.parent_note_id
   )
   SELECT
     nt.id,
