@@ -67,11 +67,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate unique filename
+    // Generate unique filename with proper extension based on mime type
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(7);
-    const fileExt = audioFile.name.split('.').pop() || 'm4a';
+
+    // Map mime type to file extension
+    const mimeToExt: Record<string, string> = {
+      'audio/mp4': 'mp4',
+      'audio/m4a': 'm4a',
+      'audio/mpeg': 'mp3',
+      'audio/mp3': 'mp3',
+      'audio/webm': 'webm',
+      'audio/ogg': 'ogg',
+      'audio/wav': 'wav'
+    };
+
+    const fileExt = mimeToExt[audioFile.type] || audioFile.name.split('.').pop() || 'm4a';
     const fileName = `${profile.school_id}/${user.id}/${highlightId}/${timestamp}-${randomId}.${fileExt}`;
+
+    console.log('🎵 Upload details:', {
+      originalName: audioFile.name,
+      mimeType: audioFile.type,
+      size: audioFile.size,
+      extension: fileExt,
+      fileName: fileName
+    });
 
     // Convert File to ArrayBuffer for upload
     const arrayBuffer = await audioFile.arrayBuffer();
@@ -82,7 +102,7 @@ export async function POST(req: NextRequest) {
       .storage
       .from('voice-notes')
       .upload(fileName, buffer, {
-        contentType: audioFile.type || 'audio/m4a',
+        contentType: audioFile.type || 'audio/mp4',
         cacheControl: '3600',
         upsert: false
       });

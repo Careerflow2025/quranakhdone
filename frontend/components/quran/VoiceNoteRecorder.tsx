@@ -45,42 +45,64 @@ export default function VoiceNoteRecorder({
   const startRecording = async () => {
     try {
       setError(null);
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100,
         }
       });
-      
+
       streamRef.current = stream;
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
-      
+
+      // Try different mime types in order of preference (Supabase Storage compatible)
+      const mimeTypes = [
+        'audio/mp4',           // Best for Supabase Storage
+        'audio/mpeg',          // MP3 format
+        'audio/webm',          // Fallback to basic webm (no opus codec)
+        'audio/ogg',           // OGG format
+        ''                     // Let browser choose default
+      ];
+
+      let selectedMimeType = '';
+      for (const mimeType of mimeTypes) {
+        if (mimeType === '' || MediaRecorder.isTypeSupported(mimeType)) {
+          selectedMimeType = mimeType;
+          console.log('📹 Using mime type:', mimeType || 'browser default');
+          break;
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream,
+        selectedMimeType ? { mimeType: selectedMimeType } : undefined
+      );
+
       const chunks: Blob[] = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunks.push(event.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+        // Use the actual mime type from the recorder
+        const actualMimeType = mediaRecorder.mimeType || 'audio/mp4';
+        console.log('🎵 Recorded blob mime type:', actualMimeType);
+
+        const blob = new Blob(chunks, { type: actualMimeType });
         setRecordedBlob(blob);
-        
+
         // Stop all tracks
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
         }
       };
-      
+
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start(100); // Record in 100ms chunks
-      
+
       setIsRecording(true);
       setRecordingTime(0);
       
