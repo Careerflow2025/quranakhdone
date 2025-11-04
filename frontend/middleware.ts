@@ -67,25 +67,25 @@ export async function middleware(request: NextRequest) {
   );
 
   // Skip route protection for API routes, static files, and auth pages
-  // BUT still refresh session for API routes!
   const isApiRoute = pathname.startsWith('/api/');
   const isStaticFile = pathname.startsWith('/_next/') || pathname.startsWith('/favicon.ico');
   const isAuthPage = pathname.startsWith('/auth/');
 
-  // CRITICAL: Refresh session to ensure cookies are up to date (for ALL routes)
-  console.log('[Middleware] Calling getUser()...');
+  // Skip route protection logic for API routes, static files, and auth pages
+  // IMPORTANT: Don't call getUser() for these routes to avoid unnecessary Supabase calls
+  if (isApiRoute || isStaticFile || isAuthPage) {
+    console.log('[Middleware] Skipping route protection for:', pathname);
+    return response;
+  }
+
+  // Only refresh session for protected routes (reduces Supabase API calls significantly)
+  console.log('[Middleware] Calling getUser() for protected route:', pathname);
   const { data: { user }, error } = await supabase.auth.getUser();
   console.log('[Middleware] Auth result:', {
     hasUser: !!user,
     userId: user?.id,
     error: error?.message
   });
-
-  // Skip route protection logic for API routes, static files, and auth pages
-  if (isApiRoute || isStaticFile || isAuthPage) {
-    console.log('[Middleware] Skipping route protection, returning response with refreshed cookies');
-    return response;
-  }
 
   // Get user role from headers or cookies (this would normally be from auth)
   // For now, we'll detect based on path - in real implementation, use auth tokens
