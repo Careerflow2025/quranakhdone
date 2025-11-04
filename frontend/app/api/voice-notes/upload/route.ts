@@ -71,6 +71,11 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(7);
 
+    // CRITICAL: Strip codec info from mime type (Supabase Storage rejects codecs)
+    // audio/mp4;codecs=opus → audio/mp4
+    // audio/webm;codecs=opus → audio/webm
+    const baseMimeType = audioFile.type.split(';')[0].trim();
+
     // Map mime type to file extension
     const mimeToExt: Record<string, string> = {
       'audio/mp4': 'mp4',
@@ -82,12 +87,13 @@ export async function POST(req: NextRequest) {
       'audio/wav': 'wav'
     };
 
-    const fileExt = mimeToExt[audioFile.type] || audioFile.name.split('.').pop() || 'm4a';
+    const fileExt = mimeToExt[baseMimeType] || audioFile.name.split('.').pop() || 'm4a';
     const fileName = `${profile.school_id}/${user.id}/${highlightId}/${timestamp}-${randomId}.${fileExt}`;
 
     console.log('🎵 Upload details:', {
       originalName: audioFile.name,
-      mimeType: audioFile.type,
+      originalMimeType: audioFile.type,
+      baseMimeType: baseMimeType,
       size: audioFile.size,
       extension: fileExt,
       fileName: fileName
@@ -97,12 +103,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage - USE BASE MIME TYPE WITHOUT CODECS
     const { data: uploadData, error: uploadError } = await supabaseAdmin
       .storage
       .from('voice-notes')
       .upload(fileName, buffer, {
-        contentType: audioFile.type || 'audio/mp4',
+        contentType: baseMimeType || 'audio/mp4',
         cacheControl: '3600',
         upsert: false
       });
