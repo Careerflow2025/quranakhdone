@@ -72,28 +72,36 @@ export async function POST(req: NextRequest) {
     const randomId = Math.random().toString(36).substring(7);
 
     // CRITICAL: Strip codec info from mime type (Supabase Storage rejects codecs)
-    // audio/mp4;codecs=opus → audio/mp4
     // audio/webm;codecs=opus → audio/webm
     const baseMimeType = audioFile.type.split(';')[0].trim();
 
-    // Map mime type to file extension
+    // Bucket only allows: audio/m4a, audio/mp3, audio/wav, audio/webm
+    // Map incoming types to bucket-allowed types
     const mimeToExt: Record<string, string> = {
-      'audio/mp4': 'mp4',
-      'audio/m4a': 'm4a',
-      'audio/mpeg': 'mp3',
-      'audio/mp3': 'mp3',
       'audio/webm': 'webm',
-      'audio/ogg': 'ogg',
-      'audio/wav': 'wav'
+      'audio/mp3': 'mp3',
+      'audio/mpeg': 'mp3',
+      'audio/wav': 'wav',
+      'audio/m4a': 'm4a',
+      'audio/mp4': 'm4a',  // Map mp4 to m4a (bucket doesn't allow audio/mp4)
+      'audio/ogg': 'webm'  // Map ogg to webm as fallback
     };
 
-    const fileExt = mimeToExt[baseMimeType] || audioFile.name.split('.').pop() || 'm4a';
+    const fileExt = mimeToExt[baseMimeType] || 'webm';
+
+    // Map to bucket-allowed mime type
+    const allowedMimeType = baseMimeType === 'audio/mp4' ? 'audio/m4a' :
+                           baseMimeType === 'audio/mpeg' ? 'audio/mp3' :
+                           baseMimeType === 'audio/ogg' ? 'audio/webm' :
+                           baseMimeType;
+
     const fileName = `${profile.school_id}/${user.id}/${highlightId}/${timestamp}-${randomId}.${fileExt}`;
 
     console.log('🎵 Upload details:', {
       originalName: audioFile.name,
       originalMimeType: audioFile.type,
       baseMimeType: baseMimeType,
+      allowedMimeType: allowedMimeType,
       size: audioFile.size,
       extension: fileExt,
       fileName: fileName
@@ -103,12 +111,13 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage - USE BASE MIME TYPE WITHOUT CODECS
+    // Upload to Supabase Storage - USE BUCKET-ALLOWED MIME TYPE
+    // Bucket only accepts: audio/m4a, audio/mp3, audio/wav, audio/webm
     const { data: uploadData, error: uploadError } = await supabaseAdmin
       .storage
       .from('voice-notes')
       .upload(fileName, buffer, {
-        contentType: baseMimeType || 'audio/mp4',
+        contentType: allowedMimeType,
         cacheControl: '3600',
         upsert: false
       });

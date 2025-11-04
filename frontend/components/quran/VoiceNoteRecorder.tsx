@@ -57,11 +57,11 @@ export default function VoiceNoteRecorder({
       streamRef.current = stream;
 
       // Try different mime types in order of preference (Supabase Storage compatible)
+      // Bucket allows: audio/m4a, audio/mp3, audio/wav, audio/webm
       const mimeTypes = [
-        'audio/mp4',           // Best for Supabase Storage
-        'audio/mpeg',          // MP3 format
-        'audio/webm',          // Fallback to basic webm (no opus codec)
-        'audio/ogg',           // OGG format
+        'audio/webm',          // Widely supported, allowed by bucket
+        'audio/mp3',           // MP3 format, allowed by bucket
+        'audio/wav',           // WAV format, allowed by bucket
         ''                     // Let browser choose default
       ];
 
