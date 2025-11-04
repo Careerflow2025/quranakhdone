@@ -98,7 +98,6 @@ export default function StudentManagementDashboard() {
   const [highlights, setHighlights] = useState<any[]>([]);
 
   const [notes, setNotes] = useState<any[]>([]);
-  const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<any>(null);
@@ -826,26 +825,7 @@ export default function StudentManagementDashboard() {
     setSelectedMistakeType('');
   };
 
-  const saveNote = () => {
-    if ((noteText.trim() || audioBlob) && selectedHighlightsForNote.length > 0) {
-      const newNote = {
-        id: Date.now(),
-        highlightIds: selectedHighlightsForNote,
-        type: audioBlob ? 'voice' : 'text',
-        content: noteText || 'Voice Note',
-        audioUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
-        timestamp: new Date().toISOString(),
-        author: 'Teacher' // You can change this based on actual user
-      };
-      setNotes([...notes, newNote]);
-      setNoteText('');
-      setShowNoteModal(false);
-      setIsRecording(false);
-      setAudioBlob(null);
-      setSelectedHighlightsForNote([]);
-      setNoteMode(false);
-    }
-  };
+  // saveNote function removed - using NotesPanel modal instead
 
   // Start/Stop Recording
   const toggleRecording = async () => {
@@ -1887,7 +1867,14 @@ export default function StudentManagementDashboard() {
               {selectedHighlightsForNote.length} highlight{selectedHighlightsForNote.length > 1 ? 's' : ''} selected
             </div>
             <button
-              onClick={() => setShowNoteModal(true)}
+              onClick={() => {
+                // Open NotesPanel modal for the first selected highlight
+                if (selectedHighlightsForNote.length > 0) {
+                  const firstHighlight = selectedHighlightsForNote[0];
+                  setSelectedHighlightForNotes(firstHighlight.id);
+                  setShowNotesModal(true);
+                }
+              }}
               className="px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 flex items-center space-x-2 font-medium"
             >
               <StickyNote className="w-4 h-4" />
@@ -2186,177 +2173,6 @@ export default function StudentManagementDashboard() {
                   Recording... Click microphone to stop
                 </p>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Enhanced Note Modal with Conversation Thread and Mark Complete */}
-      {showNoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">Highlight Conversation</h3>
-              <button onClick={() => { setShowNoteModal(false); setSelectedHighlightsForNote([]); }} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[calc(90vh-200px)] overflow-y-auto">
-              {/* Selected Highlights Info */}
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">
-                      {selectedHighlightsForNote.length} Highlight{selectedHighlightsForNote.length > 1 ? 's' : ''} Selected
-                    </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Type: {selectedHighlightsForNote[0]?.color === 'green' ? 'Homework' :
-                             selectedHighlightsForNote[0]?.color === 'orange' ? 'Tajweed' :
-                             selectedHighlightsForNote[0]?.color === 'red' ? 'Haraka' :
-                             selectedHighlightsForNote[0]?.color === 'brown' ? 'Letter' :
-                             selectedHighlightsForNote[0]?.color === 'purple' ? 'Review' :
-                             selectedHighlightsForNote[0]?.color === 'gold' ? 'Completed' : 'Assignment'}
-                    </p>
-                  </div>
-                  {selectedHighlightsForNote[0]?.color === 'gold' && (
-                    <div className="text-xs text-gold-600 bg-yellow-100 px-2 py-1 rounded">
-                      ✅ Completed
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Conversation Thread */}
-              <div className="space-y-3 border rounded-lg p-4 bg-gray-50 max-h-60 overflow-y-auto">
-                <div className="text-sm font-medium text-gray-700 mb-2">Conversation History</div>
-                {/* Mock conversation - in real app, this would come from highlight.notes */}
-                <div className="space-y-2">
-                  <div className="flex flex-col space-y-1">
-                    <div className="bg-blue-100 rounded-lg p-3 self-start max-w-[80%]">
-                      <p className="text-sm">Please review verse 3-5 and focus on the tajweed rules</p>
-                      <span className="text-xs text-gray-600 mt-1">Teacher Ahmed - 2 hours ago</span>
-                    </div>
-                    <div className="bg-green-100 rounded-lg p-3 self-end max-w-[80%] ml-auto">
-                      <p className="text-sm">I practiced it teacher, is it better now?</p>
-                      <span className="text-xs text-gray-600 mt-1">Student - 1 hour ago</span>
-                    </div>
-                    <div className="bg-blue-100 rounded-lg p-3 self-start max-w-[80%]">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm">🎤 Voice Note (1:23)</span>
-                        <button className="text-xs text-blue-600 hover:underline">Play</button>
-                      </div>
-                      <span className="text-xs text-gray-600 mt-1">Teacher Ahmed - 30 min ago</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Add New Note Section */}
-              <div className="border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add Reply:
-                </label>
-                <textarea
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder={userRole === 'teacher' ? "Enter your feedback..." : "Reply to teacher..."}
-                  className="w-full px-3 py-2 border rounded-lg resize-none"
-                  rows={3}
-                />
-              </div>
-
-              {/* Voice Recording */}
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={toggleRecording}
-                  className={`p-3 rounded-lg flex items-center space-x-2 ${
-                    isRecording ? 'bg-red-100 text-red-700 animate-pulse' :
-                    audioBlob ? 'bg-green-100 text-green-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff className="w-5 h-5" />
-                      <span>Stop Recording</span>
-                    </>
-                  ) : audioBlob ? (
-                    <>
-                      <Check className="w-5 h-5" />
-                      <span>Voice Note Ready</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-5 h-5" />
-                      <span>Record Voice Note (max 5 min)</span>
-                    </>
-                  )}
-                </button>
-                {audioBlob && (
-                  <button
-                    onClick={() => setAudioBlob(null)}
-                    className="text-sm text-red-600 hover:underline"
-                  >
-                    Delete recording
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Footer with Actions */}
-            <div className="p-6 border-t bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {/* Mark Complete Button - Only for teachers */}
-                  {userRole === 'teacher' && selectedHighlightsForNote[0]?.color !== 'gold' && (
-                    <button
-                      onClick={() => {
-                        // Mark highlight as complete (turn to gold)
-                        const updatedHighlights = [...highlights];
-                        selectedHighlightsForNote.forEach((selected: any) => {
-                          const idx = updatedHighlights.findIndex((h: any) =>
-                            h.start === selected.start && h.end === selected.end
-                          );
-                          if (idx !== -1) {
-                            updatedHighlights[idx].color = 'gold';
-                            updatedHighlights[idx].previousColor = updatedHighlights[idx].color;
-                            updatedHighlights[idx].completedAt = new Date().toISOString();
-                            updatedHighlights[idx].completedBy = 'Teacher Ahmed';
-                          }
-                        });
-                        setHighlights(updatedHighlights);
-                        setShowNoteModal(false);
-                        setSelectedHighlightsForNote([]);
-                      }}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center space-x-2"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>Mark as Complete</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => { setShowNoteModal(false); setSelectedHighlightsForNote([]); }}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={saveNote}
-                    disabled={!noteText.trim() && !audioBlob}
-                    className={`px-4 py-2 rounded-lg ${
-                      !noteText.trim() && !audioBlob
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Send Reply
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
