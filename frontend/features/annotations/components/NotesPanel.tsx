@@ -415,7 +415,7 @@ export default function NotesPanel({
       {showVoiceRecorder && (
         <div className="border-t p-4 bg-white">
           <VoiceNoteRecorder
-            onRecordingComplete={handleVoiceNoteReady}
+            onSave={handleVoiceNoteReady}
             onCancel={() => setShowVoiceRecorder(false)}
           />
         </div>
