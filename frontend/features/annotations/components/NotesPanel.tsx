@@ -60,27 +60,50 @@ export default function NotesPanel({
 
   // Load conversation thread
   async function load() {
-    if (!highlightId) return;
+    console.log('🔄 NotesPanel: load() called');
+    console.log('🔖 highlightId:', highlightId);
+
+    if (!highlightId) {
+      console.log('❌ Early return - no highlightId');
+      return;
+    }
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      console.log('❌ No session for load');
+      return;
+    }
 
+    console.log('✅ Session exists, fetching thread...');
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/highlights/${highlightId}/notes/thread`, {
+      const endpoint = `/api/highlights/${highlightId}/notes/thread`;
+      console.log('📡 GET:', endpoint);
+
+      const res = await fetch(endpoint, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         }
       });
+
+      console.log('📥 Thread response status:', res.status);
       const j = await res.json();
+      console.log('📥 Thread response body:', j);
+
       if (j.success) {
+        console.log('✅ Thread loaded successfully');
+        console.log('📊 Number of notes:', (j.thread || []).length);
+        console.log('📋 Notes data:', j.thread);
+
         setNotes(j.thread || []);
         // Scroll to bottom on new messages
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      } else {
+        console.error('❌ Thread API returned success=false:', j);
       }
     } catch (error) {
-      console.error('Failed to load conversation thread:', error);
+      console.error('❌ Failed to load conversation thread:', error);
     } finally {
       setIsLoading(false);
     }
@@ -95,36 +118,68 @@ export default function NotesPanel({
 
   // Add note or reply
   async function add() {
-    if (!text.trim() || !currentUser || !highlightId) return;
+    console.log('🎯 NotesPanel: add() called');
+    console.log('📝 text:', text);
+    console.log('👤 currentUser:', currentUser);
+    console.log('🔖 highlightId:', highlightId);
+    console.log('💬 replyingTo:', replyingTo);
+    console.log('👁️ visible:', visible);
+
+    if (!text.trim() || !currentUser || !highlightId) {
+      console.log('❌ Early return - validation failed:', {
+        hasText: !!text.trim(),
+        hasUser: !!currentUser,
+        hasHighlightId: !!highlightId
+      });
+      return;
+    }
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      console.log('❌ No session for add');
+      return;
+    }
 
+    console.log('✅ Session exists, making API call...');
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/highlights/${highlightId}/notes/add`, {
+      const requestBody = {
+        type: 'text',
+        text: text.trim(),
+        parent_note_id: replyingTo,
+        visible_to_parent: visible
+      };
+      const endpoint = `/api/highlights/${highlightId}/notes/add`;
+
+      console.log('📡 POST:', endpoint);
+      console.log('📤 Request body:', requestBody);
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({
-          type: 'text',
-          text: text.trim(),
-          parent_note_id: replyingTo,
-          visible_to_parent: visible
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('📥 Add response status:', res.status);
       const j = await res.json();
+      console.log('📥 Add response body:', j);
+
       if (j.success) {
-        // Reload full thread to show new note in correct position
+        console.log('✅ Note added successfully, reloading thread...');
         await load();
         setText('');
         setReplyingTo(null);
+        console.log('✅ Thread reloaded and state cleared');
+      } else {
+        console.error('❌ API returned success=false:', j);
+        alert(`Failed to add note: ${j.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Failed to add note:', error);
+      console.error('❌ Failed to add note:', error);
+      alert('Network error: Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -132,17 +187,32 @@ export default function NotesPanel({
 
   // Handle voice note upload
   const handleVoiceNoteReady = async (audioBlob: Blob) => {
-    if (!currentUser || !highlightId) return;
+    console.log('🎤 NotesPanel: handleVoiceNoteReady() called');
+    console.log('🎵 audioBlob size:', audioBlob.size, 'bytes');
+    console.log('👤 currentUser:', currentUser);
+    console.log('🔖 highlightId:', highlightId);
+
+    if (!currentUser || !highlightId) {
+      console.log('❌ Early return - missing user or highlightId');
+      return;
+    }
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      console.log('❌ No session for voice note');
+      return;
+    }
 
+    console.log('✅ Session exists, uploading voice note...');
     setIsLoading(true);
     try {
       // Create form data with audio file
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-note.m4a');
       formData.append('highlightId', highlightId);
+
+      console.log('📡 POST: /api/voice-notes/upload');
+      console.log('📤 FormData: audio blob + highlightId');
 
       // Upload to storage
       const uploadRes = await fetch('/api/voice-notes/upload', {
@@ -153,40 +223,57 @@ export default function NotesPanel({
         body: formData
       });
 
+      console.log('📥 Upload response status:', uploadRes.status);
       const uploadData = await uploadRes.json();
+      console.log('📥 Upload response body:', uploadData);
 
       if (!uploadData.success) {
-        console.error('Failed to upload voice note:', uploadData.error);
+        console.error('❌ Upload failed:', uploadData.error);
         alert('Failed to upload voice note. Please try again.');
         return;
       }
 
+      console.log('✅ Voice note uploaded, creating note record...');
+
       // Create note with audio URL
-      const res = await fetch(`/api/highlights/${highlightId}/notes/add`, {
+      const requestBody = {
+        type: 'audio',
+        audio_url: uploadData.audioUrl,
+        parent_note_id: replyingTo,
+        visible_to_parent: visible
+      };
+      const endpoint = `/api/highlights/${highlightId}/notes/add`;
+
+      console.log('📡 POST:', endpoint);
+      console.log('📤 Request body:', requestBody);
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({
-          type: 'audio',
-          audio_url: uploadData.audioUrl,
-          parent_note_id: replyingTo,
-          visible_to_parent: visible
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('📥 Add voice note response status:', res.status);
       const j = await res.json();
+      console.log('📥 Add voice note response body:', j);
+
       if (j.success) {
+        console.log('✅ Voice note record created, reloading thread...');
         // Reload full thread to show new note in correct position
         await load();
         setReplyingTo(null);
         setShowVoiceRecorder(false);
         console.log('✅ Voice note added successfully');
+      } else {
+        console.error('❌ Voice note API returned success=false:', j);
+        alert(`Failed to save voice note: ${j.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Failed to add voice note:', error);
-      alert('Failed to save voice note. Please try again.');
+      console.error('❌ Failed to add voice note:', error);
+      alert('Network error: Failed to save voice note. Please try again.');
     } finally {
       setIsLoading(false);
     }

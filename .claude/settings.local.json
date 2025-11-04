@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(psql:*)",
-      "mcp__supabase__list_storage_buckets"
+      "mcp__supabase__list_storage_buckets",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []
