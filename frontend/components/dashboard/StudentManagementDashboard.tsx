@@ -666,6 +666,15 @@ export default function StudentManagementDashboard() {
     }
   };
 
+  // DEBUG: Log modal state changes
+  useEffect(() => {
+    console.log('🔄 Modal State Changed:', {
+      showNotesModal,
+      selectedHighlightForNotes,
+      modalShouldRender: showNotesModal && selectedHighlightForNotes
+    });
+  }, [showNotesModal, selectedHighlightForNotes]);
+
   // Toggle single word highlight - allows multiple colors on same word
   const toggleSingleWord = async (ayahIndex: number, wordIndex: number) => {
     const existingHighlight = highlights.find(
@@ -1867,12 +1876,35 @@ export default function StudentManagementDashboard() {
               {selectedHighlightsForNote.length} highlight{selectedHighlightsForNote.length > 1 ? 's' : ''} selected
             </div>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                console.log('🎯 CREATE NOTE BUTTON CLICKED');
+                console.log('📝 selectedHighlightsForNote:', selectedHighlightsForNote);
+                console.log('🔍 noteMode:', noteMode);
+                console.log('🔍 showNotesModal BEFORE:', showNotesModal);
+                console.log('🔍 selectedHighlightForNotes BEFORE:', selectedHighlightForNotes);
+
+                // Prevent any event propagation
+                e.stopPropagation();
+                e.preventDefault();
+
                 // Open NotesPanel modal for the first selected highlight
                 if (selectedHighlightsForNote.length > 0) {
                   const firstHighlight = selectedHighlightsForNote[0];
+                  console.log('✅ First highlight:', firstHighlight);
+                  console.log('🆔 Highlight ID:', firstHighlight.id);
+
                   setSelectedHighlightForNotes(firstHighlight.id);
                   setShowNotesModal(true);
+
+                  console.log('✅ State setters called');
+
+                  // Check state after a brief delay
+                  setTimeout(() => {
+                    console.log('🔍 showNotesModal AFTER (delayed):', showNotesModal);
+                    console.log('🔍 selectedHighlightForNotes AFTER (delayed):', selectedHighlightForNotes);
+                  }, 100);
+                } else {
+                  console.error('❌ No highlights selected!');
                 }
               }}
               className="px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 flex items-center space-x-2 font-medium"
