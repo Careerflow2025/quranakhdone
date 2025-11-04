@@ -1878,7 +1878,7 @@ export default function StudentManagementDashboard() {
             <button
               onClick={(e) => {
                 console.log('🎯 CREATE NOTE BUTTON CLICKED');
-                console.log('📝 selectedHighlightsForNote:', selectedHighlightsForNote);
+                console.log('📝 selectedHighlightsForNote (UI IDs):', selectedHighlightsForNote);
                 console.log('🔍 noteMode:', noteMode);
                 console.log('🔍 showNotesModal BEFORE:', showNotesModal);
                 console.log('🔍 selectedHighlightForNotes BEFORE:', selectedHighlightForNotes);
@@ -1889,20 +1889,35 @@ export default function StudentManagementDashboard() {
 
                 // Open NotesPanel modal for the first selected highlight
                 if (selectedHighlightsForNote.length > 0) {
-                  const firstHighlight = selectedHighlightsForNote[0];
-                  console.log('✅ First highlight:', firstHighlight);
-                  console.log('🆔 Highlight ID:', firstHighlight.id);
+                  // selectedHighlightsForNote contains UI IDs, we need to find the actual highlight object
+                  const firstHighlightUIId = selectedHighlightsForNote[0];
+                  console.log('🔍 First UI ID:', firstHighlightUIId);
 
-                  setSelectedHighlightForNotes(firstHighlight.id);
-                  setShowNotesModal(true);
+                  // Find the highlight object from the highlights array
+                  const highlightObject = highlights.find((h: any) => h.id === firstHighlightUIId);
+                  console.log('🔍 Found highlight object:', highlightObject);
 
-                  console.log('✅ State setters called');
+                  if (highlightObject && highlightObject.dbId) {
+                    console.log('✅ Database ID (dbId):', highlightObject.dbId);
 
-                  // Check state after a brief delay
-                  setTimeout(() => {
-                    console.log('🔍 showNotesModal AFTER (delayed):', showNotesModal);
-                    console.log('🔍 selectedHighlightForNotes AFTER (delayed):', selectedHighlightForNotes);
-                  }, 100);
+                    setSelectedHighlightForNotes(highlightObject.dbId);
+                    setShowNotesModal(true);
+
+                    console.log('✅ State setters called with dbId');
+
+                    // Check state after a brief delay
+                    setTimeout(() => {
+                      console.log('🔍 showNotesModal AFTER (delayed):', showNotesModal);
+                      console.log('🔍 selectedHighlightForNotes AFTER (delayed):', selectedHighlightForNotes);
+                    }, 100);
+                  } else {
+                    console.error('❌ Highlight object not found or missing dbId!', {
+                      firstHighlightUIId,
+                      highlightObject,
+                      allHighlights: highlights
+                    });
+                    alert('Error: Selected highlight does not have a database ID. Please try refreshing the page.');
+                  }
                 } else {
                   console.error('❌ No highlights selected!');
                 }
