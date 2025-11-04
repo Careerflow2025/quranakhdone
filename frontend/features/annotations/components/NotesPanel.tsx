@@ -357,11 +357,24 @@ export default function NotesPanel({
                     )}
 
                     {note.type === 'audio' && note.audio_url && (
-                      <div className="flex items-center gap-2 bg-white/10 rounded-lg p-2">
-                        <Volume2 className="w-4 h-4" />
-                        <audio controls className="w-full max-w-xs">
-                          <source src={note.audio_url} type="audio/m4a" />
+                      <div className={`flex items-center gap-2 rounded-lg p-3 min-w-[280px] ${
+                        isCurrentUser ? 'bg-white/20' : 'bg-gray-50'
+                      }`}>
+                        <Volume2 className={`w-5 h-5 flex-shrink-0 ${
+                          isCurrentUser ? 'text-white' : 'text-emerald-600'
+                        }`} />
+                        <audio
+                          controls
+                          className="flex-1"
+                          style={{
+                            height: '40px',
+                            filter: isCurrentUser ? 'invert(1) brightness(2)' : 'none'
+                          }}
+                        >
                           <source src={note.audio_url} type="audio/webm" />
+                          <source src={note.audio_url} type="audio/mp3" />
+                          <source src={note.audio_url} type="audio/wav" />
+                          <source src={note.audio_url} type="audio/m4a" />
                           Your browser does not support audio playback.
                         </audio>
                       </div>
@@ -392,15 +405,15 @@ export default function NotesPanel({
                         )}
                       </div>
 
-                      {/* Reply button */}
-                      <button
-                        onClick={() => setReplyingTo(note.id)}
-                        className={`text-xs underline hover:no-underline ${
-                          isCurrentUser ? 'text-emerald-100' : 'text-emerald-600'
-                        }`}
-                      >
-                        Reply {note.reply_count > 0 && `(${note.reply_count})`}
-                      </button>
+                      {/* Reply button - only show for messages from OTHER users */}
+                      {!isCurrentUser && (
+                        <button
+                          onClick={() => setReplyingTo(note.id)}
+                          className="text-xs underline hover:no-underline text-emerald-600"
+                        >
+                          Reply {note.reply_count > 0 && `(${note.reply_count})`}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
