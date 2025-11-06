@@ -1555,7 +1555,7 @@ export default function StudentManagementDashboard() {
                           const mistakes = wordHighlights.map((h: any) => {
                             // If highlight is marked as completed, show gold color
                             if (h.isCompleted) {
-                              return mistakeTypes.find((m: any) => m.id === 'completed');
+                              return completedType;  // Use completedType instead of searching mistakeTypes
                             }
                             // Otherwise show the original mistake color
                             return mistakeTypes.find((m: any) => m.id === h.mistakeType);
@@ -1617,30 +1617,31 @@ export default function StudentManagementDashboard() {
                                 display: 'inline',     // Inline display
                                 ...(mistakes.length === 1 ? {
                                   backgroundImage: `linear-gradient(${
-                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :  // Gold (completed)
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :      // Brown (letter) - amber-700
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :   // Purple (recap)
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :     // Green (homework)
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :   // Orange (tajweed)
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'  // Red (haraka)
                                   }, ${
-                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :  // Gold (completed)
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :      // Brown (letter) - amber-700
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :   // Purple (recap)
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :     // Green (homework)
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :   // Orange (tajweed)
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'  // Red (haraka)
                                   })`,
                                   backgroundSize: '100% 70%',  // 30% reduction in vertical height
                                   backgroundRepeat: 'no-repeat',
                                   backgroundPosition: 'center'
                                 } : mistakes.length > 1 ? {
                                   backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                    const color = m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :      // Gold (completed)
+                                      m.bgColor?.includes('amber') ? 'rgba(180,83,9,0.4)' :                     // Brown (letter)
+                                      m.bgColor?.includes('purple') ? 'rgba(147,51,234,0.4)' :                  // Purple (recap)
+                                      m.bgColor?.includes('green') ? 'rgba(34,197,94,0.4)' :                    // Green (homework)
+                                      m.bgColor?.includes('orange') ? 'rgba(249,115,22,0.4)' :                  // Orange (tajweed)
+                                      m.bgColor?.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';       // Red (haraka)
                                     const percent = (i * 100) / mistakes.length;
                                     const nextPercent = ((i + 1) * 100) / mistakes.length;
                                     return `${color} ${percent}%, ${color} ${nextPercent}%`;
