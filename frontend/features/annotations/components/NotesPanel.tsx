@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Send, Eye, EyeOff, Mic, MicOff, Play, Pause, User, Clock, Volume2 } from 'lucide-react';
+import { MessageSquare, Send, Mic, MicOff, Play, Pause, User, Clock, Volume2 } from 'lucide-react';
 import VoiceNoteRecorder from '@/components/quran/VoiceNoteRecorder';
 
 interface Note {
@@ -32,7 +32,6 @@ export default function NotesPanel({
 }: NotesPanelProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [text, setText] = useState('');
-  const [visible, setVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
@@ -123,7 +122,6 @@ export default function NotesPanel({
     console.log('👤 currentUser:', currentUser);
     console.log('🔖 highlightId:', highlightId);
     console.log('💬 replyingTo:', replyingTo);
-    console.log('👁️ visible:', visible);
 
     if (!text.trim() || !currentUser || !highlightId) {
       console.log('❌ Early return - validation failed:', {
@@ -147,7 +145,7 @@ export default function NotesPanel({
         type: 'text',
         text: text.trim(),
         parent_note_id: replyingTo,
-        visible_to_parent: visible
+        visible_to_parent: true  // Always visible to parents
       };
       const endpoint = `/api/highlights/${highlightId}/notes/add`;
 
@@ -240,7 +238,7 @@ export default function NotesPanel({
         type: 'audio',
         audio_url: uploadData.audioUrl,
         parent_note_id: replyingTo,
-        visible_to_parent: visible
+        visible_to_parent: true  // Always visible to parents
       };
       const endpoint = `/api/highlights/${highlightId}/notes/add`;
 
@@ -380,29 +378,16 @@ export default function NotesPanel({
                       </div>
                     )}
 
-                    {/* Timestamp, visibility, and reply button */}
+                    {/* Timestamp and reply button */}
                     <div className={`flex items-center justify-between gap-2 mt-2 text-xs ${
                       isCurrentUser ? 'text-emerald-100' : 'text-gray-500'
                     }`}>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit'
-                          })}</span>
-                        </div>
-                        {note.visible_to_parent ? (
-                          <div className="flex items-center gap-1">
-                            <Eye className="w-3 h-3" />
-                            <span>Parent</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <EyeOff className="w-3 h-3" />
-                            <span>Private</span>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}</span>
                       </div>
 
                       {/* Reply button - only show for messages from OTHER users */}
@@ -451,30 +436,8 @@ export default function NotesPanel({
           </div>
         )}
 
-        {/* Visibility toggle */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setVisible(!visible)}
-            className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-colors ${
-              visible
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {visible ? (
-              <>
-                <Eye className="w-3 h-3" />
-                <span>Visible to parent</span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-3 h-3" />
-                <span>Teacher only</span>
-              </>
-            )}
-          </button>
-
-          {/* Voice note toggle */}
+        {/* Voice note toggle */}
+        <div className="flex items-center justify-end">
           <button
             onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
             className={`p-2 rounded-full transition-colors ${
