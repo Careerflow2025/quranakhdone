@@ -404,6 +404,24 @@ export function useTeacherData() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authInitialized, user?.id]);
 
+  // Auto-refresh data every 30 seconds to pick up completed highlights/assignments
+  useEffect(() => {
+    if (!authInitialized || !user?.id) return;
+
+    console.log('🔄 Starting auto-refresh for Teacher dashboard (30s interval)');
+
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing Teacher dashboard data...');
+      refreshData();
+    }, 30000); // 30 seconds
+
+    return () => {
+      console.log('🛑 Stopping auto-refresh for Teacher dashboard');
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authInitialized, user?.id]);
+
   // Refresh data function
   const refreshData = async () => {
     currentTeacherId.current = null;

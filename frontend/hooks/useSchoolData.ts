@@ -413,6 +413,24 @@ export function useSchoolData() {
     }
   }, [authInitialized, user?.schoolId, fetchSchoolData]);
 
+  // Auto-refresh data every 30 seconds to pick up completed highlights/assignments
+  useEffect(() => {
+    if (!authInitialized || !user?.schoolId) return;
+
+    console.log('🔄 Starting auto-refresh for School dashboard (30s interval)');
+
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing School dashboard data...');
+      refreshData();
+    }, 30000); // 30 seconds
+
+    return () => {
+      console.log('🛑 Stopping auto-refresh for School dashboard');
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authInitialized, user?.schoolId]);
+
   // Function to refresh data (resets cache to allow re-fetch)
   const refreshData = async () => {
     currentSchoolId.current = null; // Reset to allow re-fetch
