@@ -1555,7 +1555,7 @@ export default function StudentManagementDashboard() {
                           const mistakes = wordHighlights.map((h: any) => {
                             // If highlight is marked as completed, show gold color
                             if (h.isCompleted) {
-                              return mistakeTypes.find((m: any) => m.id === 'completed');
+                              return completedType;
                             }
                             // Otherwise show the original mistake color
                             return mistakeTypes.find((m: any) => m.id === h.mistakeType);
