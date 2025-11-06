@@ -442,9 +442,11 @@ export default function StudentManagementDashboard() {
     { id: 'homework', name: 'Homework', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
     { id: 'tajweed', name: 'Tajweed', color: 'orange', bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
     { id: 'haraka', name: 'Haraka', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
-    { id: 'letter', name: 'Letter', color: 'brown', bgColor: 'bg-yellow-900', textColor: 'text-yellow-100' },
-    { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' }
+    { id: 'letter', name: 'Letter', color: 'brown', bgColor: 'bg-amber-100', textColor: 'text-amber-900' }
   ];
+
+  // Completed highlights shown separately with gold color
+  const completedType = { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' };
 
   // Sample Quran Text Data for Multiple Surahs
   const quranTexts: { [key: number]: any } = {

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Send, Mic, MicOff, Play, Pause, User, Clock, Volume2 } from 'lucide-react';
+import { MessageSquare, Send, Mic, MicOff, Play, Pause, User, Clock, Volume2, CheckCircle } from 'lucide-react';
 import VoiceNoteRecorder from '@/components/quran/VoiceNoteRecorder';
 
 interface Note {
@@ -36,6 +36,8 @@ export default function NotesPanel({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null); // For threading
+  const [isCompleting, setIsCompleting] = useState(false); // For completion button
+  const [isCompleted, setIsCompleted] = useState(false); // Track if highlight is completed
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Get current user on mount
@@ -277,6 +279,65 @@ export default function NotesPanel({
     }
   };
 
+  // Mark highlight as completed (turns it gold)
+  const markAsCompleted = async () => {
+    if (!currentUser || isCompleted) return;
+
+    // Only teachers can mark as completed
+    if (currentUser.role !== 'teacher' && currentUser.role !== 'admin' && currentUser.role !== 'owner') {
+      alert('Only teachers can mark highlights as completed');
+      return;
+    }
+
+    const confirmComplete = confirm(
+      'Mark this highlight as completed? This will turn it gold and track progress.'
+    );
+
+    if (!confirmComplete) return;
+
+    try {
+      setIsCompleting(true);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('No active session');
+        return;
+      }
+
+      console.log('🎉 Marking highlight as completed:', highlightId);
+
+      const response = await fetch(`/api/highlights/${highlightId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to complete highlight');
+      }
+
+      const data = await response.json();
+      console.log('✅ Highlight marked as completed:', data);
+
+      setIsCompleted(true);
+      alert('Highlight marked as completed! It will now appear in gold.');
+
+      // Notify parent component to refresh highlights if needed
+      window.dispatchEvent(new CustomEvent('highlight-completed', {
+        detail: { highlightId }
+      }));
+
+    } catch (error: any) {
+      console.error('❌ Failed to mark highlight as completed:', error);
+      alert(`Failed to mark as completed: ${error.message}`);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
   const isSidebarMode = mode === 'sidebar';
 
   return (
@@ -483,6 +544,33 @@ export default function NotesPanel({
         <p className="text-xs text-gray-500 text-center">
           Press Enter to send • Shift+Enter for new line
         </p>
+
+        {/* Mark as Completed Button - Only for teachers */}
+        {currentUser && (currentUser.role === 'teacher' || currentUser.role === 'admin' || currentUser.role === 'owner') && !isCompleted && (
+          <div className="pt-3 border-t">
+            <button
+              onClick={markAsCompleted}
+              disabled={isCompleting}
+              className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {isCompleting ? 'Marking as Completed...' : 'Mark as Completed'}
+            </button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              This will turn the highlight gold and track progress
+            </p>
+          </div>
+        )}
+
+        {/* Completed Status */}
+        {isCompleted && (
+          <div className="pt-3 border-t">
+            <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex items-center justify-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              Completed
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
