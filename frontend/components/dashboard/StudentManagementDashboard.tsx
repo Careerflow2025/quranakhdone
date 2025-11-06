@@ -1619,6 +1619,7 @@ export default function StudentManagementDashboard() {
                                   backgroundImage: `linear-gradient(${
                                     mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
                                     mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
                                     mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
                                     mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
@@ -1626,6 +1627,7 @@ export default function StudentManagementDashboard() {
                                   }, ${
                                     mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
                                     mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
                                     mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
                                     mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
                                     mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
@@ -1637,6 +1639,8 @@ export default function StudentManagementDashboard() {
                                 } : mistakes.length > 1 ? {
                                   backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
                                     const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
                                       m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
                                       m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
                                       m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
