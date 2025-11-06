@@ -295,6 +295,8 @@ export default function NotesPanel({
 
       if (j.success) {
         console.log('✅ Voice note record created, reloading thread...');
+        // Small delay to ensure database transaction commits
+        await new Promise(resolve => setTimeout(resolve, 500));
         // Reload full thread to show new note in correct position
         await load();
         setReplyingTo(null);
