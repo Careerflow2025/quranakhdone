@@ -404,16 +404,16 @@ export function useTeacherData() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authInitialized, user?.id]);
 
-  // Auto-refresh data every 30 seconds to pick up completed highlights/assignments
+  // Auto-refresh data every 10 seconds to pick up completed highlights/assignments
   useEffect(() => {
     if (!authInitialized || !user?.id) return;
 
-    console.log('🔄 Starting auto-refresh for Teacher dashboard (30s interval)');
+    console.log('🔄 Starting auto-refresh for Teacher dashboard (10s interval)');
 
     const interval = setInterval(() => {
       console.log('🔄 Auto-refreshing Teacher dashboard data...');
       refreshData();
-    }, 30000); // 30 seconds
+    }, 10000); // 10 seconds
 
     return () => {
       console.log('🛑 Stopping auto-refresh for Teacher dashboard');

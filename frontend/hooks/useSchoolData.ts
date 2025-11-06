@@ -413,16 +413,16 @@ export function useSchoolData() {
     }
   }, [authInitialized, user?.schoolId, fetchSchoolData]);
 
-  // Auto-refresh data every 30 seconds to pick up completed highlights/assignments
+  // Auto-refresh data every 10 seconds to pick up completed highlights/assignments
   useEffect(() => {
     if (!authInitialized || !user?.schoolId) return;
 
-    console.log('🔄 Starting auto-refresh for School dashboard (30s interval)');
+    console.log('🔄 Starting auto-refresh for School dashboard (10s interval)');
 
     const interval = setInterval(() => {
       console.log('🔄 Auto-refreshing School dashboard data...');
       refreshData();
-    }, 30000); // 30 seconds
+    }, 10000); // 10 seconds
 
     return () => {
       console.log('🛑 Stopping auto-refresh for School dashboard');
