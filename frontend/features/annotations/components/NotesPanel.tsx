@@ -38,6 +38,7 @@ export default function NotesPanel({
   const [replyingTo, setReplyingTo] = useState<string | null>(null); // For threading
   const [isCompleting, setIsCompleting] = useState(false); // For completion button
   const [isCompleted, setIsCompleted] = useState(false); // Track if highlight is completed
+  const [highlightData, setHighlightData] = useState<any>(null); // Full highlight details with previous_color
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Get current user on mount
@@ -110,10 +111,42 @@ export default function NotesPanel({
     }
   }
 
+  // Load highlight details (including previous_color for completed context)
+  async function loadHighlightDetails() {
+    if (!highlightId) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      // Fetch highlight details directly from Supabase
+      const { data, error } = await supabase
+        .from('highlights')
+        .select('id, type, color, previous_color, completed_at, completed_by')
+        .eq('id', highlightId)
+        .single();
+
+      if (error) {
+        console.error('❌ Failed to fetch highlight details:', error);
+        return;
+      }
+
+      console.log('✅ Highlight details loaded:', data);
+      setHighlightData(data);
+      setIsCompleted(!!data.completed_at); // Update completion status
+    } catch (error) {
+      console.error('❌ Error loading highlight details:', error);
+    }
+  }
+
   useEffect(() => {
     load();
+    loadHighlightDetails();
     // Refresh every 10 seconds for real-time updates
-    const interval = setInterval(load, 10000);
+    const interval = setInterval(() => {
+      load();
+      loadHighlightDetails();
+    }, 10000);
     return () => clearInterval(interval);
   }, [highlightId]);
 
@@ -323,6 +356,10 @@ export default function NotesPanel({
       console.log('✅ Highlight marked as completed:', data);
 
       setIsCompleted(true);
+
+      // Reload highlight details to get updated previous_color and completed_at
+      await loadHighlightDetails();
+
       alert('Highlight marked as completed! It will now appear in gold.');
 
       // Notify parent component to refresh highlights if needed
@@ -562,12 +599,23 @@ export default function NotesPanel({
           </div>
         )}
 
-        {/* Completed Status */}
+        {/* Completed Status - Shows original mistake type context */}
         {isCompleted && (
           <div className="pt-3 border-t">
-            <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex items-center justify-center gap-2">
-              <CheckCircle className="w-5 h-5" />
-              Completed
+            <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex flex-col items-center justify-center gap-1.5">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>Completed</span>
+              </div>
+              {highlightData?.previous_color && (
+                <div className="text-xs text-yellow-800 font-normal">
+                  {highlightData.previous_color === 'purple' && 'Originally: Recap/Review'}
+                  {highlightData.previous_color === 'orange' && 'Originally: Tajweed Issue'}
+                  {highlightData.previous_color === 'red' && 'Originally: Haraka Issue'}
+                  {(highlightData.previous_color === 'brown' || highlightData.previous_color === 'amber') && 'Originally: Letter Issue'}
+                  {highlightData.previous_color === 'green' && 'Originally: Homework'}
+                </div>
+              )}
             </div>
           </div>
         )}
