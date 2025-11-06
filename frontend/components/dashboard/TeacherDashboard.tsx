@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTeacherData } from '@/hooks/useTeacherData';
 import { useHomework } from '@/hooks/useHomework';
@@ -27,6 +29,18 @@ import TargetsPanel from '@/components/targets/TargetsPanel';
 
 export default function TeacherDashboard() {
   const router = useRouter();
+  const { user, logout } = useAuthStore();
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      logout();
+      window.location.href = '/login';
+    } catch (error: any) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   // Get real teacher data from database
   const {
@@ -284,15 +298,32 @@ export default function TeacherDashboard() {
                 )}
               </div>
 
-              {/* Profile */}
-              <button
-                onClick={() => setShowProfile(!showProfile)}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-              >
-                <User className="w-6 h-6" />
-                <span className="hidden md:inline">{teacherInfo?.name || 'Teacher'}</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfile(!showProfile)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                >
+                  <User className="w-6 h-6" />
+                  <span className="hidden md:inline">{teacherInfo?.name || 'Teacher'}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {showProfile && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
