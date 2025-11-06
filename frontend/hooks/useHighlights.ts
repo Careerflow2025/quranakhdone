@@ -322,10 +322,109 @@ export function useHighlights(
     }
   }, [fetchHighlights]);
 
-  // Load highlights when studentId changes
+  // Load highlights when studentId/teacherId changes
   useEffect(() => {
     fetchHighlights();
   }, [fetchHighlights]);
+
+  // Set up real-time subscription for live updates across all dashboards
+  useEffect(() => {
+    // Get current user's school_id for filtering
+    const setupSubscription = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('school_id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!profile) return;
+
+        const schoolId = profile.school_id;
+
+        console.log('🔔 Setting up real-time subscription - student:', studentId, 'teacher:', teacherId, 'school:', schoolId);
+
+        // Create unique channel name based on subscription type
+        const channelName = studentId
+          ? `highlights:student:${studentId}`
+          : teacherId
+          ? `highlights:teacher:${teacherId}`
+          : `highlights:school:${schoolId}`;
+
+        // Build subscription filter - Supabase realtime supports limited filtering
+        // For student/teacher specific: use filter
+        // For school-wide: subscribe to all, filter in callback
+        const subscriptionConfig = studentId
+          ? {
+              event: '*' as const,
+              schema: 'public',
+              table: 'highlights',
+              filter: `student_id=eq.${studentId}`
+            }
+          : teacherId
+          ? {
+              event: '*' as const,
+              schema: 'public',
+              table: 'highlights',
+              filter: `teacher_id=eq.${teacherId}`
+            }
+          : {
+              event: '*' as const,
+              schema: 'public',
+              table: 'highlights',
+              filter: `school_id=eq.${schoolId}` // School-wide subscription
+            };
+
+        // Subscribe to highlight changes
+        const channel = supabase
+          .channel(channelName)
+          .on(
+            'postgres_changes',
+            subscriptionConfig,
+            (payload) => {
+              console.log('🔔 Real-time highlight event:', payload.eventType, payload);
+
+              // For school-wide subscriptions, verify the highlight belongs to this school
+              if (!studentId && !teacherId) {
+                if ((payload.new as any)?.school_id !== schoolId && (payload.old as any)?.school_id !== schoolId) {
+                  console.log('🔕 Ignoring highlight from different school');
+                  return;
+                }
+              }
+
+              if (payload.eventType === 'INSERT') {
+                // Add new highlight to state
+                setHighlights(prev => [payload.new as any, ...prev]);
+              } else if (payload.eventType === 'UPDATE') {
+                // Update existing highlight in state
+                setHighlights(prev =>
+                  prev.map(h => h.id === (payload.new as any).id ? payload.new as any : h)
+                );
+              } else if (payload.eventType === 'DELETE') {
+                // Remove deleted highlight from state
+                setHighlights(prev => prev.filter(h => h.id !== (payload.old as any).id));
+              }
+            }
+          )
+          .subscribe((status) => {
+            console.log('🔔 Subscription status:', status);
+          });
+
+        // Cleanup subscription on unmount
+        return () => {
+          console.log('🔕 Removing real-time subscription');
+          supabase.removeChannel(channel);
+        };
+      } catch (err) {
+        console.error('❌ Error setting up subscription:', err);
+      }
+    };
+
+    setupSubscription();
+  }, [studentId, teacherId]);
 
   return {
     highlights,
