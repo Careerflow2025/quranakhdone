@@ -446,8 +446,13 @@ export default function StudentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    // Store highlight ID to open NotesPanel
-    setShowNoteReply(highlightId);
+    // Open notes conversation modal
+    // Find the highlight to get its database ID
+    const clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+    if (clickedHighlight && clickedHighlight.dbId) {
+      setSelectedHighlightForNotes(clickedHighlight.dbId);
+      setShowNotesModal(true);
+    }
   };
 
   const handleSendReply = (type: any = 'text') => {
@@ -1192,11 +1197,8 @@ export default function StudentDashboard() {
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
                               if (wordHighlights.length > 0) {
-                                // Open notes modal for this highlight
-                                const highlight = wordHighlights[0];
-                                console.log('📝 Opening notes for highlight:', highlight.dbId);
-                                setSelectedHighlightForNotes(highlight.dbId);
-                                setShowNotesModal(true);
+                                // Call handleHighlightClick to open notes conversation modal
+                                handleHighlightClick(wordHighlights[0].id);
                               }
                             }}
                             className={`inline cursor-pointer rounded transition-colors select-none ${
