@@ -1261,9 +1261,20 @@ export default function StudentDashboard() {
 
                               if (hasNotes) {
                                 return (
-                                  <sup className="text-blue-500 ml-0.5" style={{ fontSize: '0.5em' }}>
-                                    <MessageSquare className="w-2.5 h-2.5 inline" />
-                                  </sup>
+                                  <span
+                                    className="inline-flex items-center justify-center text-blue-500"
+                                    style={{
+                                      fontSize: '8px',
+                                      width: '12px',
+                                      height: '12px',
+                                      marginLeft: '1px',
+                                      verticalAlign: 'top',
+                                      position: 'relative',
+                                      top: '0px'
+                                    }}
+                                  >
+                                    <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
+                                  </span>
                                 );
                               }
                               return null;
@@ -1307,15 +1318,14 @@ export default function StudentDashboard() {
                     {(() => {
                       const currentPageContent = getPageContent(currentMushafPage);
                       const currentSurahNumber = currentPageContent?.surahStart || 1;
-                      const { firstPage, lastPage } = getSurahPageRange(currentSurahNumber);
 
-                      const isFirstPage = currentMushafPage <= firstPage;
-                      const isLastPage = currentMushafPage >= lastPage;
+                      const isFirstPage = currentMushafPage <= 1;
+                      const isLastPage = currentMushafPage >= 604;
 
                       return (
                         <>
                           <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
                             disabled={isFirstPage}
                             className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Previous Page">
@@ -1324,12 +1334,12 @@ export default function StudentDashboard() {
 
                           <div className="text-center">
                             <span className="text-sm font-semibold text-gray-700">
-                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
+                              Page {currentMushafPage} of 604 (Surah {currentSurahNumber})
                             </span>
                           </div>
 
                           <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(604, prev + 1))}
                             disabled={isLastPage}
                             className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Next Page">
