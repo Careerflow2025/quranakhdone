@@ -85,6 +85,33 @@ export async function PUT(
 
     console.log('✅ Highlight marked as completed:', highlightId);
 
+    // Check if this highlight is linked to an assignment
+    // If yes, mark the assignment as completed too
+    const { data: linkedAssignments, error: linkError } = await supabaseAdmin
+      .from('assignment_highlights')
+      .select('assignment_id')
+      .eq('highlight_id', highlightId);
+
+    if (!linkError && linkedAssignments && linkedAssignments.length > 0) {
+      console.log(`🔗 Found ${linkedAssignments.length} linked assignment(s) for highlight ${highlightId}`);
+
+      // Update all linked assignments to completed status
+      for (const link of linkedAssignments) {
+        const { error: assignmentUpdateError } = await supabaseAdmin
+          .from('assignments')
+          .update({ status: 'completed' })
+          .eq('id', link.assignment_id);
+
+        if (assignmentUpdateError) {
+          console.error(`❌ Failed to complete assignment ${link.assignment_id}:`, assignmentUpdateError);
+        } else {
+          console.log(`✅ Assignment ${link.assignment_id} marked as completed`);
+        }
+      }
+    } else {
+      console.log('ℹ️ No linked assignments found for this highlight');
+    }
+
     return NextResponse.json({
       success: true,
       data: updatedHighlight,
