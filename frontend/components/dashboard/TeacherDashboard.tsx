@@ -144,20 +144,27 @@ export default function TeacherDashboard() {
 
   // Transform assignments data to match UI expectations (similar to homework)
   const transformedAssignments = useMemo(() => {
-    return (assignments || []).map((assignment: any) => ({
-      id: assignment.id,
-      studentId: assignment.student_id,
-      studentName: assignment.student?.display_name || 'Unknown Student',
-      class: 'N/A', // Class info not directly available
-      title: assignment.title || 'Untitled Assignment',
-      description: assignment.description || '',
-      assignedDate: assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '',
-      dueDate: assignment.due_at ? new Date(assignment.due_at).toLocaleDateString() : '',
-      status: assignment.status || 'assigned',
-      late: assignment.late || false,
-      // Get highlight info from linked highlights via assignment_highlights junction
-      highlightIds: assignment.highlight_ids || [],
-    }));
+    return (assignments || []).map((assignment: any) => {
+      // Extract student name from nested structure
+      const studentName = assignment.student?.profiles?.display_name ||
+                         assignment.student?.display_name ||
+                         'Unknown Student';
+
+      return {
+        id: assignment.id,
+        studentId: assignment.student_id,
+        studentName: studentName,
+        class: 'N/A', // Class info not directly available
+        title: assignment.title || 'Untitled Assignment',
+        description: assignment.description || '',
+        assignedDate: assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '',
+        dueDate: assignment.due_at ? new Date(assignment.due_at).toLocaleDateString() : '',
+        status: assignment.status || 'assigned',
+        late: assignment.late || false,
+        // Get highlight info from linked highlights via assignment_highlights junction
+        highlightIds: assignment.highlight_ids || [],
+      };
+    });
   }, [assignments]);
 
   // Function to mark assignment as complete (turns all linked highlights gold)

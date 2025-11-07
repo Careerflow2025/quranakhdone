@@ -332,10 +332,17 @@ export function useTeacherData() {
       setStudents(studentsData);
       setStats(prev => ({ ...prev, totalStudents: studentsData.length }));
 
-      // Fetch assignments created by this teacher
+      // Fetch assignments created by this teacher with student info
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('assignments')
-        .select('*')
+        .select(`
+          *,
+          student:students!assignments_student_id_fkey(
+            id,
+            user_id,
+            profiles!students_user_id_fkey(display_name, email)
+          )
+        `)
         .eq('created_by_teacher_id', teacher.id)
         .eq('school_id', user.schoolId);
 
