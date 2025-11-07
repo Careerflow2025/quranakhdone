@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useStudentStore } from '../state/useStudentStore';
+import Image from 'next/image';
 
 export default function StudentHeader() {
   const [showProfile, setShowProfile] = useState(false);
@@ -40,11 +41,14 @@ export default function StudentHeader() {
           </div>
 
           {/* Center - Logo */}
-          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            <img
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10">
+            <Image
               src="/quranakh-logo.png"
               alt="QuranAkh Logo"
-              className="h-12 w-auto"
+              width={48}
+              height={48}
+              priority
+              className="w-12 h-12"
             />
           </div>
 

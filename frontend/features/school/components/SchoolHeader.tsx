@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Props {
   schoolName: string;
@@ -45,11 +46,14 @@ export default function SchoolHeader({ schoolName, userName, userRole }: Props) 
           </div>
 
           {/* Center - Logo */}
-          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            <img
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10">
+            <Image
               src="/quranakh-logo.png"
               alt="QuranAkh Logo"
-              className="h-12 w-auto"
+              width={48}
+              height={48}
+              priority
+              className="w-12 h-12"
             />
           </div>
 
