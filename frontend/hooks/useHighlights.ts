@@ -327,23 +327,6 @@ export function useHighlights(
     fetchHighlights();
   }, [fetchHighlights]);
 
-  // Auto-refresh highlights every 10 seconds to pick up completed highlights
-  useEffect(() => {
-    if (!studentId && !teacherId) return;
-
-    console.log('🔄 Starting auto-refresh for Student highlights (10s interval)');
-
-    const interval = setInterval(() => {
-      console.log('🔄 Auto-refreshing Student highlights...');
-      fetchHighlights();
-    }, 10000); // 10 seconds
-
-    return () => {
-      console.log('🛑 Stopping auto-refresh for Student highlights');
-      clearInterval(interval);
-    };
-  }, [studentId, teacherId, fetchHighlights]);
-
   return {
     highlights,
     isLoading,
