@@ -112,19 +112,10 @@ export default function StudentDashboard() {
           throw new Error('Not authenticated');
         }
 
-        // Get student record with locked script
+        // Get student record
         const { data: studentData, error: studentErr } = await supabase
           .from('students')
-          .select(`
-            id,
-            user_id,
-            locked_script_id,
-            quran_scripts!students_locked_script_id_fkey (
-              id,
-              code,
-              display_name
-            )
-          `)
+          .select('id, user_id, locked_script_id')
           .eq('user_id', user.id)
           .single();
 
@@ -146,12 +137,23 @@ export default function StudentDashboard() {
           name: profileData?.display_name || 'Student'
         }));
 
-        // Set locked script if available
-        if (studentData.locked_script_id && studentData.quran_scripts) {
-          const lockedScript = studentData.quran_scripts as any;
-          console.log('🔒 Locked script found:', lockedScript.code);
-          setSelectedScript(lockedScript.code);
-          setScriptLocked(true);
+        // Get locked script if set
+        if (studentData.locked_script_id) {
+          const { data: scriptData } = await supabase
+            .from('quran_scripts')
+            .select('code, display_name')
+            .eq('id', studentData.locked_script_id)
+            .single();
+
+          if (scriptData) {
+            console.log('🔒 Locked script found:', scriptData.code);
+            setSelectedScript(scriptData.code);
+            setScriptLocked(true);
+          } else {
+            console.log('📖 No locked script data, using default uthmani-hafs');
+            setSelectedScript('uthmani-hafs');
+            setScriptLocked(true);
+          }
         } else {
           console.log('📖 No locked script, using default uthmani-hafs');
           setSelectedScript('uthmani-hafs');
