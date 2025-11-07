@@ -1316,42 +1316,38 @@ export default function StudentDashboard() {
                 <div className="mt-2 border-t pt-2">
                   <div className="flex items-center justify-center gap-4">
                     {(() => {
+                      // Get current page content to determine Surah
                       const currentPageContent = getPageContent(currentMushafPage);
                       const currentSurahNumber = currentPageContent?.surahStart || 1;
 
-                      const isFirstPage = currentMushafPage <= 1;
-                      const isLastPage = currentMushafPage >= 604;
+                      // For student dashboard: allow navigation through ALL 604 pages
+                      const firstPage = 1;
+                      const lastPage = 604;
 
-                      const handlePrevPage = () => {
-                        if (currentMushafPage > 1) {
-                          setCurrentMushafPage(currentMushafPage - 1);
-                        }
-                      };
-
-                      const handleNextPage = () => {
-                        if (currentMushafPage < 604) {
-                          setCurrentMushafPage(currentMushafPage + 1);
-                        }
-                      };
+                      const isFirstPage = currentMushafPage <= firstPage;
+                      const isLastPage = currentMushafPage >= lastPage;
 
                       return (
                         <>
+                          {/* Previous Arrow - Just Icon */}
                           <button
-                            onClick={handlePrevPage}
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
                             disabled={isFirstPage}
                             className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Previous Page">
                             <ChevronLeft className="w-5 h-5" />
                           </button>
 
+                          {/* Page Info */}
                           <div className="text-center">
                             <span className="text-sm font-semibold text-gray-700">
-                              Page {currentMushafPage} of 604 (Surah {currentSurahNumber})
+                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
                             </span>
                           </div>
 
+                          {/* Next Arrow - Just Icon */}
                           <button
-                            onClick={handleNextPage}
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
                             disabled={isLastPage}
                             className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Next Page">
