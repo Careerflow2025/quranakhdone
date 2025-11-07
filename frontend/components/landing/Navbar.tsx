@@ -87,8 +87,8 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
         isScrolled ? 'bg-white/95 border-gray-200 shadow-sm' : 'bg-white/90 border-gray-100'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+        <div className="flex justify-between items-center h-16 relative">
+          {/* Left - Brand Text */}
           <div className="flex items-center">
             <a
               href="#top"
@@ -97,19 +97,22 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 setActiveSection('');
               }}
-              className="flex items-center space-x-3 cursor-pointer"
+              className="cursor-pointer"
             >
-              <img
-                src="/quranakh-logo.png"
-                alt="QuranAkh Logo"
-                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-                className="transform transition-transform hover:scale-110"
-              />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">QuranAkh</h1>
                 <p className="text-xs text-gray-500 -mt-1">Quranic Education Excellence</p>
               </div>
             </a>
+          </div>
+
+          {/* Center - Logo */}
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+            <img
+              src="/quranakh-logo.png"
+              alt="QuranAkh Logo"
+              style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+            />
           </div>
 
           {/* Desktop Navigation */}

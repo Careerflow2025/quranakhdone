@@ -112,17 +112,21 @@ export default function HomePage() {
         isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
+          <div className="flex justify-between items-center h-16 relative">
+            {/* Left - Brand Text */}
             <div className="flex items-center">
-              <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
-                  QuranAkh
-                </span>
-              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
+                QuranAkh
+              </span>
+            </div>
+
+            {/* Center - Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="w-12 h-12 object-contain"
+              />
             </div>
 
             {/* Desktop Menu */}
