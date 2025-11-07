@@ -24,7 +24,7 @@ export default function ParentHeader() {
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative">
         {/* Left side - Title & Child Selector */}
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-semibold text-gray-900">Parent Portal</h1>
@@ -73,11 +73,11 @@ export default function ParentHeader() {
         </div>
 
         {/* Center - Logo */}
-        <div className="hidden md:flex items-center justify-center">
+        <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
           <img
             src="/quranakh-logo.png"
             alt="QuranAkh Logo"
-            className="h-16 w-auto"
+            className="h-12 w-auto"
           />
         </div>
 

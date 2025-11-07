@@ -30,7 +30,7 @@ export default function TeacherHeader({ teacherName, schoolName }: Props) {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative">
           {/* Left side */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -42,11 +42,11 @@ export default function TeacherHeader({ teacherName, schoolName }: Props) {
           </div>
 
           {/* Center - Logo */}
-          <div className="hidden md:flex items-center justify-center flex-1">
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
             <img
               src="/quranakh-logo.png"
               alt="QuranAkh Logo"
-              className="h-16 w-auto"
+              className="h-12 w-auto"
             />
           </div>
 
