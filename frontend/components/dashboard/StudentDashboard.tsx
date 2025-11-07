@@ -1095,6 +1095,9 @@ export default function StudentDashboard() {
                             return (
                               <span key={ayah.number} className="inline relative group">
                         {ayah.words.map((word: any, wordIndex: any) => {
+                          // Extract word text - handle both string and object formats
+                          const wordText = typeof word === 'string' ? word : (word.text || word);
+
                           // Check if word has highlights
                           const hasHighlight = ayahHighlights.length > 0;
                           const highlightColor = hasHighlight ? ayahHighlights[0].color : '';
@@ -1122,7 +1125,7 @@ export default function StudentDashboard() {
                                 display: 'inline'
                               }}
                             >
-                              {word}{' '}
+                              {wordText}{' '}
                             </span>
                           );
                         })}
