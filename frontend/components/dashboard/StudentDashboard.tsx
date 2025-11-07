@@ -1313,7 +1313,7 @@ export default function StudentDashboard() {
                 </div>
 
                 {/* Page Navigation */}
-                <div className="mt-2 border-t pt-2">
+                <div className="mt-2 border-t pt-2" style={{ pointerEvents: 'auto' }}>
                   <div className="flex items-center justify-center gap-4">
                     {(() => {
                       // Get current page content to determine Surah
