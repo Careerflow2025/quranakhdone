@@ -277,7 +277,8 @@ export default function StudentDashboard() {
                   wordIndex,
                   mistakeType: dbHighlight.type,
                   color: dbHighlight.color,
-                  isCompleted: dbHighlight.isCompleted || false,
+                  isCompleted: dbHighlight.status === 'gold',  // Check status field, not isCompleted
+                  status: dbHighlight.status,
                   isFullAyah: true
                 });
               }
@@ -295,7 +296,8 @@ export default function StudentDashboard() {
                 wordIndex,
                 mistakeType: dbHighlight.type,
                 color: dbHighlight.color,
-                isCompleted: dbHighlight.isCompleted || false,
+                isCompleted: dbHighlight.status === 'gold',  // Check status field, not isCompleted
+                status: dbHighlight.status,
                 isFullAyah: false
               });
             }
