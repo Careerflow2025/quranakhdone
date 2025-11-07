@@ -1322,10 +1322,22 @@ export default function StudentDashboard() {
                       const isFirstPage = currentMushafPage <= 1;
                       const isLastPage = currentMushafPage >= 604;
 
+                      const handlePrevPage = () => {
+                        if (currentMushafPage > 1) {
+                          setCurrentMushafPage(currentMushafPage - 1);
+                        }
+                      };
+
+                      const handleNextPage = () => {
+                        if (currentMushafPage < 604) {
+                          setCurrentMushafPage(currentMushafPage + 1);
+                        }
+                      };
+
                       return (
                         <>
                           <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(1, prev - 1))}
+                            onClick={handlePrevPage}
                             disabled={isFirstPage}
                             className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Previous Page">
@@ -1339,7 +1351,7 @@ export default function StudentDashboard() {
                           </div>
 
                           <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(604, prev + 1))}
+                            onClick={handleNextPage}
                             disabled={isLastPage}
                             className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
                             title="Next Page">
