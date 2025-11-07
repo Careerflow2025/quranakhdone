@@ -429,7 +429,35 @@ export default function TeacherDashboard() {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto space-y-8">
+
+            {/* Welcome Header */}
+            <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-2xl p-8 shadow-xl border border-slate-600">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    Welcome back, {teacherInfo?.name || 'Teacher'}
+                  </h1>
+                  <p className="text-slate-300 text-lg">
+                    Ready to inspire and guide your students today
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20">
+                  <div className="text-right">
+                    <p className="text-slate-400 text-sm uppercase tracking-wide">Today</p>
+                    <p className="text-white text-xl font-semibold">
+                      {new Date().toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Premium Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
