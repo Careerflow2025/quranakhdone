@@ -4,7 +4,6 @@ import { Bell, Search, Settings, User, LogOut, BookOpen, MessageSquare } from 'l
 import { useState } from 'react';
 import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 interface Props {
   teacherName: string;
@@ -43,14 +42,11 @@ export default function TeacherHeader({ teacherName, schoolName }: Props) {
           </div>
 
           {/* Center - Logo */}
-          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10">
-            <Image
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+            <img
               src="/quranakh-logo.png"
               alt="QuranAkh Logo"
-              width={48}
-              height={48}
-              priority
-              className="w-12 h-12"
+              style={{ width: '48px', height: '48px', objectFit: 'contain' }}
             />
           </div>
 

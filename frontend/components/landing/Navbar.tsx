@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface NavbarProps {
   onAuthClick: (type: 'login' | 'signup', role?: string) => void;
@@ -100,13 +99,11 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
               }}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <Image
+              <img
                 src="/quranakh-logo.png"
                 alt="QuranAkh Logo"
-                width={48}
-                height={48}
-                priority
-                className="w-12 h-12 transform transition-transform hover:scale-110"
+                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                className="transform transition-transform hover:scale-110"
               />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">QuranAkh</h1>

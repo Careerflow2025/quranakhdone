@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth-client';
 import { useParentStore } from '@/features/parent/state/useParentStore';
-import Image from 'next/image';
 
 export default function ParentHeader() {
   const router = useRouter();
@@ -74,14 +73,11 @@ export default function ParentHeader() {
         </div>
 
         {/* Center - Logo */}
-        <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10">
-          <Image
+        <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+          <img
             src="/quranakh-logo.png"
             alt="QuranAkh Logo"
-            width={48}
-            height={48}
-            priority
-            className="w-12 h-12"
+            style={{ width: '48px', height: '48px', objectFit: 'contain' }}
           />
         </div>
 
