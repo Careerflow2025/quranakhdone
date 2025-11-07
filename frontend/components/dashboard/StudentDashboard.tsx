@@ -249,11 +249,6 @@ export default function StudentDashboard() {
       return;
     }
 
-    // DEBUG: Log first highlight to see what fields we have
-    console.log('🔍 DEBUG - First dbHighlight:', dbHighlights[0]);
-    console.log('🔍 DEBUG - status field:', dbHighlights[0]?.status);
-    console.log('🔍 DEBUG - type field:', dbHighlights[0]?.type);
-
     // Get current page data
     const pageData = getPageContent(currentMushafPage);
     if (!pageData) return;

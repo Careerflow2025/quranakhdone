@@ -68,6 +68,7 @@ export async function PUT(
       .update({
         previous_color: highlight.color, // Save original color
         color: 'gold', // Change to gold
+        status: 'gold', // CRITICAL: Update status field for sync between dashboards
         completed_at: new Date().toISOString(),
         completed_by: user.id
       })
