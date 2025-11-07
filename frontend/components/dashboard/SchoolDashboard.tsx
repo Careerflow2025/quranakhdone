@@ -2411,10 +2411,19 @@ export default function SchoolDashboard() {
       <div className="flex-1 overflow-auto">
         {/* Header */}
         <header className="bg-white shadow-sm px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative">
             <h1 className="text-2xl font-bold text-gray-900">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
+
+            {/* Center - QuranAkh Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
 
             <div className="flex items-center space-x-4">
               <button

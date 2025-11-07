@@ -447,7 +447,7 @@ export default function StudentDashboard() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative">
             {/* Left Side - Title */}
             <div className="flex items-center space-x-4">
               {activeTab === 'quran' ? (
@@ -477,13 +477,14 @@ export default function StudentDashboard() {
               )}
             </div>
 
-            {/* Center - Student Info (only show in Quran tab) */}
-            {activeTab === 'quran' && (
-              <div className="text-center">
-                <p className="text-sm text-gray-500">{studentInfo.name} • {studentInfo.class}</p>
-                <p className="text-xs text-gray-400">Student Dashboard</p>
-              </div>
-            )}
+            {/* Center - QuranAkh Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
 
             {/* Right Side - Actions */}
             <div className="flex items-center space-x-3">

@@ -253,7 +253,7 @@ export default function TeacherDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-16 relative">
             <div className="flex items-center">
               {teacherInfo?.school?.logo_url ? (
                 <img
@@ -265,6 +265,15 @@ export default function TeacherDashboard() {
                 <School className="w-8 h-8 text-blue-600 mr-3" />
               )}
               <h1 className="text-xl font-bold text-gray-900">Teacher Dashboard</h1>
+            </div>
+
+            {/* Center - QuranAkh Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="w-12 h-12 object-contain"
+              />
             </div>
 
             <div className="flex items-center space-x-4">
