@@ -997,72 +997,123 @@ export default function TeacherDashboard() {
         {/* My Classes Tab */}
         {activeTab === 'my classes' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">My Classes ({myClasses.length})</h2>
-              <button
-                onClick={refreshData}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </button>
+            {/* Premium Header */}
+            <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 rounded-2xl shadow-xl p-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-white flex items-center">
+                    <BookOpen className="w-8 h-8 mr-3" />
+                    My Classes
+                  </h2>
+                  <p className="text-blue-100 mt-2 text-lg">
+                    {myClasses.length} {myClasses.length === 1 ? 'class' : 'classes'} in your teaching portfolio
+                  </p>
+                </div>
+                <button
+                  onClick={refreshData}
+                  className="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-xl hover:bg-white/30 flex items-center gap-2 border border-white/30 shadow-lg transition-all duration-300 hover:scale-105"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  Refresh
+                </button>
+              </div>
             </div>
 
             {myClasses.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg font-medium">No classes assigned yet</p>
-                <p className="text-gray-400 mt-2">
+              <div className="bg-gradient-to-br from-indigo-50 to-cyan-50 rounded-2xl shadow-lg p-16 text-center border border-indigo-100">
+                <div className="bg-indigo-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <BookOpen className="w-12 h-12 text-indigo-600" />
+                </div>
+                <p className="text-gray-700 text-xl font-semibold">No classes assigned yet</p>
+                <p className="text-gray-500 mt-3 text-lg">
                   Your classes will appear here once assigned by the school administrator
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {myClasses.map((cls: any) => (
-                  <div key={cls.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex-shrink-0 h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <BookOpen className="w-6 h-6 text-purple-600" />
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
-                    {cls.room && (
-                      <p className="text-gray-500 mt-1 flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        Room {cls.room}
-                      </p>
-                    )}
-                    <div className="mt-4 space-y-2">
-                      <div className="flex justify-between text-sm items-center">
-                        <span className="text-gray-500 flex items-center">
-                          <Users className="w-4 h-4 mr-1" />
-                          Capacity:
-                        </span>
-                        <span className="font-semibold text-blue-600">{cls.studentCount || 0} / {cls.capacity || 30}</span>
-                      </div>
-                      <div className="flex justify-between text-sm items-center">
-                        <span className="text-gray-500 flex items-center">
-                          <GraduationCap className="w-4 h-4 mr-1" />
-                          Teachers:
-                        </span>
-                        <span className="font-medium text-gray-900">{cls.teacherCount || 0}</span>
-                      </div>
-                      {cls.schedule_json && cls.schedule_json.schedules && cls.schedule_json.schedules.length > 0 && (
-                        <div className="flex justify-between text-sm items-center">
-                          <span className="text-gray-500 flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            Schedule:
-                          </span>
-                          <span className="font-medium text-green-600">{cls.schedule_json.schedules[0].day}</span>
+                  <div
+                    key={cls.id}
+                    className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden"
+                  >
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    {/* Content */}
+                    <div className="relative space-y-4">
+                      {/* Class Icon and Header */}
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-indigo-100 to-cyan-100 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                          <BookOpen className="w-8 h-8 text-indigo-600" />
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors duration-300">
+                            {cls.name}
+                          </h3>
+                          {cls.room && (
+                            <p className="text-sm text-gray-500 flex items-center mt-1">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              Room {cls.room}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Class Info */}
+                      <div className="space-y-3">
+                        {/* Students Capacity */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                              <Users className="w-4 h-4" />
+                              Students:
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold text-indigo-600">
+                            {cls.studentCount || 0} / {cls.capacity || 30}
+                          </span>
+                        </div>
+
+                        {/* Teachers */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                              <GraduationCap className="w-4 h-4" />
+                              Teachers:
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold text-gray-900">{cls.teacherCount || 0}</span>
+                        </div>
+
+                        {/* Schedule */}
+                        {cls.schedule_json && cls.schedule_json.schedules && cls.schedule_json.schedules.length > 0 && (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                              <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                Schedule:
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-emerald-600">{cls.schedule_json.schedules[0].day}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Divider */}
+                      <div className="h-px bg-gradient-to-r from-indigo-200 via-cyan-200 to-transparent"></div>
+
+                      {/* View Details Button */}
+                      <button
+                        onClick={() => setSelectedClassDetails(cls)}
+                        className="w-full bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-4 py-3 rounded-xl hover:from-indigo-600 hover:to-cyan-600 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      >
+                        <Eye className="w-5 h-5" />
+                        <span>View Details</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setSelectedClassDetails(cls)}
-                      className="mt-4 w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors"
-                    >
-                      View Details
-                    </button>
                   </div>
                 ))}
               </div>
@@ -1073,100 +1124,123 @@ export default function TeacherDashboard() {
         {/* Students Tab */}
         {activeTab === 'students' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">My Students ({students.length})</h2>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </button>
+            {/* Premium Header */}
+            <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 rounded-2xl shadow-xl p-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-white flex items-center">
+                    <Users className="w-8 h-8 mr-3" />
+                    My Students
+                  </h2>
+                  <p className="text-purple-100 mt-2 text-lg">
+                    {students.length} {students.length === 1 ? 'student' : 'students'} under your guidance
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-xl hover:bg-white/30 flex items-center gap-2 border border-white/30 shadow-lg transition-all duration-300 hover:scale-105"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  Refresh
+                </button>
+              </div>
             </div>
 
             {students.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg font-medium">No students assigned yet</p>
-                <p className="text-gray-400 mt-2">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-16 text-center border border-purple-100">
+                <div className="bg-purple-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-12 h-12 text-purple-600" />
+                </div>
+                <p className="text-gray-700 text-xl font-semibold">No students assigned yet</p>
+                <p className="text-gray-500 mt-3 text-lg">
                   Students will appear here once they are enrolled in your classes
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Student
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Class
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student: any) => (
-                      <tr key={student.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                              {student.age && (
-                                <div className="text-sm text-gray-500">{student.age} years old</div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{student.class || 'Not assigned'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{student.email || 'N/A'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {students.map((student: any) => (
+                  <div
+                    key={student.id}
+                    className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden"
+                  >
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    {/* Content */}
+                    <div className="relative space-y-4">
+                      {/* Student Avatar and Name */}
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                          <User className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-purple-600 transition-colors duration-300">
+                            {student.name}
+                          </h3>
+                          {student.age && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {student.age} years old
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Student Info */}
+                      <div className="space-y-3">
+                        {/* Class */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                          <span className="text-sm font-medium text-gray-600">Class:</span>
+                          <span className="text-sm text-gray-900 font-semibold">{student.class || 'Not assigned'}</span>
+                        </div>
+
+                        {/* Email */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
+                          <span className="text-sm font-medium text-gray-600">Email:</span>
+                          <span className="text-sm text-gray-900 truncate">{student.email || 'N/A'}</span>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                          <span className="text-sm font-medium text-gray-600">Status:</span>
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
                             student.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
+                              ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                              : 'bg-gray-100 text-gray-700 border border-gray-200'
                           }`}>
                             {student.status}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-3">
-                            {/* Quran Icon - Navigate to Student Management Dashboard */}
-                            <button
-                              onClick={() => router.push(`/student-management?studentId=${student.id}`)}
-                              className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Open Student Quran Management"
-                            >
-                              <BookOpen className="w-5 h-5" />
-                            </button>
+                        </div>
+                      </div>
 
-                            {/* Eye Icon - View Student Details */}
-                            <button
-                              onClick={() => setSelectedStudentDetails(student)}
-                              className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="View Student Details"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                      {/* Divider */}
+                      <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-transparent"></div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => router.push(`/student-management?studentId=${student.id}`)}
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                          title="Open Student Quran Management"
+                        >
+                          <BookOpen className="w-5 h-5" />
+                          <span>Quran</span>
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedStudentDetails(student)}
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-indigo-600 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                          title="View Student Details"
+                        >
+                          <Eye className="w-5 h-5" />
+                          <span>Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
