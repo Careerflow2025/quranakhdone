@@ -175,6 +175,14 @@ export function useAssignments(initialStudentId?: string) {
 
         const data: ListAssignmentsResponse = await response.json();
 
+        // DEBUG: Log API response for troubleshooting
+        console.log('📊 Assignments API Response:', {
+          assignmentsCount: (data.assignments || data.data || []).length,
+          pagination: data.pagination,
+          filters: activeFilters,
+          currentPage,
+        });
+
         // API returns: { success, data: [...], assignments: [...], pagination: {...} }
         setAssignments(data.assignments || data.data || []);
 
@@ -192,6 +200,14 @@ export function useAssignments(initialStudentId?: string) {
 
         setTotalItems(data.pagination?.total || 0);
         setTotalPages(Math.ceil((data.pagination?.total || 0) / ITEMS_PER_PAGE));
+
+        // DEBUG: Log pagination state
+        console.log('📄 Pagination State:', {
+          currentPage,
+          totalPages: Math.ceil((data.pagination?.total || 0) / ITEMS_PER_PAGE),
+          totalItems: data.pagination?.total || 0,
+          itemsPerPage: ITEMS_PER_PAGE,
+        });
       } catch (err) {
         console.error('Error fetching assignments:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch assignments');
