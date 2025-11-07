@@ -288,6 +288,14 @@ export async function GET(req: NextRequest) {
           text,
           audio_url,
           created_at
+        ),
+        student:students!highlights_student_id_fkey(
+          id,
+          user_id,
+          profiles!students_user_id_fkey(
+            display_name,
+            email
+          )
         )
       `)
       .eq('school_id', profile.school_id);

@@ -162,7 +162,7 @@ export default function TeacherDashboard() {
       return {
         id: highlight.id,
         studentId: highlight.student_id,
-        studentName: highlight.student?.display_name || 'Unknown Student',
+        studentName: highlight.student?.profiles?.display_name || highlight.student?.display_name || 'Unknown Student',
         class: 'N/A',
         title: highlight.surah ? `Surah ${highlight.surah}, Ayah ${highlight.ayah_start}-${highlight.ayah_end}` : 'Untitled Assignment',
         description: highlight.note || highlight.type || 'No description',
@@ -542,7 +542,6 @@ export default function TeacherDashboard() {
                   <option value="all">All Homework</option>
                   <option value="pending">Pending</option>
                   <option value="completed">Completed</option>
-                  <option value="overdue">Overdue</option>
                 </select>
 
                 <div className="relative flex-1">
@@ -1162,7 +1161,6 @@ export default function TeacherDashboard() {
                   <option value="all">All Assignments</option>
                   <option value="assigned">Pending</option>
                   <option value="completed">Completed</option>
-                  <option value="late">Overdue</option>
                 </select>
 
                 <div className="relative flex-1">
