@@ -144,35 +144,43 @@ export default function TeacherDashboard() {
   const [assignmentsSearchQuery, setAssignmentsSearchQuery] = useState('');
   const [showAssignmentDetail, setShowAssignmentDetail] = useState<any>(null);
 
-  // Transform assignments data to match UI expectations (similar to homework)
+  // Transform assignments from all highlights (excluding homework green/gold)
+  // Assignments = All highlights that are NOT green (homework)
   const transformedAssignments = useMemo(() => {
-    return (assignments || []).map((assignment: any) => {
-      // Extract student name from nested structure
-      const studentName = assignment.student?.profiles?.display_name ||
-                         assignment.student?.display_name ||
-                         'Unknown Student';
+    // Filter allHighlights to exclude green homework highlights
+    const nonHomeworkHighlights = safeHighlights.filter((h: any) =>
+      h.color !== 'green' // Exclude green homework, include everything else including gold
+    );
+
+    return nonHomeworkHighlights.map((highlight: any) => {
+      // Determine status based on color
+      let status = 'assigned';
+      if (highlight.color === 'gold') {
+        status = 'completed';
+      }
 
       return {
-        id: assignment.id,
-        studentId: assignment.student_id,
-        studentName: studentName,
-        class: 'N/A', // Class info not directly available
-        title: assignment.title || 'Untitled Assignment',
-        description: assignment.description || '',
-        assignedDate: assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '',
-        dueDate: assignment.due_at ? new Date(assignment.due_at).toLocaleDateString() : '',
-        status: assignment.status || 'assigned',
-        late: assignment.late || false,
-        // Get highlight info from linked highlights via assignment_highlights junction
-        highlightIds: assignment.highlight_ids || [],
+        id: highlight.id,
+        studentId: highlight.student_id,
+        studentName: highlight.student?.display_name || 'Unknown Student',
+        class: 'N/A',
+        title: highlight.surah ? `Surah ${highlight.surah}, Ayah ${highlight.ayah_start}-${highlight.ayah_end}` : 'Untitled Assignment',
+        description: highlight.note || highlight.type || 'No description',
+        assignedDate: highlight.created_at ? new Date(highlight.created_at).toLocaleDateString() : '',
+        dueDate: highlight.created_at ? new Date(highlight.created_at).toLocaleDateString() : '',
+        status: status,
+        late: false,
+        color: highlight.color,
+        surah: highlight.surah,
+        ayahRange: `${highlight.ayah_start}-${highlight.ayah_end}`,
       };
     });
-  }, [assignments]);
+  }, [safeHighlights]);
 
-  // Function to mark assignment as complete (turns all linked highlights gold)
-  const markAssignmentComplete = async (assignmentId: string) => {
+  // Function to mark assignment (highlight) as complete - same logic as homework
+  const markAssignmentComplete = async (highlightId: string) => {
     try {
-      console.log('📝 Marking assignment as completed:', assignmentId);
+      console.log('📝 Marking assignment as completed:', highlightId);
 
       // Get auth session
       const { data: { session } } = await supabase.auth.getSession();
@@ -181,8 +189,8 @@ export default function TeacherDashboard() {
         return;
       }
 
-      // Call assignment completion API
-      const response = await fetch(`/api/assignments/${assignmentId}/complete`, {
+      // Call highlight completion API (same as homework)
+      const response = await fetch(`/api/highlights/${highlightId}/complete`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -197,10 +205,10 @@ export default function TeacherDashboard() {
       }
 
       const data = await response.json();
-      console.log('✅ Assignment completed:', data.message);
+      console.log('✅ Assignment (highlight) completed:', data.highlight?.id);
 
-      // Refresh data to show updated status
-      await refreshData();
+      // Refresh highlights to show gold color
+      await refreshHighlights();
     } catch (error) {
       console.error('Error marking assignment complete:', error);
     }
@@ -1192,8 +1200,7 @@ export default function TeacherDashboard() {
                 .map((assignment: any) => (
                 <div key={assignment.id} className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className={`h-2 ${
-                    assignment.status === 'completed' ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
-                    assignment.late ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                    assignment.color === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
                     'bg-gradient-to-r from-blue-500 to-indigo-500'
                   }`}></div>
 
