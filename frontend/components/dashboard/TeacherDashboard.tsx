@@ -512,21 +512,12 @@ export default function TeacherDashboard() {
           <div className="space-y-6">
             {/* Header */}
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <BookOpen className="w-7 h-7 mr-3" />
-                    Homework Management
-                  </h2>
-                  <p className="text-green-100 mt-1">Manage all green highlights (homework) you've assigned</p>
-                </div>
-                <button
-                  className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition flex items-center"
-                  onClick={() => alert('Open Student Management Dashboard to create homework')}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Homework
-                </button>
+              <div>
+                <h2 className="text-2xl font-bold flex items-center">
+                  <BookOpen className="w-7 h-7 mr-3" />
+                  Homework Management
+                </h2>
+                <p className="text-green-100 mt-1">Manage all green highlights (homework) you've assigned</p>
               </div>
             </div>
 
@@ -603,28 +594,18 @@ export default function TeacherDashboard() {
                           {homework.dueDate}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Replies:</span>
-                        <span className="text-blue-600">{homework.replies} messages</span>
-                      </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                      <button
-                        onClick={() => setShowHomeworkDetail(homework)}
-                        className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                      >
-                        View Details
-                      </button>
-                      {homework.status !== 'completed' && (
+                    {homework.status !== 'completed' && (
+                      <div className="mt-4 pt-4 border-t flex justify-end">
                         <button
                           onClick={() => markHomeworkComplete(homework.id)}
                           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
                         >
                           Mark Complete
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1128,21 +1109,12 @@ export default function TeacherDashboard() {
           <div className="space-y-6">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <FileText className="w-7 h-7 mr-3" />
-                    Assignment Management
-                  </h2>
-                  <p className="text-blue-100 mt-1">Manage all assignments you've created for your students</p>
-                </div>
-                <button
-                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center"
-                  onClick={() => router.push('/student-management')}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Assignment
-                </button>
+              <div>
+                <h2 className="text-2xl font-bold flex items-center">
+                  <FileText className="w-7 h-7 mr-3" />
+                  Assignment Management
+                </h2>
+                <p className="text-blue-100 mt-1">Manage all assignments you've created for your students</p>
               </div>
             </div>
 
@@ -1229,22 +1201,16 @@ export default function TeacherDashboard() {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                      <button
-                        onClick={() => setShowAssignmentDetail(assignment)}
-                        className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                      >
-                        View Details
-                      </button>
-                      {assignment.status !== 'completed' && (
+                    {assignment.status !== 'completed' && (
+                      <div className="mt-4 pt-4 border-t flex justify-end">
                         <button
                           onClick={() => markAssignmentComplete(assignment.id)}
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
                         >
                           Mark Complete
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
