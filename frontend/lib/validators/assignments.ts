@@ -147,8 +147,8 @@ export const listAssignmentsQuerySchema = z.object({
     .pipe(z.number().int().min(1).max(ASSIGNMENT_CONSTANTS.PAGINATION_MAX_LIMIT))
     .optional()
     .default(String(ASSIGNMENT_CONSTANTS.PAGINATION_DEFAULT_LIMIT)),
-  sort_by: z.enum(['due_at', 'created_at', 'status']).optional().default('due_at'),
-  sort_order: z.enum(['asc', 'desc']).optional().default('asc'),
+  sort_by: z.enum(['due_at', 'created_at', 'status']).optional().default('created_at'),
+  sort_order: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
 // ============================================================================
