@@ -429,100 +429,90 @@ export default function TeacherDashboard() {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Students</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
+          <div className="max-w-7xl mx-auto">
+            {/* Premium Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+              {/* Total Students Card */}
+              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="p-3 bg-white rounded-xl shadow-sm">
+                      <Users className="w-8 h-8 text-slate-700" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalStudents}</p>
+                    </div>
                   </div>
-                  <Users className="w-12 h-12 text-blue-100" />
+                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Assignments</p>
-                    <p className="text-2xl font-bold text-orange-600">{stats.totalAssignments}</p>
+              {/* Total Assignments Card */}
+              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="p-3 bg-white rounded-xl shadow-sm">
+                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalAssignments}</p>
+                    </div>
                   </div>
-                  <BookOpen className="w-12 h-12 text-orange-100" />
+                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">My Classes</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalClasses}</p>
+              {/* My Classes Card */}
+              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="p-3 bg-white rounded-xl shadow-sm">
+                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">My Classes</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalClasses}</p>
+                    </div>
                   </div>
-                  <BookOpen className="w-12 h-12 text-gray-300" />
+                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Homework</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.totalHomework}</p>
+              {/* Total Homework Card */}
+              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="p-3 bg-white rounded-xl shadow-sm">
+                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalHomework}</p>
+                    </div>
                   </div>
-                  <BookOpen className="w-12 h-12 text-green-100" />
+                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Targets</p>
-                    <p className="text-2xl font-bold text-purple-600">{stats.totalTargets}</p>
+              {/* Total Targets Card */}
+              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="p-3 bg-white rounded-xl shadow-sm">
+                      <Target className="w-8 h-8 text-slate-700" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalTargets}</p>
+                    </div>
                   </div>
-                  <Target className="w-12 h-12 text-purple-100" />
+                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
                 </div>
               </div>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button
-                  onClick={() => setActiveTab('homework')}
-                  className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium"
-                >
-                  <BookOpen className="w-6 h-6 mx-auto mb-2" />
-                  Create Homework
-                </button>
-                <button
-                  onClick={() => setActiveTab('targets')}
-                  className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium"
-                >
-                  <Target className="w-6 h-6 mx-auto mb-2" />
-                  Manage Targets
-                </button>
-                <button
-                  onClick={() => setActiveTab('attendance')}
-                  className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium"
-                >
-                  <CheckCircle className="w-6 h-6 mx-auto mb-2" />
-                  Take Attendance
-                </button>
-                <button
-                  onClick={() => setActiveTab('classes')}
-                  className="p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 font-medium"
-                >
-                  <BookOpen className="w-6 h-6 mx-auto mb-2" />
-                  Manage Classes
-                </button>
-                <button
-                  onClick={() => setActiveTab('messages')}
-                  className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg text-orange-700 font-medium"
-                >
-                  <Mail className="w-6 h-6 mx-auto mb-2" />
-                  Send Message
-                </button>
-              </div>
             </div>
           </div>
         )}
