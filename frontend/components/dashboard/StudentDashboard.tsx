@@ -200,6 +200,10 @@ export default function StudentDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
+  // Notes modal state for conversation threads
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
+
   // Get notifications from API
   const {
     notifications: dbNotifications,
@@ -1188,9 +1192,11 @@ export default function StudentDashboard() {
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
                               if (wordHighlights.length > 0) {
-                                // Click on highlighted text - show notes
-                                console.log('View notes for highlight:', wordHighlights[0]);
-                                // TODO: Implement note viewing modal
+                                // Open notes modal for this highlight
+                                const highlight = wordHighlights[0];
+                                console.log('📝 Opening notes for highlight:', highlight.dbId);
+                                setSelectedHighlightForNotes(highlight.dbId);
+                                setShowNotesModal(true);
                               }
                             }}
                             className={`inline cursor-pointer rounded transition-colors select-none ${
@@ -2403,6 +2409,24 @@ export default function StudentDashboard() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* NotesPanel Modal - WhatsApp-style conversation thread */}
+      {showNotesModal && selectedHighlightForNotes && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl">
+            <NotesPanel
+              highlightId={selectedHighlightForNotes}
+              mode="modal"
+              onClose={() => {
+                setShowNotesModal(false);
+                setSelectedHighlightForNotes(null);
+                // Refresh highlights to update note indicators
+                refreshHighlights();
+              }}
+            />
           </div>
         </div>
       )}
