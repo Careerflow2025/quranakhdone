@@ -107,6 +107,7 @@ export default function TeacherDashboard() {
 
   // Homework State
   const [homeworkFilter, setHomeworkFilter] = useState('all');
+  const [homeworkSearchQuery, setHomeworkSearchQuery] = useState('');
   const [showHomeworkDetail, setShowHomeworkDetail] = useState<any>(null);
 
   // Class Details State
@@ -140,6 +141,7 @@ export default function TeacherDashboard() {
 
   // Assignments State
   const [assignmentsFilter, setAssignmentsFilter] = useState('all');
+  const [assignmentsSearchQuery, setAssignmentsSearchQuery] = useState('');
   const [showAssignmentDetail, setShowAssignmentDetail] = useState<any>(null);
 
   // Transform assignments data to match UI expectations (similar to homework)
@@ -540,6 +542,8 @@ export default function TeacherDashboard() {
                   <input
                     type="text"
                     placeholder="Search by student, surah, or note..."
+                    value={homeworkSearchQuery}
+                    onChange={(e) => setHomeworkSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
                   />
                 </div>
@@ -549,7 +553,19 @@ export default function TeacherDashboard() {
             {/* Homework Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {transformedHomework
-                .filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter)
+                .filter((hw: any) => {
+                  // Status filter
+                  const matchesStatus = homeworkFilter === 'all' || hw.status === homeworkFilter;
+
+                  // Search filter
+                  const searchLower = homeworkSearchQuery.toLowerCase();
+                  const matchesSearch = !homeworkSearchQuery ||
+                    hw.studentName?.toLowerCase().includes(searchLower) ||
+                    hw.surah?.toLowerCase().includes(searchLower) ||
+                    hw.note?.toLowerCase().includes(searchLower);
+
+                  return matchesStatus && matchesSearch;
+                })
                 .map((homework: any) => (
                 <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className={`h-2 ${
@@ -611,11 +627,21 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Empty State */}
-            {transformedHomework.filter((hw: any) => homeworkFilter === 'all' || hw.status === homeworkFilter).length === 0 && (
+            {transformedHomework.filter((hw: any) => {
+              const matchesStatus = homeworkFilter === 'all' || hw.status === homeworkFilter;
+              const searchLower = homeworkSearchQuery.toLowerCase();
+              const matchesSearch = !homeworkSearchQuery ||
+                hw.studentName?.toLowerCase().includes(searchLower) ||
+                hw.surah?.toLowerCase().includes(searchLower) ||
+                hw.note?.toLowerCase().includes(searchLower);
+              return matchesStatus && matchesSearch;
+            }).length === 0 && (
               <div className="text-center py-12 bg-white rounded-xl">
                 <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No homework found</p>
-                <p className="text-gray-400 text-sm mt-1">Create homework by highlighting text in Student Management Dashboard</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  {homeworkSearchQuery ? 'Try a different search term' : 'Create homework by highlighting text in Student Management Dashboard'}
+                </p>
               </div>
             )}
           </div>
@@ -1136,6 +1162,8 @@ export default function TeacherDashboard() {
                   <input
                     type="text"
                     placeholder="Search by student, title, or description..."
+                    value={assignmentsSearchQuery}
+                    onChange={(e) => setAssignmentsSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
                   />
                 </div>
@@ -1146,9 +1174,20 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {transformedAssignments
                 .filter((assignment: any) => {
-                  if (assignmentsFilter === 'all') return true;
-                  if (assignmentsFilter === 'late') return assignment.late;
-                  return assignment.status === assignmentsFilter;
+                  // Status filter
+                  let matchesStatus = false;
+                  if (assignmentsFilter === 'all') matchesStatus = true;
+                  else if (assignmentsFilter === 'late') matchesStatus = assignment.late;
+                  else matchesStatus = assignment.status === assignmentsFilter;
+
+                  // Search filter
+                  const searchLower = assignmentsSearchQuery.toLowerCase();
+                  const matchesSearch = !assignmentsSearchQuery ||
+                    assignment.studentName?.toLowerCase().includes(searchLower) ||
+                    assignment.title?.toLowerCase().includes(searchLower) ||
+                    assignment.description?.toLowerCase().includes(searchLower);
+
+                  return matchesStatus && matchesSearch;
                 })
                 .map((assignment: any) => (
                 <div key={assignment.id} className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -1214,14 +1253,25 @@ export default function TeacherDashboard() {
 
             {/* Empty State */}
             {transformedAssignments.filter((assignment: any) => {
-              if (assignmentsFilter === 'all') return true;
-              if (assignmentsFilter === 'late') return assignment.late;
-              return assignment.status === assignmentsFilter;
+              let matchesStatus = false;
+              if (assignmentsFilter === 'all') matchesStatus = true;
+              else if (assignmentsFilter === 'late') matchesStatus = assignment.late;
+              else matchesStatus = assignment.status === assignmentsFilter;
+
+              const searchLower = assignmentsSearchQuery.toLowerCase();
+              const matchesSearch = !assignmentsSearchQuery ||
+                assignment.studentName?.toLowerCase().includes(searchLower) ||
+                assignment.title?.toLowerCase().includes(searchLower) ||
+                assignment.description?.toLowerCase().includes(searchLower);
+
+              return matchesStatus && matchesSearch;
             }).length === 0 && (
               <div className="text-center py-12 bg-white rounded-xl">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No assignments found</p>
-                <p className="text-gray-400 text-sm mt-1">Create assignments in Student Management Dashboard</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  {assignmentsSearchQuery ? 'Try a different search term' : 'Create assignments in Student Management Dashboard'}
+                </p>
               </div>
             )}
           </div>
