@@ -18,6 +18,7 @@ import MasteryPanel from '@/components/mastery/MasteryPanel';
 import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
+import NotesPanel from '@/features/annotations/components/NotesPanel';
 import {
   Book,
   Mic,
@@ -316,10 +317,8 @@ export default function StudentDashboard() {
   }));
 
   const handleHighlightClick = (highlightId: any) => {
-    const highlight = safeHighlights.find((h: any) => h.id === highlightId);
-    if (highlight) {
-      setShowNoteReply(highlight);
-    }
+    // Store highlight ID to open NotesPanel
+    setShowNoteReply(highlightId);
   };
 
   const handleSendReply = (type: any = 'text') => {
@@ -903,32 +902,44 @@ export default function StudentDashboard() {
                   `}</style>
                   <div className="text-gray-900">
                     {currentAyahs.map((ayah: any, displayIndex: any) => {
-                      const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
-                      // Filter highlights for current surah and ayah
+                      // Match highlights by ayah number (database uses ayah_start/ayah_end)
                       const ayahHighlights = safeHighlights.filter((h: any) =>
-                        h.surah === currentSurah && h.ayahIndex === ayahIndex
+                        h.surah === currentSurah &&
+                        ayah.number >= h.ayah_start &&
+                        ayah.number <= h.ayah_end
                       );
 
                       return (
-                        <div key={ayah.number} className="inline-block relative group">
+                        <div
+                          key={ayah.number}
+                          className={`inline-block relative group ${
+                            ayahHighlights.length > 0
+                              ? 'cursor-pointer'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            if (ayahHighlights.length > 0) {
+                              handleHighlightClick(ayahHighlights[0].id);
+                            }
+                          }}
+                        >
                           {ayah.words.map((word: any, wordIndex: any) => {
-                            const wordHighlights = ayahHighlights.filter((h: any) =>
-                              h.wordIndices.includes(wordIndex)
-                            );
-
                             return (
                               <span
-                                key={`${ayahIndex}-${wordIndex}`}
-                                onClick={() => {
-                                  if (wordHighlights.length > 0) {
-                                    handleHighlightClick(wordHighlights[0].id);
-                                  }
-                                }}
-                                className={`inline-block mx-1 px-1 cursor-pointer rounded transition-colors select-none
-                                  ${wordHighlights.length > 0
-                                    ? `${wordHighlights[0].color} ${
-                                        wordHighlights[0].type === 'homework'
+                                key={`${ayah.number}-${wordIndex}`}
+                                className={`inline-block mx-1 px-1 rounded transition-colors select-none
+                                  ${ayahHighlights.length > 0
+                                    ? `${ayahHighlights[0].color === 'green' ? 'bg-green-100' : ''}${
+                                        ayahHighlights[0].color === 'purple' ? 'bg-purple-100' : ''
+                                      }${ayahHighlights[0].color === 'orange' ? 'bg-orange-100' : ''}${
+                                        ayahHighlights[0].color === 'red' ? 'bg-red-100' : ''
+                                      }${ayahHighlights[0].color === 'brown' ? 'bg-amber-100' : ''}${
+                                        ayahHighlights[0].color === 'gold' ? 'bg-yellow-100' : ''
+                                      } ${
+                                        ayahHighlights[0].type === 'homework'
                                           ? 'border-2 border-green-400 shadow-sm'
+                                          : ayahHighlights[0].type === 'completed'
+                                          ? 'border-2 border-yellow-400 shadow-sm'
                                           : 'border-2 border-blue-400 shadow-sm'
                                       }`
                                     : ''
@@ -936,31 +947,34 @@ export default function StudentDashboard() {
                                 style={{ position: 'relative' }}
                               >
                                 {word}
-                                {wordHighlights.length > 0 && wordHighlights[0].replies?.length > 0 && (
-                                  <sup className="text-blue-500 ml-1" style={{ fontSize: '0.6em' }}>
-                                    <MessageSquare className="w-3 h-3 inline" />
-                                  </sup>
-                                )}
                               </span>
                             );
                           })}
-                          {/* Ornamental Ayah Number */}
-                          <span className="inline-flex items-center justify-center mx-2 align-middle"
-                            style={{
-                              width: '35px',
-                              height: '35px',
-                              borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #d4a574 0%, #8b6914 50%, #d4a574 100%)',
-                              color: 'white',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)',
-                              border: '2px solid #8b6914',
-                              verticalAlign: 'middle',
-                              display: 'inline-flex'
-                            }}
-                          >
-                            {ayah.number}
+                          {/* Ornamental Ayah Number with Note Indicator */}
+                          <span className="inline-flex items-center gap-1 mx-2 align-middle">
+                            <span className="inline-flex items-center justify-center"
+                              style={{
+                                width: '35px',
+                                height: '35px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #d4a574 0%, #8b6914 50%, #d4a574 100%)',
+                                color: 'white',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)',
+                                border: '2px solid #8b6914',
+                                verticalAlign: 'middle',
+                                display: 'inline-flex'
+                              }}
+                            >
+                              {ayah.number}
+                            </span>
+                            {/* Teacher Note Indicator */}
+                            {ayahHighlights.length > 0 && ayahHighlights[0].note && (
+                              <span className="inline-flex items-center justify-center bg-blue-500 text-white rounded-full" style={{ width: '18px', height: '18px', fontSize: '10px' }}>
+                                <MessageSquare className="w-3 h-3" />
+                              </span>
+                            )}
                           </span>
                         </div>
                       );
@@ -1778,179 +1792,14 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* WhatsApp-style Note Reply Modal */}
+      {/* Teacher Notes Conversation Panel - Read-Only for Students */}
       {showNoteReply && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full h-[600px] flex flex-col overflow-hidden">
-            {/* WhatsApp Header */}
-            <div className="bg-gradient-to-r from-green-600 to-green-500 text-white p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-semibold">{showNoteReply.teacherName}</p>
-                  <p className="text-xs text-green-100">Online</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowNoteReply(null)}
-                className="p-2 hover:bg-green-700 rounded-full transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Chat Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzlIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSIjZTVlN2ViIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')]">
-              <div className="space-y-3">
-                {/* Teacher's Initial Note */}
-                <div className="flex justify-start">
-                  <div className="max-w-[70%]">
-                    <div className="bg-white rounded-lg rounded-tl-none p-3 shadow">
-                      <p className="text-sm text-gray-800">{showNoteReply.teacherNote}</p>
-                      <p className="text-xs text-gray-400 mt-1 text-right">{showNoteReply.timestamp}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Conversation Messages */}
-                {showNoteReply.replies.map((reply: any) => (
-                  <div 
-                    key={reply.id} 
-                    className={`flex ${reply.isStudent ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className="max-w-[70%]">
-                      <div className={`rounded-lg p-3 shadow ${
-                        reply.isStudent 
-                          ? 'bg-green-100 rounded-tr-none' 
-                          : 'bg-white rounded-tl-none'
-                      }`}>
-                        {reply.type === 'voice' ? (
-                          <div className="flex items-center space-x-2">
-                            <button 
-                              onClick={() => handlePlayAudio(reply.id)}
-                              className={`p-2 rounded-full transition ${
-                                playingAudioId === reply.id
-                                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                                  : 'bg-green-500 hover:bg-green-600'
-                              } text-white`}
-                            >
-                              {playingAudioId === reply.id ? (
-                                <Pause className="w-3 h-3" />
-                              ) : (
-                                <Play className="w-3 h-3" />
-                              )}
-                            </button>
-                            <div className="flex-1">
-                              <div className="h-6 bg-gray-200 rounded-full relative overflow-hidden">
-                                {/* Progress bar */}
-                                {playingAudioId === reply.id && (
-                                  <div 
-                                    className="absolute left-0 top-0 h-full bg-green-400 transition-all duration-150"
-                                    style={{ width: `${audioProgress[reply.id] || 0}%` }}
-                                  />
-                                )}
-                                {/* Waveform */}
-                                <div className="absolute inset-0 flex items-center px-1">
-                                  {[...Array<any>(20)].map((_: any, i: any) => {
-                                    const isPlaying = playingAudioId === reply.id;
-                                    const isPassed = isPlaying && i < (20 * (audioProgress[reply.id] || 0) / 100);
-                                    return (
-                                      <div 
-                                        key={i} 
-                                        className={`w-0.5 mx-px transition-all ${
-                                          isPassed 
-                                            ? 'bg-white' 
-                                            : isPlaying 
-                                              ? 'bg-gray-500 animate-pulse' 
-                                              : 'bg-gray-400'
-                                        }`}
-                                        style={{ 
-                                          height: `${Math.sin(i * 0.5) * 50 + 50}%`,
-                                          animationDelay: `${i * 50}ms`
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                            <span className={`text-xs ${
-                              playingAudioId === reply.id ? 'text-green-600 font-medium' : 'text-gray-500'
-                            }`}>
-                              {playingAudioId === reply.id 
-                                ? `0:${Math.floor((100 - (audioProgress[reply.id] || 0)) * 0.15).toString().padStart(2, '0')}`
-                                : '0:15'
-                              }
-                            </span>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-800">{reply.text}</p>
-                        )}
-                        <div className="flex items-center justify-end space-x-1 mt-1">
-                          <p className="text-xs text-gray-400">{reply.timestamp}</p>
-                          {reply.isStudent && (
-                            <div className="flex">
-                              <Check className="w-3 h-3 text-blue-500" />
-                              <Check className="w-3 h-3 text-blue-500 -ml-1" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* WhatsApp-style Input Bar */}
-            <div className="bg-gray-100 p-3 border-t">
-              <div className="flex items-end space-x-2">
-                {/* Voice/Text Toggle */}
-                {!replyText.trim() ? (
-                  <button
-                    onClick={handleVoiceRecording}
-                    className={`p-3 rounded-full transition ${
-                      isRecordingReply 
-                        ? 'bg-red-500 text-white animate-pulse' 
-                        : 'bg-green-500 text-white hover:bg-green-600'
-                    }`}
-                  >
-                    {isRecordingReply ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleSendReply('text')}
-                    className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition"
-                  >
-                    <Send className="w-5 h-5" />
-                  </button>
-                )}
-                
-                {/* Message Input */}
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && replyText.trim() && handleSendReply('text')}
-                    placeholder="Type a message"
-                    className="w-full px-4 py-3 bg-white rounded-full border focus:outline-none focus:border-green-500"
-                  />
-                </div>
-              </div>
-              
-              {/* Recording Indicator */}
-              {isRecordingReply && (
-                <div className="mt-2 flex items-center justify-center space-x-2 text-red-500">
-                  <div className="animate-pulse">●</div>
-                  <span className="text-sm">Recording...</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <NotesPanel
+          highlightId={showNoteReply}
+          mode="modal"
+          onClose={() => setShowNoteReply(null)}
+          readOnly={true}
+        />
       )}
 
       {/* Compose Message Modal */}

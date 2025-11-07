@@ -23,12 +23,14 @@ interface NotesPanelProps {
   highlightId: string; // REQUIRED: conversation is attached to a highlight
   mode?: 'sidebar' | 'modal'; // Display mode
   onClose?: () => void; // For modal mode
+  readOnly?: boolean; // For students: view-only mode, no adding notes
 }
 
 export default function NotesPanel({
   highlightId,
   mode = 'sidebar',
-  onClose
+  onClose,
+  readOnly = false
 }: NotesPanelProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [text, setText] = useState('');
@@ -509,8 +511,8 @@ export default function NotesPanel({
         )}
       </div>
 
-      {/* Voice Recorder (if active) */}
-      {showVoiceRecorder && (
+      {/* Voice Recorder (if active) - Hidden in readOnly mode */}
+      {!readOnly && showVoiceRecorder && (
         <div className="border-t p-4 bg-white">
           <VoiceNoteRecorder
             onSave={handleVoiceNoteReady}
@@ -519,109 +521,120 @@ export default function NotesPanel({
         </div>
       )}
 
-      {/* Input Area */}
-      <div className="border-t p-4 bg-white space-y-3">
-        {/* Reply indicator */}
-        {replyingTo && (
-          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-2">
-            <span className="text-xs text-blue-700">
-              Replying to {notes.find(n => n.id === replyingTo)?.author_name || 'message'}
-            </span>
-            <button
-              onClick={() => setReplyingTo(null)}
-              className="text-xs text-blue-700 hover:text-blue-900"
-            >
-              ✕ Cancel
-            </button>
-          </div>
-        )}
-
-        {/* Voice note toggle */}
-        <div className="flex items-center justify-end">
-          <button
-            onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
-            className={`p-2 rounded-full transition-colors ${
-              showVoiceRecorder
-                ? 'bg-red-100 text-red-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-            title="Voice note"
-          >
-            {showVoiceRecorder ? (
-              <MicOff className="w-4 h-4" />
-            ) : (
-              <Mic className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-
-        {/* Text input */}
-        <div className="flex gap-2">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                add();
-              }
-            }}
-            placeholder="Type your message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-            rows={2}
-            disabled={isLoading}
-          />
-          <button
-            onClick={add}
-            disabled={!text.trim() || isLoading}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-
-        <p className="text-xs text-gray-500 text-center">
-          Press Enter to send • Shift+Enter for new line
-        </p>
-
-        {/* Mark as Completed Button - Only for teachers */}
-        {currentUser && (currentUser.role === 'teacher' || currentUser.role === 'admin' || currentUser.role === 'owner') && !isCompleted && (
-          <div className="pt-3 border-t">
-            <button
-              onClick={markAsCompleted}
-              disabled={isCompleting}
-              className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
-            >
-              <CheckCircle className="w-5 h-5" />
-              {isCompleting ? 'Marking as Completed...' : 'Mark as Completed'}
-            </button>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              This will turn the highlight gold and track progress
-            </p>
-          </div>
-        )}
-
-        {/* Completed Status - Shows original mistake type context */}
-        {isCompleted && (
-          <div className="pt-3 border-t">
-            <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex flex-col items-center justify-center gap-1.5">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                <span>Completed</span>
-              </div>
-              {highlightData?.previous_color && (
-                <div className="text-xs text-yellow-800 font-normal">
-                  {highlightData.previous_color === 'purple' && 'Originally: Recap/Review'}
-                  {highlightData.previous_color === 'orange' && 'Originally: Tajweed Issue'}
-                  {highlightData.previous_color === 'red' && 'Originally: Haraka Issue'}
-                  {(highlightData.previous_color === 'brown' || highlightData.previous_color === 'amber') && 'Originally: Letter Issue'}
-                  {highlightData.previous_color === 'green' && 'Originally: Homework'}
-                </div>
-              )}
+      {/* Input Area - Hidden in readOnly mode, students can only view */}
+      {!readOnly && (
+        <div className="border-t p-4 bg-white space-y-3">
+          {/* Reply indicator */}
+          {replyingTo && (
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <span className="text-xs text-blue-700">
+                Replying to {notes.find(n => n.id === replyingTo)?.author_name || 'message'}
+              </span>
+              <button
+                onClick={() => setReplyingTo(null)}
+                className="text-xs text-blue-700 hover:text-blue-900"
+              >
+                ✕ Cancel
+              </button>
             </div>
+          )}
+
+          {/* Voice note toggle */}
+          <div className="flex items-center justify-end">
+            <button
+              onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
+              className={`p-2 rounded-full transition-colors ${
+                showVoiceRecorder
+                  ? 'bg-red-100 text-red-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title="Voice note"
+            >
+              {showVoiceRecorder ? (
+                <MicOff className="w-4 h-4" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </button>
           </div>
-        )}
-      </div>
+
+          {/* Text input */}
+          <div className="flex gap-2">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  add();
+                }
+              }}
+              placeholder="Type your message..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+              rows={2}
+              disabled={isLoading}
+            />
+            <button
+              onClick={add}
+              disabled={!text.trim() || isLoading}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center">
+            Press Enter to send • Shift+Enter for new line
+          </p>
+
+          {/* Mark as Completed Button - Only for teachers */}
+          {currentUser && (currentUser.role === 'teacher' || currentUser.role === 'admin' || currentUser.role === 'owner') && !isCompleted && (
+            <div className="pt-3 border-t">
+              <button
+                onClick={markAsCompleted}
+                disabled={isCompleting}
+                className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <CheckCircle className="w-5 h-5" />
+                {isCompleting ? 'Marking as Completed...' : 'Mark as Completed'}
+              </button>
+              <p className="text-xs text-gray-500 text-center mt-2">
+                This will turn the highlight gold and track progress
+              </p>
+            </div>
+          )}
+
+          {/* Completed Status - Shows original mistake type context */}
+          {isCompleted && (
+            <div className="pt-3 border-t">
+              <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex flex-col items-center justify-center gap-1.5">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Completed</span>
+                </div>
+                {highlightData?.previous_color && (
+                  <div className="text-xs text-yellow-800 font-normal">
+                    {highlightData.previous_color === 'purple' && 'Originally: Recap/Review'}
+                    {highlightData.previous_color === 'orange' && 'Originally: Tajweed Issue'}
+                    {highlightData.previous_color === 'red' && 'Originally: Haraka Issue'}
+                    {(highlightData.previous_color === 'brown' || highlightData.previous_color === 'amber') && 'Originally: Letter Issue'}
+                    {highlightData.previous_color === 'green' && 'Originally: Homework'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Read-Only Mode Indicator for Students */}
+      {readOnly && (
+        <div className="border-t p-4 bg-gray-50">
+          <p className="text-xs text-gray-500 text-center italic">
+            View-only mode: You can view teacher notes and highlights but cannot add new messages
+          </p>
+        </div>
+      )}
     </div>
   );
 }
