@@ -19,9 +19,9 @@ export function useTeacherData() {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalClasses: 0,
-    activeAssignments: 0,
-    activeHomework: 0,
-    activeTargets: 0,
+    totalAssignments: 0,
+    totalHomework: 0,
+    totalTargets: 0,
     unreadMessages: 0,
     avgProgress: 0
   });
@@ -348,28 +348,35 @@ export function useTeacherData() {
 
       if (!assignmentsError && assignmentsData) {
         setAssignments(assignmentsData);
-        const activeAssignments = assignmentsData.filter((a: any) =>
-          a.status !== 'completed' && a.status !== 'cancelled'
-        );
-        setStats(prev => ({ ...prev, activeAssignments: activeAssignments.length }));
+        setStats(prev => ({ ...prev, totalAssignments: assignmentsData.length }));
       }
 
-      // NOTE: Homework fetching moved to useHomework hook to avoid RLS issues
-      // The TeacherDashboard component now uses useHomework() which calls /api/homework
-      // This bypasses RLS and provides proper data transformation
+      // Fetch homework count directly from highlights table (green or gold)
+      if (studentsData.length > 0) {
+        const studentIds = studentsData.map((s: any) => s.id);
+        const { count: homeworkCount } = await supabase
+          .from('highlights')
+          .select('*', { count: 'exact', head: true })
+          .eq('teacher_id', teacher.id)
+          .eq('school_id', user.schoolId)
+          .in('color', ['green', 'gold']);
 
-      // Fetch targets for teacher's students
+        if (homeworkCount !== null) {
+          setStats(prev => ({ ...prev, totalHomework: homeworkCount }));
+        }
+      }
+
+      // Fetch targets for teacher's students (all targets, not just active)
       if (studentsData.length > 0) {
         const studentIds = studentsData.map((s: any) => s.id);
         const { data: targetsData } = await supabase
           .from('targets')
           .select('*')
-          .in('student_id', studentIds)
-          .eq('active', true);
+          .in('student_id', studentIds);
 
         if (targetsData) {
           setTargets(targetsData);
-          setStats(prev => ({ ...prev, activeTargets: targetsData.length }));
+          setStats(prev => ({ ...prev, totalTargets: targetsData.length }));
         }
       }
 

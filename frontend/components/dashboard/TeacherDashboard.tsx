@@ -431,7 +431,7 @@ export default function TeacherDashboard() {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -445,20 +445,10 @@ export default function TeacherDashboard() {
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Homework</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.activeHomework}</p>
+                    <p className="text-sm font-medium text-gray-600">Total Assignments</p>
+                    <p className="text-2xl font-bold text-orange-600">{stats.totalAssignments}</p>
                   </div>
-                  <BookOpen className="w-12 h-12 text-green-100" />
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Targets</p>
-                    <p className="text-2xl font-bold text-purple-600">{stats.activeTargets}</p>
-                  </div>
-                  <Target className="w-12 h-12 text-purple-100" />
+                  <BookOpen className="w-12 h-12 text-orange-100" />
                 </div>
               </div>
 
@@ -469,6 +459,26 @@ export default function TeacherDashboard() {
                     <p className="text-2xl font-bold text-gray-900">{stats.totalClasses}</p>
                   </div>
                   <BookOpen className="w-12 h-12 text-gray-300" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Homework</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.totalHomework}</p>
+                  </div>
+                  <BookOpen className="w-12 h-12 text-green-100" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Targets</p>
+                    <p className="text-2xl font-bold text-purple-600">{stats.totalTargets}</p>
+                  </div>
+                  <Target className="w-12 h-12 text-purple-100" />
                 </div>
               </div>
             </div>
