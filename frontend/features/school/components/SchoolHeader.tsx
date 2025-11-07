@@ -37,17 +37,23 @@ export default function SchoolHeader({ schoolName, userName, userRole }: Props) 
           {/* Left side */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <School className="w-6 h-6 text-white" />
-              </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">{schoolName}</h1>
                 <p className="text-xs text-gray-500">School Management System</p>
               </div>
             </div>
           </div>
-          
-          {/* Center - Search */}
+
+          {/* Center - Logo */}
+          <div className="hidden md:flex items-center justify-center">
+            <img
+              src="/quranakh-logo.png"
+              alt="QuranAkh Logo"
+              className="h-16 w-auto"
+            />
+          </div>
+
+          {/* Right - Search */}
           <div className="hidden md:block flex-1 max-w-xl mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />

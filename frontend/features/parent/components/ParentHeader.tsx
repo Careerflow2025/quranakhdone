@@ -25,10 +25,10 @@ export default function ParentHeader() {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Left side - Child Selector */}
+        {/* Left side - Title & Child Selector */}
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-semibold text-gray-900">Parent Portal</h1>
-          
+
           {/* Child Selector Dropdown */}
           {children.length > 0 && (
             <div className="relative">
@@ -70,6 +70,15 @@ export default function ParentHeader() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Center - Logo */}
+        <div className="hidden md:flex items-center justify-center">
+          <img
+            src="/quranakh-logo.png"
+            alt="QuranAkh Logo"
+            className="h-16 w-auto"
+          />
         </div>
 
         {/* Right side - Notifications and Profile */}

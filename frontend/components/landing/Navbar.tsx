@@ -90,7 +90,7 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <a 
+            <a
               href="#top"
               onClick={(e) => {
                 e.preventDefault();
@@ -99,12 +99,14 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
               }}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center transform transition-transform hover:scale-110">
-                <span className="text-white font-bold text-xl">Q</span>
-              </div>
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="h-12 w-auto transform transition-transform hover:scale-110"
+              />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Quran Mate</h1>
-                <p className="text-xs text-gray-500 -mt-1">Education Excellence Platform</p>
+                <h1 className="text-xl font-bold text-gray-900">QuranAkh</h1>
+                <p className="text-xs text-gray-500 -mt-1">Quranic Education Excellence</p>
               </div>
             </a>
           </div>

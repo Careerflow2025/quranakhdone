@@ -32,17 +32,23 @@ export default function StudentHeader() {
           {/* Left side */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Student Dashboard</h1>
                 <p className="text-xs text-gray-500">{profile.schoolName}</p>
               </div>
             </div>
           </div>
-          
-          {/* Center - Stats */}
+
+          {/* Center - Logo */}
+          <div className="hidden md:flex items-center justify-center">
+            <img
+              src="/quranakh-logo.png"
+              alt="QuranAkh Logo"
+              className="h-16 w-auto"
+            />
+          </div>
+
+          {/* Right - Stats & Actions */}
           <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-500" />
