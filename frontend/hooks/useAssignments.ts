@@ -186,10 +186,10 @@ export function useAssignments(initialStudentId?: string) {
         // API returns: { success, data: [...], assignments: [...], pagination: {...} }
         setAssignments(data.assignments || data.data || []);
 
-        // Calculate summary from assignments since API doesn't return it
+        // Calculate summary - use pagination.total for accurate count, not just current page
         const assignmentsList = data.assignments || data.data || [];
         const calculatedSummary: AssignmentSummary = {
-          total_assignments: assignmentsList.length,
+          total_assignments: data.pagination?.total || assignmentsList.length,
           by_status: assignmentsList.reduce((acc: Record<string, number>, a: any) => {
             acc[a.status] = (acc[a.status] || 0) + 1;
             return acc;
