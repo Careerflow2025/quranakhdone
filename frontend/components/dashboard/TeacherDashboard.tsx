@@ -434,82 +434,87 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
               {/* Total Students Card */}
-              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
-                <div className="flex flex-col space-y-4">
+              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <Users className="w-8 h-8 text-slate-700" />
+                    <div className="p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
+                      <Users className="w-8 h-8 text-blue-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalStudents}</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalStudents}</p>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
+                  <div className="h-1 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"></div>
                 </div>
               </div>
 
               {/* Total Assignments Card */}
-              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
-                <div className="flex flex-col space-y-4">
+              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    <div className="p-3 bg-amber-50 rounded-xl shadow-sm group-hover:bg-amber-100 transition-colors duration-300">
+                      <BookOpen className="w-8 h-8 text-amber-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalAssignments}</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{stats.totalAssignments}</p>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
+                  <div className="h-1 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full"></div>
                 </div>
               </div>
 
               {/* My Classes Card */}
-              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
-                <div className="flex flex-col space-y-4">
+              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    <div className="p-3 bg-indigo-50 rounded-xl shadow-sm group-hover:bg-indigo-100 transition-colors duration-300">
+                      <BookOpen className="w-8 h-8 text-indigo-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">My Classes</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalClasses}</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{stats.totalClasses}</p>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
+                  <div className="h-1 bg-gradient-to-r from-indigo-200 to-indigo-400 rounded-full"></div>
                 </div>
               </div>
 
               {/* Total Homework Card */}
-              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
-                <div className="flex flex-col space-y-4">
+              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <BookOpen className="w-8 h-8 text-slate-700" />
+                    <div className="p-3 bg-emerald-50 rounded-xl shadow-sm group-hover:bg-emerald-100 transition-colors duration-300">
+                      <BookOpen className="w-8 h-8 text-emerald-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalHomework}</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{stats.totalHomework}</p>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
+                  <div className="h-1 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"></div>
                 </div>
               </div>
 
               {/* Total Targets Card */}
-              <div className="group relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200">
-                <div className="flex flex-col space-y-4">
+              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <Target className="w-8 h-8 text-slate-700" />
+                    <div className="p-3 bg-purple-50 rounded-xl shadow-sm group-hover:bg-purple-100 transition-colors duration-300">
+                      <Target className="w-8 h-8 text-purple-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2">{stats.totalTargets}</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{stats.totalTargets}</p>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full"></div>
+                  <div className="h-1 bg-gradient-to-r from-purple-200 to-purple-400 rounded-full"></div>
                 </div>
               </div>
 
