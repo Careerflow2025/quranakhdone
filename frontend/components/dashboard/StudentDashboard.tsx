@@ -448,10 +448,16 @@ export default function StudentDashboard() {
   const handleHighlightClick = (highlightId: any) => {
     // Open notes conversation modal
     // Find the highlight to get its database ID
+    console.log('🔍 handleHighlightClick called with ID:', highlightId);
+    console.log('📊 Available highlights:', highlights.map((h: any) => ({ id: h.id, dbId: h.dbId })));
     const clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+    console.log('✅ Found highlight:', clickedHighlight);
     if (clickedHighlight && clickedHighlight.dbId) {
+      console.log('📝 Opening modal with dbId:', clickedHighlight.dbId);
       setSelectedHighlightForNotes(clickedHighlight.dbId);
       setShowNotesModal(true);
+    } else {
+      console.error('❌ No highlight found or no dbId:', { clickedHighlight, highlightId });
     }
   };
 
@@ -1196,8 +1202,10 @@ export default function StudentDashboard() {
                             key={`${ayahIndex}-${wordIndex}`}
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
+                              console.log('🖱️ Word clicked, wordHighlights:', wordHighlights);
                               if (wordHighlights.length > 0) {
                                 // Call handleHighlightClick to open notes conversation modal
+                                console.log('📌 Calling handleHighlightClick with:', wordHighlights[0].id);
                                 handleHighlightClick(wordHighlights[0].id);
                               }
                             }}
