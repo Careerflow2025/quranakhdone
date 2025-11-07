@@ -1059,7 +1059,7 @@ export default function TeacherDashboard() {
 
         {/* Other tabs (assignments, gradebook, attendance, messages, events) remain the same */}
         {activeTab === 'assignments' && (
-          <AssignmentsPanel userRole="teacher" />
+          <AssignmentsPanel userRole="teacher" isActive={activeTab === 'assignments'} />
         )}
 
         {activeTab === 'gradebook' && (

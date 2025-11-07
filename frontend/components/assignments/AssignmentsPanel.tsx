@@ -19,9 +19,10 @@ import {
 interface AssignmentsPanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
   studentId?: string; // Required for student/parent dashboards, optional for teachers
+  isActive?: boolean; // Refresh data when panel becomes active
 }
 
-export default function AssignmentsPanel({ userRole = 'teacher', studentId }: AssignmentsPanelProps) {
+export default function AssignmentsPanel({ userRole = 'teacher', studentId, isActive = true }: AssignmentsPanelProps) {
   // Hook integration
   const {
     isLoading,
@@ -82,6 +83,14 @@ export default function AssignmentsPanel({ userRole = 'teacher', studentId }: As
       updateFilters({ ...filters, student_id: studentId });
     }
   }, [studentId, filters, updateFilters]);
+
+  // Refresh data when panel becomes active (e.g., tab switch)
+  useEffect(() => {
+    if (isActive) {
+      console.log('📋 Assignments panel became active, refreshing data...');
+      refreshData();
+    }
+  }, [isActive, refreshData]);
 
   // Get status badge style
   const getStatusBadgeStyle = (status: AssignmentStatus) => {
