@@ -1209,13 +1209,7 @@ export default function StudentDashboard() {
                                 handleHighlightClick(wordHighlights[0].id);
                               }
                             }}
-                            className={`inline cursor-pointer rounded transition-colors select-none ${
-                              wordHighlights.some((h: any) => {
-                                // Check if this highlight has notes from database
-                                const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
-                                return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
-                              }) ? 'ring-2 ring-blue-300 ring-opacity-60' : ''
-                            }`}
+                            className="inline cursor-pointer rounded transition-colors select-none"
                             style={{
                               position: 'relative',
                               color: '#000000',  // ALWAYS black text, never change
@@ -1223,6 +1217,7 @@ export default function StudentDashboard() {
                               paddingRight: '2px',   // Horizontal padding
                               lineHeight: '1.3',     // Line height
                               display: 'inline',     // Inline display
+                              pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
                               ...(mistakes.length === 1 ? {
                                 backgroundImage: `linear-gradient(${
                                   mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
