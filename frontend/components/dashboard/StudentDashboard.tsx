@@ -115,7 +115,7 @@ export default function StudentDashboard() {
         // Get student record
         const { data: studentData, error: studentErr } = await supabase
           .from('students')
-          .select('id, user_id, locked_script_id')
+          .select('id, user_id')
           .eq('user_id', user.id)
           .single();
 
@@ -137,28 +137,11 @@ export default function StudentDashboard() {
           name: profileData?.display_name || 'Student'
         }));
 
-        // Get locked script if set
-        if (studentData.locked_script_id) {
-          const { data: scriptData } = await supabase
-            .from('quran_scripts')
-            .select('code, display_name')
-            .eq('id', studentData.locked_script_id)
-            .single();
-
-          if (scriptData) {
-            console.log('🔒 Locked script found:', scriptData.code);
-            setSelectedScript(scriptData.code);
-            setScriptLocked(true);
-          } else {
-            console.log('📖 No locked script data, using default uthmani-hafs');
-            setSelectedScript('uthmani-hafs');
-            setScriptLocked(true);
-          }
-        } else {
-          console.log('📖 No locked script, using default uthmani-hafs');
-          setSelectedScript('uthmani-hafs');
-          setScriptLocked(true);
-        }
+        // TODO: Get locked script from database when migration is applied
+        // For now, use default script
+        console.log('📖 Using default uthmani-hafs script');
+        setSelectedScript('uthmani-hafs');
+        setScriptLocked(true);
 
       } catch (err: any) {
         console.error('Error fetching student data:', err);
