@@ -531,7 +531,6 @@ export default function TeacherDashboard() {
                 >
                   <option value="all">All Homework</option>
                   <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
                   <option value="completed">Completed</option>
                   <option value="overdue">Overdue</option>
                 </select>
@@ -1127,12 +1126,9 @@ export default function TeacherDashboard() {
                   className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Assignments</option>
-                  <option value="assigned">Assigned</option>
-                  <option value="viewed">Viewed</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="reviewed">Reviewed</option>
+                  <option value="assigned">Pending</option>
                   <option value="completed">Completed</option>
-                  <option value="late">Late</option>
+                  <option value="late">Overdue</option>
                 </select>
 
                 <div className="relative flex-1">
