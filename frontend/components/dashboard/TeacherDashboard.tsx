@@ -138,6 +138,65 @@ export default function TeacherDashboard() {
     }
   };
 
+  // Assignments State
+  const [assignmentsFilter, setAssignmentsFilter] = useState('all');
+  const [showAssignmentDetail, setShowAssignmentDetail] = useState<any>(null);
+
+  // Transform assignments data to match UI expectations (similar to homework)
+  const transformedAssignments = useMemo(() => {
+    return (assignments || []).map((assignment: any) => ({
+      id: assignment.id,
+      studentId: assignment.student_id,
+      studentName: assignment.student?.display_name || 'Unknown Student',
+      class: 'N/A', // Class info not directly available
+      title: assignment.title || 'Untitled Assignment',
+      description: assignment.description || '',
+      assignedDate: assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '',
+      dueDate: assignment.due_at ? new Date(assignment.due_at).toLocaleDateString() : '',
+      status: assignment.status || 'assigned',
+      late: assignment.late || false,
+      // Get highlight info from linked highlights via assignment_highlights junction
+      highlightIds: assignment.highlight_ids || [],
+    }));
+  }, [assignments]);
+
+  // Function to mark assignment as complete (turns all linked highlights gold)
+  const markAssignmentComplete = async (assignmentId: string) => {
+    try {
+      console.log('📝 Marking assignment as completed:', assignmentId);
+
+      // Get auth session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No active session');
+        return;
+      }
+
+      // Call assignment completion API
+      const response = await fetch(`/api/assignments/${assignmentId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to complete assignment:', errorData.error);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('✅ Assignment completed:', data.message);
+
+      // Refresh data to show updated status
+      await refreshData();
+    } catch (error) {
+      console.error('Error marking assignment complete:', error);
+    }
+  };
+
   // Show loading state
   if (teacherDataLoading) {
     return (
@@ -1057,9 +1116,146 @@ export default function TeacherDashboard() {
           </div>
         )}
 
-        {/* Other tabs (assignments, gradebook, attendance, messages, events) remain the same */}
+        {/* Assignments Tab - Matching Homework Layout */}
         {activeTab === 'assignments' && (
-          <AssignmentsPanel userRole="teacher" isActive={activeTab === 'assignments'} />
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <FileText className="w-7 h-7 mr-3" />
+                    Assignment Management
+                  </h2>
+                  <p className="text-blue-100 mt-1">Manage all assignments you've created for your students</p>
+                </div>
+                <button
+                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center"
+                  onClick={() => router.push('/student-management')}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create Assignment
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <div className="flex items-center space-x-4">
+                <select
+                  value={assignmentsFilter}
+                  onChange={(e) => setAssignmentsFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Assignments</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="viewed">Viewed</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="reviewed">Reviewed</option>
+                  <option value="completed">Completed</option>
+                  <option value="late">Late</option>
+                </select>
+
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search by student, title, or description..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Assignment Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {transformedAssignments
+                .filter((assignment: any) => {
+                  if (assignmentsFilter === 'all') return true;
+                  if (assignmentsFilter === 'late') return assignment.late;
+                  return assignment.status === assignmentsFilter;
+                })
+                .map((assignment: any) => (
+                <div key={assignment.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className={`h-2 ${
+                    assignment.status === 'completed' ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
+                    assignment.late ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                    'bg-gradient-to-r from-blue-500 to-indigo-500'
+                  }`}></div>
+
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {assignment.studentName}
+                        </h3>
+                        <p className="text-sm text-gray-500">{assignment.class} • {assignment.studentId}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        assignment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        assignment.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                        assignment.status === 'reviewed' ? 'bg-purple-100 text-purple-700' :
+                        assignment.late ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {assignment.late && assignment.status !== 'completed' ? 'LATE' : assignment.status}
+                      </span>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                      <p className="text-sm font-medium text-gray-700">
+                        📝 {assignment.title}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{assignment.description}</p>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Assigned:</span>
+                        <span className="text-gray-700">{assignment.assignedDate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Due Date:</span>
+                        <span className={assignment.late ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                          {assignment.dueDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                      <button
+                        onClick={() => setShowAssignmentDetail(assignment)}
+                        className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                      >
+                        View Details
+                      </button>
+                      {assignment.status !== 'completed' && (
+                        <button
+                          onClick={() => markAssignmentComplete(assignment.id)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                        >
+                          Mark Complete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {transformedAssignments.filter((assignment: any) => {
+              if (assignmentsFilter === 'all') return true;
+              if (assignmentsFilter === 'late') return assignment.late;
+              return assignment.status === assignmentsFilter;
+            }).length === 0 && (
+              <div className="text-center py-12 bg-white rounded-xl">
+                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">No assignments found</p>
+                <p className="text-gray-400 text-sm mt-1">Create assignments in Student Management Dashboard</p>
+              </div>
+            )}
+          </div>
         )}
 
         {activeTab === 'gradebook' && (
