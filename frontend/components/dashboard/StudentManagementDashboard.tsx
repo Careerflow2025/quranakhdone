@@ -1784,99 +1784,86 @@ export default function StudentManagementDashboard() {
                   {/* Pen Controls - Only show when pen mode is active */}
                   {penMode && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-gray-700">Pen Color:</label>
-                        <div className="flex space-x-1">
-                          {['#000000', '#FF0000', '#0000FF', '#00FF00', '#FFA500'].map((color) => (
+                      <div className="text-xs font-semibold text-gray-700 mb-2">Pen Controls</div>
+
+                      {/* Color Picker */}
+                      <div>
+                        <div className="text-xs text-gray-600 mb-1">Color</div>
+                        <div className="flex gap-1 flex-wrap">
+                          {['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#000000'].map(color => (
                             <button
                               key={color}
+                              className={`w-6 h-6 rounded border-2 transition ${
+                                penColor === color ? 'border-gray-400 scale-110' : 'border-transparent'
+                              }`}
+                              style={{ backgroundColor: color }}
                               onClick={() => {
                                 setPenColor(color);
                                 setEraserMode(false);
                               }}
-                              className={`w-5 h-5 rounded-full border-2 transition ${
-                                penColor === color && !eraserMode
-                                  ? 'border-gray-800 shadow-md'
-                                  : 'border-gray-300'
-                              }`}
-                              style={{ backgroundColor: color }}
+                              title={color}
                             />
                           ))}
                         </div>
                       </div>
 
+                      {/* Width Selector */}
                       <div>
-                        <label className="text-xs font-medium text-gray-700 block mb-1">
-                          Pen Width: {penWidth}px
-                        </label>
+                        <div className="text-xs text-gray-600 mb-1">Width: {penWidth}px</div>
                         <input
                           type="range"
                           min="1"
                           max="10"
                           value={penWidth}
-                          onChange={(e) => setPenWidth(Number(e.target.value))}
+                          onChange={(e) => setPenWidth(parseInt(e.target.value))}
                           className="w-full"
                         />
                       </div>
 
-                      <div className="flex space-x-2">
+                      {/* Tool Buttons */}
+                      <div className="flex gap-2">
                         <button
                           onClick={() => setEraserMode(!eraserMode)}
-                          className={`flex-1 p-2 rounded-md border text-xs font-medium transition ${
+                          className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition ${
                             eraserMode
-                              ? 'border-red-500 bg-red-50 text-red-700'
-                              : 'border-gray-300 hover:border-gray-400'
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                           }`}
+                          title="Eraser"
                         >
-                          {eraserMode ? 'Eraser Active' : 'Eraser'}
+                          {eraserMode ? '✓ Eraser' : 'Eraser'}
                         </button>
                         <button
                           onClick={() => {
-                            if (canvasRef.current) {
-                              const canvas = canvasRef.current;
-                              const ctx = canvas.getContext('2d');
-                              if (ctx) {
-                                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                                setHasUnsavedAnnotations(true);
-                              }
+                            if ((window as any).__clearPenAnnotations) {
+                              (window as any).__clearPenAnnotations();
                             }
                           }}
-                          className="flex-1 p-2 rounded-md border border-gray-300 hover:border-gray-400 text-xs font-medium transition"
+                          className="flex-1 px-2 py-1.5 rounded text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-red-50 hover:border-red-300 transition"
+                          title="Clear all"
                         >
                           Clear
                         </button>
                       </div>
 
+                      {/* Save Button */}
                       <button
-                        onClick={handleSaveAnnotation}
-                        disabled={isSavingAnnotation || !hasUnsavedAnnotations}
-                        className={`w-full p-2 rounded-md text-xs font-medium transition ${
-                          hasUnsavedAnnotations && !isSavingAnnotation
-                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
+                        onClick={() => {
+                          if ((window as any).__savePenAnnotations) {
+                            (window as any).__savePenAnnotations();
+                          }
+                        }}
+                        disabled={(window as any).__penAnnotationsSaving || !(window as any).__penAnnotationsHaveChanges}
+                        className="w-full px-3 py-2 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        title="Save annotations"
                       >
-                        {isSavingAnnotation ? (
-                          <span className="flex items-center justify-center">
-                            <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Saving...
-                          </span>
-                        ) : hasUnsavedAnnotations ? (
-                          'Save Annotation'
-                        ) : (
-                          'No Changes'
-                        )}
+                        {(window as any).__penAnnotationsSaving ? 'Saving...' : 'Save Annotations'}
                       </button>
 
-                      {hasUnsavedAnnotations && (
-                        <div className="flex items-center text-xs text-amber-600 bg-amber-50 p-2 rounded-md">
-                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          Unsaved changes
+                      {(window as any).__penAnnotationsHaveChanges && !(window as any).__penAnnotationsSaving && (
+                        <div className="text-xs text-orange-600 flex items-center gap-1">
+                          <span>●</span>
+                          <span>Unsaved changes</span>
                         </div>
                       )}
                     </div>
