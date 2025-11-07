@@ -165,7 +165,12 @@ export default function PenAnnotationCanvas({
           onLoad?.();
         }
       } else {
-        console.log('ℹ️ No annotations to load');
+        // CRITICAL: Clear canvas when no annotations exist for this page
+        console.log('ℹ️ No annotations to load - clearing canvas');
+        if (canvasRef.current) {
+          await canvasRef.current.clearCanvas();
+          setHasUnsavedChanges(false);
+        }
       }
     } catch (error) {
       console.error('❌ Error loading annotations:', error);
