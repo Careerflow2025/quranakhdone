@@ -112,10 +112,19 @@ export default function StudentDashboard() {
           throw new Error('Not authenticated');
         }
 
-        // Get student record
+        // Get student record with locked script
         const { data: studentData, error: studentErr } = await supabase
           .from('students')
-          .select('id, user_id')
+          .select(`
+            id,
+            user_id,
+            locked_script_id,
+            quran_scripts!students_locked_script_id_fkey (
+              id,
+              code,
+              display_name
+            )
+          `)
           .eq('user_id', user.id)
           .single();
 
@@ -136,6 +145,18 @@ export default function StudentDashboard() {
           id: studentData.id,
           name: profileData?.display_name || 'Student'
         }));
+
+        // Set locked script if available
+        if (studentData.locked_script_id && studentData.quran_scripts) {
+          const lockedScript = studentData.quran_scripts as any;
+          console.log('🔒 Locked script found:', lockedScript.code);
+          setSelectedScript(lockedScript.code);
+          setScriptLocked(true);
+        } else {
+          console.log('📖 No locked script, using default uthmani-hafs');
+          setSelectedScript('uthmani-hafs');
+          setScriptLocked(true);
+        }
 
       } catch (err: any) {
         console.error('Error fetching student data:', err);
@@ -297,14 +318,36 @@ export default function StudentDashboard() {
     }
   }, []); // Run only on mount
 
-  // Load Quran text
+  // Load Quran text based on current mushaf page
   useEffect(() => {
     const loadQuranText = async () => {
-      const scriptId = selectedScript || 'uthmani-hafs';
-      const surahInfo = surahList.find((s: any) => s.number === currentSurah);
+      if (!selectedScript) {
+        console.log('⏳ Waiting for script to be set...');
+        return;
+      }
+
+      const scriptId = selectedScript;
+
+      // Get the current page data to determine which surah to load
+      const pageData = getPageContent(currentMushafPage);
+      if (!pageData) {
+        console.error('❌ Page data not found for page:', currentMushafPage);
+        return;
+      }
+
+      // Load the surah that starts on this page (or contains it)
+      const surahToLoad = pageData.surahStart;
+      const surahInfo = surahList.find((s: any) => s.number === surahToLoad);
+
+      console.log('📖 Loading Quran text:', {
+        script: scriptId,
+        page: currentMushafPage,
+        surah: surahToLoad,
+        pageData
+      });
 
       try {
-        const surahData = await getSurahByNumber(scriptId, currentSurah);
+        const surahData = await getSurahByNumber(scriptId, surahToLoad);
 
         if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
           setQuranText({
@@ -312,21 +355,29 @@ export default function StudentDashboard() {
             ayahs: surahData.ayahs.map((ayah: any) => ({
               number: ayah.numberInSurah,
               text: ayah.text,
-              words: ayah.text.split(' ')
+              words: Array.isArray(ayah.words)
+                ? ayah.words
+                : (ayah.text ? ayah.text.split(' ').map((w: string) => ({ text: w })) : [])
             }))
           });
-          // Only reset page if not navigating from stored state
-          if (!studentInfo.lastPageVisited || currentSurah !== studentInfo.lastSurahVisited) {
-            setCurrentPage(1);
+
+          // Update current surah to match loaded surah
+          if (currentSurah !== surahToLoad) {
+            setCurrentSurah(surahToLoad);
           }
+
+          console.log('✅ Quran text loaded successfully:', {
+            surah: surahData.name,
+            ayahCount: surahData.ayahs.length
+          });
         }
       } catch (error) {
-        console.error('Error loading Quran text:', error);
+        console.error('❌ Error loading Quran text:', error);
       }
     };
 
     loadQuranText();
-  }, [currentSurah, selectedScript]);
+  }, [currentMushafPage, selectedScript]);
 
   const allSurahs = surahList.map((s: any) => ({
     number: s.number,
@@ -677,6 +728,10 @@ export default function StudentDashboard() {
                         <button
                           key={surah.number}
                           onClick={() => {
+                            // Navigate to first page of selected surah
+                            const { firstPage } = getSurahPageRange(surah.number);
+                            console.log('🔖 Navigating to surah:', surah.number, 'page:', firstPage);
+                            setCurrentMushafPage(firstPage);
                             setCurrentSurah(surah.number);
                             setShowSurahDropdown(false);
                           }}
