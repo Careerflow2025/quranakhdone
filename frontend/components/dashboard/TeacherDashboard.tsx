@@ -139,6 +139,9 @@ export default function TeacherDashboard() {
     }
   };
 
+  // Students State
+  const [studentClassFilter, setStudentClassFilter] = useState('all');
+
   // Assignments State
   const [assignmentsFilter, setAssignmentsFilter] = useState('all');
   const [assignmentsSearchQuery, setAssignmentsSearchQuery] = useState('');
@@ -1133,7 +1136,7 @@ export default function TeacherDashboard() {
                     My Students
                   </h2>
                   <p className="text-purple-100 mt-2 text-lg">
-                    {students.length} {students.length === 1 ? 'student' : 'students'} under your guidance
+                    {students.filter((s: any) => studentClassFilter === 'all' || s.class === studentClassFilter).length} {students.filter((s: any) => studentClassFilter === 'all' || s.class === studentClassFilter).length === 1 ? 'student' : 'students'} under your guidance
                   </p>
                 </div>
                 <button
@@ -1143,6 +1146,28 @@ export default function TeacherDashboard() {
                   <RefreshCw className="w-5 h-5" />
                   Refresh
                 </button>
+              </div>
+            </div>
+
+            {/* Class Filter */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+              <div className="flex items-center gap-4">
+                <label className="text-gray-700 font-semibold flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-purple-600" />
+                  Filter by Class:
+                </label>
+                <select
+                  value={studentClassFilter}
+                  onChange={(e) => setStudentClassFilter(e.target.value)}
+                  className="flex-1 max-w-md px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 font-medium text-gray-700 hover:border-purple-300 transition-all duration-300"
+                >
+                  <option value="all">All Classes ({students.length} students)</option>
+                  {myClasses.map((cls: any) => (
+                    <option key={cls.id} value={cls.name}>
+                      {cls.name} ({students.filter((s: any) => s.class === cls.name).length} students)
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -1157,90 +1182,88 @@ export default function TeacherDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {students.map((student: any) => (
-                  <div
-                    key={student.id}
-                    className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden"
-                  >
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                    {/* Content */}
-                    <div className="relative space-y-4">
-                      {/* Student Avatar and Name */}
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                          <User className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-purple-600 transition-colors duration-300">
-                            {student.name}
-                          </h3>
-                          {student.age && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              {student.age} years old
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Student Info */}
-                      <div className="space-y-3">
-                        {/* Class */}
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                          <span className="text-sm font-medium text-gray-600">Class:</span>
-                          <span className="text-sm text-gray-900 font-semibold">{student.class || 'Not assigned'}</span>
-                        </div>
-
-                        {/* Email */}
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
-                          <span className="text-sm font-medium text-gray-600">Email:</span>
-                          <span className="text-sm text-gray-900 truncate">{student.email || 'N/A'}</span>
-                        </div>
-
-                        {/* Status Badge */}
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                          <span className="text-sm font-medium text-gray-600">Status:</span>
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                            student.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                              : 'bg-gray-100 text-gray-700 border border-gray-200'
-                          }`}>
-                            {student.status}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-transparent"></div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => router.push(`/student-management?studentId=${student.id}`)}
-                          className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-                          title="Open Student Quran Management"
-                        >
-                          <BookOpen className="w-5 h-5" />
-                          <span>Quran</span>
-                        </button>
-
-                        <button
-                          onClick={() => setSelectedStudentDetails(student)}
-                          className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-indigo-600 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-                          title="View Student Details"
-                        >
-                          <Eye className="w-5 h-5" />
-                          <span>Details</span>
-                        </button>
-                      </div>
-                    </div>
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-l-4 border-purple-500">
+                {/* Table Header */}
+                <div className="bg-gradient-to-r from-purple-100 to-pink-100 px-6 py-4">
+                  <div className="grid grid-cols-12 gap-4 font-semibold text-purple-900 text-sm uppercase tracking-wide">
+                    <div className="col-span-3">Student</div>
+                    <div className="col-span-2">Class</div>
+                    <div className="col-span-3">Email</div>
+                    <div className="col-span-2">Status</div>
+                    <div className="col-span-2 text-center">Actions</div>
                   </div>
-                ))}
+                </div>
+
+                {/* Table Body */}
+                <div className="divide-y divide-gray-100">
+                  {students
+                    .filter((student: any) => studentClassFilter === 'all' || student.class === studentClassFilter)
+                    .map((student: any, index: number) => (
+                      <div
+                        key={student.id}
+                        className="group px-6 py-5 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300"
+                      >
+                        <div className="grid grid-cols-12 gap-4 items-center">
+                          {/* Student Info */}
+                          <div className="col-span-3 flex items-center gap-3">
+                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                              <User className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-gray-900 truncate group-hover:text-purple-600 transition-colors duration-300">
+                                {student.name}
+                              </p>
+                              {student.age && (
+                                <p className="text-sm text-gray-500">{student.age} years</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Class */}
+                          <div className="col-span-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                              {student.class || 'Not assigned'}
+                            </span>
+                          </div>
+
+                          {/* Email */}
+                          <div className="col-span-3">
+                            <p className="text-sm text-gray-600 truncate">{student.email || 'N/A'}</p>
+                          </div>
+
+                          {/* Status */}
+                          <div className="col-span-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                              student.status === 'active'
+                                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                : 'bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}>
+                              {student.status}
+                            </span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="col-span-2 flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => router.push(`/student-management?studentId=${student.id}`)}
+                              className="p-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110"
+                              title="Open Student Quran Management"
+                            >
+                              <BookOpen className="w-5 h-5" />
+                            </button>
+
+                            <button
+                              onClick={() => setSelectedStudentDetails(student)}
+                              className="p-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110"
+                              title="View Student Details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>
