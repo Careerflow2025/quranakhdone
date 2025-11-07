@@ -123,7 +123,7 @@ export default function PenAnnotationCanvas({
   const loadAnnotations = async () => {
     if (!studentId || !pageNumber || !scriptUuid || !canvasRef.current) return;
 
-    console.log('🔄 [LOADING START] Time:', Date.now());
+    console.log('🔄 [LOADING START] Page:', pageNumber, 'Student:', studentId, 'Script:', scriptUuid);
     const startTime = Date.now();
     setIsLoading(true);
 
@@ -152,6 +152,11 @@ export default function PenAnnotationCanvas({
       const result = await response.json();
       console.log('⏱️ [JSON PARSE] Took:', Date.now() - parseStart, 'ms');
 
+      // CRITICAL: Always clear canvas first to prevent old drawings from previous pages
+      if (canvasRef.current) {
+        await canvasRef.current.clearCanvas();
+      }
+
       if (result.success && result.data.annotations && result.data.annotations.length > 0) {
         const latestAnnotation = result.data.annotations[0];
         if (latestAnnotation.drawing_data && canvasRef.current) {
@@ -165,12 +170,8 @@ export default function PenAnnotationCanvas({
           onLoad?.();
         }
       } else {
-        // CRITICAL: Clear canvas when no annotations exist for this page
-        console.log('ℹ️ No annotations to load - clearing canvas');
-        if (canvasRef.current) {
-          await canvasRef.current.clearCanvas();
-          setHasUnsavedChanges(false);
-        }
+        console.log('ℹ️ No annotations to load - canvas already cleared');
+        setHasUnsavedChanges(false);
       }
     } catch (error) {
       console.error('❌ Error loading annotations:', error);
@@ -183,6 +184,7 @@ export default function PenAnnotationCanvas({
   const saveAnnotations = async () => {
     if (!canvasRef.current || !scriptUuid) return;
 
+    console.log('💾 [SAVING] Page:', pageNumber, 'Student:', studentId, 'Teacher:', teacherId);
     setIsSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -193,6 +195,7 @@ export default function PenAnnotationCanvas({
 
       // Export paths from react-sketch-canvas
       const exportedData = await canvasRef.current.exportPaths();
+      console.log('📊 [EXPORT] Paths count:', exportedData.length);
 
       const response = await fetch('/api/pen-annotations/save', {
         method: 'POST',
