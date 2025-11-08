@@ -152,12 +152,24 @@ export async function GET(
       );
     }
 
-    // 6. Check permissions
+    // 6. Get student ID if user is a student
+    let userStudentId: string | undefined;
+    if (profile.role === 'student') {
+      const { data: studentRecord } = await supabaseAdmin
+        .from('students')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      userStudentId = studentRecord?.id;
+    }
+
+    // 7. Check permissions
     const hasPermission = canViewStudentMastery(
       {
         userId: user.id,
         userRole: profile.role,
         schoolId: profile.school_id,
+        studentId: userStudentId, // Pass student ID for student role
       },
       {
         targetStudentId: student_id,
@@ -176,7 +188,7 @@ export async function GET(
       );
     }
 
-    // 7. Get default script if not provided
+    // 8. Get default script if not provided
     let targetScriptId = script_id;
     if (!targetScriptId) {
       const { data: defaultScript } = await supabaseAdmin

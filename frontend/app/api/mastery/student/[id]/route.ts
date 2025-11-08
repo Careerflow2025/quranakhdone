@@ -130,12 +130,24 @@ export async function GET(
       );
     }
 
-    // 6. Check permissions
+    // 6. Get student ID if user is a student
+    let userStudentId: string | undefined;
+    if (profile.role === 'student') {
+      const { data: studentRecord } = await supabaseAdmin
+        .from('students')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      userStudentId = studentRecord?.id;
+    }
+
+    // 7. Check permissions
     const hasPermission = canViewStudentMastery(
       {
         userId: user.id,
         userRole: profile.role,
         schoolId: profile.school_id,
+        studentId: userStudentId, // Pass student ID for student role
       },
       {
         targetStudentId: studentId,
@@ -154,7 +166,7 @@ export async function GET(
       );
     }
 
-    // 7. Get default script if not provided
+    // 8. Get default script if not provided
     let targetScriptId = script_id;
     if (!targetScriptId) {
       const { data: defaultScript } = await supabaseAdmin
@@ -176,7 +188,7 @@ export async function GET(
       );
     }
 
-    // 8. Get script details
+    // 9. Get script details
     const { data: script } = await supabaseAdmin
       .from('quran_scripts')
       .select('id, code, display_name')
@@ -194,7 +206,7 @@ export async function GET(
       );
     }
 
-    // 9. Build mastery query
+    // 10. Build mastery query
     let masteryQuery = supabaseAdmin
       .from('ayah_mastery')
       .select(
@@ -214,7 +226,7 @@ export async function GET(
 
     masteryQuery = masteryQuery.order('last_updated', { ascending: false });
 
-    // 10. Execute query
+    // 11. Execute query
     const { data: masteryRecords, error: masteryError } = await masteryQuery;
 
     if (masteryError) {
@@ -230,7 +242,7 @@ export async function GET(
       );
     }
 
-    // 11. Process mastery records
+    // 12. Process mastery records
     const allMasteryRecords = (masteryRecords || []).map((record: any) => ({
       id: record.id,
       student_id: record.student_id,
@@ -253,10 +265,10 @@ export async function GET(
       ? allMasteryRecords.filter((r) => r.ayah?.surah === surah)
       : allMasteryRecords;
 
-    // 12. Calculate mastery summary
+    // 13. Calculate mastery summary
     const masterySummary = calculateMasterySummary(filteredMasteryRecords);
 
-    // 13. Get recent updates (last 10)
+    // 14. Get recent updates (last 10)
     const recentUpdates: AyahMasteryWithDetails[] = filteredMasteryRecords
       .slice(0, 10)
       .map((record) => ({
@@ -273,7 +285,7 @@ export async function GET(
         },
       }));
 
-    // 14. Calculate surahs progress
+    // 15. Calculate surahs progress
     const surahsMap = new Map<number, AyahMasteryWithDetails[]>();
     filteredMasteryRecords.forEach((record) => {
       const surahNum = record.ayah?.surah;
@@ -312,7 +324,7 @@ export async function GET(
       })
       .sort((a, b) => b.completion_percentage - a.completion_percentage);
 
-    // 15. Build overview
+    // 16. Build overview
     const overview: StudentMasteryOverview = {
       student_id: studentId,
       student_name: studentProfile.display_name || 'Unknown',
@@ -324,7 +336,7 @@ export async function GET(
       surahs_progress: surahsProgress,
     };
 
-    // 16. Return success response
+    // 17. Return success response
     return NextResponse.json<GetStudentMasteryResponse>(
       {
         success: true,
