@@ -975,7 +975,7 @@ export default function StudentDashboard() {
                 <TrendingUp className="w-4 h-4" />
                 <span>Progress</span>
                 <span className="bg-indigo-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {myTargets.filter((t: any) => t.status === 'active').length}
+                  {progressData?.stats?.active_targets || 0}
                 </span>
               </span>
             </button>
@@ -991,9 +991,9 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <Target className="w-4 h-4" />
                 <span>Targets</span>
-                {myTargets.filter((t: any) => t.status === 'active').length > 0 && (
+                {(progressData?.stats?.active_targets || 0) > 0 && (
                   <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {myTargets.filter((t: any) => t.status === 'active').length}
+                    {progressData?.stats?.active_targets || 0}
                   </span>
                 )}
               </span>
@@ -1784,7 +1784,9 @@ export default function StudentDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-4xl font-bold">
-                  {Math.round(myTargets.reduce((acc: any, t: any) => acc + t.progress, 0) / myTargets.length)}%
+                  {progressData?.targets && progressData.targets.length > 0
+                    ? Math.round(progressData.targets.reduce((acc: number, t: any) => acc + (t.progress || 0), 0) / progressData.targets.length)
+                    : 0}%
                 </div>
                 <p className="text-indigo-100 text-sm">Overall Progress</p>
               </div>
