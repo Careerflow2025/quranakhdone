@@ -252,50 +252,72 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ School grades filtered:', schoolGrades.length, 'grades');
 
-    // 10. Transform grades to entries
-    const entries: AssignmentGrade[] = schoolGrades.map((grade: any) => {
-      const percentage = (grade.score / grade.max_score) * 100;
+    // 10. Group grades by assignment
+    const assignmentGradesMap = new Map<string, any[]>();
+    schoolGrades.forEach((grade: any) => {
+      if (!assignmentGradesMap.has(grade.assignment_id)) {
+        assignmentGradesMap.set(grade.assignment_id, []);
+      }
+      assignmentGradesMap.get(grade.assignment_id)!.push(grade);
+    });
+
+    // 11. Transform to gradebook entries with assignment-level grouping
+    const entries = Array.from(assignmentGradesMap.entries()).map(([assignmentId, grades]) => {
+      const firstGrade = grades[0];
+
+      // Calculate overall percentage for this assignment
+      const totalScore = grades.reduce((sum, g) => sum + g.score, 0);
+      const totalMaxScore = grades.reduce((sum, g) => sum + g.max_score, 0);
+      const overallPercentage = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
 
       return {
-        assignment_id: grade.assignment_id,
-        assignment_title: grade.assignments?.title || 'Unknown Assignment',
-        assignment_description: grade.assignments?.description || '',
-        assignment_due_at: grade.assignments?.due_at || '',
-        assignment_status: grade.assignments?.status || 'unknown',
-        criterion_id: grade.criterion_id,
-        criterion_name: grade.rubric_criteria?.name || 'Unknown Criterion',
-        criterion_description: grade.rubric_criteria?.description || '',
-        score: grade.score,
-        max_score: grade.max_score,
-        percentage: Math.round(percentage),
-        letter_grade: getLetterGrade(percentage),
-        graded_by: grade.graded_by_profile?.display_name || 'Unknown',
-        graded_at: grade.created_at,
-        comments: grade.comments || undefined,
+        assignment_id: assignmentId,
+        assignment_title: firstGrade.assignments?.title || 'Unknown Assignment',
+        assignment_description: firstGrade.assignments?.description || '',
+        assignment_due_at: firstGrade.assignments?.due_at || '',
+        assignment_status: firstGrade.assignments?.status || 'unknown',
+        rubric_name: null, // TODO: Get rubric name from assignment_rubrics table
+        overall_percentage: Math.round(overallPercentage * 10) / 10, // Round to 1 decimal
+        graded_at: firstGrade.created_at,
+        grades: grades.map((g: any) => {
+          const percentage = (g.score / g.max_score) * 100;
+          return {
+            id: g.id,
+            criterion: {
+              id: g.criterion_id,
+              name: g.rubric_criteria?.name || 'Unknown Criterion',
+              description: g.rubric_criteria?.description || '',
+            },
+            score: g.score,
+            max_score: g.max_score,
+            percentage: Math.round(percentage * 10) / 10, // Round to 1 decimal
+            comments: g.comments || null,
+          };
+        }),
       };
     });
 
-    // 11. Calculate statistics
-    const totalGrades = entries.length;
-    const averageScore = totalGrades > 0
-      ? Math.round(entries.reduce((sum, e) => sum + e.percentage, 0) / totalGrades)
+    // 12. Calculate statistics
+    const totalAssignments = entries.length;
+    const averageScore = totalAssignments > 0
+      ? entries.reduce((sum, e) => sum + e.overall_percentage, 0) / totalAssignments
       : 0;
 
-    const highestGrade = totalGrades > 0
-      ? Math.max(...entries.map(e => e.percentage))
+    const highestScore = totalAssignments > 0
+      ? Math.max(...entries.map(e => e.overall_percentage))
       : 0;
 
-    const lowestGrade = totalGrades > 0
-      ? Math.min(...entries.map(e => e.percentage))
+    const lowestScore = totalAssignments > 0
+      ? Math.min(...entries.map(e => e.overall_percentage))
       : 0;
 
-    // Calculate trend (recent 5 grades vs previous 5 grades)
+    // Calculate trend (recent 5 assignments vs previous 5 assignments)
     let recentTrend: 'improving' | 'declining' | 'stable' = 'stable';
     if (entries.length >= 10) {
       const recent5 = entries.slice(0, 5);
       const previous5 = entries.slice(5, 10);
-      const recentAvg = recent5.reduce((sum, e) => sum + e.percentage, 0) / 5;
-      const previousAvg = previous5.reduce((sum, e) => sum + e.percentage, 0) / 5;
+      const recentAvg = recent5.reduce((sum, e) => sum + e.overall_percentage, 0) / 5;
+      const previousAvg = previous5.reduce((sum, e) => sum + e.overall_percentage, 0) / 5;
 
       if (recentAvg > previousAvg + 5) {
         recentTrend = 'improving';
@@ -304,31 +326,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 12. Get unique assignments
-    const uniqueAssignmentIds = new Set(entries.map(e => e.assignment_id));
-
     // 13. Build response
-    const responseData: StudentGradebookData = {
+    const responseData = {
       student_id: studentId,
       student_name: (student as any).profiles?.display_name || 'Unknown',
       student_email: (student as any).profiles?.email || '',
-      total_assignments: uniqueAssignmentIds.size,
-      graded_assignments: uniqueAssignmentIds.size,
-      average_score: averageScore,
-      letter_grade: getLetterGrade(averageScore),
-      entries,
+      entries, // Array of assignment entries with grades
       stats: {
-        total_grades: totalGrades,
-        highest_grade: highestGrade,
-        lowest_grade: lowestGrade,
+        total_assignments: totalAssignments,
+        graded_assignments: totalAssignments, // All assignments in this response are graded
+        pending_assignments: 0, // TODO: Get from assignments table
+        average_score: Math.round(averageScore * 10) / 10,
+        highest_score: Math.round(highestScore * 10) / 10,
+        lowest_score: Math.round(lowestScore * 10) / 10,
         recent_trend: recentTrend,
       },
     };
 
     console.log('✅ Response data prepared:', {
       student: responseData.student_name,
-      total_grades: responseData.stats.total_grades,
-      average: responseData.average_score,
+      total_assignments: responseData.stats.total_assignments,
+      average: responseData.stats.average_score,
     });
 
     // 14. Return success response

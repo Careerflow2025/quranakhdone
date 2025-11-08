@@ -611,7 +611,12 @@ export function useGradebook(initialView: GradebookView = 'rubrics') {
 
       const data = await response.json();
 
+      console.log('✅ Student gradebook API response:', data);
+
       if (data.success) {
+        console.log('📝 Setting gradebook entries:', data.data.entries?.length || 0);
+        console.log('📊 Setting gradebook stats:', data.data.stats);
+
         setGradebookEntries(data.data.entries || []);
         if (data.data.stats) {
           setGradebookStats(data.data.stats);
