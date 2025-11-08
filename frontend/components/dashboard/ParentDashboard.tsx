@@ -147,6 +147,7 @@ export default function ParentDashboard() {
         // Transform API data to match the UI expectations
         const transformedChildren = result.data.map((child: any) => ({
           id: child.id,
+          user_id: child.user_id || '',
           name: child.name || '',
           gender: child.gender || 'unknown',
           age: child.dob ? calculateAge(child.dob) : 0,
@@ -2878,52 +2879,57 @@ export default function ParentDashboard() {
                     <p className="text-gray-500">No messages in this conversation yet</p>
                   </div>
                 ) : (
-                  conversationData.notes.map((note: any, index: number) => (
-                    <div key={note.id || index} className="flex items-start space-x-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
-                        note.author_user_id === children[selectedChild].user_id
-                          ? 'bg-gradient-to-br from-blue-400 to-blue-600'
-                          : 'bg-gradient-to-br from-purple-400 to-purple-600'
-                      }`}>
-                        <User className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className={`rounded-xl p-4 ${
-                          note.author_user_id === children[selectedChild].user_id
-                            ? 'bg-blue-50 border border-blue-100'
-                            : 'bg-purple-50 border border-purple-100'
+                  conversationData.notes.map((note: any, index: number) => {
+                    // Check if this note is from the student
+                    const isStudentMessage = note.author_user_id === children[selectedChild]?.user_id;
+
+                    return (
+                      <div key={note.id || index} className="flex items-start space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+                          isStudentMessage
+                            ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                            : 'bg-gradient-to-br from-purple-400 to-purple-600'
                         }`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-sm text-gray-900">
-                              {note.author_user_id === children[selectedChild].user_id ? children[selectedChild].name : 'Teacher'}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(note.created_at).toLocaleString()}
-                            </span>
-                          </div>
-
-                          {note.type === 'text' && note.text && (
-                            <p className="text-gray-700">{note.text}</p>
-                          )}
-
-                          {note.type === 'audio' && note.audio_url && (
-                            <div className="flex items-center space-x-3 bg-white rounded-lg p-3">
-                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                <Mic className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-700">Voice Note</p>
-                                <audio controls className="w-full mt-1" style={{ height: '32px' }}>
-                                  <source src={note.audio_url} type="audio/mpeg" />
-                                  Your browser does not support audio playback.
-                                </audio>
-                              </div>
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className={`rounded-xl p-4 ${
+                            isStudentMessage
+                              ? 'bg-blue-50 border border-blue-100'
+                              : 'bg-purple-50 border border-purple-100'
+                          }`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold text-sm text-gray-900">
+                                {isStudentMessage ? children[selectedChild]?.name : (note.author_name || 'Teacher')}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(note.created_at).toLocaleString()}
+                              </span>
                             </div>
-                          )}
+
+                            {note.type === 'text' && note.text && (
+                              <p className="text-gray-700">{note.text}</p>
+                            )}
+
+                            {note.type === 'audio' && note.audio_url && (
+                              <div className="flex items-center space-x-3 bg-white rounded-lg p-3">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                  <Mic className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-gray-700">Voice Note</p>
+                                  <audio controls className="w-full mt-1" style={{ height: '32px' }}>
+                                    <source src={note.audio_url} type="audio/mpeg" />
+                                    Your browser does not support audio playback.
+                                  </audio>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
