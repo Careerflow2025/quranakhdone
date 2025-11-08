@@ -19,7 +19,7 @@ import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
-import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
+import { useAssignments } from '@/hooks/useAssignments';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
@@ -213,6 +213,14 @@ export default function StudentDashboard() {
     markAllAsRead,
     refresh: refreshNotifications
   } = useNotifications();
+
+  // Assignments Hook
+  const {
+    assignments,
+    isLoading: assignmentsLoading,
+    error: assignmentsError
+  } = useAssignments(studentInfo.id);
+
   const [studentProfile] = useState({
     name: 'Ahmed Hassan',
     email: 'ahmed.hassan@school.edu',
@@ -1562,7 +1570,175 @@ export default function StudentDashboard() {
 
       {/* Assignments Tab */}
       {activeTab === 'assignments' && (
-        <AssignmentsPanel userRole="student" studentId={studentInfo.id} />
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center">
+                <FileText className="w-7 h-7 mr-3" />
+                My Assignments
+              </h2>
+              <p className="text-blue-100 mt-1">View and complete your assignments from teachers</p>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center space-x-4">
+              <select
+                value={assignmentTypeFilter}
+                onChange={(e) => setAssignmentTypeFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Assignments</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by teacher, title, or description..."
+                  value={assignmentSearchTerm}
+                  onChange={(e) => setAssignmentSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {assignmentsLoading && (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading assignments...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {assignmentsError && !assignmentsLoading && (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <p className="text-red-600 text-lg mb-2">Error loading assignments</p>
+              <p className="text-gray-500 text-sm">{assignmentsError}</p>
+            </div>
+          )}
+
+          {/* Assignment Cards */}
+          {!assignmentsLoading && !assignmentsError && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {assignments
+                .filter((assignment: any) => {
+                  // Status filter
+                  let matchesStatus = false;
+                  if (assignmentTypeFilter === 'all') matchesStatus = true;
+                  else if (assignmentTypeFilter === 'pending') matchesStatus = assignment.status !== 'completed';
+                  else if (assignmentTypeFilter === 'completed') matchesStatus = assignment.status === 'completed';
+
+                  // Search filter
+                  const searchLower = assignmentSearchTerm.toLowerCase();
+                  const matchesSearch = !assignmentSearchTerm ||
+                    assignment.teacher?.display_name?.toLowerCase().includes(searchLower) ||
+                    assignment.title?.toLowerCase().includes(searchLower) ||
+                    assignment.description?.toLowerCase().includes(searchLower);
+
+                  return matchesStatus && matchesSearch;
+                })
+                .map((assignment: any) => {
+                  const isCompleted = assignment.status === 'completed';
+                  const dueDate = assignment.due_at ? new Date(assignment.due_at) : null;
+                  const isLate = dueDate && new Date() > dueDate && !isCompleted;
+                  const assignedDate = assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '';
+                  const dueDateStr = dueDate ? dueDate.toLocaleDateString() : '';
+
+                  return (
+                    <div key={assignment.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                      <div className={`h-2 ${
+                        isCompleted ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                        'bg-gradient-to-r from-blue-500 to-indigo-500'
+                      }`}></div>
+
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {assignment.teacher?.display_name || 'Teacher'}
+                            </h3>
+                            <p className="text-sm text-gray-500">Assignment #{assignment.id.substring(0, 8)}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            isCompleted ? 'bg-green-100 text-green-700' :
+                            assignment.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                            assignment.status === 'reviewed' ? 'bg-purple-100 text-purple-700' :
+                            isLate ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {isLate && !isCompleted ? 'LATE' : assignment.status}
+                          </span>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                          <p className="text-sm font-medium text-gray-700">
+                            📝 {assignment.title}
+                          </p>
+                          {assignment.description && (
+                            <p className="text-sm text-gray-600 mt-1">{assignment.description}</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Assigned:</span>
+                            <span className="text-gray-700">{assignedDate}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Due Date:</span>
+                            <span className={isLate ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                              {dueDateStr}
+                            </span>
+                          </div>
+                        </div>
+
+                        {assignment.submission && (
+                          <div className="mt-4 pt-4 border-t">
+                            <div className="flex items-center text-green-600 text-sm">
+                              <Check className="w-4 h-4 mr-2" />
+                              <span>Submitted on {new Date(assignment.submission.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!assignmentsLoading && !assignmentsError && assignments.filter((assignment: any) => {
+            let matchesStatus = false;
+            if (assignmentTypeFilter === 'all') matchesStatus = true;
+            else if (assignmentTypeFilter === 'pending') matchesStatus = assignment.status !== 'completed';
+            else if (assignmentTypeFilter === 'completed') matchesStatus = assignment.status === 'completed';
+
+            const searchLower = assignmentSearchTerm.toLowerCase();
+            const matchesSearch = !assignmentSearchTerm ||
+              assignment.teacher?.display_name?.toLowerCase().includes(searchLower) ||
+              assignment.title?.toLowerCase().includes(searchLower) ||
+              assignment.description?.toLowerCase().includes(searchLower);
+
+            return matchesStatus && matchesSearch;
+          }).length === 0 && (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No assignments found</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {assignmentSearchTerm ? 'Try a different search term' : 'Your teachers will create assignments for you'}
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Progress Tab */}
