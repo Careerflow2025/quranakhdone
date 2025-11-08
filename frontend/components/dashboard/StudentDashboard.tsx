@@ -156,17 +156,6 @@ export default function StudentDashboard() {
     fetchStudentData();
   }, []);
 
-  // Progress data hook - MUST be declared before useEffect that uses fetchProgress
-  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
-
-  // Fetch progress data when studentId is available
-  useEffect(() => {
-    if (studentId && activeTab === 'progress') {
-      console.log('📊 Fetching progress data for student:', studentId);
-      fetchProgress(studentId);
-    }
-  }, [studentId, activeTab, fetchProgress]);
-
   // Core States
   const [activeTab, setActiveTab] = useState('quran'); // 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
   const [selectedScript, setSelectedScript] = useState('uthmani-hafs'); // Teacher-controlled, locked for students
@@ -252,6 +241,17 @@ export default function StudentDashboard() {
       console.log('⚠️ No studentInfo.id - skipping homework fetch');
     }
   }, [studentInfo?.id, fetchHomework]);
+
+  // Progress Hook
+  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
+
+  // Fetch progress when student info is available
+  useEffect(() => {
+    if (studentId) {
+      console.log('📊 Fetching progress data for student:', studentId);
+      fetchProgress(studentId);
+    }
+  }, [studentId, fetchProgress]);
 
   // Transform homework data to match UI expectations
   const transformedHomework = useMemo(() => {
