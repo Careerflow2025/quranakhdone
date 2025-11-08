@@ -22,6 +22,7 @@ import MasteryPanel from '@/components/mastery/MasteryPanel';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useHomework } from '@/hooks/useHomework';
 import { useProgress } from '@/hooks/useProgress';
+import { useMastery } from '@/hooks/useMastery';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
@@ -246,6 +247,9 @@ export default function StudentDashboard() {
   // Progress Hook
   const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
 
+  // Mastery Hook
+  const { studentOverview: masteryData, isLoading: isMasteryLoading, fetchStudentMastery } = useMastery(studentInfo?.id);
+
   // Fetch progress when student info is available
   useEffect(() => {
     if (studentId) {
@@ -253,6 +257,14 @@ export default function StudentDashboard() {
       fetchProgress(studentId);
     }
   }, [studentId, fetchProgress]);
+
+  // Fetch mastery data when student info is available
+  useEffect(() => {
+    if (studentInfo?.id) {
+      console.log('📖 Fetching mastery data for student:', studentInfo.id);
+      fetchStudentMastery(studentInfo.id);
+    }
+  }, [studentInfo?.id, fetchStudentMastery]);
 
   // Transform homework data to match UI expectations
   const transformedHomework = useMemo(() => {
@@ -1781,6 +1793,8 @@ export default function StudentDashboard() {
           assignments={assignments}
           homeworkData={transformedHomework}
           studentId={studentInfo.id}
+          masteryData={masteryData}
+          masteryLoading={isMasteryLoading}
         />
       )}
 

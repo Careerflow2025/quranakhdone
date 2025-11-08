@@ -4,6 +4,7 @@ import {
   Target, Award, Clock, TrendingUp, Calendar,
   CheckCircle, FileText, BookOpen, BarChart, BookMarked
 } from 'lucide-react';
+import { calculateTargetProgress } from '@/lib/types/targets';
 
 interface ProgressSectionProps {
   progressData: any;
@@ -11,6 +12,8 @@ interface ProgressSectionProps {
   assignments: any[];
   homeworkData: any[];
   studentId: string;
+  masteryData?: any;
+  masteryLoading?: boolean;
 }
 
 export default function ProgressSection({
@@ -18,7 +21,9 @@ export default function ProgressSection({
   isLoading,
   assignments,
   homeworkData,
-  studentId
+  studentId,
+  masteryData,
+  masteryLoading
 }: ProgressSectionProps) {
 
   if (isLoading) {
@@ -82,9 +87,10 @@ export default function ProgressSection({
     ? Math.round((completedAssignments / totalAssignments) * 100)
     : 0;
 
-  // Calculate TARGET progress percentage from progressData.targets
+  // Calculate TARGET progress percentage from milestones (same as Targets tab)
   const targetProgress = progressData?.targets && progressData.targets.length > 0
-    ? Math.round(progressData.targets.reduce((acc: number, t: any) => acc + (t.progress || 0), 0) / progressData.targets.length)
+    ? Math.round(progressData.targets.reduce((acc: number, t: any) =>
+        acc + calculateTargetProgress(t.milestones || []), 0) / progressData.targets.length)
     : 0;
 
   // Overall progress is the ASSIGNMENT completion rate (what students actually complete)
@@ -327,7 +333,9 @@ export default function ProgressSection({
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {progressData?.targets && progressData.targets.length > 0 ? (
-            progressData.targets.map((target: any) => (
+            progressData.targets.map((target: any) => {
+              const calculatedProgress = calculateTargetProgress(target.milestones || []);
+              return (
               <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                 {/* Target Header */}
                 <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
@@ -337,7 +345,7 @@ export default function ProgressSection({
                       <p className="text-white text-opacity-90 text-sm">{target.description}</p>
                     </div>
                     <div className="text-right ml-4">
-                      <div className="text-3xl font-bold">{target.progress || 0}%</div>
+                      <div className="text-3xl font-bold">{calculatedProgress}%</div>
                       <p className="text-xs text-white text-opacity-80">Complete</p>
                     </div>
                   </div>
@@ -346,7 +354,7 @@ export default function ProgressSection({
                     <div className="w-full bg-white bg-opacity-30 rounded-full h-3">
                       <div
                         className="bg-white h-3 rounded-full transition-all duration-500"
-                        style={{ width: `${target.progress || 0}%` }}
+                        style={{ width: `${calculatedProgress}%` }}
                       />
                     </div>
                   </div>
@@ -397,7 +405,8 @@ export default function ProgressSection({
                   )}
                 </div>
               </div>
-            ))
+            );
+            })
           ) : (
             <div className="col-span-2 text-center py-12 bg-white rounded-xl shadow-lg">
               <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -408,31 +417,101 @@ export default function ProgressSection({
         </div>
       </div>
 
-      {/* Mastery Overview - NEW SECTION */}
+      {/* Mastery Overview - DISPLAY ACTUAL DATA */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-xl font-bold mb-6 flex items-center">
           <BookMarked className="w-6 h-6 mr-2 text-emerald-600" />
           Qur'an Mastery Progress
         </h3>
 
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-6 border border-emerald-200">
-          <p className="text-gray-700 mb-4">
-            Track your mastery progress for each ayah across different surahs. The Mastery tab provides a detailed view of your memorization and recitation skills.
-          </p>
-          <a
-            href="#mastery"
-            onClick={(e) => {
-              e.preventDefault();
-              // This will be handled by the parent component to switch tabs
-              const masteryTab = document.querySelector('[data-tab="mastery"]') as HTMLElement;
-              if (masteryTab) masteryTab.click();
-            }}
-            className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            <BookMarked className="w-4 h-4 mr-2" />
-            View Detailed Mastery Progress
-          </a>
-        </div>
+        {masteryLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading mastery data...</p>
+          </div>
+        ) : masteryData?.mastery_summary ? (
+          <div>
+            {/* Mastery Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {/* Mastered */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200">
+                <div className="text-3xl font-bold text-emerald-700">
+                  {masteryData.mastery_summary.mastered_count}
+                </div>
+                <div className="text-sm text-emerald-600 mt-1">
+                  Mastered
+                </div>
+                <div className="text-xs text-emerald-500 mt-1">
+                  {masteryData.mastery_summary.mastered_percentage.toFixed(1)}%
+                </div>
+              </div>
+
+              {/* Proficient */}
+              <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-4 rounded-lg border border-teal-200">
+                <div className="text-3xl font-bold text-teal-700">
+                  {masteryData.mastery_summary.proficient_count}
+                </div>
+                <div className="text-sm text-teal-600 mt-1">
+                  Proficient
+                </div>
+                <div className="text-xs text-teal-500 mt-1">
+                  {masteryData.mastery_summary.proficient_percentage.toFixed(1)}%
+                </div>
+              </div>
+
+              {/* Learning */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="text-3xl font-bold text-blue-700">
+                  {masteryData.mastery_summary.learning_count}
+                </div>
+                <div className="text-sm text-blue-600 mt-1">
+                  Learning
+                </div>
+                <div className="text-xs text-blue-500 mt-1">
+                  {masteryData.mastery_summary.learning_percentage.toFixed(1)}%
+                </div>
+              </div>
+
+              {/* Unknown */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200">
+                <div className="text-3xl font-bold text-gray-700">
+                  {masteryData.mastery_summary.unknown_count}
+                </div>
+                <div className="text-sm text-gray-600 mt-1">
+                  Unknown
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {masteryData.mastery_summary.unknown_percentage.toFixed(1)}%
+                </div>
+              </div>
+            </div>
+
+            {/* Overall Progress Bar */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-6 border border-emerald-200">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-semibold text-gray-700">Overall Mastery Progress</span>
+                <span className="text-2xl font-bold text-emerald-600">
+                  {masteryData.mastery_summary.overall_progress_percentage.toFixed(1)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 h-4 rounded-full transition-all duration-500"
+                  style={{ width: `${masteryData.mastery_summary.overall_progress_percentage}%` }}
+                />
+              </div>
+              <div className="mt-4 text-xs text-gray-600 text-center">
+                Total Ayahs Tracked: {masteryData.total_ayahs_tracked}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 text-center border border-gray-200">
+            <BookMarked className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600">No mastery data available yet.</p>
+            <p className="text-sm text-gray-500 mt-2">Start practicing to track your progress!</p>
+          </div>
+        )}
       </div>
     </div>
   );
