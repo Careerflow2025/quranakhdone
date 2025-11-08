@@ -1630,23 +1630,44 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {assignments
                 .filter((assignment: any) => {
-                  // Status filter
+                  // Find the linked highlight for this assignment to check if it's completed (gold)
+                  const linkedHighlight = safeHighlights.find((h: any) =>
+                    h.id === assignment.highlight_id ||
+                    (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
+                  );
+                  const isCompletedByHighlight = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold';
+
+                  // Status filter - check both assignment status AND linked highlight color
                   let matchesStatus = false;
-                  if (assignmentTypeFilter === 'all') matchesStatus = true;
-                  else if (assignmentTypeFilter === 'pending') matchesStatus = assignment.status !== 'completed';
-                  else if (assignmentTypeFilter === 'completed') matchesStatus = assignment.status === 'completed';
+                  if (assignmentTypeFilter === 'all') {
+                    matchesStatus = true;
+                  } else if (assignmentTypeFilter === 'pending') {
+                    matchesStatus = !isCompletedByHighlight && assignment.status !== 'completed';
+                  } else if (assignmentTypeFilter === 'completed') {
+                    matchesStatus = isCompletedByHighlight || assignment.status === 'completed';
+                  }
 
                   // Search filter
                   const searchLower = assignmentSearchTerm.toLowerCase();
+                  const teacherName = assignment.teacher?.display_name || '';
+                  const title = assignment.title || '';
+                  const description = assignment.description || '';
+
                   const matchesSearch = !assignmentSearchTerm ||
-                    assignment.teacher?.display_name?.toLowerCase().includes(searchLower) ||
-                    assignment.title?.toLowerCase().includes(searchLower) ||
-                    assignment.description?.toLowerCase().includes(searchLower);
+                    teacherName.toLowerCase().includes(searchLower) ||
+                    title.toLowerCase().includes(searchLower) ||
+                    description.toLowerCase().includes(searchLower);
 
                   return matchesStatus && matchesSearch;
                 })
                 .map((assignment: any) => {
-                  const isCompleted = assignment.status === 'completed';
+                  // Find the linked highlight to check completion status
+                  const linkedHighlight = safeHighlights.find((h: any) =>
+                    h.id === assignment.highlight_id ||
+                    (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
+                  );
+                  const isCompleted = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold' || assignment.status === 'completed';
+
                   const dueDate = assignment.due_at ? new Date(assignment.due_at) : null;
                   const isLate = dueDate && new Date() > dueDate && !isCompleted;
                   const assignedDate = assignment.created_at ? new Date(assignment.created_at).toLocaleDateString() : '';
@@ -1717,16 +1738,33 @@ export default function StudentDashboard() {
 
           {/* Empty State */}
           {!assignmentsLoading && !assignmentsError && assignments.filter((assignment: any) => {
-            let matchesStatus = false;
-            if (assignmentTypeFilter === 'all') matchesStatus = true;
-            else if (assignmentTypeFilter === 'pending') matchesStatus = assignment.status !== 'completed';
-            else if (assignmentTypeFilter === 'completed') matchesStatus = assignment.status === 'completed';
+            // Find the linked highlight for this assignment to check if it's completed (gold)
+            const linkedHighlight = safeHighlights.find((h: any) =>
+              h.id === assignment.highlight_id ||
+              (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
+            );
+            const isCompletedByHighlight = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold';
 
+            // Status filter - check both assignment status AND linked highlight color
+            let matchesStatus = false;
+            if (assignmentTypeFilter === 'all') {
+              matchesStatus = true;
+            } else if (assignmentTypeFilter === 'pending') {
+              matchesStatus = !isCompletedByHighlight && assignment.status !== 'completed';
+            } else if (assignmentTypeFilter === 'completed') {
+              matchesStatus = isCompletedByHighlight || assignment.status === 'completed';
+            }
+
+            // Search filter
             const searchLower = assignmentSearchTerm.toLowerCase();
+            const teacherName = assignment.teacher?.display_name || '';
+            const title = assignment.title || '';
+            const description = assignment.description || '';
+
             const matchesSearch = !assignmentSearchTerm ||
-              assignment.teacher?.display_name?.toLowerCase().includes(searchLower) ||
-              assignment.title?.toLowerCase().includes(searchLower) ||
-              assignment.description?.toLowerCase().includes(searchLower);
+              teacherName.toLowerCase().includes(searchLower) ||
+              title.toLowerCase().includes(searchLower) ||
+              description.toLowerCase().includes(searchLower);
 
             return matchesStatus && matchesSearch;
           }).length === 0 && (
