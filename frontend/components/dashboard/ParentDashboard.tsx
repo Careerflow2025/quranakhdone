@@ -2014,14 +2014,6 @@ export default function ParentDashboard() {
                             </div>
                           )}
                         </div>
-
-                        {/* View Details Button */}
-                        <button
-                          className="w-full py-2 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
-                        </button>
                       </div>
                     </div>
                   ))}
