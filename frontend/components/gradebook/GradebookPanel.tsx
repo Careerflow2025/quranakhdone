@@ -37,9 +37,10 @@ import GradingInterface from './GradingInterface';
 
 interface GradebookPanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
+  studentId?: string;
 }
 
-export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelProps) {
+export default function GradebookPanel({ userRole = 'teacher', studentId }: GradebookPanelProps) {
   const {
     isLoading,
     error,
@@ -101,6 +102,21 @@ export default function GradebookPanel({ userRole = 'teacher' }: GradebookPanelP
     max_score: 100,
     comments: '',
   });
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  /**
+   * Fetch student gradebook when studentId is provided
+   */
+  useEffect(() => {
+    console.log('📊 GradebookPanel useEffect - userRole:', userRole, 'studentId:', studentId);
+    if (userRole === 'student' && studentId) {
+      console.log('🔄 Fetching student gradebook for:', studentId);
+      fetchStudentGradebook(studentId);
+    }
+  }, [userRole, studentId, fetchStudentGradebook]);
 
   // ============================================================================
   // HANDLERS

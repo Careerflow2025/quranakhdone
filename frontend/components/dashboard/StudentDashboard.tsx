@@ -2302,7 +2302,7 @@ export default function StudentDashboard() {
 
       {/* Gradebook Tab */}
       {activeTab === 'gradebook' && (
-        <GradebookPanel userRole="student" />
+        <GradebookPanel userRole="student" studentId={studentInfo.id} />
       )}
 
       {/* Mastery Tab */}
