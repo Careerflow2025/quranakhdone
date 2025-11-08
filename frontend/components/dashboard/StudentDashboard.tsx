@@ -88,6 +88,11 @@ export default function StudentDashboard() {
   const [studentInfo, setStudentInfo] = useState({
     id: '',
     name: 'Student',
+    email: '',
+    dob: '',
+    gender: '',
+    enrollmentDate: '',
+    schoolId: '',
     age: 12,
     class: '',
     teacherId: '',
@@ -116,10 +121,22 @@ export default function StudentDashboard() {
           throw new Error('Not authenticated');
         }
 
-        // Get student record
+        // Get student record with full profile information
         const { data: studentData, error: studentErr } = await supabase
           .from('students')
-          .select('id, user_id')
+          .select(`
+            id,
+            user_id,
+            dob,
+            gender,
+            created_at,
+            profiles:user_id (
+              display_name,
+              email,
+              school_id,
+              role
+            )
+          `)
           .eq('user_id', user.id)
           .single();
 
@@ -127,18 +144,18 @@ export default function StudentDashboard() {
           throw new Error('Student record not found');
         }
 
-        // Get profile for name
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('user_id', user.id)
-          .single();
+        console.log('📋 Student data fetched:', studentData);
 
         setStudentId(studentData.id);
         setStudentInfo(prev => ({
           ...prev,
           id: studentData.id,
-          name: profileData?.display_name || 'Student'
+          name: (studentData as any).profiles?.display_name || 'Student',
+          email: (studentData as any).profiles?.email || '',
+          dob: studentData.dob || '',
+          gender: studentData.gender || '',
+          enrollmentDate: studentData.created_at || '',
+          schoolId: (studentData as any).profiles?.school_id || ''
         }));
 
         // TODO: Get locked script from database when migration is applied
@@ -157,6 +174,20 @@ export default function StudentDashboard() {
 
     fetchStudentData();
   }, []);
+
+  // Logout Handler
+  const handleLogout = async () => {
+    try {
+      console.log('🚪 Logging out...');
+      await supabase.auth.signOut();
+      // Redirect to login page
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      // Still redirect even if signout fails
+      window.location.href = '/login';
+    }
+  };
 
   // Core States
   const [activeTab, setActiveTab] = useState('quran'); // 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -287,22 +318,6 @@ export default function StudentDashboard() {
     return transformed;
   }, [homeworkData, studentInfo.name, studentInfo.class]);
 
-  const [studentProfile] = useState({
-    name: 'Ahmed Hassan',
-    email: 'ahmed.hassan@school.edu',
-    phone: '+212 6XX-XXX-XXX',
-    studentId: 'STU001',
-    class: 'Class 6A',
-    section: 'Section B',
-    enrollmentDate: '15 Sept 2023',
-    dateOfBirth: '12 March 2012',
-    gender: 'Male',
-    guardian: 'Mr. Hassan Ahmed',
-    guardianPhone: '+212 6XX-XXX-XXX',
-    address: '123 Main Street, Casablanca',
-    bloodGroup: 'O+',
-    emergencyContact: '+212 6XX-XXX-XXX'
-  });
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
   // Teacher Highlights - Fetch from database using useHighlights hook
@@ -808,7 +823,10 @@ export default function StudentDashboard() {
                       <User className="w-4 h-4" />
                       <span>Profile</span>
                     </button>
-                    <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                    >
                       <LogOut className="w-4 h-4" />
                       <span>Logout</span>
                     </button>
@@ -2011,11 +2029,11 @@ export default function StudentDashboard() {
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {studentProfile.name.split(' ').map((n: any) => n[0]).join('')}
+                  {studentInfo.name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{studentProfile.name}</h2>
-                  <p className="text-gray-500">{studentProfile.studentId} • {studentProfile.class}</p>
+                  <h2 className="text-2xl font-bold text-gray-800">{studentInfo.name}</h2>
+                  <p className="text-gray-500">Student Profile</p>
                 </div>
               </div>
               <button
@@ -2039,31 +2057,34 @@ export default function StudentDashboard() {
               {/* Personal Information */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-gray-500">Full Name</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.name}</p>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.name || 'Not available'}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-xs text-gray-500">Student ID</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.studentId}</p>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.id || 'Not available'}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-xs text-gray-500">Date of Birth</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.dateOfBirth}</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {studentInfo.dob ? new Date(studentInfo.dob).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Not available'}
+                    </p>
                   </div>
-                  
+
                   <div>
                     <label className="text-xs text-gray-500">Gender</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.gender}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-gray-500">Blood Group</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.bloodGroup}</p>
+                    <p className="text-sm font-medium text-gray-800 capitalize">
+                      {studentInfo.gender || 'Not available'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -2071,31 +2092,27 @@ export default function StudentDashboard() {
               {/* Academic Information */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-gray-700 border-b pb-2">Academic Information</h3>
-                
+
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-gray-500">Class</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.class}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-gray-500">Section</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.section}</p>
-                  </div>
-                  
-                  <div>
                     <label className="text-xs text-gray-500">Enrollment Date</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.enrollmentDate}</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {studentInfo.enrollmentDate ? new Date(studentInfo.enrollmentDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Not available'}
+                    </p>
                   </div>
-                  
+
                   <div>
                     <label className="text-xs text-gray-500">Memorization Progress</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.memorized}</p>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.memorized || '0 Juz'}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-xs text-gray-500">Revision Progress</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.revision}</p>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.revision || '0 Juz'}</p>
                   </div>
                 </div>
               </div>
@@ -2103,43 +2120,39 @@ export default function StudentDashboard() {
               {/* Contact Information */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-gray-500">Email</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.email}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-gray-500">Phone Number</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.phone}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-gray-500">Address</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.address}</p>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.email || 'Not available'}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Guardian Information */}
+              {/* Progress Overview */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Guardian Information</h3>
-                
+                <h3 className="font-semibold text-gray-700 border-b pb-2">Progress Overview</h3>
+
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-gray-500">Guardian Name</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.guardian}</p>
+                    <label className="text-xs text-gray-500">Last Session</label>
+                    <p className="text-sm font-medium text-gray-800">
+                      {studentInfo.lastSession ? new Date(studentInfo.lastSession).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      }) : 'No sessions yet'}
+                    </p>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs text-gray-500">Guardian Phone</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.guardianPhone}</p>
+                    <label className="text-xs text-gray-500">Current Surah</label>
+                    <p className="text-sm font-medium text-gray-800">Surah {studentInfo.currentSurah}</p>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs text-gray-500">Emergency Contact</label>
-                    <p className="text-sm font-medium text-gray-800">{studentProfile.emergencyContact}</p>
+                    <label className="text-xs text-gray-500">Current Ayah</label>
+                    <p className="text-sm font-medium text-gray-800">Ayah {studentInfo.currentAyah}</p>
                   </div>
                 </div>
               </div>
