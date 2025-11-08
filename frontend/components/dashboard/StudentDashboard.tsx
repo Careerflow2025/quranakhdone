@@ -21,6 +21,7 @@ import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useHomework } from '@/hooks/useHomework';
+import { useProgress } from '@/hooks/useProgress';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
@@ -154,6 +155,14 @@ export default function StudentDashboard() {
 
     fetchStudentData();
   }, []);
+
+  // Fetch progress data when studentId is available
+  useEffect(() => {
+    if (studentId && activeTab === 'progress') {
+      console.log('📊 Fetching progress data for student:', studentId);
+      fetchProgress(studentId);
+    }
+  }, [studentId, activeTab, fetchProgress]);
 
   // Core States
   const [activeTab, setActiveTab] = useState('quran'); // 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -377,43 +386,8 @@ export default function StudentDashboard() {
     ]
   });
 
-  // Student targets/goals
-  const [myTargets] = useState([
-    {
-      id: 1,
-      title: 'Complete Juz 30',
-      status: 'active',
-      progress: 75,
-      deadline: '2025-12-31',
-      milestones: [
-        { id: 1, name: 'Surah An-Naba', completed: true },
-        { id: 2, name: 'Surah An-Nazi\'at', completed: true },
-        { id: 3, name: 'Surah Abasa', completed: false }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Master Tajweed Rules',
-      status: 'active',
-      progress: 60,
-      deadline: '2025-11-30',
-      milestones: [
-        { id: 1, name: 'Noon Sakinah Rules', completed: true },
-        { id: 2, name: 'Meem Sakinah Rules', completed: false }
-      ]
-    },
-    {
-      id: 3,
-      title: 'Revise Juz 1-5',
-      status: 'active',
-      progress: 40,
-      deadline: '2026-01-15',
-      milestones: [
-        { id: 1, name: 'Juz 1', completed: true },
-        { id: 2, name: 'Juz 2', completed: false }
-      ]
-    }
-  ]);
+  // Progress data hook
+  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
 
   const AYAHS_PER_PAGE = 7;
 
@@ -1823,7 +1797,7 @@ export default function StudentDashboard() {
                   <Target className="w-5 h-5" />
                   <span className="text-sm">Active Targets</span>
                 </div>
-                <p className="text-2xl font-bold">{myTargets.filter((t: any) => t.status === 'active').length}</p>
+                <p className="text-2xl font-bold">{progressData?.stats?.active_targets || 0}</p>
               </div>
               <div className="bg-white bg-opacity-20 backdrop-blur rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
@@ -1831,22 +1805,22 @@ export default function StudentDashboard() {
                   <span className="text-sm">Completed</span>
                 </div>
                 <p className="text-2xl font-bold">
-                  {myTargets.reduce((acc: any, t: any) => acc + (t.milestones?.filter((m: any) => m.completed).length || 0), 0)}
+                  {progressData?.stats?.completed_milestones || 0} / {progressData?.stats?.total_milestones || 0}
                 </p>
               </div>
               <div className="bg-white bg-opacity-20 backdrop-blur rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Clock className="w-5 h-5" />
-                  <span className="text-sm">Today's Study</span>
+                  <span className="text-sm">Total Study</span>
                 </div>
-                <p className="text-2xl font-bold">1h 25m</p>
+                <p className="text-2xl font-bold">{progressData?.stats?.total_study_hours || 0}h</p>
               </div>
               <div className="bg-white bg-opacity-20 backdrop-blur rounded-xl p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <TrendingUp className="w-5 h-5" />
                   <span className="text-sm">Streak</span>
                 </div>
-                <p className="text-2xl font-bold">12 days</p>
+                <p className="text-2xl font-bold">{progressData?.stats?.current_streak || 0} days</p>
               </div>
             </div>
           </div>
@@ -1869,19 +1843,19 @@ export default function StudentDashboard() {
                       stroke="#10b981"
                       strokeWidth="10"
                       fill="none"
-                      strokeDasharray={`${studentInfo.physicalAttendance * 3.01} 301`}
+                      strokeDasharray={`${(progressData?.attendance?.attendance_percentage || 0) * 3.01} 301`}
                       strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div>
-                      <span className="text-2xl font-bold">{studentInfo.physicalAttendance}%</span>
+                      <span className="text-2xl font-bold">{progressData?.attendance?.attendance_percentage || 0}%</span>
                       <p className="text-xs text-gray-600">Physical</p>
                     </div>
                   </div>
                 </div>
                 <p className="mt-3 text-sm text-gray-600 font-medium">Class Attendance</p>
-                <p className="text-xs text-gray-500 mt-1">({studentInfo.classSchedule.length} days/week)</p>
+                <p className="text-xs text-gray-500 mt-1">({progressData?.attendance?.total_sessions || 0} sessions)</p>
               </div>
 
               {/* Platform Activity */}
@@ -1894,7 +1868,7 @@ export default function StudentDashboard() {
                       stroke="#3b82f6"
                       strokeWidth="10"
                       fill="none"
-                      strokeDasharray={`${studentInfo.platformActivity * 3.01} 301`}
+                      strokeDasharray={`${Math.min((progressData?.stats?.total_study_hours || 0) / 10 * 100, 100) * 3.01} 301`}
                       strokeLinecap="round"
                     />
                   </svg>
@@ -1915,19 +1889,19 @@ export default function StudentDashboard() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
                     <span className="text-sm text-gray-600">Present</span>
-                    <span className="font-semibold text-green-600">18 days</span>
+                    <span className="font-semibold text-green-600">{progressData?.attendance?.present || 0} days</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
                     <span className="text-sm text-gray-600">Late</span>
-                    <span className="font-semibold text-yellow-600">2 days</span>
+                    <span className="font-semibold text-yellow-600">{progressData?.attendance?.late || 0} days</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
                     <span className="text-sm text-gray-600">Absent</span>
-                    <span className="font-semibold text-red-600">1 day</span>
+                    <span className="font-semibold text-red-600">{progressData?.attendance?.absent || 0} days</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
                     <span className="text-sm text-gray-600">Excused</span>
-                    <span className="font-semibold text-blue-600">1 day</span>
+                    <span className="font-semibold text-blue-600">{progressData?.attendance?.excused || 0} days</span>
                   </div>
                 </div>
               </div>
@@ -2099,7 +2073,15 @@ export default function StudentDashboard() {
 
           {/* Targets Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {myTargets.map((target: any) => (
+            {isLoadingProgress ? (
+              <div className="col-span-2 flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading your progress...</p>
+                </div>
+              </div>
+            ) : (progressData?.targets && progressData.targets.length > 0) ? (
+              progressData.targets.map((target: any) => (
               <div key={target.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                 {/* Target Header */}
                 <div className={`p-6 ${
@@ -2226,7 +2208,14 @@ export default function StudentDashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            ) : (
+              <div className="col-span-2 text-center py-12 bg-white rounded-xl shadow-lg">
+                <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Active Targets</h3>
+                <p className="text-gray-500">Your teacher hasn't assigned any learning targets yet.</p>
+              </div>
+            )}
           </div>
 
           {/* Weekly Progress Chart */}
