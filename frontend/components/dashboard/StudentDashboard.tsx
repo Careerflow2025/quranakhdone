@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useHighlights } from '@/hooks/useHighlights';
 import { supabase } from '@/lib/supabase';
@@ -20,6 +20,7 @@ import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
 import { useAssignments } from '@/hooks/useAssignments';
+import { useHomework } from '@/hooks/useHomework';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
 import TargetsPanel from '@/components/targets/TargetsPanel';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
@@ -220,6 +221,46 @@ export default function StudentDashboard() {
     isLoading: assignmentsLoading,
     error: assignmentsError
   } = useAssignments(studentInfo.id);
+
+  // Homework Hook
+  const {
+    homeworkList: homeworkData,
+    isLoading: homeworkLoading,
+    error: homeworkError,
+    fetchHomework
+  } = useHomework();
+
+  // Fetch homework when student info is available
+  useEffect(() => {
+    console.log('📚 Homework useEffect triggered - studentInfo.id:', studentInfo?.id);
+    if (studentInfo?.id) {
+      console.log('🔄 Fetching homework for student:', studentInfo.id);
+      fetchHomework({ student_id: studentInfo.id, include_completed: true });
+    } else {
+      console.log('⚠️ No studentInfo.id - skipping homework fetch');
+    }
+  }, [studentInfo?.id, fetchHomework]);
+
+  // Transform homework data to match UI expectations
+  const transformedHomework = useMemo(() => {
+    console.log('📝 Transforming homework data:', homeworkData?.length || 0, 'items');
+    const transformed = (homeworkData || []).map((hw: any) => ({
+      id: hw.id,
+      studentId: hw.student_id,
+      studentName: hw.student?.display_name || studentInfo.name,
+      class: studentInfo.class || 'N/A',
+      surah: hw.surah ? `Surah ${hw.surah}` : 'Unknown Surah',
+      ayahRange: hw.ayah_start && hw.ayah_end ? `${hw.ayah_start}-${hw.ayah_end}` : 'N/A',
+      note: hw.note || '',
+      assignedDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      dueDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      replies: hw.notes?.length || 0,
+      status: hw.color === 'gold' ? 'completed' : 'pending',
+      color: hw.color,
+    }));
+    console.log('✅ Transformed homework:', transformed);
+    return transformed;
+  }, [homeworkData, studentInfo.name, studentInfo.class]);
 
   const [studentProfile] = useState({
     name: 'Ahmed Hassan',
@@ -1421,150 +1462,139 @@ export default function StudentDashboard() {
 
       {/* Homework Tab */}
       {activeTab === 'homework' && (
-        <div className="space-y-6">
-          {/* Search and Filters */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold flex items-center">
-                <BookOpen className="w-6 h-6 mr-2 text-green-600" />
+        <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center">
+                <BookOpen className="w-7 h-7 mr-3" />
                 My Homework
-                <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                  {safeHighlights.filter((h: any) => h.type === 'homework').length} Total
-                </span>
               </h2>
+              <p className="text-green-100 mt-1">View and complete your homework assignments</p>
             </div>
+          </div>
 
-            {/* Filters */}
+          {/* Filter Bar */}
+          <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-center space-x-4">
+              <select
+                value={homeworkStatusFilter}
+                onChange={(e) => setHomeworkStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+              >
+                <option value="all">All Homework</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search homework by surah, note, or teacher..."
+                  placeholder="Search by surah or note..."
                   value={homeworkSearchTerm}
                   onChange={(e) => setHomeworkSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-100 focus:border-green-400"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
                 />
               </div>
-
-              <select
-                value={homeworkStatusFilter}
-                onChange={(e) => setHomeworkStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-100 focus:border-green-400"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="in-progress">In Progress</option>
-                <option value="overdue">Overdue</option>
-              </select>
-
-              <button
-                onClick={() => {
-                  setHomeworkSearchTerm('');
-                  setHomeworkStatusFilter('all');
-                }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
-              >
-                Clear Filters
-              </button>
             </div>
           </div>
 
-          {/* Homework Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {highlights
-              .filter((h: any) => h.type === 'homework')
-              .filter((h: any) => {
-                if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
-                if (homeworkSearchTerm) {
-                  const searchLower = homeworkSearchTerm.toLowerCase();
-                  return h.teacherNote.toLowerCase().includes(searchLower) ||
-                         h.teacherName.toLowerCase().includes(searchLower) ||
-                         `surah ${h.surah}`.toLowerCase().includes(searchLower);
-                }
-                return true;
+          {/* Homework Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {transformedHomework
+              .filter((hw: any) => {
+                // Status filter - check color field directly
+                const matchesStatus = homeworkStatusFilter === 'all' || hw.status === homeworkStatusFilter;
+
+                // Search filter
+                const searchLower = homeworkSearchTerm.toLowerCase();
+                const matchesSearch = !homeworkSearchTerm ||
+                  hw.surah?.toLowerCase().includes(searchLower) ||
+                  hw.note?.toLowerCase().includes(searchLower);
+
+                return matchesStatus && matchesSearch;
               })
               .map((homework: any) => (
-                <div
-                  key={homework.id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden"
-                >
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold text-white text-lg">
-                          Surah {homework.surah}, Ayah {homework.ayahIndex + 1}
-                        </h3>
-                        <p className="text-green-100 text-sm mt-1">
-                          Assigned by {homework.teacherName}
-                        </p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        homework.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                        homework.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {homework.status}
+              <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                {/* Gold framing for completed, green for pending */}
+                <div className={`h-2 ${
+                  homework.color === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                  'bg-gradient-to-r from-green-500 to-emerald-500'
+                }`}></div>
+
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {homework.surah}
+                      </h3>
+                      <p className="text-sm text-gray-500">Ayah {homework.ayahRange}</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      homework.status === 'completed' ? 'bg-green-100 text-green-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {homework.status}
+                    </span>
+                  </div>
+
+                  {homework.note && (
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                      <p className="text-sm text-gray-600">{homework.note}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Assigned:</span>
+                      <span className="text-gray-700">{homework.assignedDate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Due Date:</span>
+                      <span className="text-gray-700">
+                        {homework.dueDate}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <p className="text-gray-700 mb-4">
-                      {homework.teacherNote}
-                    </p>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Due Date:</span>
-                        <span className={`font-medium ${
-                          homework.status === 'overdue' ? 'text-red-600' : 'text-gray-700'
-                        }`}>
-                          {homework.dueDate}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Assigned:</span>
-                        <span className="text-gray-700">{homework.timestamp}</span>
-                      </div>
-
-                      {homework.replies.length > 0 && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Conversation:</span>
-                          <span className="text-blue-600 font-medium">
-                            {homework.replies.length} messages
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-5 pt-4 border-t flex items-center justify-between">
+                  {homework.status !== 'completed' && (
+                    <div className="mt-4 pt-4 border-t flex justify-between">
                       <button
                         onClick={() => {
                           setActiveTab('quran');
-                          setCurrentSurah(homework.surah);
-                          const page = Math.floor(homework.ayahIndex / AYAHS_PER_PAGE) + 1;
-                          setCurrentPage(page);
+                          const surahNum = parseInt(homework.surah.replace('Surah ', ''));
+                          setCurrentSurah(surahNum);
                         }}
-                        className="flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium"
+                        className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
                       >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Go to Quran</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleHighlightClick(homework.id)}
-                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>Reply</span>
+                        <BookOpen className="w-4 h-4 mr-1" />
+                        Go to Quran
                       </button>
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
+
+          {/* Empty State */}
+          {transformedHomework.filter((hw: any) => {
+            const matchesStatus = homeworkStatusFilter === 'all' || hw.status === homeworkStatusFilter;
+            const searchLower = homeworkSearchTerm.toLowerCase();
+            const matchesSearch = !homeworkSearchTerm ||
+              hw.surah?.toLowerCase().includes(searchLower) ||
+              hw.note?.toLowerCase().includes(searchLower);
+            return matchesStatus && matchesSearch;
+          }).length === 0 && (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No homework found</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {homeworkSearchTerm ? 'Try a different search term' : 'Your teacher will assign homework soon'}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

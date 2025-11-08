@@ -67,6 +67,7 @@ export function useHomework() {
    */
   const fetchHomework = useCallback(async (filters?: HomeworkFilters) => {
     try {
+      console.log('📚 useHomework: fetchHomework called with filters:', filters);
       setIsLoading(true);
       setError(null);
 
@@ -86,10 +87,13 @@ export function useHomework() {
       if (filters?.sort_by) params.append('sort_by', filters.sort_by);
       if (filters?.sort_order) params.append('sort_order', filters.sort_order);
 
+      console.log('🔗 API URL:', `/api/homework?${params.toString()}`);
+
       // Get session for authorization
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         const errorMessage = 'Please login to view homework';
+        console.error('❌ No session found');
         setError(errorMessage);
         return { success: false, error: errorMessage };
       }
@@ -103,24 +107,30 @@ export function useHomework() {
         },
       });
 
+      console.log('📡 API Response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ API Error:', errorData);
         throw new Error(errorData.error || `Failed to fetch homework: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('✅ Homework data received:', data);
 
       if (data.success && data.homework) {
+        console.log('📝 Setting homework list:', data.homework.length, 'items');
         setHomeworkList(data.homework);
         return { success: true, data: data.homework, pagination: data.pagination };
       }
 
+      console.warn('⚠️ Invalid response format:', data);
       return { success: false, error: 'Invalid response format' };
 
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to fetch homework';
       setError(errorMessage);
-      console.error('Fetch homework error:', err);
+      console.error('❌ Fetch homework error:', err);
       return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
