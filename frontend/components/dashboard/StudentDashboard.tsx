@@ -1630,12 +1630,9 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {assignments
                 .filter((assignment: any) => {
-                  // Find the linked highlight for this assignment to check if it's completed (gold)
-                  const linkedHighlight = safeHighlights.find((h: any) =>
-                    h.id === assignment.highlight_id ||
-                    (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
-                  );
-                  const isCompletedByHighlight = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold';
+                  // CRITICAL: Use assignment.highlight.color from API response (TeacherDashboard pattern)
+                  // API now includes linked highlight data via assignment_highlights junction table
+                  const isCompletedByHighlight = assignment.highlight?.color === 'gold' || assignment.highlight?.status === 'gold';
 
                   // Status filter - check both assignment status AND linked highlight color
                   let matchesStatus = false;
@@ -1661,12 +1658,8 @@ export default function StudentDashboard() {
                   return matchesStatus && matchesSearch;
                 })
                 .map((assignment: any) => {
-                  // Find the linked highlight to check completion status
-                  const linkedHighlight = safeHighlights.find((h: any) =>
-                    h.id === assignment.highlight_id ||
-                    (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
-                  );
-                  const isCompleted = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold' || assignment.status === 'completed';
+                  // CRITICAL: Use assignment.highlight directly from API response
+                  const isCompleted = assignment.highlight?.color === 'gold' || assignment.highlight?.status === 'gold' || assignment.status === 'completed';
 
                   const dueDate = assignment.due_at ? new Date(assignment.due_at) : null;
                   const isLate = dueDate && new Date() > dueDate && !isCompleted;
@@ -1738,12 +1731,8 @@ export default function StudentDashboard() {
 
           {/* Empty State */}
           {!assignmentsLoading && !assignmentsError && assignments.filter((assignment: any) => {
-            // Find the linked highlight for this assignment to check if it's completed (gold)
-            const linkedHighlight = safeHighlights.find((h: any) =>
-              h.id === assignment.highlight_id ||
-              (h.surah === assignment.surah && h.ayah_start === assignment.ayah_start)
-            );
-            const isCompletedByHighlight = linkedHighlight?.color === 'gold' || linkedHighlight?.status === 'gold';
+            // CRITICAL: Use assignment.highlight.color from API response (same as main filter)
+            const isCompletedByHighlight = assignment.highlight?.color === 'gold' || assignment.highlight?.status === 'gold';
 
             // Status filter - check both assignment status AND linked highlight color
             let matchesStatus = false;

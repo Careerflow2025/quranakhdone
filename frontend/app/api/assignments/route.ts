@@ -372,6 +372,8 @@ export async function GET(request: NextRequest) {
     } = queryValidation.data;
 
     // 5. Build Supabase query with RLS enforcement (school_id automatically filtered)
+    // CRITICAL: Include linked highlights via assignment_highlights junction table
+    // This allows StudentDashboard to check highlight.color === 'gold' for completion status
     let query = supabaseAdmin
       .from('assignments')
       .select(
@@ -391,6 +393,19 @@ export async function GET(request: NextRequest) {
           profiles:user_id (
             display_name,
             email
+          )
+        ),
+        assignment_highlights (
+          highlight_id,
+          highlights (
+            id,
+            color,
+            status,
+            surah,
+            ayah_start,
+            ayah_end,
+            type,
+            note
           )
         )
       `,
@@ -451,11 +466,15 @@ export async function GET(request: NextRequest) {
     }
 
     // 7. Transform results to AssignmentWithDetails format
+    // CRITICAL: Flatten linked highlights for easy access in StudentDashboard
     const assignmentsWithDetails: AssignmentWithDetails[] = (assignments || []).map(
       (assignment: any) => {
         const now = new Date();
         const dueDate = new Date(assignment.due_at);
         const isOverdue = dueDate < now && assignment.status !== 'completed';
+
+        // Extract first linked highlight (assignments typically have one highlight)
+        const linkedHighlight = assignment.assignment_highlights?.[0]?.highlights || null;
 
         return {
           ...assignment,
@@ -469,6 +488,7 @@ export async function GET(request: NextRequest) {
             display_name: assignment.teacher.profiles?.display_name || 'Unknown',
             email: assignment.teacher.profiles?.email || '',
           },
+          highlight: linkedHighlight, // Flattened highlight with color, status, surah, ayah, etc.
           is_overdue: isOverdue,
         };
       }
