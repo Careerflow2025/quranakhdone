@@ -476,6 +476,11 @@ export default function ParentDashboard() {
   // UI States
   const [showNoteDetail, setShowNoteDetail] = useState<any>(null);
 
+  // Conversation Modal States
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [conversationData, setConversationData] = useState<any>(null);
+
   const AYAHS_PER_PAGE = 10;
   const allSurahs = surahList;
 
@@ -563,10 +568,52 @@ export default function ParentDashboard() {
     loadQuranText();
   }, [currentMushafPage, selectedScript]);
 
-  const handleViewHighlight = (highlightId: any) => {
-    const highlight = highlights.find((h: any) => h.id === highlightId);
-    if (highlight) {
-      setShowNoteDetail(highlight);
+  // Load conversation data when highlight is selected
+  useEffect(() => {
+    if (selectedHighlightForNotes && dbHighlights) {
+      console.log('💬 Loading conversation for highlight:', selectedHighlightForNotes);
+
+      // Find the highlight in dbHighlights by ID
+      const highlightWithNotes = dbHighlights.find((h: any) => h.id === selectedHighlightForNotes);
+
+      if (highlightWithNotes) {
+        console.log('📝 Found highlight with notes:', highlightWithNotes);
+
+        // Structure the conversation data
+        const conversation = {
+          id: highlightWithNotes.id,
+          surah: highlightWithNotes.surah,
+          ayah: highlightWithNotes.ayah_start,
+          wordRange: highlightWithNotes.word_start !== null && highlightWithNotes.word_end !== null
+            ? `Words ${highlightWithNotes.word_start}-${highlightWithNotes.word_end}`
+            : 'Full Ayah',
+          mistakeType: highlightWithNotes.type || 'Note',
+          color: highlightWithNotes.color,
+          createdAt: highlightWithNotes.created_at,
+          notes: highlightWithNotes.notes || []
+        };
+
+        setConversationData(conversation);
+        console.log('✅ Conversation data loaded:', conversation);
+      } else {
+        console.error('❌ Highlight not found in dbHighlights');
+      }
+    }
+  }, [selectedHighlightForNotes, dbHighlights]);
+
+  const handleHighlightClick = (highlightId: any) => {
+    // Open notes conversation modal
+    // Find the highlight to get its database ID
+    console.log('🔍 handleHighlightClick called with ID:', highlightId);
+    console.log('📊 Available highlights:', highlights.map((h: any) => ({ id: h.id, dbId: h.dbId })));
+    const clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+    console.log('✅ Found highlight:', clickedHighlight);
+    if (clickedHighlight && clickedHighlight.dbId) {
+      console.log('📝 Opening modal with dbId:', clickedHighlight.dbId);
+      setSelectedHighlightForNotes(clickedHighlight.dbId);
+      setShowNotesModal(true);
+    } else {
+      console.error('❌ No highlight found or no dbId:', { clickedHighlight, highlightId });
     }
   };
 
@@ -1507,7 +1554,7 @@ export default function ParentDashboard() {
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
                               if (wordHighlights.length > 0) {
-                                handleViewHighlight(wordHighlights[0].id);
+                                handleHighlightClick(wordHighlights[0].id);
                               }
                             }}
                             className="inline cursor-pointer rounded transition-colors select-none"
@@ -1821,7 +1868,7 @@ export default function ParentDashboard() {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleViewHighlight(homework.id)}
+                        onClick={() => handleHighlightClick(homework.id)}
                         className="w-full mt-4 py-2 bg-gray-100 text-gray-600 rounded-lg"
                       >
                         <Eye className="w-4 h-4 inline mr-2" />
@@ -2751,6 +2798,151 @@ export default function ParentDashboard() {
                   Save Changes
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notes Conversation Modal - Read-Only for Parents */}
+      {showNotesModal && conversationData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <MessageCircle className="w-6 h-6 mr-2" />
+                  Conversation Thread
+                </h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  Surah {conversationData.surah}, Ayah {conversationData.ayah} • {conversationData.wordRange}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowNotesModal(false);
+                  setSelectedHighlightForNotes(null);
+                  setConversationData(null);
+                }}
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* View Only Badge */}
+            <div className="bg-yellow-50 px-6 py-3 border-b border-yellow-100">
+              <div className="flex items-center text-yellow-700">
+                <Eye className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">View Only Mode - You cannot reply to this conversation</span>
+              </div>
+            </div>
+
+            {/* Modal Body - Conversation Thread */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              {/* Highlight Info */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          backgroundColor: conversationData.color === 'purple' ? 'rgba(147,51,234,0.2)' :
+                            conversationData.color === 'orange' ? 'rgba(249,115,22,0.2)' :
+                            conversationData.color === 'red' ? 'rgba(239,68,68,0.2)' :
+                            conversationData.color === 'brown' ? 'rgba(113,63,18,0.2)' :
+                            'rgba(107,114,128,0.2)',
+                          color: conversationData.color === 'purple' ? '#7c3aed' :
+                            conversationData.color === 'orange' ? '#f97316' :
+                            conversationData.color === 'red' ? '#ef4444' :
+                            conversationData.color === 'brown' ? '#713f12' :
+                            '#374151'
+                        }}
+                      >
+                        {conversationData.mistakeType}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Created {new Date(conversationData.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes/Messages Thread */}
+              <div className="space-y-4">
+                {conversationData.notes.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No messages in this conversation yet</p>
+                  </div>
+                ) : (
+                  conversationData.notes.map((note: any, index: number) => (
+                    <div key={note.id || index} className="flex items-start space-x-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+                        note.author_user_id === children[selectedChild].user_id
+                          ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                          : 'bg-gradient-to-br from-purple-400 to-purple-600'
+                      }`}>
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className={`rounded-xl p-4 ${
+                          note.author_user_id === children[selectedChild].user_id
+                            ? 'bg-blue-50 border border-blue-100'
+                            : 'bg-purple-50 border border-purple-100'
+                        }`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-sm text-gray-900">
+                              {note.author_user_id === children[selectedChild].user_id ? children[selectedChild].name : 'Teacher'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(note.created_at).toLocaleString()}
+                            </span>
+                          </div>
+
+                          {note.type === 'text' && note.text && (
+                            <p className="text-gray-700">{note.text}</p>
+                          )}
+
+                          {note.type === 'audio' && note.audio_url && (
+                            <div className="flex items-center space-x-3 bg-white rounded-lg p-3">
+                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                <Mic className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-700">Voice Note</p>
+                                <audio controls className="w-full mt-1" style={{ height: '32px' }}>
+                                  <source src={note.audio_url} type="audio/mpeg" />
+                                  Your browser does not support audio playback.
+                                </audio>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer - Read-Only Notice */}
+            <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-between">
+              <div className="flex items-center text-gray-600">
+                <Eye className="w-4 h-4 mr-2" />
+                <span className="text-sm">Parents can view but not reply to conversations</span>
+              </div>
+              <button
+                onClick={() => {
+                  setShowNotesModal(false);
+                  setSelectedHighlightForNotes(null);
+                  setConversationData(null);
+                }}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
