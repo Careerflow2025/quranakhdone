@@ -1057,9 +1057,6 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <TrendingUp className="w-4 h-4" />
                 <span>Progress</span>
-                <span className="bg-indigo-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {progressData?.stats?.active_targets || 0}
-                </span>
               </span>
             </button>
 
@@ -1074,11 +1071,6 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <Target className="w-4 h-4" />
                 <span>Targets</span>
-                {(progressData?.stats?.active_targets || 0) > 0 && (
-                  <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {progressData?.stats?.active_targets || 0}
-                  </span>
-                )}
               </span>
             </button>
 
@@ -1093,11 +1085,6 @@ export default function StudentDashboard() {
               <span className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
                 <span>Messages</span>
-                {messages.inbox.filter((m: any) => m.unread).length > 0 && (
-                  <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {messages.inbox.filter((m: any) => m.unread).length}
-                  </span>
-                )}
               </span>
             </button>
           </nav>
