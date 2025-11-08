@@ -595,7 +595,19 @@ export default function ParentDashboard() {
                 highlightWithNotes.word_start,
                 highlightWithNotes.word_end + 1
               );
-              highlightedText = Array.isArray(selectedWords) ? selectedWords.join(' ') : String(selectedWords);
+
+              // If words are objects with text property, extract text; otherwise join strings
+              if (Array.isArray(selectedWords) && selectedWords.length > 0) {
+                if (typeof selectedWords[0] === 'object' && selectedWords[0] !== null) {
+                  // Words are objects - extract text property from each
+                  highlightedText = selectedWords.map((w: any) => w.text || w).join(' ');
+                } else {
+                  // Words are strings
+                  highlightedText = selectedWords.join(' ');
+                }
+              } else {
+                highlightedText = String(selectedWords);
+              }
             } else {
               // Full ayah highlight
               highlightedText = ayah.text;
