@@ -379,6 +379,67 @@ export default function ParentDashboard() {
     }
   }, [currentChild?.id, fetchHomework]);
 
+  // Load Quran text based on current mushaf page (ADDED from Student Dashboard)
+  useEffect(() => {
+    const loadQuranText = async () => {
+      if (!selectedScript) {
+        console.log('⏳ Waiting for script to be set...');
+        return;
+      }
+
+      const scriptId = selectedScript;
+
+      // Get the current page data to determine which surah to load
+      const pageData = getPageContent(currentMushafPage);
+      if (!pageData) {
+        console.error('❌ Page data not found for page:', currentMushafPage);
+        return;
+      }
+
+      // Load the surah that starts on this page (or contains it)
+      const surahToLoad = pageData.surahStart;
+      const surahInfo = surahList.find((s: any) => s.number === surahToLoad);
+
+      console.log('📖 Loading Quran text (Parent Dashboard):', {
+        script: scriptId,
+        page: currentMushafPage,
+        surah: surahToLoad,
+        pageData
+      });
+
+      try {
+        const surahData = await getSurahByNumber(scriptId, surahToLoad);
+
+        if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
+          setQuranText({
+            surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
+            ayahs: surahData.ayahs.map((ayah: any) => ({
+              number: ayah.numberInSurah,
+              text: ayah.text,
+              words: Array.isArray(ayah.words)
+                ? ayah.words
+                : (ayah.text ? ayah.text.split(' ').map((w: string) => ({ text: w })) : [])
+            }))
+          });
+
+          // Update current surah to match loaded surah
+          if (currentSurah !== surahToLoad) {
+            setCurrentSurah(surahToLoad);
+          }
+
+          console.log('✅ Quran text loaded successfully (Parent Dashboard):', {
+            surah: surahData.name,
+            ayahCount: surahData.ayahs.length
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error loading Quran text (Parent Dashboard):', error);
+      }
+    };
+
+    loadQuranText();
+  }, [currentMushafPage, selectedScript]);
+
   // Transform homework data for UI display (same as Student Dashboard)
   const transformedHomework = useMemo(() => {
     console.log('📝 Transforming homework data:', homeworkData?.length || 0, 'items');
@@ -1441,7 +1502,26 @@ export default function ParentDashboard() {
 
         {/* Quran View Tab (Read-only) - Full Mushaf Implementation */}
         {activeTab === 'quran' && (
-          <div className="grid grid-cols-12 gap-4">
+          <>
+            {/* Context Banner - Show which child's Quran is being viewed */}
+            {currentChild && (
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <UserCircle className="w-8 h-8" />
+                    <div>
+                      <h3 className="font-semibold">{currentChild.name}'s Quran Progress</h3>
+                      <p className="text-sm text-blue-100">
+                        Viewing Quran highlights and teacher annotations (Read-only)
+                      </p>
+                    </div>
+                  </div>
+                  <Eye className="w-6 h-6" />
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Highlights Summary (Read-Only) */}
             <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlights Summary */}
@@ -1874,8 +1954,8 @@ export default function ParentDashboard() {
               </div>
             </div>
           </div>
+          </>
         )}
-
 
         {/* Homework Tab (Database-linked, Read-only for Parent) */}
         {activeTab === 'homework' && (
