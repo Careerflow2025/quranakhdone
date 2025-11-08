@@ -1391,38 +1391,42 @@ export default function ParentDashboard() {
                     const pageData = getPageContent(currentMushafPage);
                     if (!pageData) return <div>Loading page...</div>;
 
-                    // Determine which ayahs to show based on real mushaf page
-                    let pageAyahs = [];
+                    // Get ALL Surahs on this page (not just one filtered Surah)
+                    const surahsToRender = pageData.surahsOnPage || [pageData.surahStart];
 
-                    if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
-                      // Current surah is entirely contained within this page
+                    // For CURRENT implementation: We only have loaded one surah (currentSurah)
+                    // So we'll display that surah's ayahs, but ONLY if it's on this page
+                    let pageAyahs: any[] = [];
+                    let allPageContent = '';
+
+                    // Check if the currently loaded surah is on this page
+                    if (surahsToRender.includes(currentSurah) && quranText.ayahs.length > 0) {
+                      // Determine ayah range for current surah on this page
+                      let startAyah = 1;
+                      let endAyah = Infinity;
+
+                      if (pageData.surahStart === currentSurah) {
+                        startAyah = pageData.ayahStart;
+                      }
+                      if (pageData.surahEnd === currentSurah) {
+                        endAyah = pageData.ayahEnd;
+                      }
+
+                      // Filter ayahs that belong on this page
                       pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
                         const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
+                        return ayahNumber >= startAyah && ayahNumber <= endAyah;
                       });
-                    } else if (pageData.surahStart === currentSurah) {
-                      // Current surah starts on this page but continues on next page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart;
-                      });
-                    } else if (pageData.surahEnd === currentSurah) {
-                      // Current surah ends on this page but started on previous page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber <= pageData.ayahEnd;
-                      });
-                    } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
-                      // Current surah is somewhere in the middle of this page
-                      // Show all ayahs of this surah
-                      pageAyahs = quranText.ayahs;
+
+                      // Add to page content for font sizing
+                      allPageContent = pageAyahs.map((ayah: any) =>
+                        ayah.words.map((word: any) => word.text || word).join(' ')
+                      ).join(' ');
                     }
 
                     // Calculate total page content length for DYNAMIC FONT SIZING
                     // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
-                    const pageContent = pageAyahs.map((ayah: any) =>
-                      ayah.words.map((word: any) => word.text || word).join(' ')
-                    ).join(' ');
+                    const pageContent = allPageContent;
 
                     // Render the page with traditional Mushaf formatting
                     const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
