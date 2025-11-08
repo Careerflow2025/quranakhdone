@@ -256,7 +256,7 @@ export async function GET(request: NextRequest) {
     const uniqueAssignmentIds = [...new Set(schoolGrades.map((g: any) => g.assignment_id))];
     console.log('🔍 Fetching rubrics for', uniqueAssignmentIds.length, 'assignments');
 
-    // 11. Fetch rubrics for these assignments
+    // 11. Fetch rubrics with criteria for these assignments
     const { data: assignmentRubrics, error: rubricsError } = await supabaseAdmin
       .from('assignment_rubrics')
       .select(`
@@ -265,7 +265,9 @@ export async function GET(request: NextRequest) {
         rubrics:rubric_id (
           id,
           name,
-          description
+          description,
+          total_criteria,
+          total_weight
         )
       `)
       .in('assignment_id', uniqueAssignmentIds);
@@ -277,11 +279,51 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Rubrics fetched:', assignmentRubrics?.length || 0, 'rubric links');
 
-    // Create a map of assignment_id -> rubric_name for quick lookup
-    const assignmentRubricMap = new Map<string, string>();
+    // Get unique rubric IDs to fetch criteria
+    const uniqueRubricIds = [...new Set(
+      (assignmentRubrics || [])
+        .map((ar: any) => ar.rubric_id)
+        .filter(Boolean)
+    )];
+
+    console.log('🔍 Fetching criteria for', uniqueRubricIds.length, 'rubrics');
+
+    // Fetch rubric criteria
+    const { data: rubricCriteria, error: criteriaError } = await supabaseAdmin
+      .from('rubric_criteria')
+      .select('*')
+      .in('rubric_id', uniqueRubricIds)
+      .order('order', { ascending: true });
+
+    if (criteriaError) {
+      console.error('⚠️ Error fetching rubric criteria:', criteriaError);
+    }
+
+    console.log('✅ Rubric criteria fetched:', rubricCriteria?.length || 0, 'criteria');
+
+    // Create maps for rubric data
+    const assignmentRubricMap = new Map<string, any>();
+    const rubricCriteriaMap = new Map<string, any[]>();
+
+    // Group criteria by rubric_id
+    (rubricCriteria || []).forEach((criterion: any) => {
+      if (!rubricCriteriaMap.has(criterion.rubric_id)) {
+        rubricCriteriaMap.set(criterion.rubric_id, []);
+      }
+      rubricCriteriaMap.get(criterion.rubric_id)!.push(criterion);
+    });
+
+    // Build complete rubric objects for each assignment
     (assignmentRubrics || []).forEach((ar: any) => {
       if (ar.rubrics?.name) {
-        assignmentRubricMap.set(ar.assignment_id, ar.rubrics.name);
+        assignmentRubricMap.set(ar.assignment_id, {
+          id: ar.rubrics.id,
+          name: ar.rubrics.name,
+          description: ar.rubrics.description || null,
+          total_criteria: ar.rubrics.total_criteria || 0,
+          total_weight: ar.rubrics.total_weight || 100,
+          criteria: rubricCriteriaMap.get(ar.rubric_id) || [],
+        });
       }
     });
 
@@ -297,6 +339,7 @@ export async function GET(request: NextRequest) {
     // 13. Transform to gradebook entries with assignment-level grouping
     const entries = Array.from(assignmentGradesMap.entries()).map(([assignmentId, grades]) => {
       const firstGrade = grades[0];
+      const rubricData = assignmentRubricMap.get(assignmentId);
 
       // Calculate overall percentage for this assignment
       const totalScore = grades.reduce((sum, g) => sum + g.score, 0);
@@ -309,7 +352,8 @@ export async function GET(request: NextRequest) {
         assignment_description: firstGrade.assignments?.description || '',
         assignment_due_at: firstGrade.assignments?.due_at || '',
         assignment_status: firstGrade.assignments?.status || 'unknown',
-        rubric_name: assignmentRubricMap.get(assignmentId) || null, // Get rubric name from map
+        rubric_name: rubricData?.name || null, // Just the name for display
+        rubric: rubricData || null, // Complete rubric object with criteria
         overall_percentage: Math.round(overallPercentage * 10) / 10, // Round to 1 decimal
         graded_at: firstGrade.created_at,
         grades: grades.map((g: any) => {

@@ -118,10 +118,8 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
     if (userRole === 'student' && studentId) {
       console.log('🔄 Fetching student gradebook for:', studentId);
       fetchStudentGradebook(studentId);
-      // Also fetch rubrics list so we can show rubric details
-      fetchRubrics();
     }
-  }, [userRole, studentId, fetchStudentGradebook, fetchRubrics]);
+  }, [userRole, studentId, fetchStudentGradebook]);
 
   // ============================================================================
   // HANDLERS
@@ -259,17 +257,11 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
   /**
    * Handle view rubric details for student
    */
-  const handleViewRubricDetails = async (assignmentId: string, rubricName: string) => {
+  const handleToggleRubricDetails = (assignmentId: string) => {
     // Toggle expansion
     if (expandedRubricId === assignmentId) {
       setExpandedRubricId(null);
-      return;
-    }
-
-    // Find the rubric by name and fetch its details
-    const rubric = rubrics.find(r => r.name === rubricName);
-    if (rubric) {
-      await fetchRubric(rubric.id);
+    } else {
       setExpandedRubricId(assignmentId);
     }
   };
@@ -623,9 +615,9 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
                         <p className="text-sm text-gray-500">
                           {entry.rubric_name || 'No rubric'}
                         </p>
-                        {entry.rubric_name && (
+                        {entry.rubric && (
                           <button
-                            onClick={() => handleViewRubricDetails(entry.assignment_id, entry.rubric_name!)}
+                            onClick={() => handleToggleRubricDetails(entry.assignment_id)}
                             className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition"
                           >
                             {expandedRubricId === entry.assignment_id ? (
@@ -644,19 +636,19 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
                       </div>
 
                       {/* Expandable Rubric Details Section */}
-                      {expandedRubricId === entry.assignment_id && currentRubric && (
+                      {expandedRubricId === entry.assignment_id && entry.rubric && (
                         <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Target className="w-5 h-5 text-purple-600" />
                             <h4 className="font-semibold text-purple-900">Rubric Breakdown</h4>
                           </div>
 
-                          {currentRubric.description && (
-                            <p className="text-sm text-purple-700 mb-3">{currentRubric.description}</p>
+                          {entry.rubric.description && (
+                            <p className="text-sm text-purple-700 mb-3">{entry.rubric.description}</p>
                           )}
 
                           <div className="space-y-2">
-                            {currentRubric.criteria?.map((criterion) => (
+                            {entry.rubric.criteria?.map((criterion: any) => (
                               <div key={criterion.id} className="bg-white rounded-lg p-3 border border-purple-100">
                                 <div className="flex items-start justify-between mb-1">
                                   <p className="font-medium text-gray-900 text-sm">{criterion.name}</p>
@@ -674,7 +666,7 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
 
                           <div className="mt-3 pt-3 border-t border-purple-200 flex items-center justify-between text-xs">
                             <span className="text-purple-700 font-medium">Total Weight:</span>
-                            <span className="text-purple-900 font-bold">{currentRubric.total_weight || 100}%</span>
+                            <span className="text-purple-900 font-bold">{entry.rubric.total_weight || 100}%</span>
                           </div>
                         </div>
                       )}
