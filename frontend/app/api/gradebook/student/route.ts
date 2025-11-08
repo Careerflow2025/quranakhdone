@@ -256,7 +256,7 @@ export async function GET(request: NextRequest) {
     const uniqueAssignmentIds = [...new Set(schoolGrades.map((g: any) => g.assignment_id))];
     console.log('🔍 Fetching rubrics for', uniqueAssignmentIds.length, 'assignments');
 
-    // 11. Fetch rubrics with criteria for these assignments
+    // 11. Fetch rubrics for these assignments
     const { data: assignmentRubrics, error: rubricsError } = await supabaseAdmin
       .from('assignment_rubrics')
       .select(`
@@ -265,9 +265,7 @@ export async function GET(request: NextRequest) {
         rubrics:rubric_id (
           id,
           name,
-          description,
-          total_criteria,
-          total_weight
+          description
         )
       `)
       .in('assignment_id', uniqueAssignmentIds);
@@ -316,13 +314,16 @@ export async function GET(request: NextRequest) {
     // Build complete rubric objects for each assignment
     (assignmentRubrics || []).forEach((ar: any) => {
       if (ar.rubrics?.name) {
+        const criteria = rubricCriteriaMap.get(ar.rubric_id) || [];
+        const total_weight = criteria.reduce((sum: number, c: any) => sum + (c.weight || 0), 0);
+
         assignmentRubricMap.set(ar.assignment_id, {
           id: ar.rubrics.id,
           name: ar.rubrics.name,
           description: ar.rubrics.description || null,
-          total_criteria: ar.rubrics.total_criteria || 0,
-          total_weight: ar.rubrics.total_weight || 100,
-          criteria: rubricCriteriaMap.get(ar.rubric_id) || [],
+          total_criteria: criteria.length,
+          total_weight: Math.round(total_weight * 10) / 10, // Round to 1 decimal
+          criteria: criteria,
         });
       }
     });
