@@ -172,6 +172,44 @@ export default function StudentDashboard() {
           schoolId: (studentData as any).profiles?.school_id || ''
         }));
 
+        // Get teacher ID from class enrollment
+        console.log('🔍 Fetching teacher ID for student:', studentData.id);
+
+        // Get class enrollment
+        const { data: classEnrollment, error: classError } = await supabase
+          .from('class_enrollments')
+          .select('class_id')
+          .eq('student_id', studentData.id)
+          .maybeSingle();
+
+        if (classError) {
+          console.error('⚠️ Error fetching class enrollment:', classError);
+        } else if (classEnrollment) {
+          console.log('✅ Found class enrollment:', classEnrollment.class_id);
+
+          // Get primary teacher for the class
+          const { data: classTeacher, error: teacherError } = await supabase
+            .from('class_teachers')
+            .select('teacher_id')
+            .eq('class_id', classEnrollment.class_id)
+            .maybeSingle();
+
+          if (teacherError) {
+            console.error('⚠️ Error fetching class teacher:', teacherError);
+          } else if (classTeacher) {
+            console.log('✅ Teacher ID set:', classTeacher.teacher_id);
+            setStudentInfo(prev => ({
+              ...prev,
+              teacherId: classTeacher.teacher_id,
+              class: `Class ${classEnrollment.class_id.substring(0, 8)}`
+            }));
+          } else {
+            console.log('ℹ️ No teacher assigned to class yet');
+          }
+        } else {
+          console.log('ℹ️ Student not enrolled in any class yet');
+        }
+
         // TODO: Get locked script from database when migration is applied
         // For now, use default script
         console.log('📖 Using default uthmani-hafs script');
