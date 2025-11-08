@@ -581,6 +581,28 @@ export default function ParentDashboard() {
       if (highlightWithNotes) {
         console.log('📝 Found highlight with notes:', highlightWithNotes);
 
+        // Get the highlighted text from quranText
+        let highlightedText = '';
+        if (quranText && quranText.ayahs && quranText.ayahs.length > 0) {
+          const ayahIndex = highlightWithNotes.ayah_start - 1;
+          const ayah = quranText.ayahs[ayahIndex];
+
+          if (ayah) {
+            if (highlightWithNotes.word_start !== null && highlightWithNotes.word_end !== null) {
+              // Word-level highlight - extract specific words
+              const words = ayah.words || ayah.text.split(' ');
+              const selectedWords = words.slice(
+                highlightWithNotes.word_start,
+                highlightWithNotes.word_end + 1
+              );
+              highlightedText = Array.isArray(selectedWords) ? selectedWords.join(' ') : String(selectedWords);
+            } else {
+              // Full ayah highlight
+              highlightedText = ayah.text;
+            }
+          }
+        }
+
         // Structure the conversation data
         const conversation = {
           id: highlightWithNotes.id,
@@ -592,6 +614,7 @@ export default function ParentDashboard() {
           mistakeType: highlightWithNotes.type || 'Note',
           color: highlightWithNotes.color,
           createdAt: highlightWithNotes.created_at,
+          highlightedText: highlightedText,
           notes: highlightWithNotes.notes || []
         };
 
@@ -601,7 +624,7 @@ export default function ParentDashboard() {
         console.error('❌ Highlight not found in dbHighlights');
       }
     }
-  }, [selectedHighlightForNotes, dbHighlights]);
+  }, [selectedHighlightForNotes, dbHighlights, quranText]);
 
   const handleHighlightClick = (highlightId: any) => {
     // Open notes conversation modal
@@ -2842,34 +2865,53 @@ export default function ParentDashboard() {
 
             {/* Modal Body - Conversation Thread */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              {/* Highlight Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium"
-                        style={{
-                          backgroundColor: conversationData.color === 'purple' ? 'rgba(147,51,234,0.2)' :
-                            conversationData.color === 'orange' ? 'rgba(249,115,22,0.2)' :
-                            conversationData.color === 'red' ? 'rgba(239,68,68,0.2)' :
-                            conversationData.color === 'brown' ? 'rgba(113,63,18,0.2)' :
-                            'rgba(107,114,128,0.2)',
-                          color: conversationData.color === 'purple' ? '#7c3aed' :
-                            conversationData.color === 'orange' ? '#f97316' :
-                            conversationData.color === 'red' ? '#ef4444' :
-                            conversationData.color === 'brown' ? '#713f12' :
-                            '#374151'
-                        }}
-                      >
-                        {conversationData.mistakeType}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Created {new Date(conversationData.createdAt).toLocaleDateString()}
+              {/* Original Highlighted Text */}
+              {conversationData.highlightedText && (
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 mb-6 border border-gray-200">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Highlighter className="w-4 h-4 text-gray-600" />
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                        Original Highlight
                       </span>
                     </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: conversationData.color === 'purple' ? 'rgba(147,51,234,0.2)' :
+                          conversationData.color === 'orange' ? 'rgba(249,115,22,0.2)' :
+                          conversationData.color === 'red' ? 'rgba(239,68,68,0.2)' :
+                          conversationData.color === 'brown' ? 'rgba(113,63,18,0.2)' :
+                          'rgba(107,114,128,0.2)',
+                        color: conversationData.color === 'purple' ? '#7c3aed' :
+                          conversationData.color === 'orange' ? '#f97316' :
+                          conversationData.color === 'red' ? '#ef4444' :
+                          conversationData.color === 'brown' ? '#713f12' :
+                          '#374151'
+                      }}
+                    >
+                      {conversationData.mistakeType}
+                    </span>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-right font-arabic text-2xl leading-loose"
+                      style={{
+                        backgroundColor: conversationData.color === 'purple' ? 'rgba(147,51,234,0.15)' :
+                          conversationData.color === 'orange' ? 'rgba(249,115,22,0.15)' :
+                          conversationData.color === 'red' ? 'rgba(239,68,68,0.15)' :
+                          conversationData.color === 'brown' ? 'rgba(113,63,18,0.15)' :
+                          'rgba(107,114,128,0.15)',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem'
+                      }}
+                    >
+                      {conversationData.highlightedText}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Created {new Date(conversationData.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Notes/Messages Thread */}
               <div className="space-y-4">
