@@ -1638,7 +1638,6 @@ export default function ParentDashboard() {
                     })()}
                   </div>
                 </div>
-                </div>
               </div>
             </div>
 
