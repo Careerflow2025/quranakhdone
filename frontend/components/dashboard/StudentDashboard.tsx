@@ -1780,6 +1780,7 @@ export default function StudentDashboard() {
           isLoading={isLoadingProgress}
           assignments={assignments}
           homeworkData={transformedHomework}
+          studentId={studentInfo.id}
         />
       )}
 

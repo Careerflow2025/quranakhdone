@@ -2,7 +2,7 @@
 
 import {
   Target, Award, Clock, TrendingUp, Calendar,
-  CheckCircle, FileText, BookOpen, BarChart
+  CheckCircle, FileText, BookOpen, BarChart, BookMarked
 } from 'lucide-react';
 
 interface ProgressSectionProps {
@@ -10,13 +10,15 @@ interface ProgressSectionProps {
   isLoading: boolean;
   assignments: any[];
   homeworkData: any[];
+  studentId: string;
 }
 
 export default function ProgressSection({
   progressData,
   isLoading,
   assignments,
-  homeworkData
+  homeworkData,
+  studentId
 }: ProgressSectionProps) {
 
   if (isLoading) {
@@ -30,19 +32,37 @@ export default function ProgressSection({
     );
   }
 
-  // Calculate assignments/homework stats
+  // DEBUG: Log assignments data to see what we're getting
+  console.log('📋 PROGRESS SECTION DEBUG:', {
+    assignments: assignments,
+    assignmentsLength: assignments?.length,
+    sampleAssignment: assignments?.[0],
+    statuses: assignments?.map(a => a.status),
+  });
+
+  // Calculate assignments/homework stats - CHECK FOR 'reviewed' STATUS TOO
   const totalAssignments = assignments?.length || 0;
-  const completedAssignments = assignments?.filter((a: any) => a.status === 'completed').length || 0;
+  const completedAssignments = assignments?.filter((a: any) =>
+    a.status === 'completed' || a.status === 'reviewed'
+  ).length || 0;
   const pendingAssignments = totalAssignments - completedAssignments;
 
   const totalHomework = homeworkData?.length || 0;
   const completedHomework = homeworkData?.filter((h: any) => h.status === 'completed').length || 0;
   const pendingHomework = totalHomework - completedHomework;
 
-  // Calculate overall progress percentage
+  // Calculate overall progress percentage from REAL target progress values
   const overallProgress = progressData?.targets && progressData.targets.length > 0
     ? Math.round(progressData.targets.reduce((acc: number, t: any) => acc + (t.progress || 0), 0) / progressData.targets.length)
     : 0;
+
+  // DEBUG: Log progress calculation
+  console.log('📊 PROGRESS CALCULATION:', {
+    targets: progressData?.targets,
+    targetCount: progressData?.targets?.length,
+    targetProgresses: progressData?.targets?.map((t: any) => t.progress),
+    overallProgress,
+  });
 
   return (
     <div className="space-y-6">
@@ -339,6 +359,33 @@ export default function ProgressSection({
               <p className="text-gray-500">Your teacher hasn't assigned any learning targets yet.</p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Mastery Overview - NEW SECTION */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <h3 className="text-xl font-bold mb-6 flex items-center">
+          <BookMarked className="w-6 h-6 mr-2 text-emerald-600" />
+          Qur'an Mastery Progress
+        </h3>
+
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-6 border border-emerald-200">
+          <p className="text-gray-700 mb-4">
+            Track your mastery progress for each ayah across different surahs. The Mastery tab provides a detailed view of your memorization and recitation skills.
+          </p>
+          <a
+            href="#mastery"
+            onClick={(e) => {
+              e.preventDefault();
+              // This will be handled by the parent component to switch tabs
+              const masteryTab = document.querySelector('[data-tab="mastery"]') as HTMLElement;
+              if (masteryTab) masteryTab.click();
+            }}
+            className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            <BookMarked className="w-4 h-4 mr-2" />
+            View Detailed Mastery Progress
+          </a>
         </div>
       </div>
     </div>
