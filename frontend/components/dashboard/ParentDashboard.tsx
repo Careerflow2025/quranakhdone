@@ -1643,6 +1643,34 @@ export default function ParentDashboard() {
 
             {/* Right Panel - Controls */}
             <div className="col-span-2 space-y-3">
+              {/* Surah Selector */}
+              <div className="bg-white rounded-lg shadow-sm p-3">
+                <h3 className="font-semibold mb-2 text-sm flex items-center">
+                  <BookOpen className="w-4 h-4 mr-2 text-green-600" />
+                  Jump to Surah
+                </h3>
+                <select
+                  value={(() => {
+                    const currentPageContent = getPageContent(currentMushafPage);
+                    return currentPageContent?.surahStart || 1;
+                  })()}
+                  onChange={(e) => {
+                    const selectedSurah = parseInt(e.target.value);
+                    const surahRange = getSurahPageRange(selectedSurah);
+                    if (surahRange) {
+                      setCurrentMushafPage(surahRange.startPage);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {surahList.map((surah) => (
+                    <option key={surah.number} value={surah.number}>
+                      {surah.number}. {surah.transliteration} ({surah.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Zoom Control */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm">Zoom</h3>
