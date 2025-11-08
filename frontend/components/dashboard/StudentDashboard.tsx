@@ -276,7 +276,6 @@ export default function StudentDashboard() {
   const [messageTab, setMessageTab] = useState('inbox');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(3);
-  const [showNoteReply, setShowNoteReply] = useState<any>(null);
   const [replyText, setReplyText] = useState('');
   const [isRecordingReply, setIsRecordingReply] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<any>(null);
@@ -286,10 +285,6 @@ export default function StudentDashboard() {
   const [composeMessage, setComposeMessage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-
-  // Notes modal state for conversation threads
-  const [showNotesModal, setShowNotesModal] = useState(false);
-  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
 
   // Get notifications from API
   const {
@@ -1468,23 +1463,8 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Right Panel - Read-Only Notes Display */}
+            {/* Right Panel - Controls */}
             <div className="col-span-2 space-y-3">
-              <div className="bg-white rounded-lg shadow-sm p-3">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <StickyNote className="w-3 h-3 mr-1" />
-                  Teacher Notes
-                </h3>
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500 italic">View teacher notes on highlighted text</p>
-                  <NotesPanel
-                    studentId={studentInfo.id}
-                    teacherId={studentInfo.teacherId}
-                    readOnly={true}
-                  />
-                </div>
-              </div>
-
               {/* Zoom Control */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm">Zoom</h3>
@@ -1972,16 +1952,6 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* Teacher Notes Conversation Panel - Read-Only for Students */}
-      {showNoteReply && (
-        <NotesPanel
-          highlightId={showNoteReply}
-          mode="modal"
-          onClose={() => setShowNoteReply(null)}
-          readOnly={true}
-        />
-      )}
-
       {/* Compose Message Modal */}
       {showComposeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -2186,23 +2156,6 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* NotesPanel Modal - WhatsApp-style conversation thread */}
-      {showNotesModal && selectedHighlightForNotes && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl">
-            <NotesPanel
-              highlightId={selectedHighlightForNotes}
-              mode="modal"
-              onClose={() => {
-                setShowNotesModal(false);
-                setSelectedHighlightForNotes(null);
-                // Refresh highlights to update note indicators
-                refreshHighlights();
-              }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
