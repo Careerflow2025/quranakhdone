@@ -156,6 +156,9 @@ export default function StudentDashboard() {
     fetchStudentData();
   }, []);
 
+  // Progress data hook - MUST be declared before useEffect that uses fetchProgress
+  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
+
   // Fetch progress data when studentId is available
   useEffect(() => {
     if (studentId && activeTab === 'progress') {
@@ -385,9 +388,6 @@ export default function StudentDashboard() {
       { id: 6, from: 'Ustadh Ahmed', subject: 'Previous assignment feedback', time: '2 weeks ago' }
     ]
   });
-
-  // Progress data hook
-  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
 
   const AYAHS_PER_PAGE = 7;
 
