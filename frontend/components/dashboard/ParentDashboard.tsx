@@ -502,14 +502,36 @@ export default function ParentDashboard() {
     };
   }, [showSurahDropdown, showChildSelector, showNotifications, showProfileDropdown]);
 
-  // Load Quran text
+  // Load Quran text based on current mushaf page - EXACT COPY FROM STUDENT DASHBOARD
   useEffect(() => {
     const loadQuranText = async () => {
-      const scriptId = selectedScript || 'uthmani-hafs';
-      const surahInfo = surahList.find((s: any) => s.number === currentSurah);
+      if (!selectedScript) {
+        console.log('⏳ Waiting for script to be set...');
+        return;
+      }
+
+      const scriptId = selectedScript;
+
+      // Get the current page data to determine which surah to load
+      const pageData = getPageContent(currentMushafPage);
+      if (!pageData) {
+        console.error('❌ Page data not found for page:', currentMushafPage);
+        return;
+      }
+
+      // Load the surah that starts on this page (or contains it)
+      const surahToLoad = pageData.surahStart;
+      const surahInfo = surahList.find((s: any) => s.number === surahToLoad);
+
+      console.log('📖 Loading Quran text:', {
+        script: scriptId,
+        page: currentMushafPage,
+        surah: surahToLoad,
+        pageData
+      });
 
       try {
-        const surahData = await getSurahByNumber(scriptId, currentSurah);
+        const surahData = await getSurahByNumber(scriptId, surahToLoad);
 
         if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
           setQuranText({
@@ -517,18 +539,29 @@ export default function ParentDashboard() {
             ayahs: surahData.ayahs.map((ayah: any) => ({
               number: ayah.numberInSurah,
               text: ayah.text,
-              words: ayah.text.split(' ')
+              words: Array.isArray(ayah.words)
+                ? ayah.words
+                : (ayah.text ? ayah.text.split(' ').map((w: string) => ({ text: w })) : [])
             }))
           });
-          setCurrentPage(1);
+
+          // Update current surah to match loaded surah
+          if (currentSurah !== surahToLoad) {
+            setCurrentSurah(surahToLoad);
+          }
+
+          console.log('✅ Quran text loaded successfully:', {
+            surah: surahData.name,
+            ayahCount: surahData.ayahs.length
+          });
         }
       } catch (error) {
-        console.error('Error loading Quran text:', error);
+        console.error('❌ Error loading Quran text:', error);
       }
     };
 
     loadQuranText();
-  }, [currentSurah, selectedScript]);
+  }, [currentMushafPage, selectedScript]);
 
   const handleViewHighlight = (highlightId: any) => {
     const highlight = highlights.find((h: any) => h.id === highlightId);
@@ -1391,42 +1424,38 @@ export default function ParentDashboard() {
                     const pageData = getPageContent(currentMushafPage);
                     if (!pageData) return <div>Loading page...</div>;
 
-                    // Get ALL Surahs on this page (not just one filtered Surah)
-                    const surahsToRender = pageData.surahsOnPage || [pageData.surahStart];
+                    // Determine which ayahs to show based on real mushaf page - EXACT COPY FROM STUDENT DASHBOARD
+                    let pageAyahs = [];
 
-                    // For CURRENT implementation: We only have loaded one surah (currentSurah)
-                    // So we'll display that surah's ayahs, but ONLY if it's on this page
-                    let pageAyahs: any[] = [];
-                    let allPageContent = '';
-
-                    // Check if the currently loaded surah is on this page
-                    if (surahsToRender.includes(currentSurah) && quranText.ayahs.length > 0) {
-                      // Determine ayah range for current surah on this page
-                      let startAyah = 1;
-                      let endAyah = Infinity;
-
-                      if (pageData.surahStart === currentSurah) {
-                        startAyah = pageData.ayahStart;
-                      }
-                      if (pageData.surahEnd === currentSurah) {
-                        endAyah = pageData.ayahEnd;
-                      }
-
-                      // Filter ayahs that belong on this page
+                    if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
+                      // Current surah is entirely contained within this page
                       pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
                         const ayahNumber = idx + 1;
-                        return ayahNumber >= startAyah && ayahNumber <= endAyah;
+                        return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
                       });
-
-                      // Add to page content for font sizing
-                      allPageContent = pageAyahs.map((ayah: any) =>
-                        ayah.words.map((word: any) => word.text || word).join(' ')
-                      ).join(' ');
+                    } else if (pageData.surahStart === currentSurah) {
+                      // Current surah starts on this page but continues on next page
+                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                        const ayahNumber = idx + 1;
+                        return ayahNumber >= pageData.ayahStart;
+                      });
+                    } else if (pageData.surahEnd === currentSurah) {
+                      // Current surah ends on this page but started on previous page
+                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                        const ayahNumber = idx + 1;
+                        return ayahNumber <= pageData.ayahEnd;
+                      });
+                    } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
+                      // Current surah is somewhere in the middle of this page
+                      // Show all ayahs of this surah
+                      pageAyahs = quranText.ayahs;
                     }
 
                     // Calculate total page content length for DYNAMIC FONT SIZING
                     // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
-                    const pageContent = allPageContent;
+                    const pageContent = pageAyahs.map((ayah: any) =>
+                      ayah.words.map((word: any) => word.text).join(' ')
+                    ).join(' ');
 
                     // Render the page with traditional Mushaf formatting
                     const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
@@ -1647,32 +1676,48 @@ export default function ParentDashboard() {
 
             {/* Right Panel - Controls */}
             <div className="col-span-2 space-y-3">
-              {/* Surah Selector */}
-              <div className="bg-white rounded-lg shadow-sm p-3">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <BookOpen className="w-4 h-4 mr-2 text-green-600" />
-                  Jump to Surah
-                </h3>
-                <select
-                  value={(() => {
-                    const currentPageContent = getPageContent(currentMushafPage);
-                    return currentPageContent?.surahStart || 1;
-                  })()}
-                  onChange={(e) => {
-                    const selectedSurah = parseInt(e.target.value);
-                    const surahRange = getSurahPageRange(selectedSurah);
-                    if (surahRange) {
-                      setCurrentMushafPage(surahRange.startPage);
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              {/* Surah Selector - EXACT COPY FROM STUDENT DASHBOARD */}
+              <div className="relative surah-dropdown-container">
+                <button
+                  onClick={() => setShowSurahDropdown(!showSurahDropdown)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition w-full justify-center"
                 >
-                  {surahList.map((surah) => (
-                    <option key={surah.number} value={surah.number}>
-                      {surah.number}. {surah.transliteration} ({surah.name})
-                    </option>
-                  ))}
-                </select>
+                  <BookOpen className="w-4 h-4 text-green-600" />
+                  <span className="font-medium text-green-700">Change Surah</span>
+                  <ChevronDown className={`w-4 h-4 text-green-600 transition-transform ${showSurahDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showSurahDropdown && (
+                  <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
+                    <div className="p-2">
+                      {surahList.map((surah: any) => (
+                        <button
+                          key={surah.number}
+                          onClick={() => {
+                            // Navigate to first page of selected surah
+                            const { firstPage } = getSurahPageRange(surah.number);
+                            console.log('🔖 Navigating to surah:', surah.number, 'page:', firstPage);
+                            setCurrentMushafPage(firstPage);
+                            setCurrentSurah(surah.number);
+                            setShowSurahDropdown(false);
+                          }}
+                          className={`w-full text-left p-2 rounded-lg hover:bg-gray-50 ${
+                            currentSurah === surah.number ? 'bg-green-50 border-green-200 border' : ''
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="font-medium">{surah.number}. </span>
+                              <span className="font-arabic text-lg">{surah.nameArabic}</span>
+                              <p className="text-xs text-gray-500">{surah.nameEnglish} • {surah.verses} verses</p>
+                            </div>
+                            {currentSurah === surah.number && <Check className="w-4 h-4 text-green-600" />}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Zoom Control */}
