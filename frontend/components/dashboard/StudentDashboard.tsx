@@ -91,9 +91,13 @@ export default function StudentDashboard() {
     email: '',
     dob: '',
     gender: '',
+    age: 0,
+    grade: '',
+    phone: '',
+    address: '',
+    active: true,
     enrollmentDate: '',
     schoolId: '',
-    age: 12,
     class: '',
     teacherId: '',
     currentSurah: 1,
@@ -129,6 +133,11 @@ export default function StudentDashboard() {
             user_id,
             dob,
             gender,
+            age,
+            grade,
+            phone,
+            address,
+            active,
             created_at,
             profiles:user_id (
               display_name,
@@ -154,6 +163,11 @@ export default function StudentDashboard() {
           email: (studentData as any).profiles?.email || '',
           dob: studentData.dob || '',
           gender: studentData.gender || '',
+          age: studentData.age || 0,
+          grade: studentData.grade || '',
+          phone: studentData.phone || '',
+          address: studentData.address || '',
+          active: studentData.active !== undefined ? studentData.active : true,
           enrollmentDate: studentData.created_at || '',
           schoolId: (studentData as any).profiles?.school_id || ''
         }));
@@ -2054,30 +2068,31 @@ export default function StudentDashboard() {
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-              {/* Personal Information */}
+              {/* Left Column - Student Details */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+                <h3 className="font-semibold text-gray-700 border-b pb-2">Student Details</h3>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-gray-500">Full Name</label>
+                    <label className="text-xs text-gray-500">Name</label>
                     <p className="text-sm font-medium text-gray-800">{studentInfo.name || 'Not available'}</p>
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-500">Student ID</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.id || 'Not available'}</p>
+                    <label className="text-xs text-gray-500">Email</label>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.email || 'Not available'}</p>
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-500">Date of Birth</label>
+                    <label className="text-xs text-gray-500">Age</label>
                     <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.dob ? new Date(studentInfo.dob).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      }) : 'Not available'}
+                      {studentInfo.age ? `${studentInfo.age} years` : 'Not available'}
                     </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Grade</label>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.grade || 'Not available'}</p>
                   </div>
 
                   <div>
@@ -2086,23 +2101,58 @@ export default function StudentDashboard() {
                       {studentInfo.gender || 'Not available'}
                     </p>
                   </div>
-                </div>
-              </div>
 
-              {/* Academic Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Academic Information</h3>
+                  <div>
+                    <label className="text-xs text-gray-500">Status</label>
+                    <p className="text-sm font-medium text-gray-800">
+                      <span className={`px-2 py-1 rounded text-xs ${studentInfo.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {studentInfo.active ? 'active' : 'inactive'}
+                      </span>
+                    </p>
+                  </div>
 
-                <div className="space-y-3">
                   <div>
                     <label className="text-xs text-gray-500">Enrollment Date</label>
                     <p className="text-sm font-medium text-gray-800">
                       {studentInfo.enrollmentDate ? new Date(studentInfo.enrollmentDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric'
                       }) : 'Not available'}
                     </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Phone</label>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.phone || 'Not available'}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Student ID</label>
+                    <p className="text-sm font-medium text-gray-800 text-xs break-all">{studentInfo.id || 'Not available'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Additional Information */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-700 border-b pb-2">Additional Information</h3>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-500">Date of Birth</label>
+                    <p className="text-sm font-medium text-gray-800">
+                      {studentInfo.dob ? new Date(studentInfo.dob).toLocaleDateString('en-US', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric'
+                      }) : 'Not available'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Address</label>
+                    <p className="text-sm font-medium text-gray-800">{studentInfo.address || 'Not available'}</p>
                   </div>
 
                   <div>
@@ -2114,36 +2164,6 @@ export default function StudentDashboard() {
                     <label className="text-xs text-gray-500">Revision Progress</label>
                     <p className="text-sm font-medium text-gray-800">{studentInfo.revision || '0 Juz'}</p>
                   </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500">Email</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.email || 'Not available'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Overview */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Progress Overview</h3>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500">Last Session</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.lastSession ? new Date(studentInfo.lastSession).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      }) : 'No sessions yet'}
-                    </p>
-                  </div>
 
                   <div>
                     <label className="text-xs text-gray-500">Current Surah</label>
@@ -2153,6 +2173,17 @@ export default function StudentDashboard() {
                   <div>
                     <label className="text-xs text-gray-500">Current Ayah</label>
                     <p className="text-sm font-medium text-gray-800">Ayah {studentInfo.currentAyah}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Last Session</label>
+                    <p className="text-sm font-medium text-gray-800">
+                      {studentInfo.lastSession ? new Date(studentInfo.lastSession).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      }) : 'No sessions yet'}
+                    </p>
                   </div>
                 </div>
               </div>
