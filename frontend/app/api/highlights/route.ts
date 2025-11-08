@@ -202,6 +202,20 @@ export async function POST(req: NextRequest) {
             });
 
           console.log('✅ Assignment event created');
+
+          // Link highlight to assignment in junction table
+          const { error: linkError } = await supabaseAdmin
+            .from('assignment_highlights')
+            .insert({
+              assignment_id: createdAssignment.id,
+              highlight_id: highlight.id
+            });
+
+          if (linkError) {
+            console.error('⚠️ Failed to link assignment to highlight:', linkError);
+          } else {
+            console.log('✅ Assignment linked to highlight in junction table');
+          }
         } else {
           console.error('⚠️ Failed to create assignment:', assignmentError);
           // Don't fail the highlight creation if assignment fails
