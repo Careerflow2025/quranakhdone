@@ -32,12 +32,21 @@ export default function ProgressSection({
     );
   }
 
-  // DEBUG: Log assignments data to see what we're getting
-  console.log('📋 PROGRESS SECTION DEBUG:', {
-    assignments: assignments,
-    assignmentsLength: assignments?.length,
-    sampleAssignment: assignments?.[0],
-    statuses: assignments?.map(a => a.status),
+  // DEBUG: Enhanced logging to see actual data
+  console.log('📋 ASSIGNMENTS DEBUG - DETAILED:', {
+    total: assignments?.length || 0,
+    statuses: assignments?.map((a: any) => ({
+      title: a.title,
+      status: a.status,
+      isCompleted: a.status === 'completed' || a.status === 'reviewed'
+    })),
+    byStatus: {
+      completed: assignments?.filter((a: any) => a.status === 'completed').length || 0,
+      reviewed: assignments?.filter((a: any) => a.status === 'reviewed').length || 0,
+      submitted: assignments?.filter((a: any) => a.status === 'submitted').length || 0,
+      assigned: assignments?.filter((a: any) => a.status === 'assigned').length || 0,
+      viewed: assignments?.filter((a: any) => a.status === 'viewed').length || 0,
+    }
   });
 
   // Calculate assignments/homework stats - CHECK FOR 'reviewed' STATUS TOO
@@ -46,6 +55,13 @@ export default function ProgressSection({
     a.status === 'completed' || a.status === 'reviewed'
   ).length || 0;
   const pendingAssignments = totalAssignments - completedAssignments;
+
+  console.log('📊 ASSIGNMENTS CALCULATION:', {
+    total: totalAssignments,
+    completed: completedAssignments,
+    pending: pendingAssignments,
+    completionRate: totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) + '%' : '0%'
+  });
 
   const totalHomework = homeworkData?.length || 0;
   const completedHomework = homeworkData?.filter((h: any) => h.status === 'completed').length || 0;
@@ -56,12 +72,17 @@ export default function ProgressSection({
     ? Math.round(progressData.targets.reduce((acc: number, t: any) => acc + (t.progress || 0), 0) / progressData.targets.length)
     : 0;
 
-  // DEBUG: Log progress calculation
-  console.log('📊 PROGRESS CALCULATION:', {
-    targets: progressData?.targets,
-    targetCount: progressData?.targets?.length,
-    targetProgresses: progressData?.targets?.map((t: any) => t.progress),
-    overallProgress,
+  // DEBUG: Enhanced progress logging
+  console.log('📈 TARGET PROGRESS - DETAILED:', {
+    hasTargets: !!progressData?.targets,
+    targetCount: progressData?.targets?.length || 0,
+    targets: progressData?.targets?.map((t: any) => ({
+      title: t.title,
+      progress: t.progress,
+      status: t.status
+    })),
+    totalProgress: progressData?.targets?.reduce((acc: number, t: any) => acc + (t.progress || 0), 0),
+    averageProgress: overallProgress + '%'
   });
 
   return (
