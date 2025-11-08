@@ -292,10 +292,6 @@ export default function ParentDashboard() {
     error: assignmentsError
   } = useAssignments(currentChild?.id || '');
 
-  // Assignment filter state (same as Student Dashboard)
-  const [assignmentSearchTerm, setAssignmentSearchTerm] = useState('');
-  const [assignmentTypeFilter, setAssignmentTypeFilter] = useState('all');
-
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
   // Transform database highlights to UI format
