@@ -25,6 +25,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Loader,
   AlertCircle,
   Star,
@@ -83,6 +85,7 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
   const [selectedRubric, setSelectedRubric] = useState<RubricWithDetails | null>(null);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>('');
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  const [expandedRubricId, setExpandedRubricId] = useState<string | null>(null);
 
   // Create rubric form state
   const [rubricForm, setRubricForm] = useState({
@@ -115,8 +118,10 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
     if (userRole === 'student' && studentId) {
       console.log('🔄 Fetching student gradebook for:', studentId);
       fetchStudentGradebook(studentId);
+      // Also fetch rubrics list so we can show rubric details
+      fetchRubrics();
     }
-  }, [userRole, studentId, fetchStudentGradebook]);
+  }, [userRole, studentId, fetchStudentGradebook, fetchRubrics]);
 
   // ============================================================================
   // HANDLERS
@@ -249,6 +254,24 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
       format: 'csv',
       include_comments: true,
     });
+  };
+
+  /**
+   * Handle view rubric details for student
+   */
+  const handleViewRubricDetails = async (assignmentId: string, rubricName: string) => {
+    // Toggle expansion
+    if (expandedRubricId === assignmentId) {
+      setExpandedRubricId(null);
+      return;
+    }
+
+    // Find the rubric by name and fetch its details
+    const rubric = rubrics.find(r => r.name === rubricName);
+    if (rubric) {
+      await fetchRubric(rubric.id);
+      setExpandedRubricId(assignmentId);
+    }
   };
 
   /**
@@ -588,18 +611,77 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
               </div>
             ) : (
               gradebookEntries.map((entry) => (
-                <div key={entry.assignment_id} className="p-4">
+                <div key={entry.assignment_id} className="p-4 border-b border-gray-100 last:border-b-0">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 mb-1">
                         {entry.assignment_title}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-3">
-                        {entry.rubric_name || 'No rubric'}
-                      </p>
 
-                      {/* Criteria Grades */}
+                      {/* Rubric Name with View Details Button */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <p className="text-sm text-gray-500">
+                          {entry.rubric_name || 'No rubric'}
+                        </p>
+                        {entry.rubric_name && (
+                          <button
+                            onClick={() => handleViewRubricDetails(entry.assignment_id, entry.rubric_name!)}
+                            className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition"
+                          >
+                            {expandedRubricId === entry.assignment_id ? (
+                              <>
+                                <ChevronUp className="w-3 h-3" />
+                                Hide Details
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-3 h-3" />
+                                View Rubric Details
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Expandable Rubric Details Section */}
+                      {expandedRubricId === entry.assignment_id && currentRubric && (
+                        <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className="w-5 h-5 text-purple-600" />
+                            <h4 className="font-semibold text-purple-900">Rubric Breakdown</h4>
+                          </div>
+
+                          {currentRubric.description && (
+                            <p className="text-sm text-purple-700 mb-3">{currentRubric.description}</p>
+                          )}
+
+                          <div className="space-y-2">
+                            {currentRubric.criteria?.map((criterion) => (
+                              <div key={criterion.id} className="bg-white rounded-lg p-3 border border-purple-100">
+                                <div className="flex items-start justify-between mb-1">
+                                  <p className="font-medium text-gray-900 text-sm">{criterion.name}</p>
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-purple-600 font-semibold">{criterion.weight}%</span>
+                                    <span className="text-gray-500">{criterion.max_score} pts max</span>
+                                  </div>
+                                </div>
+                                {criterion.description && (
+                                  <p className="text-xs text-gray-600 mt-1">{criterion.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-3 pt-3 border-t border-purple-200 flex items-center justify-between text-xs">
+                            <span className="text-purple-700 font-medium">Total Weight:</span>
+                            <span className="text-purple-900 font-bold">{currentRubric.total_weight || 100}%</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Your Grades for Each Criterion */}
                       <div className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">Your Grades:</p>
                         {entry.grades.map((grade) => (
                           <div key={grade.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                             <div className="flex-1">
