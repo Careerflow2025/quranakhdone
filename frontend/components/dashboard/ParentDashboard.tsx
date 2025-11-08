@@ -368,7 +368,10 @@ export default function ParentDashboard() {
   useEffect(() => {
     if (currentChild?.id) {
       console.log('📚 Fetching homework for child:', currentChild.id);
-      fetchHomework(currentChild.id, true); // include_completed: true
+      fetchHomework({
+        student_id: currentChild.id,
+        include_completed: true
+      });
     }
   }, [currentChild?.id, fetchHomework]);
 
