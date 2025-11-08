@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useHighlights } from '@/hooks/useHighlights';
+import { useHomework } from '@/hooks/useHomework';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -275,6 +276,14 @@ export default function ParentDashboard() {
     refreshHighlights
   } = useHighlights(currentChild?.id || null);
 
+  // Get homework from database for the selected child
+  const {
+    homeworkList: homeworkData,
+    isLoading: homeworkLoading,
+    error: homeworkError,
+    fetchHomework
+  } = useHomework();
+
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
   // Transform database highlights to UI format
@@ -346,6 +355,35 @@ export default function ParentDashboard() {
 
     setHighlights(pageHighlights);
   }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
+
+  // Fetch homework when selected child changes
+  useEffect(() => {
+    if (currentChild?.id) {
+      console.log('📚 Fetching homework for child:', currentChild.id);
+      fetchHomework(currentChild.id, true); // include_completed: true
+    }
+  }, [currentChild?.id, fetchHomework]);
+
+  // Transform homework data for UI display (same as Student Dashboard)
+  const transformedHomework = useMemo(() => {
+    console.log('📝 Transforming homework data:', homeworkData?.length || 0, 'items');
+    const transformed = (homeworkData || []).map((hw: any) => ({
+      id: hw.id,
+      studentId: hw.student_id,
+      studentName: currentChild?.name || 'Unknown',
+      class: currentChild?.class || 'N/A',
+      surah: hw.surah ? `Surah ${hw.surah}` : 'Unknown Surah',
+      ayahRange: hw.ayah_start && hw.ayah_end ? `${hw.ayah_start}-${hw.ayah_end}` : 'N/A',
+      note: hw.note || '',
+      assignedDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      dueDate: hw.created_at ? new Date(hw.created_at).toLocaleDateString() : '',
+      replies: hw.notes?.length || 0,
+      status: hw.color === 'gold' ? 'completed' : 'pending',
+      color: hw.color,
+    }));
+    console.log('✅ Transformed homework:', transformed);
+    return transformed;
+  }, [homeworkData, currentChild?.name, currentChild?.class]);
 
   // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
   const safeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
@@ -1824,16 +1862,17 @@ export default function ParentDashboard() {
         )}
 
 
-        {/* Homework Tab (Read-only) */}
+        {/* Homework Tab (Database-linked, Read-only for Parent) */}
         {activeTab === 'homework' && (
           <div className="space-y-6">
+            {/* Header */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold flex items-center">
                   <BookOpen className="w-6 h-6 mr-2 text-green-600" />
                   {currentChild.name}'s Homework
                   <span className="ml-3 bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'homework').length} Total
+                    {transformedHomework.length} Total
                   </span>
                 </h2>
                 <div className="bg-yellow-50 px-4 py-2 rounded-lg">
@@ -1842,6 +1881,7 @@ export default function ParentDashboard() {
                 </div>
               </div>
 
+              {/* Filters */}
               <div className="flex items-center space-x-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -1858,63 +1898,124 @@ export default function ParentDashboard() {
                   onChange={(e) => setHomeworkStatusFilter(e.target.value)}
                   className="px-4 py-2 border border-gray-200 rounded-lg"
                 >
-                  <option value="all">All Status</option>
+                  <option value="all">All</option>
                   <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
                   <option value="completed">Completed</option>
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {highlights
-                .filter((h: any) => h.type === 'homework')
-                .filter((h: any) => {
-                  if (homeworkStatusFilter !== 'all' && h.status !== homeworkStatusFilter) return false;
-                  if (homeworkSearchTerm) {
-                    const searchLower = homeworkSearchTerm.toLowerCase();
-                    return h.teacherNote.toLowerCase().includes(searchLower) ||
-                           h.teacherName.toLowerCase().includes(searchLower);
-                  }
-                  return true;
-                })
-                .map((homework: any) => (
-                  <div key={homework.id} className="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
-                      <h3 className="font-semibold text-white">
-                        Surah {homework.surah}, Ayah {homework.ayahIndex + 1}
-                      </h3>
-                      <p className="text-green-100 text-sm">By {homework.teacherName}</p>
-                    </div>
-                    <div className="p-5">
-                      <p className="text-gray-700 mb-4">{homework.teacherNote}</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Due:</span>
-                          <span>{homework.dueDate}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Status:</span>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            homework.status === 'completed' ? 'bg-green-100 text-green-700' :
-                            homework.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                            'bg-yellow-100 text-yellow-700'
+            {/* Loading State */}
+            {homeworkLoading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <p className="mt-2 text-gray-500">Loading homework...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {homeworkError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-700">Error loading homework: {homeworkError}</p>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!homeworkLoading && !homeworkError && transformedHomework.length === 0 && (
+              <div className="text-center py-12">
+                <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-500 text-lg">No homework assigned yet</p>
+              </div>
+            )}
+
+            {/* Homework Cards */}
+            {!homeworkLoading && !homeworkError && transformedHomework.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                {transformedHomework
+                  .filter((homework: any) => {
+                    // Status filter
+                    if (homeworkStatusFilter !== 'all' && homework.status !== homeworkStatusFilter) return false;
+
+                    // Search filter
+                    if (homeworkSearchTerm) {
+                      const searchLower = homeworkSearchTerm.toLowerCase();
+                      return homework.surah.toLowerCase().includes(searchLower) ||
+                             homework.ayahRange.toLowerCase().includes(searchLower) ||
+                             homework.note.toLowerCase().includes(searchLower);
+                    }
+
+                    return true;
+                  })
+                  .map((homework: any) => (
+                    <div key={homework.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      {/* Color-coded header - Yellow for completed, Green for pending */}
+                      <div className={`h-2 ${
+                        homework.color === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                        'bg-gradient-to-r from-green-500 to-emerald-500'
+                      }`}></div>
+
+                      <div className="p-5">
+                        {/* Surah and Ayah */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="font-semibold text-lg text-gray-900">
+                              {homework.surah}
+                            </h3>
+                            <p className="text-sm text-gray-500">Ayah {homework.ayahRange}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            homework.color === 'gold'
+                              ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                              : 'bg-green-100 text-green-700 border border-green-200'
                           }`}>
-                            {homework.status}
+                            {homework.status === 'completed' ? '✓ Completed' : 'Pending'}
                           </span>
                         </div>
+
+                        {/* Note */}
+                        {homework.note && (
+                          <p className="text-gray-700 text-sm mb-4 line-clamp-2">{homework.note}</p>
+                        )}
+
+                        {/* Metadata */}
+                        <div className="space-y-2 text-xs text-gray-500 mb-4">
+                          <div className="flex justify-between items-center">
+                            <span className="flex items-center">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Assigned
+                            </span>
+                            <span className="font-medium text-gray-700">{homework.assignedDate}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="flex items-center">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Due
+                            </span>
+                            <span className="font-medium text-gray-700">{homework.dueDate}</span>
+                          </div>
+                          {homework.replies > 0 && (
+                            <div className="flex justify-between items-center">
+                              <span className="flex items-center">
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                Replies
+                              </span>
+                              <span className="font-medium text-gray-700">{homework.replies}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* View Details Button */}
+                        <button
+                          className="w-full py-2 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleHighlightClick(homework.id)}
-                        className="w-full mt-4 py-2 bg-gray-100 text-gray-600 rounded-lg"
-                      >
-                        <Eye className="w-4 h-4 inline mr-2" />
-                        View Details
-                      </button>
                     </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            )}
           </div>
         )}
 
