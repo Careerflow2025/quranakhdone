@@ -169,6 +169,7 @@ export default function ParentDashboard() {
           active: child.active !== false,
         }));
 
+        console.log('📊 Parent Dashboard - Children loaded:', transformedChildren.length, transformedChildren);
         setChildren(transformedChildren);
       }
     }
@@ -589,7 +590,10 @@ export default function ParentDashboard() {
             <div className="flex-1 max-w-lg mx-8">
               <div className="relative child-selector-container">
                 <button
-                  onClick={() => setShowChildSelector(!showChildSelector)}
+                  onClick={() => {
+                    console.log('🔘 Child selector clicked. Current state:', showChildSelector, 'Children:', children.length);
+                    setShowChildSelector(!showChildSelector);
+                  }}
                   className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-200 border border-blue-200 shadow-sm hover:shadow-md"
                 >
                   <div className="flex items-center space-x-4">
@@ -644,6 +648,7 @@ export default function ParentDashboard() {
                         <button
                           key={child.id}
                           onClick={() => {
+                            console.log('👶 Selecting child:', index, child.name);
                             setSelectedChild(index);
                             setShowChildSelector(false);
                           }}
