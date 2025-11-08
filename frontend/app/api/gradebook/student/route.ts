@@ -252,7 +252,40 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ School grades filtered:', schoolGrades.length, 'grades');
 
-    // 10. Group grades by assignment
+    // 10. Get unique assignment IDs to fetch rubrics
+    const uniqueAssignmentIds = [...new Set(schoolGrades.map((g: any) => g.assignment_id))];
+    console.log('🔍 Fetching rubrics for', uniqueAssignmentIds.length, 'assignments');
+
+    // 11. Fetch rubrics for these assignments
+    const { data: assignmentRubrics, error: rubricsError } = await supabaseAdmin
+      .from('assignment_rubrics')
+      .select(`
+        assignment_id,
+        rubric_id,
+        rubrics:rubric_id (
+          id,
+          name,
+          description
+        )
+      `)
+      .in('assignment_id', uniqueAssignmentIds);
+
+    if (rubricsError) {
+      console.error('⚠️ Error fetching rubrics:', rubricsError);
+      // Don't fail the request, just log the error
+    }
+
+    console.log('✅ Rubrics fetched:', assignmentRubrics?.length || 0, 'rubric links');
+
+    // Create a map of assignment_id -> rubric_name for quick lookup
+    const assignmentRubricMap = new Map<string, string>();
+    (assignmentRubrics || []).forEach((ar: any) => {
+      if (ar.rubrics?.name) {
+        assignmentRubricMap.set(ar.assignment_id, ar.rubrics.name);
+      }
+    });
+
+    // 12. Group grades by assignment
     const assignmentGradesMap = new Map<string, any[]>();
     schoolGrades.forEach((grade: any) => {
       if (!assignmentGradesMap.has(grade.assignment_id)) {
@@ -261,7 +294,7 @@ export async function GET(request: NextRequest) {
       assignmentGradesMap.get(grade.assignment_id)!.push(grade);
     });
 
-    // 11. Transform to gradebook entries with assignment-level grouping
+    // 13. Transform to gradebook entries with assignment-level grouping
     const entries = Array.from(assignmentGradesMap.entries()).map(([assignmentId, grades]) => {
       const firstGrade = grades[0];
 
@@ -276,7 +309,7 @@ export async function GET(request: NextRequest) {
         assignment_description: firstGrade.assignments?.description || '',
         assignment_due_at: firstGrade.assignments?.due_at || '',
         assignment_status: firstGrade.assignments?.status || 'unknown',
-        rubric_name: null, // TODO: Get rubric name from assignment_rubrics table
+        rubric_name: assignmentRubricMap.get(assignmentId) || null, // Get rubric name from map
         overall_percentage: Math.round(overallPercentage * 10) / 10, // Round to 1 decimal
         graded_at: firstGrade.created_at,
         grades: grades.map((g: any) => {
