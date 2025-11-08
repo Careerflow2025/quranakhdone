@@ -7,9 +7,13 @@ import {
   getQuranByScriptId,
   getSurahByNumber,
   getAllQuranScripts,
-  getScriptStyling
+  getScriptStyling,
+  getResponsiveScriptStyling,
+  getDynamicScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
+import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
+import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
 import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
@@ -217,6 +221,28 @@ export default function ParentDashboard() {
   const [quranText, setQuranText] = useState({ surah: '', ayahs: [] });
   const [showChildSelector, setShowChildSelector] = useState(false);
 
+  // Mushaf-specific states (for Student Dashboard Quran View)
+  const [currentMushafPage, setCurrentMushafPage] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [showSurahDropdown, setShowSurahDropdown] = useState(false);
+  const [surahSearch, setSurahSearch] = useState('');
+  const quranContainerRef = useRef<HTMLDivElement>(null);
+
+  // Pen annotation states (read-only for parents)
+  const [penMode, setPenMode] = useState(false);
+  const [penColor, setPenColor] = useState('#FF0000');
+  const [penWidth, setPenWidth] = useState(2);
+  const [eraserMode, setEraserMode] = useState(false);
+
+  // Mistake Types for Highlights (Read-only display for parents)
+  const mistakeTypes = [
+    { id: 'recap', name: 'Recap/Review', color: 'purple', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+    { id: 'homework', name: 'Homework', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
+    { id: 'tajweed', name: 'Tajweed', color: 'orange', bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
+    { id: 'haraka', name: 'Haraka', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
+    { id: 'letter', name: 'Letter', color: 'brown', bgColor: 'bg-amber-100', textColor: 'text-amber-900' }
+  ];
+
   // Filter States
   const [homeworkSearchTerm, setHomeworkSearchTerm] = useState('');
   const [homeworkStatusFilter, setHomeworkStatusFilter] = useState('all');
@@ -224,8 +250,6 @@ export default function ParentDashboard() {
   const [assignmentTypeFilter, setAssignmentTypeFilter] = useState('all');
 
   // Dropdown States
-  const [showSurahDropdown, setShowSurahDropdown] = useState(false);
-  const [surahSearch, setSurahSearch] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -250,8 +274,78 @@ export default function ParentDashboard() {
 
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
-  // Replace hardcoded highlights with database highlights
-  const highlights = dbHighlights || [];
+  // Transform database highlights to UI format
+  const [highlights, setHighlights] = useState<any[]>([]);
+
+  // Transform database highlights to UI format for current page (same as Student Dashboard)
+  useEffect(() => {
+    if (!dbHighlights || dbHighlights.length === 0) {
+      setHighlights([]);
+      return;
+    }
+
+    // Get current page data
+    const pageData = getPageContent(currentMushafPage);
+    if (!pageData) return;
+
+    // Transform highlights to UI format with ayahIndex and wordIndex
+    const pageHighlights: any[] = [];
+
+    dbHighlights.forEach((dbHighlight: any) => {
+      // Only show highlights for current surah
+      if (dbHighlight.surah === currentSurah) {
+        // Full ayah highlight (word_start and word_end are null)
+        if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
+          // Find all words in this ayah range
+          for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
+            const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNum);
+            if (ayahIndex >= 0) {
+              const ayah = quranText.ayahs[ayahIndex];
+              const wordCount = ayah.words?.length || 0;
+
+              // Highlight all words in this ayah
+              for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
+                pageHighlights.push({
+                  id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
+                  dbId: dbHighlight.id,
+                  ayahIndex,
+                  wordIndex,
+                  mistakeType: dbHighlight.type,
+                  color: dbHighlight.color,
+                  isCompleted: dbHighlight.status === 'gold',
+                  status: dbHighlight.status,
+                  isFullAyah: true
+                });
+              }
+            }
+          }
+        } else {
+          // Single word or word range highlight
+          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === dbHighlight.ayah_start);
+          if (ayahIndex >= 0) {
+            for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
+              pageHighlights.push({
+                id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
+                dbId: dbHighlight.id,
+                ayahIndex,
+                wordIndex,
+                mistakeType: dbHighlight.type,
+                color: dbHighlight.color,
+                isCompleted: dbHighlight.status === 'gold',
+                status: dbHighlight.status,
+                isFullAyah: false
+              });
+            }
+          }
+        }
+      }
+    });
+
+    setHighlights(pageHighlights);
+  }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
+
+  // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
+  const safeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
 
   // OLD Child's Highlights Data (read-only for parent) - REMOVED, using database
   const [oldHighlights] = useState([
@@ -1170,254 +1264,399 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* Quran View Tab (Read-only) */}
+        {/* Quran View Tab (Read-only) - Full Mushaf Implementation */}
         {activeTab === 'quran' && (
-          <div className="bg-white rounded-xl shadow-lg relative" style={{
-            background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
-          }}>
-            {/* Page-like container with subtle lines */}
-            <div className="p-8" style={{
-              minHeight: '800px',
-              backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
-              backgroundSize: '50px 50px'
-            }}>
-              {/* Surah Header with Dropdown */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center space-x-4 mb-2">
-                  <h2 className="text-3xl font-arabic text-green-800">
-                    سُورَةُ {currentSurahInfo.nameArabic}
-                  </h2>
-
-                  {/* Surah Dropdown Selector */}
-                  <div className="relative surah-dropdown-container">
-                    <button
-                      onClick={() => setShowSurahDropdown(!showSurahDropdown)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition border border-green-200"
-                    >
-                      <BookOpen className="w-4 h-4 text-green-600" />
-                      <span className="text-green-700 font-medium">Surah {currentChild.currentSurah}</span>
-                      <ChevronDown className={`w-4 h-4 text-green-600 transition-transform ${showSurahDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {showSurahDropdown && (
-                      <div className="absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden">
-                        {/* Search Input */}
-                        <div className="p-3 border-b sticky top-0 bg-white">
-                          <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                            <input
-                              type="text"
-                              placeholder="Search Surah by name or number..."
-                              value={surahSearch}
-                              onChange={(e) => setSurahSearch(e.target.value)}
-                              className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-100 focus:border-green-400 text-sm"
-                            />
+          <div className="grid grid-cols-12 gap-4">
+            {/* Left Panel - Highlights Summary (Read-Only) */}
+            <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
+              {/* Highlights Summary */}
+              <div className="bg-white rounded-lg shadow-sm p-3">
+                <h3 className="font-semibold mb-2 text-sm flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Teacher Highlights
+                </h3>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {/* Show completed highlights first with gold color */}
+                  {(() => {
+                    const completedHighlights = safeHighlights.filter((h: any) => h.isCompleted);
+                    if (completedHighlights.length > 0) {
+                      return (
+                        <div className="p-1.5 rounded-md bg-yellow-400 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-yellow-900">
+                              ✓ Completed ({completedHighlights.length})
+                            </span>
+                            <Award className="w-3 h-3 text-yellow-900" />
                           </div>
                         </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
-                        {/* Surah List */}
-                        <div className="max-h-80 overflow-y-auto">
-                          {surahList
-                            .filter((surah: any) => {
-                              const search = surahSearch.toLowerCase();
-                              return surah.nameEnglish.toLowerCase().includes(search) ||
-                                     surah.nameArabic.includes(search) ||
-                                     surah.number.toString().includes(search);
-                            })
-                            .map((surah: any) => {
-                              // Check if this surah has any highlights (homework/assignments)
-                              const hasWork = highlights.some((h: any) => h.surah === surah.number);
-
-                              return (
-                                <button
-                                  key={surah.number}
-                                  onClick={() => {
-                                    // Update the current child's surah
-                                    const updatedChildren = [...children];
-                                    updatedChildren[selectedChild].currentSurah = surah.number;
-                                    setCurrentSurah(surah.number);
-                                    setCurrentPage(1);
-                                    setShowSurahDropdown(false);
-                                    setSurahSearch('');
-                                  }}
-                                  className={`w-full text-left px-4 py-3 hover:bg-green-50 transition flex items-center justify-between group ${
-                                    currentChild.currentSurah === surah.number ? 'bg-green-100' : ''
-                                  }`}
-                                >
-                                  <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-semibold group-hover:bg-green-200">
-                                      {surah.number}
-                                    </div>
-                                    <div>
-                                      <div className="font-medium text-gray-800">{surah.nameEnglish}</div>
-                                      <div className="text-sm text-gray-500 font-arabic">{surah.nameArabic}</div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center space-x-2">
-                                    {hasWork && (
-                                      <div className="flex items-center space-x-1">
-                                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                          Has Work
-                                        </span>
-                                      </div>
-                                    )}
-                                    {currentChild.currentSurah === surah.number && (
-                                      <Check className="w-5 h-5 text-green-600" />
-                                    )}
-                                    <span className="text-xs text-gray-400">
-                                      {surah.verses} verses
-                                    </span>
-                                  </div>
-                                </button>
-                              );
-                            })}
+                  {/* Show other highlights by type */}
+                  {mistakeTypes.map((type: any) => {
+                    const typeHighlights = safeHighlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
+                    if (typeHighlights.length === 0) return null;
+                    return (
+                      <div key={type.id} className={`p-1.5 rounded-md ${type.bgColor} text-xs`}>
+                        <div className="flex items-center justify-between">
+                          <span className={`font-medium ${type.textColor}`}>
+                            {type.name} ({typeHighlights.length})
+                          </span>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })}
+                  {safeHighlights.length === 0 && (
+                    <p className="text-xs text-gray-400 text-center py-2">No highlights</p>
+                  )}
                 </div>
-
-                <p className="text-gray-600">
-                  {currentSurahInfo.nameEnglish} • {currentSurahInfo.type} • {currentSurahInfo.verses} Verses
-                </p>
               </div>
-
-              {/* Basmala for new Surahs */}
-              {currentChild.currentSurah !== 1 && currentChild.currentSurah !== 9 && currentPage === 1 && (
-                <div className="text-center text-3xl font-arabic text-gray-700 py-6 border-b mb-6">
-                  بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                </div>
-              )}
-
-              {/* Mushaf-style Quran text */}
-              <div className="mushaf-page-content text-center leading-loose px-12 py-6" style={{
-                ...scriptStyling,
-                minHeight: '650px',
-                padding: '30px 40px',
-                backgroundColor: '#FFFEF8',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                border: '1px solid #e5d4b1',
-                textAlign: 'justify',
-                textAlignLast: 'justify',
-                fontSize: '31px'
-              }}>
-                <style jsx>{`
-                  .mushaf-page-content {
-                    text-align: justify;
-                    text-justify: inter-word;
-                  }
-                  .mushaf-page-content::after {
-                    content: "";
-                    display: inline-block;
-                    width: 100%;
-                  }
-                `}</style>
-              {currentAyahs.map((ayah: any, displayIndex: any) => {
-                const ayahIndex = (currentPage - 1) * AYAHS_PER_PAGE + displayIndex;
-                const ayahHighlights = highlights.filter((h: any) =>
-                  h.surah === currentSurah && h.ayahIndex === ayahIndex
-                );
-
-                return (
-                  <div key={ayah.number} className="inline-block relative group mb-4">
-                    {ayah.words.map((word: any, wordIndex: any) => {
-                      const wordHighlights = ayahHighlights.filter((h: any) =>
-                        h.wordIndices.includes(wordIndex)
-                      );
-
-                      return (
-                        <span
-                          key={`${ayahIndex}-${wordIndex}`}
-                          onClick={() => {
-                            if (wordHighlights.length > 0) {
-                              handleViewHighlight(wordHighlights[0].id);
-                            }
-                          }}
-                          className={`inline-block mx-1 px-1 cursor-pointer rounded transition-colors
-                            ${wordHighlights.length > 0
-                              ? `${wordHighlights[0].color} border-2 ${
-                                  wordHighlights[0].type === 'homework'
-                                    ? 'border-green-400'
-                                    : 'border-orange-400'
-                                }`
-                              : ''
-                            }`}
-                        >
-                          {word}
-                          {wordHighlights.length > 0 && (
-                            <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <span className="bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                                {wordHighlights[0].type === 'homework' ? 'Homework' : 'Assignment'}
-                              </span>
-                            </span>
-                          )}
-                        </span>
-                      );
-                    })}
-                    {/* Ornamental Ayah Number */}
-                    <span className="inline-flex items-center justify-center mx-2 align-middle"
-                      style={{
-                        width: '35px',
-                        height: '35px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #d4a574 0%, #8b6914 50%, #d4a574 100%)',
-                        color: 'white',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)',
-                        border: '2px solid #8b6914'
-                      }}
-                    >
-                      {ayah.number}
-                    </span>
-                  </div>
-                );
-              })}
             </div>
 
-              {/* Mushaf-style Pagination */}
-              <div className="mt-8 flex items-center justify-between border-t pt-6">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className={`px-6 py-3 ${
-                    currentPage === 1
-                      ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
-                  } text-white rounded-lg flex items-center space-x-2 shadow-lg transition-all transform hover:scale-105`}
-                >
-                  <ChevronRight className="w-5 h-5" />
-                  <span>الصفحة السابقة</span>
-                </button>
+            {/* Main Quran Viewer */}
+            <div className="col-span-8">
+              <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
+                background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                maxHeight: '95vh',
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                {/* Read-Only Pen Annotations Display */}
+                {currentChild && currentChild.teacherId && selectedScript && (
+                  <PenAnnotationCanvas
+                    studentId={currentChild.id}
+                    teacherId={currentChild.teacherId}
+                    pageNumber={currentMushafPage}
+                    scriptId={selectedScript}
+                    enabled={false}
+                    containerRef={quranContainerRef}
+                    penColor={penColor}
+                    setPenColor={setPenColor}
+                    penWidth={penWidth}
+                    setPenWidth={setPenWidth}
+                    eraserMode={eraserMode}
+                    setEraserMode={setEraserMode}
+                    onSave={() => {}}
+                    onLoad={() => {}}
+                    onClear={() => {}}
+                  />
+                )}
 
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-700">
-                    صفحة {currentPage} من {totalPages}
+                {/* Page-like container for Quran text */}
+                <div className="p-1" style={{
+                  backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
+                  backgroundSize: '50px 50px',
+                  pointerEvents: 'none'
+                }}>
+
+                {/* Basmala for new Surahs */}
+                {currentSurah !== 1 && currentSurah !== 9 && currentMushafPage === 1 && (
+                  <div className="text-center text-3xl font-arabic text-gray-700 py-6 border-b mb-6">
+                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    {currentSurahInfo.nameArabic} • الآيات {startIdx + 1} - {Math.min(endIdx, quranText.ayahs?.length || 0)}
+                )}
+
+                {/* Quran Text Display - Mushaf Style */}
+                <div className="relative">
+                  <div
+                    className="text-center leading-loose px-4 bg-gradient-to-b from-white to-gray-50 rounded-lg"
+                    style={{
+                      ...getScriptStyling(selectedScript || 'uthmani-hafs'),
+                      pointerEvents: 'none'
+                    }}
+                  >
+                  <style jsx>{`
+                    @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+
+                    .mushaf-page-text {
+                      text-align-last: start;
+                    }
+
+                    .mushaf-page-content {
+                      text-align: justify;
+                      text-justify: kashida;
+                    }
+                  `}</style>
+
+                  {(() => {
+                    // Get the current mushaf page data
+                    const pageData = getPageContent(currentMushafPage);
+                    if (!pageData) return <div>Loading page...</div>;
+
+                    // Determine which ayahs to show based on real mushaf page
+                    let pageAyahs = [];
+
+                    if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
+                      // Current surah is entirely contained within this page
+                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                        const ayahNumber = idx + 1;
+                        return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
+                      });
+                    } else if (pageData.surahStart === currentSurah) {
+                      // Current surah starts on this page but continues on next page
+                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                        const ayahNumber = idx + 1;
+                        return ayahNumber >= pageData.ayahStart;
+                      });
+                    } else if (pageData.surahEnd === currentSurah) {
+                      // Current surah ends on this page but started on previous page
+                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                        const ayahNumber = idx + 1;
+                        return ayahNumber <= pageData.ayahEnd;
+                      });
+                    } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
+                      // Current surah is somewhere in the middle of this page
+                      // Show all ayahs of this surah
+                      pageAyahs = quranText.ayahs;
+                    }
+
+                    // Calculate total page content length for DYNAMIC FONT SIZING
+                    // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
+                    const pageContent = pageAyahs.map((ayah: any) =>
+                      ayah.words.map((word: any) => word.text || word).join(' ')
+                    ).join(' ');
+
+                    // Render the page with traditional Mushaf formatting
+                    const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
+                    return (
+                      <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
+                        width: '38vw',  // NARROWER: More vertical/portrait-like proportions
+                        maxWidth: '480px',  // REDUCED: Traditional book page width
+                        minHeight: '65vh',  // INCREASED: Use available bottom space
+                        maxHeight: '72vh',  // INCREASED: Taller to look like a real page
+                        overflow: 'hidden',  // NO scrolling inside container
+                        margin: '0 auto',
+                        padding: '0.8rem 1rem',
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '8px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+                        border: '2px solid #40826D',
+                        ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
+                        transform: `scale(${zoomLevel / 100})`,
+                        transformOrigin: 'top center',
+                        textAlign: 'right',
+                        lineHeight: '1.5'  // Slightly more breathing room with vertical space
+                      }}>
+                        {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                          const ayahIndex = quranText.ayahs.indexOf(ayah);
+                          return (
+                            <span key={ayah.number} className="inline relative group">
+                      {ayah.words.map((word: any, wordIndex: any) => {
+                        // Extract word text - handle both string and object formats
+                        const wordText = typeof word === 'string' ? word : (word.text || word);
+
+                        // Get ALL highlights for this word (multiple colors allowed)
+                        const wordHighlights = safeHighlights.filter(
+                          (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
+                        );
+
+                        // Check if any highlight is completed and get appropriate colors
+                        const mistakes = wordHighlights.map((h: any) => {
+                          // If highlight is marked as completed, show gold color
+                          if (h.isCompleted) {
+                            return { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' };
+                          }
+                          // Otherwise show the original mistake color
+                          return mistakeTypes.find((m: any) => m.id === h.mistakeType);
+                        }).filter(Boolean);
+
+                        return (
+                          <span
+                            key={`${ayahIndex}-${wordIndex}`}
+                            onClick={() => {
+                              // READ-ONLY: Only allow viewing notes, no highlighting
+                              if (wordHighlights.length > 0) {
+                                handleViewHighlight(wordHighlights[0].id);
+                              }
+                            }}
+                            className="inline cursor-pointer rounded transition-colors select-none"
+                            style={{
+                              position: 'relative',
+                              color: '#000000',  // ALWAYS black text, never change
+                              paddingLeft: '2px',    // Horizontal padding
+                              paddingRight: '2px',   // Horizontal padding
+                              lineHeight: '1.3',     // Line height
+                              display: 'inline',     // Inline display
+                              pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
+                              ...(mistakes.length === 1 ? {
+                                backgroundImage: `linear-gradient(${
+                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                }, ${
+                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                })`,
+                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center'
+                              } : mistakes.length > 1 ? {
+                                backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                                  const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
+                                    m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                                    m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                    m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                                    m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                  const percent = (i * 100) / mistakes.length;
+                                  const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                  return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                }).join(', ')})`,
+                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                fontWeight: '600',
+                                border: '1px solid rgba(0,0,0,0.15)'
+                              } : {})
+                            }}
+                          >
+                            {wordText}{' '}
+                            {(() => {
+                              // Check if any highlight on this word has notes from database
+                              const hasNotes = wordHighlights.some((h: any) => {
+                                // Find database highlight by dbId
+                                const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                // Check if it has notes array with items
+                                return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                              });
+
+                              if (hasNotes) {
+                                return (
+                                  <span
+                                    className="inline-flex items-center justify-center text-blue-500"
+                                    style={{
+                                      fontSize: '8px',
+                                      width: '12px',
+                                      height: '12px',
+                                      marginLeft: '1px',
+                                      verticalAlign: 'top',
+                                      position: 'relative',
+                                      top: '0px'
+                                    }}
+                                  >
+                                    <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </span>
+                        );
+                      })}
+                      {/* Ayah Number - Traditional Mushaf Style (Inline) */}
+                      <span
+                        className="inline-flex items-center justify-center mx-0.5"
+                        style={{
+                          width: '18px',  // Tiny inline circle
+                          height: '18px',
+                          borderRadius: '50%',
+                          background: 'rgba(64, 130, 109, 0.12)',  // Subtle teal background
+                          border: '1px solid rgba(64, 130, 109, 0.4)',  // Teal border
+                          color: '#000000',  // Black text
+                          fontSize: '9px',  // Very small text
+                          fontWeight: '500',
+                          boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
+                          verticalAlign: 'middle',  // Middle alignment
+                          display: 'inline-flex',
+                          fontFamily: 'sans-serif',  // Use regular font for numbers
+                          lineHeight: '1'  // Prevent line height issues
+                        }}
+                      >
+                        {ayah.number}
+                      </span>{' '}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className={`px-6 py-3 ${
-                    currentPage === totalPages
-                      ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
-                  } text-white rounded-lg flex items-center space-x-2 shadow-lg transition-all transform hover:scale-105`}
-                >
-                  <span>الصفحة التالية</span>
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
+                {/* Page Navigation */}
+                <div className="mt-2 border-t pt-2" style={{ pointerEvents: 'auto' }}>
+                  <div className="flex items-center justify-center gap-4">
+                    {(() => {
+                      // Get current page content to determine Surah
+                      const currentPageContent = getPageContent(currentMushafPage);
+                      const currentSurahNumber = currentPageContent?.surahStart || 1;
+
+                      // For parent dashboard: allow navigation through ALL 604 pages
+                      const firstPage = 1;
+                      const lastPage = 604;
+
+                      const isFirstPage = currentMushafPage <= firstPage;
+                      const isLastPage = currentMushafPage >= lastPage;
+
+                      return (
+                        <>
+                          {/* Previous Arrow - Just Icon */}
+                          <button
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
+                            disabled={isFirstPage}
+                            className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
+                            title="Previous Page">
+                            <ChevronLeft className="w-5 h-5" />
+                          </button>
+
+                          {/* Page Info */}
+                          <div className="text-center">
+                            <span className="text-sm font-semibold text-gray-700">
+                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
+                            </span>
+                          </div>
+
+                          {/* Next Arrow - Just Icon */}
+                          <button
+                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
+                            disabled={isLastPage}
+                            className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
+                            title="Next Page">
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel - Controls */}
+            <div className="col-span-2 space-y-3">
+              {/* Zoom Control */}
+              <div className="bg-white rounded-lg shadow-sm p-3">
+                <h3 className="font-semibold mb-2 text-sm">Zoom</h3>
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    min="50"
+                    max="150"
+                    value={zoomLevel}
+                    onChange={(e) => setZoomLevel(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="text-xs text-center text-gray-600">{zoomLevel}%</div>
+                </div>
               </div>
             </div>
           </div>
         )}
+
 
         {/* Homework Tab (Read-only) */}
         {activeTab === 'homework' && (
