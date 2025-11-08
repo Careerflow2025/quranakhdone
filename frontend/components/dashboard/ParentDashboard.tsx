@@ -76,7 +76,8 @@ import {
   Reply,
   Search,
   Paperclip,
-  Bookmark
+  Bookmark,
+  RefreshCw
 } from 'lucide-react';
 
 export default function ParentDashboard() {
@@ -276,6 +277,9 @@ export default function ParentDashboard() {
     error: highlightsError,
     refreshHighlights
   } = useHighlights(currentChild?.id || null);
+
+  // Highlights filter state (like TeacherDashboard)
+  const [highlightsFilter, setHighlightsFilter] = useState('all');
 
   // Get homework from database for the selected child
   const {
@@ -2766,7 +2770,7 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* Highlights Tab (Read-only) */}
+        {/* Highlights Tab (Read-only) - EXACT Teacher Dashboard implementation */}
         {activeTab === 'highlights' && (
           <div className="space-y-6">
             {/* Header with Stats */}
@@ -2777,14 +2781,13 @@ export default function ParentDashboard() {
                     <Bookmark className="w-7 h-7 mr-3" />
                     {currentChild.name}'s Highlights
                   </h2>
-                  <p className="text-purple-100 mt-1">View Quran highlights created by teachers for your child</p>
+                  <p className="text-purple-100 mt-1">View Quran highlights created by teachers for your child (Read-only)</p>
                 </div>
                 <button
                   onClick={refreshHighlights}
-                  disabled={highlightsLoading}
-                  className="bg-white text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition flex items-center font-semibold disabled:opacity-50"
+                  className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center"
                 >
-                  <Clock className="w-5 h-5 mr-2" />
+                  <RefreshCw className="w-5 h-5 mr-2" />
                   Refresh
                 </button>
               </div>
@@ -2793,112 +2796,224 @@ export default function ParentDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Total</p>
-                  <p className="text-2xl font-bold">{highlights.length}</p>
+                  <p className="text-2xl font-bold">{(dbHighlights || []).length}</p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-purple-100 text-sm">Homework</p>
-                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'homework').length}</p>
+                  <p className="text-purple-100 text-sm">Homework (Green)</p>
+                  <p className="text-2xl font-bold text-green-200">
+                    {(dbHighlights || []).filter((h: any) => h.type === 'homework' && !h.completed_at).length}
+                  </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-purple-100 text-sm">Recap</p>
-                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'recap').length}</p>
+                  <p className="text-purple-100 text-sm">Recap (Purple)</p>
+                  <p className="text-2xl font-bold text-purple-200">
+                    {(dbHighlights || []).filter((h: any) => h.type === 'recap' && !h.completed_at).length}
+                  </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-purple-100 text-sm">Tajweed</p>
-                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.type === 'tajweed').length}</p>
+                  <p className="text-purple-100 text-sm">Tajweed (Orange)</p>
+                  <p className="text-2xl font-bold text-orange-200">
+                    {(dbHighlights || []).filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
+                  </p>
                 </div>
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-purple-100 text-sm">Completed</p>
-                  <p className="text-2xl font-bold">{highlights.filter((h: any) => h.completed_at).length}</p>
+                  <p className="text-purple-100 text-sm">Completed (Gold)</p>
+                  <p className="text-2xl font-bold text-yellow-200">
+                    {(dbHighlights || []).filter((h: any) => h.completed_at !== null).length}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Highlights Display */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
-                All Highlights
-              </h3>
-
-              {highlightsLoading ? (
-                <div className="text-center py-12">
-                  <Clock className="w-12 h-12 text-purple-600 mx-auto mb-4 animate-spin" />
-                  <p className="text-gray-600">Loading highlights...</p>
-                </div>
-              ) : highlightsError ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                  <p className="text-red-600 font-semibold mb-2">Error loading highlights</p>
-                  <p className="text-gray-600 mb-4">{highlightsError}</p>
-                  <button
-                    onClick={refreshHighlights}
-                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+            {/* Filter Bar (Type Filter Only - no student filter needed for parent view) */}
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+                  <select
+                    value={highlightsFilter}
+                    onChange={(e) => setHighlightsFilter(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
-                    Try Again
-                  </button>
+                    <option value="all">All Types</option>
+                    <option value="homework">Homework (Green)</option>
+                    <option value="recap">Recap (Purple)</option>
+                    <option value="tajweed">Tajweed (Orange)</option>
+                    <option value="haraka">Haraka (Red)</option>
+                    <option value="letter">Letter (Brown)</option>
+                    <option value="completed">Completed (Gold)</option>
+                  </select>
                 </div>
-              ) : highlights.length === 0 ? (
-                <div className="text-center py-12">
-                  <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">No highlights yet</p>
-                  <p className="text-gray-400 mt-2">Teachers will add highlights to help your child learn</p>
+
+                {/* Search */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search by surah, ayah, note..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {highlights.map((highlight: any) => {
-                    const surahName = surahList.find((s: any) => s.number === highlight.surah)?.name || `Surah ${highlight.surah}`;
-                    const typeColors: any = {
-                      'homework': 'bg-green-100 text-green-800 border-green-200',
-                      'recap': 'bg-purple-100 text-purple-800 border-purple-200',
-                      'tajweed': 'bg-orange-100 text-orange-800 border-orange-200',
-                      'haraka': 'bg-red-100 text-red-800 border-red-200',
-                      'letter': 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                    };
-                    const typeColor = highlight.completed_at
-                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                      : (typeColors[highlight.type] || 'bg-gray-100 text-gray-800 border-gray-200');
+              </div>
+            </div>
 
-                    return (
-                      <div
-                        key={highlight.id}
-                        className="border-2 border-gray-200 rounded-lg p-4 hover:border-purple-300 transition"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${typeColor}`}>
-                                {highlight.completed_at ? '✅ Completed' : highlight.type || 'highlight'}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {surahName} • Ayah {highlight.ayah_start}
-                                {highlight.ayah_end !== highlight.ayah_start && `-${highlight.ayah_end}`}
-                              </span>
-                            </div>
+            {/* Loading State */}
+            {highlightsLoading && (
+              <div className="text-center py-12 bg-white rounded-xl">
+                <RefreshCw className="w-12 h-12 text-purple-600 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-600">Loading highlights...</p>
+              </div>
+            )}
 
-                            {highlight.word_start !== null && highlight.word_end !== null && (
-                              <p className="text-sm text-gray-600 mb-2">
-                                <span className="font-medium">Words:</span> {highlight.word_start} - {highlight.word_end}
-                              </p>
-                            )}
+            {/* Error State */}
+            {highlightsError && (
+              <div className="text-center py-12 bg-white rounded-xl">
+                <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+                <p className="text-red-600 font-semibold mb-2">Error loading highlights</p>
+                <p className="text-gray-600 mb-4">{highlightsError}</p>
+                <button
+                  onClick={refreshHighlights}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
 
-                            {highlight.note && (
-                              <p className="text-sm text-gray-700 bg-gray-50 rounded p-2 mb-2">
-                                <span className="font-medium">Note:</span> {highlight.note}
-                              </p>
-                            )}
+            {/* Highlights Display - Direct Grid (no student grouping for parent view) */}
+            {!highlightsLoading && !highlightsError && (() => {
+              // Filter highlights
+              const filteredHighlights = (dbHighlights || []).filter((h: any) => {
+                // Type filter
+                if (highlightsFilter === 'completed') {
+                  return h.completed_at !== null;
+                } else if (highlightsFilter !== 'all') {
+                  return h.type === highlightsFilter && h.completed_at === null;
+                }
 
-                            <p className="text-xs text-gray-500">
-                              Created {new Date(highlight.created_at).toLocaleDateString()} at {new Date(highlight.created_at).toLocaleTimeString()}
-                            </p>
-                          </div>
+                return true;
+              });
+
+              if (filteredHighlights.length === 0) {
+                return (
+                  <div className="text-center py-12 bg-white rounded-xl">
+                    <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No highlights found</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Teachers create highlights to help your child learn and memorize
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  {/* Child Header */}
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                          <User className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold">{currentChild.name}</h3>
+                          <p className="text-sm text-blue-100">{currentChild.email || 'Student'}</p>
                         </div>
                       </div>
-                    );
-                  })}
+                      <span className="bg-white bg-opacity-20 px-4 py-2 rounded-lg font-semibold">
+                        {filteredHighlights.length} highlights
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Highlights Grid */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredHighlights.map((highlight: any) => {
+                        const isCompleted = highlight.completed_at !== null;
+                        const colorMap: any = {
+                          homework: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300', color: 'rgb(34, 197, 94)' },
+                          recap: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', color: 'rgb(168, 85, 247)' },
+                          tajweed: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', color: 'rgb(249, 115, 22)' },
+                          haraka: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', color: 'rgb(239, 68, 68)' },
+                          letter: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300', color: 'rgb(234, 179, 8)' },
+                          completed: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300', color: 'rgb(234, 179, 8)' }
+                        };
+
+                        const typeStyle = isCompleted
+                          ? colorMap.completed
+                          : (colorMap[highlight.type] || colorMap.homework);
+
+                        // Determine if word-level or full ayah
+                        const isWordLevel = highlight.word_start !== null && highlight.word_start !== undefined;
+                        const rangeText = isWordLevel
+                          ? `Word ${highlight.word_start} - ${highlight.word_end}`
+                          : 'Full Ayah';
+
+                        return (
+                          <div
+                            key={highlight.id}
+                            className={`border-2 ${typeStyle.border} ${typeStyle.bg} rounded-lg p-4 hover:shadow-md transition-shadow`}
+                          >
+                            {/* Type Badge */}
+                            <div className="flex items-center justify-between mb-3">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${typeStyle.text}`}>
+                                {isCompleted ? '✓ Completed' : highlight.type?.toUpperCase()}
+                              </span>
+                              {isCompleted && (
+                                <Star className="w-5 h-5 text-yellow-600" fill="currentColor" />
+                              )}
+                            </div>
+
+                            {/* Highlight Details */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-semibold text-gray-900">
+                                  📖 Surah {highlight.surah}
+                                </p>
+                                <div
+                                  className="w-6 h-6 rounded"
+                                  style={{ backgroundColor: typeStyle.color }}
+                                ></div>
+                              </div>
+
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Ayah:</span> {highlight.ayah_start}
+                                {highlight.ayah_end !== highlight.ayah_start && ` - ${highlight.ayah_end}`}
+                              </p>
+
+                              <p className="text-xs text-gray-600">
+                                <span className="font-medium">Range:</span> {rangeText}
+                              </p>
+
+                              {highlight.page_number && (
+                                <p className="text-xs text-gray-600">
+                                  <span className="font-medium">Page:</span> {highlight.page_number}
+                                </p>
+                              )}
+
+                              {highlight.note && (
+                                <p className="text-xs text-gray-600 mt-2 italic">
+                                  "{highlight.note}"
+                                </p>
+                              )}
+
+                              <p className="text-xs text-gray-400 pt-2 border-t">
+                                {new Date(highlight.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         )}
 
