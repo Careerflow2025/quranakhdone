@@ -2067,124 +2067,84 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              {/* Left Column - Student Details */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Student Details</h3>
+            {/* Student Information - Only Database Fields */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-700 border-b pb-2 mb-4">Student Information</h3>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500">Name</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.name || 'Not available'}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Email</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.email || 'Not available'}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Age</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.age ? `${studentInfo.age} years` : 'Not available'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Grade</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.grade || 'Not available'}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Gender</label>
-                    <p className="text-sm font-medium text-gray-800 capitalize">
-                      {studentInfo.gender || 'Not available'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Status</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      <span className={`px-2 py-1 rounded text-xs ${studentInfo.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {studentInfo.active ? 'active' : 'inactive'}
-                      </span>
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Enrollment Date</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.enrollmentDate ? new Date(studentInfo.enrollmentDate).toLocaleDateString('en-US', {
-                        month: 'numeric',
-                        day: 'numeric',
-                        year: 'numeric'
-                      }) : 'Not available'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Phone</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.phone || 'Not available'}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-500">Student ID</label>
-                    <p className="text-sm font-medium text-gray-800 text-xs break-all">{studentInfo.id || 'Not available'}</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                <div>
+                  <label className="text-xs text-gray-500">Name</label>
+                  <p className="text-sm font-medium text-gray-800">{studentInfo.name || 'Not available'}</p>
                 </div>
-              </div>
 
-              {/* Right Column - Additional Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700 border-b pb-2">Additional Information</h3>
+                <div>
+                  <label className="text-xs text-gray-500">Email</label>
+                  <p className="text-sm font-medium text-gray-800">{studentInfo.email || 'Not available'}</p>
+                </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500">Date of Birth</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.dob ? new Date(studentInfo.dob).toLocaleDateString('en-US', {
-                        month: 'numeric',
-                        day: 'numeric',
-                        year: 'numeric'
-                      }) : 'Not available'}
-                    </p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Age</label>
+                  <p className="text-sm font-medium text-gray-800">
+                    {studentInfo.age ? `${studentInfo.age} years` : 'Not available'}
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Address</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.address || 'Not available'}</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Grade</label>
+                  <p className="text-sm font-medium text-gray-800">{studentInfo.grade || 'Not available'}</p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Memorization Progress</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.memorized || '0 Juz'}</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Gender</label>
+                  <p className="text-sm font-medium text-gray-800 capitalize">
+                    {studentInfo.gender || 'Not available'}
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Revision Progress</label>
-                    <p className="text-sm font-medium text-gray-800">{studentInfo.revision || '0 Juz'}</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Status</label>
+                  <p className="text-sm font-medium text-gray-800">
+                    <span className={`px-2 py-1 rounded text-xs ${studentInfo.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {studentInfo.active ? 'active' : 'inactive'}
+                    </span>
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Current Surah</label>
-                    <p className="text-sm font-medium text-gray-800">Surah {studentInfo.currentSurah}</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Enrollment Date</label>
+                  <p className="text-sm font-medium text-gray-800">
+                    {studentInfo.enrollmentDate ? new Date(studentInfo.enrollmentDate).toLocaleDateString('en-US', {
+                      month: 'numeric',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }) : 'Not available'}
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Current Ayah</label>
-                    <p className="text-sm font-medium text-gray-800">Ayah {studentInfo.currentAyah}</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Date of Birth</label>
+                  <p className="text-sm font-medium text-gray-800">
+                    {studentInfo.dob ? new Date(studentInfo.dob).toLocaleDateString('en-US', {
+                      month: 'numeric',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }) : 'Not available'}
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-xs text-gray-500">Last Session</label>
-                    <p className="text-sm font-medium text-gray-800">
-                      {studentInfo.lastSession ? new Date(studentInfo.lastSession).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      }) : 'No sessions yet'}
-                    </p>
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500">Phone</label>
+                  <p className="text-sm font-medium text-gray-800">{studentInfo.phone || 'Not available'}</p>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-500">Address</label>
+                  <p className="text-sm font-medium text-gray-800">{studentInfo.address || 'Not available'}</p>
+                </div>
+
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500">Student ID</label>
+                  <p className="text-sm font-medium text-gray-800 text-xs break-all">{studentInfo.id || 'Not available'}</p>
                 </div>
               </div>
             </div>
