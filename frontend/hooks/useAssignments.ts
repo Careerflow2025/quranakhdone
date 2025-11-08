@@ -96,7 +96,10 @@ export function useAssignments(initialStudentId?: string) {
   const [error, setError] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<AssignmentWithDetails[]>([]);
   const [currentAssignment, setCurrentAssignment] = useState<AssignmentWithDetails | null>(null);
-  const [filters, setFilters] = useState<AssignmentFilters>({});
+  const [filters, setFilters] = useState<AssignmentFilters>(
+    // CRITICAL FIX: If initialStudentId is provided (Student Dashboard), automatically filter by that student_id
+    initialStudentId ? { student_id: initialStudentId } : {}
+  );
   const [summary, setSummary] = useState<AssignmentSummary | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(initialStudentId || null);
