@@ -49,16 +49,25 @@ export default function ProgressSection({
     }
   });
 
-  // Calculate assignments/homework stats - CHECK FOR 'reviewed' STATUS TOO
+  // Calculate assignments/homework stats using SAME logic as Assignments tab
+  // Assignment is completed if: highlight.color='gold' OR highlight.status='gold' OR status='completed'
   const totalAssignments = assignments?.length || 0;
-  const completedAssignments = assignments?.filter((a: any) =>
-    a.status === 'completed' || a.status === 'reviewed'
-  ).length || 0;
+  const completedAssignments = assignments?.filter((a: any) => {
+    const isCompletedByHighlight = a.highlight?.color === 'gold' || a.highlight?.status === 'gold';
+    return isCompletedByHighlight || a.status === 'completed';
+  }).length || 0;
   const pendingAssignments = totalAssignments - completedAssignments;
 
   console.log('📊 ASSIGNMENTS CALCULATION:', {
     total: totalAssignments,
     completed: completedAssignments,
+    completedBy: assignments?.filter((a: any) => {
+      const isCompletedByHighlight = a.highlight?.color === 'gold' || a.highlight?.status === 'gold';
+      return isCompletedByHighlight || a.status === 'completed';
+    }).map((a: any) => ({
+      title: a.title,
+      completedVia: a.highlight?.color === 'gold' || a.highlight?.status === 'gold' ? 'highlight-gold' : 'status-completed'
+    })),
     pending: pendingAssignments,
     completionRate: totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) + '%' : '0%'
   });
@@ -67,22 +76,38 @@ export default function ProgressSection({
   const completedHomework = homeworkData?.filter((h: any) => h.status === 'completed').length || 0;
   const pendingHomework = totalHomework - completedHomework;
 
-  // Calculate overall progress percentage from REAL target progress values
-  const overallProgress = progressData?.targets && progressData.targets.length > 0
+  // Calculate ASSIGNMENT completion percentage (not targets)
+  // Assignments are completed if status is 'completed' OR 'reviewed' OR highlight.color is 'gold'
+  const assignmentCompletionRate = totalAssignments > 0
+    ? Math.round((completedAssignments / totalAssignments) * 100)
+    : 0;
+
+  // Calculate TARGET progress percentage from progressData.targets
+  const targetProgress = progressData?.targets && progressData.targets.length > 0
     ? Math.round(progressData.targets.reduce((acc: number, t: any) => acc + (t.progress || 0), 0) / progressData.targets.length)
     : 0;
 
+  // Overall progress is the ASSIGNMENT completion rate (what students actually complete)
+  const overallProgress = assignmentCompletionRate;
+
   // DEBUG: Enhanced progress logging
-  console.log('📈 TARGET PROGRESS - DETAILED:', {
-    hasTargets: !!progressData?.targets,
-    targetCount: progressData?.targets?.length || 0,
-    targets: progressData?.targets?.map((t: any) => ({
-      title: t.title,
-      progress: t.progress,
-      status: t.status
-    })),
-    totalProgress: progressData?.targets?.reduce((acc: number, t: any) => acc + (t.progress || 0), 0),
-    averageProgress: overallProgress + '%'
+  console.log('📈 PROGRESS CALCULATION - DETAILED:', {
+    assignmentBased: {
+      total: totalAssignments,
+      completed: completedAssignments,
+      percentage: assignmentCompletionRate + '%'
+    },
+    targetBased: {
+      hasTargets: !!progressData?.targets,
+      targetCount: progressData?.targets?.length || 0,
+      targets: progressData?.targets?.map((t: any) => ({
+        title: t.title,
+        progress: t.progress,
+        status: t.status
+      })),
+      averageProgress: targetProgress + '%'
+    },
+    displayedProgress: overallProgress + '%'
   });
 
   return (
