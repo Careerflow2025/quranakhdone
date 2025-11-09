@@ -1531,6 +1531,7 @@ export default function ParentDashboard() {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {/* Quran View Tab (Read-only) - Full Mushaf Implementation */}
