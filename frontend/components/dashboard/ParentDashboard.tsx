@@ -1119,7 +1119,7 @@ export default function ParentDashboard() {
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium text-gray-900">Parent Account</p>
-                    <p className="text-xs text-gray-500">Mr. Al-Rahman</p>
+                    <p className="text-xs text-gray-500">{user?.fullName || user?.email || 'Parent'}</p>
                   </div>
                   <ChevronDown className="w-4 h-4 text-gray-600" />
                 </button>
@@ -1141,7 +1141,13 @@ export default function ParentDashboard() {
                       <span>Settings</span>
                     </button>
                     <hr className="my-1" />
-                    <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600">
+                    <button
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = '/login';
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                    >
                       <LogOut className="w-4 h-4" />
                       <span>Logout</span>
                     </button>
@@ -2808,17 +2814,11 @@ export default function ParentDashboard() {
                     </button>
                   </div>
                   <div className="text-center md:text-left flex-1">
-                    <h2 className="text-2xl font-bold text-gray-900">Mr. Abdul Rahman</h2>
-                    <p className="text-gray-600 mt-1">Parent Account • ID: PRN-2024-001</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{user?.fullName || 'Parent'}</h2>
+                    <p className="text-gray-600 mt-1">Parent Account • {user?.email}</p>
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                        Account Verified
-                      </span>
                       <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                        {children.length} Children Enrolled
-                      </span>
-                      <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                        Premium Member
+                        {children.length} {children.length === 1 ? 'Child' : 'Children'} Enrolled
                       </span>
                     </div>
                   </div>
@@ -2835,36 +2835,40 @@ export default function ParentDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                       <input
                         type="text"
-                        defaultValue="Mr. Abdul Rahman"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                        placeholder="Enter full name"
+                        value={user?.fullName || ''}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                        placeholder="Not set"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                       <input
                         type="email"
-                        defaultValue="parent@quranlearning.com"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                        placeholder="Enter email"
+                        value={user?.email || ''}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                        placeholder="Not set"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">User ID</label>
                       <input
-                        type="tel"
-                        defaultValue="+1 234 567 8900"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                        placeholder="Enter phone"
+                        type="text"
+                        value={user?.id || ''}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 font-mono text-xs"
+                        placeholder="Not available"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Language</label>
-                      <select className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
-                        <option>English</option>
-                        <option>Arabic</option>
-                        <option>French</option>
-                      </select>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                      <input
+                        type="text"
+                        value={user?.role || 'Parent'}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                      />
                     </div>
                   </div>
                 </div>
