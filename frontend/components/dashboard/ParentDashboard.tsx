@@ -2803,24 +2803,14 @@ export default function ParentDashboard() {
             {/* Modal Content with Scroll */}
             <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
               <div className="p-6 lg:p-8 space-y-8">
-                {/* Profile Header Section */}
-                <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6 pb-6 border-b">
-                  <div className="relative">
-                    <div className="w-28 h-28 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
-                      <UserCircle className="w-20 h-20 text-white" />
-                    </div>
-                    <button className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="text-center md:text-left flex-1">
-                    <h2 className="text-2xl font-bold text-gray-900">{user?.fullName || 'Parent'}</h2>
-                    <p className="text-gray-600 mt-1">Parent Account • {user?.email}</p>
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                        {children.length} {children.length === 1 ? 'Child' : 'Children'} Enrolled
-                      </span>
-                    </div>
+                {/* Profile Header Section - Simplified */}
+                <div className="pb-6 border-b">
+                  <h2 className="text-2xl font-bold text-gray-900">{user?.fullName || 'Parent'}</h2>
+                  <p className="text-gray-600 mt-1">Parent Account • {user?.email}</p>
+                  <div className="flex flex-wrap gap-3 mt-3">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {children.length} {children.length === 1 ? 'Child' : 'Children'} Enrolled
+                    </span>
                   </div>
                 </div>
 
@@ -2873,48 +2863,12 @@ export default function ParentDashboard() {
                   </div>
                 </div>
 
-                {/* Notification Settings */}
+                {/* Linked Children Section */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <Bell className="w-5 h-5 mr-2 text-indigo-600" />
-                    Notification Preferences
+                    <Users className="w-5 h-5 mr-2 text-indigo-600" />
+                    Linked Children
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <p className="font-medium text-gray-900">Progress Updates</p>
-                        <p className="text-sm text-gray-600">Receive updates about your children's progress</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <p className="font-medium text-gray-900">Homework Reminders</p>
-                        <p className="text-sm text-gray-600">Get notified about new homework</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Linked Children Section - Enhanced */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                      <Users className="w-5 h-5 mr-2 text-indigo-600" />
-                      Linked Children
-                    </h3>
-                    <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Child
-                    </button>
-                  </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {children.map((child: any) => (
                       <div key={child.id} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
@@ -2966,43 +2920,6 @@ export default function ParentDashboard() {
                     ))}
                   </div>
                 </div>
-
-                {/* Account Actions */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Account Actions</h3>
-                  <div className="flex flex-wrap gap-3">
-                    <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                      <Settings className="w-4 h-4" />
-                      <span>Advanced Settings</span>
-                    </button>
-                    <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                      <Archive className="w-4 h-4" />
-                      <span>Download Data</span>
-                    </button>
-                    <button className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition">
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-between">
-              <p className="text-xs text-gray-500">Last updated: Today at 3:45 PM</p>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setShowProfileModal(false)}
-                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition font-medium shadow-lg"
-                >
-                  Save Changes
-                </button>
               </div>
             </div>
           </div>
