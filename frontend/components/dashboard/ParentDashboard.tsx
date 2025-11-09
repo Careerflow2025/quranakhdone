@@ -1326,11 +1326,6 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <Bookmark className="w-4 h-4" />
                 <span>Highlights</span>
-                {highlights.length > 0 && (
-                  <span className="bg-purple-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.length}
-                  </span>
-                )}
               </span>
             </button>
 
@@ -1434,11 +1429,6 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <Target className="w-4 h-4" />
                 <span>Targets</span>
-                {childTargets.filter((t: any) => t.status === 'active').length > 0 && (
-                  <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {childTargets.filter((t: any) => t.status === 'active').length}
-                  </span>
-                )}
               </span>
             </button>
 
@@ -1453,11 +1443,6 @@ export default function ParentDashboard() {
               <span className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
                 <span>Messages</span>
-                {messages.inbox.filter((m: any) => m.unread).length > 0 && (
-                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {messages.inbox.filter((m: any) => m.unread).length}
-                  </span>
-                )}
               </span>
             </button>
           </nav>
