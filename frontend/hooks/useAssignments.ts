@@ -96,10 +96,16 @@ export function useAssignments(initialStudentId?: string) {
   const [error, setError] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<AssignmentWithDetails[]>([]);
   const [currentAssignment, setCurrentAssignment] = useState<AssignmentWithDetails | null>(null);
-  const [filters, setFilters] = useState<AssignmentFilters>(
+  const [filters, setFilters] = useState<AssignmentFilters>(() => {
     // CRITICAL FIX: If initialStudentId is provided (Student Dashboard), automatically filter by that student_id
-    initialStudentId ? { student_id: initialStudentId } : {}
-  );
+    const initialFilters = initialStudentId ? { student_id: initialStudentId } : {};
+    console.log('🔧 useAssignments INITIALIZING with:', {
+      initialStudentId,
+      initialFilters,
+      willFilterByStudent: !!initialStudentId
+    });
+    return initialFilters;
+  });
   const [summary, setSummary] = useState<AssignmentSummary | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(initialStudentId || null);
@@ -130,6 +136,13 @@ export function useAssignments(initialStudentId?: string) {
         setError(null);
 
         const activeFilters = customFilters || filters;
+
+        console.log('📡 fetchAssignments called with filters:', {
+          customFilters,
+          stateFilters: filters,
+          activeFilters,
+          hasStudentId: !!activeFilters.student_id
+        });
 
         // Build query parameters
         const params = new URLSearchParams();
