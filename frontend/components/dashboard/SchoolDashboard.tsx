@@ -185,13 +185,10 @@ export default function SchoolDashboard() {
           }, {})
         });
 
-        // Homework count: green (pending) + gold (completed)
+        // Homework count: green (pending) + gold (completed) highlights
         const homeworkCount = allHighlightsData?.filter((h: any) =>
           h.color === 'green' || h.color === 'gold'
         ).length || 0;
-
-        // Total highlights count (ALL highlights regardless of status)
-        const highlightsCount = allHighlightsData?.length || 0;
 
         // Fetch all assignments for the school
         const { data: allAssignmentsData } = await supabase
@@ -200,6 +197,10 @@ export default function SchoolDashboard() {
           .eq('school_id', user.schoolId);
 
         const assignmentsCount = allAssignmentsData?.length || 0;
+
+        // IMPORTANT: Total Highlights = Homework + Assignments
+        // This includes assignments that don't have highlights yet
+        const highlightsCount = homeworkCount + assignmentsCount;
 
         // Fetch all targets for the school (both individual and class-wide)
         const { data: directTargetsData } = await supabase
@@ -230,8 +231,9 @@ export default function SchoolDashboard() {
 
         console.log('✅ School statistics fetched:', {
           homework: homeworkCount,
-          highlights: highlightsCount,
           assignments: assignmentsCount,
+          totalHighlights: highlightsCount,
+          calculation: `${homeworkCount} (homework) + ${assignmentsCount} (assignments) = ${highlightsCount}`,
           targets: targetsCount
         });
       } catch (error) {
