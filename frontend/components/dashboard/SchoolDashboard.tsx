@@ -2922,31 +2922,6 @@ export default function SchoolDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-sm">Avg. Progress</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.progress || 0), 0) / students.length) : 0}%</p>
-                      <p className="text-purple-100 text-xs mt-2">Across all students</p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-orange-100 text-sm">Avg. Attendance</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.attendance || 0), 0) / students.length) : 0}%</p>
-                      <p className="text-orange-100 text-xs mt-2">This month</p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Main Content */}
@@ -3108,8 +3083,6 @@ export default function SchoolDashboard() {
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Age/Gender</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Grade/Class</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Progress</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Attendance</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                           </tr>
@@ -3151,31 +3124,6 @@ export default function SchoolDashboard() {
                               <td className="px-6 py-4">
                                 <p className="text-sm font-medium text-gray-900">{student.grade || 'N/A'}</p>
                                 <p className="text-xs text-gray-500">{student.class || 'Unassigned'}</p>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center space-x-2">
-                                  <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                                    <div
-                                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                                      style={{ width: `${student.progress || 0}%` }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-sm font-medium text-gray-700">{student.progress || 0}%</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  (student.attendance || 0) >= 95 ? 'bg-green-100 text-green-800' :
-                                  (student.attendance || 0) >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                    (student.attendance || 0) >= 95 ? 'bg-green-600' :
-                                    (student.attendance || 0) >= 80 ? 'bg-yellow-600' :
-                                    'bg-red-600'
-                                  }`}></span>
-                                  {student.attendance || 0}%
-                                </span>
                               </td>
                               <td className="px-6 py-4">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -3251,30 +3199,6 @@ export default function SchoolDashboard() {
                             </div>
 
                             <div className="space-y-3">
-                              <div>
-                                <div className="flex items-center justify-between text-sm mb-1">
-                                  <span className="text-gray-500">Progress</span>
-                                  <span className="font-semibold text-gray-700">{student.progress || 0}%</span>
-                                </div>
-                                <div className="bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${student.progress || 0}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500">Attendance</span>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  (student.attendance || 0) >= 95 ? 'bg-green-100 text-green-800' :
-                                  (student.attendance || 0) >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {student.attendance || 0}%
-                                </span>
-                              </div>
-
                               <div className="flex items-center justify-between text-sm">
                                 <span className="text-gray-500">Status</span>
                                 <span className={`font-semibold ${student.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
