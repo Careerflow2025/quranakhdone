@@ -3839,109 +3839,138 @@ export default function SchoolDashboard() {
 
           {/* Homework Tab - Shows homework created from student highlighting */}
           {activeTab === 'homework' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm">
-                <div className="p-6 border-b">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Quran Homework (School Overview)</h2>
-                      <p className="text-sm text-gray-500 mt-1">View all homework created by teachers across the school</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
-                        <Eye className="w-4 h-4 inline mr-1" />
-                        School-wide View
-                      </div>
-                      <button
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        onClick={() => refreshData()}
-                      >
-                        <RefreshCw className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
+            <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <BookOpen className="w-7 h-7 mr-3" />
+                    Homework Management
+                  </h2>
+                  <p className="text-green-100 mt-1">View all homework created by teachers across the school</p>
                 </div>
+              </div>
 
-                <div className="p-6">
-                  {/* Quran Homework List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {homeworkList.length === 0 ? (
-                      <div className="col-span-full text-center py-12">
-                        <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Quran homework yet</h3>
-                        <p className="text-gray-500 mb-4">
-                          Homework will appear here when teachers create highlighting assignments for students
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          Teachers create homework by highlighting Quran verses in their Student Management dashboard
-                        </p>
-                      </div>
-                    ) : (
-                      homeworkList.map((homework: any) => (
-                        <div
-                          key={homework.id}
-                          className="border border-green-200 rounded-lg p-4 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-md transition-all"
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <BookOpen className="w-5 h-5 text-green-600" />
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              homework.completed ? 'bg-green-100 text-green-700' :
-                              homework.late ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {homework.completed ? 'Completed' : homework.late ? 'Late' : 'Pending'}
-                            </span>
-                          </div>
+              {/* Filter Bar */}
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <div className="flex items-center space-x-4">
+                  <select
+                    value={homeworkFilter.status}
+                    onChange={(e) => setHomeworkFilter({ ...homeworkFilter, status: e.target.value })}
+                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Homework</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                  </select>
 
-                          <h4 className="font-semibold text-gray-900 mb-1">{homework.surah}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Verses: {homework.startVerse} - {homework.endVerse}
-                          </p>
-
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span className="flex items-center">
-                              <User className="w-3 h-3 mr-1" />
-                              {homework.studentName}
-                            </span>
-                            <span className="flex items-center">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {new Date(homework.dueDate).toLocaleDateString()}
-                            </span>
-                          </div>
-
-                          <div className="mt-3 pt-3 border-t border-green-200">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-green-700 font-medium">
-                                {homework.type === 'memorization' ? '📖 Memorization' : '🔄 Revision'}
-                              </span>
-                              {homework.highlights && (
-                                <span className="text-green-600">
-                                  {homework.highlights} highlights
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex space-x-2 mt-3">
-                            <button
-                              onClick={() => handleViewHomework(homework.id)}
-                              className="flex-1 px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs font-medium"
-                            >
-                              View
-                            </button>
-                            <button
-                              onClick={() => handleGradeHomework(homework.id)}
-                              className="flex-1 px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-medium"
-                            >
-                              Grade
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search by student, surah, or note..."
+                      value={homeworkSearchTerm}
+                      onChange={(e) => setHomeworkSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
+                    />
                   </div>
                 </div>
               </div>
+
+              {/* Homework Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {homeworkList
+                  .filter((hw: any) => {
+                    // Status filter
+                    const matchesStatus = homeworkFilter.status === 'all' ||
+                      (homeworkFilter.status === 'completed' && hw.completed) ||
+                      (homeworkFilter.status === 'pending' && !hw.completed);
+
+                    // Search filter
+                    const searchLower = homeworkSearchTerm.toLowerCase();
+                    const matchesSearch = !homeworkSearchTerm ||
+                      hw.studentName?.toLowerCase().includes(searchLower) ||
+                      hw.surah?.toLowerCase().includes(searchLower) ||
+                      hw.note?.toLowerCase().includes(searchLower);
+
+                    return matchesStatus && matchesSearch;
+                  })
+                  .map((homework: any) => (
+                  <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className={`h-2 ${
+                      homework.color === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                      'bg-gradient-to-r from-green-500 to-emerald-500'
+                    }`}></div>
+
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {homework.studentName}
+                          </h3>
+                          <p className="text-sm text-gray-500">{homework.class || 'N/A'}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          homework.completed ? 'bg-green-100 text-green-700' :
+                          homework.late ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {homework.completed ? 'Completed' : homework.late ? 'Late' : 'Pending'}
+                        </span>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                        <p className="text-sm font-medium text-gray-700">
+                          📖 {homework.surah}, Ayah {homework.startVerse ? `${homework.startVerse}-${homework.endVerse}` : homework.ayahRange || 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">{homework.note}</p>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Assigned:</span>
+                          <span className="text-gray-700">{homework.assignedDate || new Date(homework.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Due Date:</span>
+                          <span className={homework.late ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                            {homework.dueDate ? new Date(homework.dueDate).toLocaleDateString() : 'N/A'}
+                          </span>
+                        </div>
+                        {homework.type && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Type:</span>
+                            <span className="text-gray-700">
+                              {homework.type === 'memorization' ? '📖 Memorization' : '🔄 Revision'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Empty State */}
+              {homeworkList.filter((hw: any) => {
+                const matchesStatus = homeworkFilter.status === 'all' ||
+                  (homeworkFilter.status === 'completed' && hw.completed) ||
+                  (homeworkFilter.status === 'pending' && !hw.completed);
+                const searchLower = homeworkSearchTerm.toLowerCase();
+                const matchesSearch = !homeworkSearchTerm ||
+                  hw.studentName?.toLowerCase().includes(searchLower) ||
+                  hw.surah?.toLowerCase().includes(searchLower) ||
+                  hw.note?.toLowerCase().includes(searchLower);
+                return matchesStatus && matchesSearch;
+              }).length === 0 && (
+                <div className="text-center py-12 bg-white rounded-xl">
+                  <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No homework found</p>
+                  <p className="text-gray-400 text-sm mt-1">
+                    {homeworkSearchTerm ? 'Try a different search term' : 'Homework will appear when teachers create highlighting assignments for students'}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
