@@ -1033,7 +1033,6 @@ export default function SchoolDashboard() {
               email
             )
           ),
-          quran_ayahs(surah, ayah),
           notes(text, audio_url)
         `)
         .eq('school_id', user?.schoolId || '')
@@ -1042,27 +1041,47 @@ export default function SchoolDashboard() {
 
       if (error) throw error;
 
+      // Get class information for all students
+      const studentIds = [...new Set(data?.map((h: any) => h.student_id) || [])];
+      const { data: classData } = await (supabase as any)
+        .from('class_enrollments')
+        .select(`
+          student_id,
+          classes:class_id (
+            name,
+            room
+          )
+        `)
+        .in('student_id', studentIds) as any;
+
+      // Create a map of student_id to class info
+      const classMap = new Map();
+      classData?.forEach((enrollment: any) => {
+        classMap.set(enrollment.student_id, enrollment.classes);
+      });
+
       // Transform highlights into homework format
-      const transformedHomework = (data || []).map((highlight: any) => ({
-        id: highlight.id,
-        studentId: highlight.student_id,
-        studentName: highlight.student?.profiles?.display_name ||
-                     highlight.student?.profiles?.email?.split('@')[0] ||
-                     'Unknown Student',
-        teacherId: highlight.teacher_id,
-        teacherName: highlight.teacher?.profiles?.display_name ||
-                     highlight.teacher?.profiles?.email?.split('@')[0] ||
-                     'Unknown Teacher',
-        surah: highlight.quran_ayahs?.surah || 'Unknown Surah',
-        ayah: highlight.quran_ayahs?.ayah || 0,
-        startVerse: highlight.token_start,
-        endVerse: highlight.token_end,
-        type: 'memorization',
-        dueDate: highlight.created_at,
-        color: highlight.color,
-        completed: highlight.color === 'gold',
-        late: false
-      }));
+      const transformedHomework = (data || []).map((highlight: any) => {
+        const studentClass = classMap.get(highlight.student_id);
+        return {
+          id: highlight.id,
+          studentId: highlight.student_id,
+          studentName: highlight.student?.profiles?.display_name ||
+                       highlight.student?.profiles?.email?.split('@')[0] ||
+                       'Unknown Student',
+          teacherId: highlight.teacher_id,
+          teacherName: highlight.teacher?.profiles?.display_name ||
+                       highlight.teacher?.profiles?.email?.split('@')[0] ||
+                       'Unknown Teacher',
+          class: studentClass?.name || null,
+          classRoom: studentClass?.room || null,
+          note: highlight.note || '',
+          created_at: highlight.created_at,
+          color: highlight.color,
+          completed: highlight.color === 'gold',
+          late: false
+        };
+      });
 
       setHomeworkList(transformedHomework);
     } catch (error: any) {
@@ -3853,22 +3872,44 @@ export default function SchoolDashboard() {
 
               {/* Filter Bar */}
               <div className="bg-white rounded-lg shadow-sm p-4">
-                <div className="flex items-center space-x-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <select
                     value={homeworkFilter.status}
                     onChange={(e) => setHomeworkFilter({ ...homeworkFilter, status: e.target.value })}
                     className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
-                    <option value="all">All Homework</option>
+                    <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="completed">Completed</option>
                   </select>
 
-                  <div className="relative flex-1">
+                  <select
+                    value={homeworkFilter.teacher}
+                    onChange={(e) => setHomeworkFilter({ ...homeworkFilter, teacher: e.target.value })}
+                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Teachers</option>
+                    {[...new Set(homeworkList.map((hw: any) => hw.teacherName))].map((teacherName: any) => (
+                      <option key={teacherName} value={teacherName}>{teacherName}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={homeworkFilter.class}
+                    onChange={(e) => setHomeworkFilter({ ...homeworkFilter, class: e.target.value })}
+                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Classes</option>
+                    {[...new Set(homeworkList.map((hw: any) => hw.class).filter(Boolean))].map((className: any) => (
+                      <option key={className} value={className}>{className}</option>
+                    ))}
+                  </select>
+
+                  <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="text"
-                      placeholder="Search by student, surah, or note..."
+                      placeholder="Search by student or note..."
                       value={homeworkSearchTerm}
                       onChange={(e) => setHomeworkSearchTerm(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
@@ -3886,14 +3927,19 @@ export default function SchoolDashboard() {
                       (homeworkFilter.status === 'completed' && hw.completed) ||
                       (homeworkFilter.status === 'pending' && !hw.completed);
 
+                    // Teacher filter
+                    const matchesTeacher = homeworkFilter.teacher === 'all' || hw.teacherName === homeworkFilter.teacher;
+
+                    // Class filter
+                    const matchesClass = homeworkFilter.class === 'all' || hw.class === homeworkFilter.class;
+
                     // Search filter
                     const searchLower = homeworkSearchTerm.toLowerCase();
                     const matchesSearch = !homeworkSearchTerm ||
                       hw.studentName?.toLowerCase().includes(searchLower) ||
-                      hw.surah?.toLowerCase().includes(searchLower) ||
                       hw.note?.toLowerCase().includes(searchLower);
 
-                    return matchesStatus && matchesSearch;
+                    return matchesStatus && matchesTeacher && matchesClass && matchesSearch;
                   })
                   .map((homework: any) => (
                   <div key={homework.id} className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -3908,43 +3954,33 @@ export default function SchoolDashboard() {
                           <h3 className="text-lg font-bold text-gray-900">
                             {homework.studentName}
                           </h3>
-                          <p className="text-sm text-gray-500">{homework.class || 'N/A'}</p>
+                          <p className="text-sm text-gray-500">
+                            {homework.class && homework.classRoom ? `${homework.class} - Room ${homework.classRoom}` : homework.class || 'No Class Assigned'}
+                          </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           homework.completed ? 'bg-green-100 text-green-700' :
-                          homework.late ? 'bg-red-100 text-red-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
-                          {homework.completed ? 'Completed' : homework.late ? 'Late' : 'Pending'}
+                          {homework.completed ? 'Completed' : 'Pending'}
                         </span>
                       </div>
 
-                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                        <p className="text-sm font-medium text-gray-700">
-                          📖 {homework.surah}, Ayah {homework.startVerse ? `${homework.startVerse}-${homework.endVerse}` : homework.ayahRange || 'N/A'}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">{homework.note}</p>
-                      </div>
+                      {homework.note && (
+                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                          <p className="text-sm text-gray-600">{homework.note}</p>
+                        </div>
+                      )}
 
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Assigned:</span>
-                          <span className="text-gray-700">{homework.assignedDate || new Date(homework.created_at).toLocaleDateString()}</span>
+                          <span className="text-gray-500">Teacher:</span>
+                          <span className="text-gray-700 font-medium">{homework.teacherName}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Due Date:</span>
-                          <span className={homework.late ? 'text-red-600 font-medium' : 'text-gray-700'}>
-                            {homework.dueDate ? new Date(homework.dueDate).toLocaleDateString() : 'N/A'}
-                          </span>
+                          <span className="text-gray-500">Created:</span>
+                          <span className="text-gray-700">{new Date(homework.created_at).toLocaleDateString()}</span>
                         </div>
-                        {homework.type && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Type:</span>
-                            <span className="text-gray-700">
-                              {homework.type === 'memorization' ? '📖 Memorization' : '🔄 Revision'}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -3956,18 +3992,21 @@ export default function SchoolDashboard() {
                 const matchesStatus = homeworkFilter.status === 'all' ||
                   (homeworkFilter.status === 'completed' && hw.completed) ||
                   (homeworkFilter.status === 'pending' && !hw.completed);
+                const matchesTeacher = homeworkFilter.teacher === 'all' || hw.teacherName === homeworkFilter.teacher;
+                const matchesClass = homeworkFilter.class === 'all' || hw.class === homeworkFilter.class;
                 const searchLower = homeworkSearchTerm.toLowerCase();
                 const matchesSearch = !homeworkSearchTerm ||
                   hw.studentName?.toLowerCase().includes(searchLower) ||
-                  hw.surah?.toLowerCase().includes(searchLower) ||
                   hw.note?.toLowerCase().includes(searchLower);
-                return matchesStatus && matchesSearch;
+                return matchesStatus && matchesTeacher && matchesClass && matchesSearch;
               }).length === 0 && (
                 <div className="text-center py-12 bg-white rounded-xl">
                   <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 text-lg">No homework found</p>
                   <p className="text-gray-400 text-sm mt-1">
-                    {homeworkSearchTerm ? 'Try a different search term' : 'Homework will appear when teachers create highlighting assignments for students'}
+                    {homeworkSearchTerm || homeworkFilter.teacher !== 'all' || homeworkFilter.class !== 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Homework will appear when teachers create highlighting assignments for students'}
                   </p>
                 </div>
               )}
