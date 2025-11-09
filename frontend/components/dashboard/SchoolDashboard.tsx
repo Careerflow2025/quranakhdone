@@ -503,6 +503,13 @@ export default function SchoolDashboard() {
   const [highlightsClassFilter, setHighlightsClassFilter] = useState('all');
   const [highlightsSearchTerm, setHighlightsSearchTerm] = useState('');
 
+  // Assignments filters
+  const [assignmentsStudentFilter, setAssignmentsStudentFilter] = useState('all');
+  const [assignmentsStatusFilter, setAssignmentsStatusFilter] = useState('all');
+  const [assignmentsTeacherFilter, setAssignmentsTeacherFilter] = useState('all');
+  const [assignmentsClassFilter, setAssignmentsClassFilter] = useState('all');
+  const [assignmentsSearchTerm, setAssignmentsSearchTerm] = useState('');
+
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -4375,136 +4382,261 @@ export default function SchoolDashboard() {
             </div>
           )}
 
-          {/* Assignments Tab - Shows assignments from highlighting */}
+          {/* Assignments Tab - Matching Teacher Dashboard Layout */}
           {activeTab === 'assignments' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm">
-                <div className="p-6 border-b">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Assignments (School Overview)</h2>
-                      <p className="text-sm text-gray-500 mt-1">Monitor all assignments created by teachers across the school</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
-                        <Eye className="w-4 h-4 inline mr-1" />
-                        All Teachers' Assignments
-                      </div>
-                      <button
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        onClick={() => refreshData()}
-                      >
-                        <RefreshCw className="w-5 h-5" />
-                      </button>
-                    </div>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center">
+                      <FileText className="w-7 h-7 mr-3" />
+                      School-wide Assignments
+                    </h2>
+                    <p className="text-blue-100 mt-1">All assignments created by teachers across the school</p>
                   </div>
-
-                  {/* Filter Tabs */}
-                  <div className="flex items-center space-x-4 mt-6">
-                    {['all', 'pending', 'submitted', 'reviewed', 'completed'].map((status: any) => (
-                      <button
-                        key={status}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                          assignmentFilter === status
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                        onClick={() => setAssignmentFilter(status)}
-                      >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                        {status === 'pending' && pendingAssignments > 0 && (
-                          <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-xs">
-                            {pendingAssignments}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => refreshData()}
+                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center"
+                  >
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    Refresh
+                  </button>
                 </div>
 
-                <div className="p-6">
-                  {/* Assignments List */}
-                  {assignments.length === 0 ? (
-                    <div className="text-center py-12">
-                      <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments yet</h3>
-                      <p className="text-gray-500 mb-4">
-                        Assignments will appear here when teachers create them through student highlighting
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        This is a school-wide view of all teacher-created assignments
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {filteredAssignments.map((assignment: any) => (
-                        <div
-                          key={assignment.id}
-                          className="border rounded-lg p-4 hover:shadow-md transition-all"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3">
-                                <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  assignment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                  assignment.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                                  assignment.status === 'reviewed' ? 'bg-purple-100 text-purple-700' :
-                                  assignment.late ? 'bg-red-100 text-red-700' :
-                                  'bg-yellow-100 text-yellow-700'
-                                }`}>
-                                  {assignment.status === 'assigned' && assignment.late ? 'Late' : assignment.status}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 mt-1">{assignment.description}</p>
-                              <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                                <span className="flex items-center">
-                                  <User className="w-3 h-3 mr-1" />
-                                  {assignment.studentName}
-                                </span>
-                                <span className="flex items-center">
-                                  <School className="w-3 h-3 mr-1" />
-                                  {assignment.className}
-                                </span>
-                                <span className="flex items-center">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  Due: {new Date(assignment.due_at).toLocaleDateString()}
-                                </span>
-                                {assignment.submissions_count > 0 && (
-                                  <span className="flex items-center text-green-600">
-                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                    {assignment.submissions_count} submission{assignment.submissions_count !== 1 ? 's' : ''}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handleViewAssignment(assignment.id)}
-                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleEditAssignment(assignment)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAssignment(assignment.id, assignment.title)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-blue-100 text-sm">Total</p>
+                    <p className="text-2xl font-bold">{assignments.length}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-blue-100 text-sm">Pending</p>
+                    <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'assigned').length}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-blue-100 text-sm">Submitted</p>
+                    <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'submitted').length}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-blue-100 text-sm">Completed</p>
+                    <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'completed').length}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                    <p className="text-blue-100 text-sm">Late</p>
+                    <p className="text-2xl font-bold text-red-200">{assignments.filter((a: any) => a.late && a.status !== 'completed').length}</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Filter Bar - 5 columns */}
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {/* Student Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Student</label>
+                    <select
+                      value={assignmentsStudentFilter}
+                      onChange={(e) => setAssignmentsStudentFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Students</option>
+                      {students.map((student: any) => (
+                        <option key={student.id} value={student.id}>{student.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                    <select
+                      value={assignmentsStatusFilter}
+                      onChange={(e) => setAssignmentsStatusFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="assigned">Pending</option>
+                      <option value="submitted">Submitted</option>
+                      <option value="reviewed">Reviewed</option>
+                      <option value="completed">Completed</option>
+                      <option value="late">Late</option>
+                    </select>
+                  </div>
+
+                  {/* Teacher Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Teacher</label>
+                    <select
+                      value={assignmentsTeacherFilter}
+                      onChange={(e) => setAssignmentsTeacherFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Teachers</option>
+                      {teachers.map((teacher: any) => (
+                        <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Class Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Class</label>
+                    <select
+                      value={assignmentsClassFilter}
+                      onChange={(e) => setAssignmentsClassFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Classes</option>
+                      {classes.map((cls: any) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Search title, description..."
+                        value={assignmentsSearchTerm}
+                        onChange={(e) => setAssignmentsSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assignment Cards - 2 Column Grid */}
+              {(() => {
+                // Build student-to-class mapping for filtering
+                const studentToClassMap = new Map();
+                students.forEach((student: any) => {
+                  if (student.class) {
+                    const matchingClass = classes.find((c: any) => c.name === student.class);
+                    if (matchingClass) {
+                      studentToClassMap.set(student.id, matchingClass.id);
+                    }
+                  }
+                });
+
+                // Filter assignments
+                const filteredAssignments = assignments.filter((assignment: any) => {
+                  // Student filter
+                  if (assignmentsStudentFilter !== 'all' && assignment.student_id !== assignmentsStudentFilter) return false;
+
+                  // Teacher filter
+                  if (assignmentsTeacherFilter !== 'all' && assignment.created_by !== assignmentsTeacherFilter) return false;
+
+                  // Class filter
+                  if (assignmentsClassFilter !== 'all') {
+                    const studentClassId = studentToClassMap.get(assignment.student_id);
+                    if (studentClassId !== assignmentsClassFilter) return false;
+                  }
+
+                  // Status filter
+                  if (assignmentsStatusFilter === 'late') {
+                    if (!assignment.late || assignment.status === 'completed') return false;
+                  } else if (assignmentsStatusFilter !== 'all') {
+                    if (assignment.status !== assignmentsStatusFilter) return false;
+                  }
+
+                  // Search filter
+                  if (assignmentsSearchTerm) {
+                    const searchLower = assignmentsSearchTerm.toLowerCase();
+                    const student = students.find((s: any) => s.id === assignment.student_id);
+                    const matchesSearch =
+                      assignment.title?.toLowerCase().includes(searchLower) ||
+                      assignment.description?.toLowerCase().includes(searchLower) ||
+                      student?.name?.toLowerCase().includes(searchLower);
+                    if (!matchesSearch) return false;
+                  }
+
+                  return true;
+                });
+
+                return (
+                  <div>
+                    {filteredAssignments.length === 0 ? (
+                      <div className="text-center py-12 bg-white rounded-xl">
+                        <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500 text-lg">No assignments found</p>
+                        <p className="text-gray-400 text-sm mt-1">
+                          {assignmentsSearchTerm || assignmentsStudentFilter !== 'all' || assignmentsStatusFilter !== 'all' || assignmentsTeacherFilter !== 'all' || assignmentsClassFilter !== 'all'
+                            ? 'Try adjusting your filters'
+                            : 'Assignments will appear here when teachers create them'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {filteredAssignments.map((assignment: any) => {
+                          const student = students.find((s: any) => s.id === assignment.student_id);
+                          const teacher = teachers.find((t: any) => t.id === assignment.created_by);
+                          const isLate = assignment.late && assignment.status !== 'completed';
+
+                          return (
+                            <div key={assignment.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                              <div className={`h-2 ${
+                                assignment.status === 'completed' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+                                isLate ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                                'bg-gradient-to-r from-blue-500 to-indigo-500'
+                              }`}></div>
+
+                              <div className="p-6">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-lg font-bold text-gray-900">
+                                      {student?.name || 'Unknown Student'}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">{student?.class || 'No class'}</p>
+                                  </div>
+                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                    assignment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                    assignment.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                                    assignment.status === 'reviewed' ? 'bg-purple-100 text-purple-700' :
+                                    isLate ? 'bg-red-100 text-red-700' :
+                                    'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                    {isLate ? 'LATE' : assignment.status}
+                                  </span>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                                  <p className="text-sm font-medium text-gray-700">
+                                    📝 {assignment.title || 'Untitled Assignment'}
+                                  </p>
+                                  <p className="text-sm text-gray-600 mt-1">{assignment.description || 'No description'}</p>
+                                </div>
+
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Teacher:</span>
+                                    <span className="text-gray-700">{teacher?.name || 'Unknown Teacher'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Assigned:</span>
+                                    <span className="text-gray-700">{new Date(assignment.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">Due Date:</span>
+                                    <span className={isLate ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                                      {new Date(assignment.due_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
