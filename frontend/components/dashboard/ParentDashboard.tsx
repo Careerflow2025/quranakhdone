@@ -242,13 +242,21 @@ export default function ParentDashboard() {
         // Fetch ALL highlights (fetch actual data to debug)
         const { data: allHighlights, error: allHighlightsError } = await supabase
           .from('highlights')
-          .select('id, student_id, type, color')
+          .select('id, student_id, type, color, status')
           .in('student_id', childIds);
 
         console.log('📊 ALL Highlights fetched:', {
           total: allHighlights?.length || 0,
           byType: allHighlights?.reduce((acc: any, h: any) => {
             acc[h.type || 'null'] = (acc[h.type || 'null'] || 0) + 1;
+            return acc;
+          }, {}),
+          byStatus: allHighlights?.reduce((acc: any, h: any) => {
+            acc[h.status || 'null'] = (acc[h.status || 'null'] || 0) + 1;
+            return acc;
+          }, {}),
+          byColor: allHighlights?.reduce((acc: any, h: any) => {
+            acc[h.color || 'null'] = (acc[h.color || 'null'] || 0) + 1;
             return acc;
           }, {})
         });
