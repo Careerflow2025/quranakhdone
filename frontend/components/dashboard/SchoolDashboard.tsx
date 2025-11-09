@@ -2373,9 +2373,7 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Keep ALL the original UI rendering code from here...
-  // [The rest of the component remains exactly the same with all the beautiful UI]
-
+  // Component UI render
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Professional Notification System */}
@@ -2922,31 +2920,6 @@ export default function SchoolDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-sm">Avg. Progress</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.progress || 0), 0) / students.length) : 0}%</p>
-                      <p className="text-purple-100 text-xs mt-2">Across all students</p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-orange-100 text-sm">Avg. Attendance</p>
-                      <p className="text-3xl font-bold mt-1">{students.length > 0 ? Math.round(students.reduce((acc: any, s: any) => acc + (s.attendance || 0), 0) / students.length) : 0}%</p>
-                      <p className="text-orange-100 text-xs mt-2">This month</p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Main Content */}
@@ -3108,8 +3081,6 @@ export default function SchoolDashboard() {
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Age/Gender</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Grade/Class</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Progress</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Attendance</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                           </tr>
@@ -3151,31 +3122,6 @@ export default function SchoolDashboard() {
                               <td className="px-6 py-4">
                                 <p className="text-sm font-medium text-gray-900">{student.grade || 'N/A'}</p>
                                 <p className="text-xs text-gray-500">{student.class || 'Unassigned'}</p>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center space-x-2">
-                                  <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                                    <div
-                                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                                      style={{ width: `${student.progress || 0}%` }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-sm font-medium text-gray-700">{student.progress || 0}%</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  (student.attendance || 0) >= 95 ? 'bg-green-100 text-green-800' :
-                                  (student.attendance || 0) >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                    (student.attendance || 0) >= 95 ? 'bg-green-600' :
-                                    (student.attendance || 0) >= 80 ? 'bg-yellow-600' :
-                                    'bg-red-600'
-                                  }`}></span>
-                                  {student.attendance || 0}%
-                                </span>
                               </td>
                               <td className="px-6 py-4">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -3251,30 +3197,6 @@ export default function SchoolDashboard() {
                             </div>
 
                             <div className="space-y-3">
-                              <div>
-                                <div className="flex items-center justify-between text-sm mb-1">
-                                  <span className="text-gray-500">Progress</span>
-                                  <span className="font-semibold text-gray-700">{student.progress || 0}%</span>
-                                </div>
-                                <div className="bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${student.progress || 0}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500">Attendance</span>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  (student.attendance || 0) >= 95 ? 'bg-green-100 text-green-800' :
-                                  (student.attendance || 0) >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {student.attendance || 0}%
-                                </span>
-                              </div>
-
                               <div className="flex items-center justify-between text-sm">
                                 <span className="text-gray-500">Status</span>
                                 <span className={`font-semibold ${student.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
@@ -3357,47 +3279,92 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {teachers.map((teacher: any) => (
-                        <div key={teacher.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                          <div className="flex items-center mb-3">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-purple-600" />
+                      {teachers.map((teacher: any, index: number) => {
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-purple-500 via-purple-600 to-indigo-600',
+                          'from-blue-500 via-blue-600 to-cyan-600',
+                          'from-emerald-500 via-emerald-600 to-teal-600',
+                          'from-orange-500 via-orange-600 to-red-600',
+                          'from-pink-500 via-pink-600 to-rose-600',
+                          'from-violet-500 via-violet-600 to-purple-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
+                        return (
+                          <div
+                            key={teacher.id}
+                            className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
+                          >
+                            {/* Gradient header with animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-6 pb-8`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="relative flex items-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <Users className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="ml-4 text-white">
+                                  <h3 className="font-bold text-lg leading-tight">{teacher.name}</h3>
+                                  <p className="text-white/90 text-sm font-medium mt-1">{teacher.subject}</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="ml-3">
-                              <h3 className="font-semibold text-gray-900">{teacher.name}</h3>
-                              <p className="text-sm text-gray-500">{teacher.subject}</p>
+
+                            {/* Card content */}
+                            <div className="p-5">
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-blue-600">📧</span>
+                                  </div>
+                                  <p className="text-gray-700 truncate flex-1">{teacher.email}</p>
+                                </div>
+
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-green-600">📱</span>
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{teacher.phone || 'Not provided'}</p>
+                                </div>
+
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-purple-600">🎓</span>
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{teacher.qualification}</p>
+                                </div>
+                              </div>
+
+                              {/* Action buttons with enhanced styling */}
+                              <div className="flex justify-end space-x-2 mt-5 pt-4 border-t border-gray-100">
+                                <button
+                                  onClick={() => setShowTeacherDetails(teacher)}
+                                  className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="View Teacher"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingTeacher(teacher)}
+                                  className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Edit Teacher"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTeacher(teacher.id)}
+                                  className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Delete Teacher"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-1 text-sm">
-                            <p className="text-gray-600">📧 {teacher.email}</p>
-                            <p className="text-gray-600">📱 {teacher.phone || 'Not provided'}</p>
-                            <p className="text-gray-600">🎓 {teacher.qualification}</p>
-                          </div>
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={() => setShowTeacherDetails(teacher)}
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                              title="View Teacher"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setEditingTeacher(teacher)}
-                              className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                              title="Edit Teacher"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTeacher(teacher.id)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Delete Teacher"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -3434,154 +3401,188 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {parents.map((parent: any) => (
-                        <div key={parent.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                          <div className="flex items-center mb-3">
-                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-orange-600" />
+                      {parents.map((parent: any, index: number) => {
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-rose-500 via-rose-600 to-pink-600',
+                          'from-amber-500 via-amber-600 to-orange-600',
+                          'from-teal-500 via-teal-600 to-cyan-600',
+                          'from-fuchsia-500 via-fuchsia-600 to-purple-600',
+                          'from-lime-500 via-lime-600 to-green-600',
+                          'from-sky-500 via-sky-600 to-blue-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
+                        return (
+                          <div
+                            key={parent.id}
+                            className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
+                          >
+                            {/* Gradient header with animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-6 pb-8`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="relative flex items-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <Users className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="ml-4 text-white flex-1">
+                                  <h3 className="font-bold text-lg leading-tight">{parent.name}</h3>
+                                  <p className="text-white/90 text-sm font-medium mt-1 truncate">{parent.email}</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="ml-3 flex-1">
-                              <h3 className="font-semibold text-gray-900">{parent.name}</h3>
-                              <p className="text-sm text-gray-500">{parent.email}</p>
-                            </div>
-                          </div>
 
-                          {/* Parent Information */}
-                          <div className="space-y-1 text-sm mb-3">
-                            <p className="text-gray-600">
-                              <Phone className="w-4 h-4 inline mr-1" />
-                              {parent.phone || 'No phone'}
-                            </p>
-                            <p className="text-gray-600">
-                              <MapPin className="w-4 h-4 inline mr-1" />
-                              {parent.address || 'No address'}
-                            </p>
-                            <p className="text-gray-600">
-                              <Users className="w-4 h-4 inline mr-1" />
-                              {parent.children_count || 0} Children
-                            </p>
-                          </div>
+                            {/* Card content */}
+                            <div className="p-5">
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Phone className="w-4 h-4 text-green-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{parent.phone || 'No phone'}</p>
+                                </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex justify-between items-center pt-3 border-t">
-                            <button
-                              onClick={async () => {
-                                // Fetch linked students
-                                const { data: linkedStudents } = await (supabase as any)
-                                  .from('parent_students')
-                                  .select(`
-                                    student_id,
-                                    students!inner (
-                                      id,
-                                      user_id,
-                                      profiles!inner (
-                                        display_name,
-                                        email
-                                      )
-                                    )
-                                  `)
-                                  .eq('parent_id', parent.id) as any;
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="w-4 h-4 text-orange-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1 truncate">{parent.address || 'No address'}</p>
+                                </div>
 
-                                const formattedStudents = linkedStudents?.map((link: any) => ({
-                                  id: link.students.id,
-                                  name: link.students.profiles.display_name,
-                                  email: link.students.profiles.email
-                                })) || [];
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Users className="w-4 h-4 text-purple-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1">
+                                    <span className="font-semibold">{parent.children_count || 0}</span> Children
+                                  </p>
+                                </div>
+                              </div>
 
-                                setParentLinkedStudents(formattedStudents);
-                                setShowViewParent(parent);
-                              }}
-                              className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowEditParent(parent);
-                                // Pre-populate selected students for edit
-                                (supabase
-                                  .from('parent_students')
-                                  .select(`
-                                    students!inner (
-                                      id,
-                                      profiles!inner (
-                                        display_name,
-                                        email
-                                      )
-                                    )
-                                  `)
-                                  .eq('parent_id', parent.id) as any)
-                                  .then(({ data }: any) => {
-                                    const linkedStudents = data?.map((link: any) => ({
+                              {/* Action buttons with enhanced styling */}
+                              <div className="flex justify-end space-x-2 mt-5 pt-4 border-t border-gray-100">
+                                <button
+                                  onClick={async () => {
+                                    // Fetch linked students
+                                    const { data: linkedStudents } = await (supabase as any)
+                                      .from('parent_students')
+                                      .select(`
+                                        student_id,
+                                        students!inner (
+                                          id,
+                                          user_id,
+                                          profiles!inner (
+                                            display_name,
+                                            email
+                                          )
+                                        )
+                                      `)
+                                      .eq('parent_id', parent.id) as any;
+
+                                    const formattedStudents = linkedStudents?.map((link: any) => ({
                                       id: link.students.id,
                                       name: link.students.profiles.display_name,
                                       email: link.students.profiles.email
                                     })) || [];
-                                    setSelectedStudentsForParent(linkedStudents);
-                                  });
-                              }}
-                              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center"
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (confirm(`Are you sure you want to delete parent "${parent.name}"? This will completely remove them from the system.`)) {
-                                  try {
-                                    // FIXED: Use API endpoint with Bearer token instead of direct Supabase query
-                                    const { data: { session } } = await supabase.auth.getSession();
-                                    if (!session) {
-                                      showNotification('Please login as school administrator', 'error');
-                                      return;
+
+                                    setParentLinkedStudents(formattedStudents);
+                                    setShowViewParent(parent);
+                                  }}
+                                  className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="View Parent"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowEditParent(parent);
+                                    // Pre-populate selected students for edit
+                                    (supabase
+                                      .from('parent_students')
+                                      .select(`
+                                        students!inner (
+                                          id,
+                                          profiles!inner (
+                                            display_name,
+                                            email
+                                          )
+                                        )
+                                      `)
+                                      .eq('parent_id', parent.id) as any)
+                                      .then(({ data }: any) => {
+                                        const linkedStudents = data?.map((link: any) => ({
+                                          id: link.students.id,
+                                          name: link.students.profiles.display_name,
+                                          email: link.students.profiles.email
+                                        })) || [];
+                                        setSelectedStudentsForParent(linkedStudents);
+                                      });
+                                  }}
+                                  className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Edit Parent"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(`Are you sure you want to delete parent "${parent.name}"? This will completely remove them from the system.`)) {
+                                      try {
+                                        // FIXED: Use API endpoint with Bearer token instead of direct Supabase query
+                                        const { data: { session } } = await supabase.auth.getSession();
+                                        if (!session) {
+                                          showNotification('Please login as school administrator', 'error');
+                                          return;
+                                        }
+
+                                        const response = await fetch('/api/school/delete-parents', {
+                                          method: 'DELETE',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${session.access_token}`
+                                          },
+                                          body: JSON.stringify({ parentIds: [parent.id] })
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                          throw new Error(data.error || 'Failed to delete parent');
+                                        }
+
+                                        if (data.success) {
+                                          showNotification(
+                                            `Parent "${parent.name}" deleted successfully`,
+                                            'success',
+                                            3000,
+                                            'Completely removed from all systems including authentication'
+                                          );
+                                          refreshData();
+                                        } else {
+                                          throw new Error(data.error || 'Unknown error occurred');
+                                        }
+                                      } catch (error: any) {
+                                        console.error('Error deleting parent:', error);
+                                        showNotification(
+                                          'Failed to delete parent',
+                                          'error',
+                                          5000,
+                                          error.message
+                                        );
+                                      }
                                     }
-
-                                    const response = await fetch('/api/school/delete-parents', {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${session.access_token}`
-                                      },
-                                      body: JSON.stringify({ parentIds: [parent.id] })
-                                    });
-
-                                    const data = await response.json();
-
-                                    if (!response.ok) {
-                                      throw new Error(data.error || 'Failed to delete parent');
-                                    }
-
-                                    if (data.success) {
-                                      showNotification(
-                                        `Parent "${parent.name}" deleted successfully`,
-                                        'success',
-                                        3000,
-                                        'Completely removed from all systems including authentication'
-                                      );
-                                      refreshData();
-                                    } else {
-                                      throw new Error(data.error || 'Unknown error occurred');
-                                    }
-                                  } catch (error: any) {
-                                    console.error('Error deleting parent:', error);
-                                    showNotification(
-                                      'Failed to delete parent',
-                                      'error',
-                                      5000,
-                                      error.message
-                                    );
-                                  }
-                                }
-                              }}
-                              className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center"
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </button>
+                                  }}
+                                  className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Delete Parent"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -3634,7 +3635,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {classes.map((cls: any) => {
+                      {classes.map((cls: any, index: number) => {
                         // Parse schedule_json to display properly
                         const schedule = cls.schedule_json || {};
                         const schedules = schedule.schedules || [];
@@ -3647,31 +3648,41 @@ export default function SchoolDashboard() {
                         // Calculate utilization percentage
                         const utilization = cls.capacity ? (cls.student_count / cls.capacity) * 100 : 0;
 
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-indigo-500 via-indigo-600 to-blue-600',
+                          'from-cyan-500 via-cyan-600 to-teal-600',
+                          'from-violet-500 via-violet-600 to-purple-600',
+                          'from-emerald-500 via-emerald-600 to-green-600',
+                          'from-rose-500 via-rose-600 to-red-600',
+                          'from-amber-500 via-amber-600 to-yellow-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
                         return (
-                          <div key={cls.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
-                            {/* Card Header with Gradient */}
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
-                              <div className="flex items-start justify-between mb-2">
-                                <h3 className="font-bold text-lg text-gray-900 line-clamp-2">{cls.name}</h3>
-                                <div className="flex flex-col items-end gap-1">
+                          <div key={cls.id} className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden flex flex-col h-full">
+                            {/* Card Header with Vibrant Gradient and Animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-5 pb-6`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="flex items-start justify-between mb-3">
+                                <h3 className="font-bold text-xl text-white line-clamp-2 flex-1 pr-2">{cls.name}</h3>
+                                <div className="flex flex-col items-end gap-1.5">
                                   {cls.grade && (
-                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                                    <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-semibold">
                                       {cls.grade}
                                     </span>
                                   )}
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                    utilization > 90 ? 'bg-red-100 text-red-700' :
-                                    utilization > 70 ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-green-100 text-green-700'
-                                  }`}>
+                                  <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-semibold">
                                     {cls.student_count || 0}/{cls.capacity || 30}
                                   </span>
                                 </div>
                               </div>
 
                               {/* Room Badge */}
-                              <div className="flex items-center text-sm text-gray-600">
-                                <MapPin className="w-3 h-3 mr-1" />
+                              <div className="flex items-center text-sm text-white/90">
+                                <MapPin className="w-4 h-4 mr-1.5" />
                                 <span className="font-medium">{cls.room || 'No Room Assigned'}</span>
                               </div>
                             </div>
@@ -3789,12 +3800,12 @@ export default function SchoolDashboard() {
                               <div className="flex-1"></div>
 
                               {/* Action Buttons - Always at Bottom */}
-                              <div className="flex space-x-2 mt-4 pt-4 border-t">
+                              <div className="flex space-x-2 mt-4 pt-4 border-t border-gray-100">
                                 <button
                                   onClick={() => handleViewClass(cls.id)}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Eye className="w-4 h-4 mr-1" />
+                                  <Eye className="w-4 h-4 mr-1.5" />
                                   View
                                 </button>
                                 <button
@@ -3802,16 +3813,16 @@ export default function SchoolDashboard() {
                                     setEditingClass(cls);
                                     setEditClassSchedules(cls.schedule_json?.schedules || []);
                                   }}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Edit className="w-4 h-4 mr-1" />
+                                  <Edit className="w-4 h-4 mr-1.5" />
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  <Trash2 className="w-4 h-4 mr-1.5" />
                                   Delete
                                 </button>
                               </div>
