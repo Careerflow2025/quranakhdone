@@ -309,13 +309,26 @@ export default function ParentDashboard() {
           .select('student_id, target_id, progress')
           .in('student_id', childIds);
 
-        console.log('🎯 ALL Targets fetched:', {
+        console.log('🎯 ALL Targets fetched from target_students junction table:', {
           total: allTargets?.length || 0,
-          data: allTargets
+          data: allTargets,
+          childIds: childIds,
+          error: targetsError
+        });
+
+        // Also check targets table directly to see if targets exist but are not linked
+        const { data: directTargets, error: directError } = await supabase
+          .from('targets')
+          .select('id, title, type, student_id');
+
+        console.log('🎯 Direct targets table query (should show all targets in school):', {
+          total: directTargets?.length || 0,
+          data: directTargets,
+          error: directError
         });
 
         if (targetsError) {
-          console.error('Error fetching targets:', targetsError);
+          console.error('Error fetching targets from junction table:', targetsError);
         } else {
           setTotalTargets(allTargets?.length || 0);
         }
