@@ -3281,47 +3281,92 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {teachers.map((teacher: any) => (
-                        <div key={teacher.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                          <div className="flex items-center mb-3">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-purple-600" />
+                      {teachers.map((teacher: any, index: number) => {
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-purple-500 via-purple-600 to-indigo-600',
+                          'from-blue-500 via-blue-600 to-cyan-600',
+                          'from-emerald-500 via-emerald-600 to-teal-600',
+                          'from-orange-500 via-orange-600 to-red-600',
+                          'from-pink-500 via-pink-600 to-rose-600',
+                          'from-violet-500 via-violet-600 to-purple-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
+                        return (
+                          <div
+                            key={teacher.id}
+                            className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
+                          >
+                            {/* Gradient header with animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-6 pb-8`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="relative flex items-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <Users className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="ml-4 text-white">
+                                  <h3 className="font-bold text-lg leading-tight">{teacher.name}</h3>
+                                  <p className="text-white/90 text-sm font-medium mt-1">{teacher.subject}</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="ml-3">
-                              <h3 className="font-semibold text-gray-900">{teacher.name}</h3>
-                              <p className="text-sm text-gray-500">{teacher.subject}</p>
+
+                            {/* Card content */}
+                            <div className="p-5">
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-blue-600">📧</span>
+                                  </div>
+                                  <p className="text-gray-700 truncate flex-1">{teacher.email}</p>
+                                </div>
+
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-green-600">📱</span>
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{teacher.phone || 'Not provided'}</p>
+                                </div>
+
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <span className="text-purple-600">🎓</span>
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{teacher.qualification}</p>
+                                </div>
+                              </div>
+
+                              {/* Action buttons with enhanced styling */}
+                              <div className="flex justify-end space-x-2 mt-5 pt-4 border-t border-gray-100">
+                                <button
+                                  onClick={() => setShowTeacherDetails(teacher)}
+                                  className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="View Teacher"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingTeacher(teacher)}
+                                  className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Edit Teacher"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTeacher(teacher.id)}
+                                  className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Delete Teacher"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-1 text-sm">
-                            <p className="text-gray-600">📧 {teacher.email}</p>
-                            <p className="text-gray-600">📱 {teacher.phone || 'Not provided'}</p>
-                            <p className="text-gray-600">🎓 {teacher.qualification}</p>
-                          </div>
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={() => setShowTeacherDetails(teacher)}
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                              title="View Teacher"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setEditingTeacher(teacher)}
-                              className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                              title="Edit Teacher"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTeacher(teacher.id)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Delete Teacher"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
