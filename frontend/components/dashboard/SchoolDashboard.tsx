@@ -2373,9 +2373,6 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Keep ALL the original UI rendering code from here...
-  // [The rest of the component remains exactly the same with all the beautiful UI]
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Professional Notification System */}
