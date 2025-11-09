@@ -118,8 +118,11 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
     if (userRole === 'student' && studentId) {
       console.log('🔄 Fetching student gradebook for:', studentId);
       fetchStudentGradebook(studentId);
+    } else if (userRole === 'parent' && studentId) {
+      console.log('🔄 Fetching parent gradebook for child:', studentId);
+      fetchParentGradebook(studentId);
     }
-  }, [userRole, studentId, fetchStudentGradebook]);
+  }, [userRole, studentId, fetchStudentGradebook, fetchParentGradebook]);
 
   // ============================================================================
   // HANDLERS
