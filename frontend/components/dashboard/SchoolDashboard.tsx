@@ -3403,154 +3403,188 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {parents.map((parent: any) => (
-                        <div key={parent.id} className="bg-white border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                          <div className="flex items-center mb-3">
-                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-orange-600" />
+                      {parents.map((parent: any, index: number) => {
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-rose-500 via-rose-600 to-pink-600',
+                          'from-amber-500 via-amber-600 to-orange-600',
+                          'from-teal-500 via-teal-600 to-cyan-600',
+                          'from-fuchsia-500 via-fuchsia-600 to-purple-600',
+                          'from-lime-500 via-lime-600 to-green-600',
+                          'from-sky-500 via-sky-600 to-blue-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
+                        return (
+                          <div
+                            key={parent.id}
+                            className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden"
+                          >
+                            {/* Gradient header with animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-6 pb-8`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="relative flex items-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <Users className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="ml-4 text-white flex-1">
+                                  <h3 className="font-bold text-lg leading-tight">{parent.name}</h3>
+                                  <p className="text-white/90 text-sm font-medium mt-1 truncate">{parent.email}</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="ml-3 flex-1">
-                              <h3 className="font-semibold text-gray-900">{parent.name}</h3>
-                              <p className="text-sm text-gray-500">{parent.email}</p>
-                            </div>
-                          </div>
 
-                          {/* Parent Information */}
-                          <div className="space-y-1 text-sm mb-3">
-                            <p className="text-gray-600">
-                              <Phone className="w-4 h-4 inline mr-1" />
-                              {parent.phone || 'No phone'}
-                            </p>
-                            <p className="text-gray-600">
-                              <MapPin className="w-4 h-4 inline mr-1" />
-                              {parent.address || 'No address'}
-                            </p>
-                            <p className="text-gray-600">
-                              <Users className="w-4 h-4 inline mr-1" />
-                              {parent.children_count || 0} Children
-                            </p>
-                          </div>
+                            {/* Card content */}
+                            <div className="p-5">
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Phone className="w-4 h-4 text-green-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1">{parent.phone || 'No phone'}</p>
+                                </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex justify-between items-center pt-3 border-t">
-                            <button
-                              onClick={async () => {
-                                // Fetch linked students
-                                const { data: linkedStudents } = await (supabase as any)
-                                  .from('parent_students')
-                                  .select(`
-                                    student_id,
-                                    students!inner (
-                                      id,
-                                      user_id,
-                                      profiles!inner (
-                                        display_name,
-                                        email
-                                      )
-                                    )
-                                  `)
-                                  .eq('parent_id', parent.id) as any;
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="w-4 h-4 text-orange-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1 truncate">{parent.address || 'No address'}</p>
+                                </div>
 
-                                const formattedStudents = linkedStudents?.map((link: any) => ({
-                                  id: link.students.id,
-                                  name: link.students.profiles.display_name,
-                                  email: link.students.profiles.email
-                                })) || [];
+                                <div className="flex items-center space-x-3 text-sm">
+                                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Users className="w-4 h-4 text-purple-600" />
+                                  </div>
+                                  <p className="text-gray-700 flex-1">
+                                    <span className="font-semibold">{parent.children_count || 0}</span> Children
+                                  </p>
+                                </div>
+                              </div>
 
-                                setParentLinkedStudents(formattedStudents);
-                                setShowViewParent(parent);
-                              }}
-                              className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowEditParent(parent);
-                                // Pre-populate selected students for edit
-                                (supabase
-                                  .from('parent_students')
-                                  .select(`
-                                    students!inner (
-                                      id,
-                                      profiles!inner (
-                                        display_name,
-                                        email
-                                      )
-                                    )
-                                  `)
-                                  .eq('parent_id', parent.id) as any)
-                                  .then(({ data }: any) => {
-                                    const linkedStudents = data?.map((link: any) => ({
+                              {/* Action buttons with enhanced styling */}
+                              <div className="flex justify-end space-x-2 mt-5 pt-4 border-t border-gray-100">
+                                <button
+                                  onClick={async () => {
+                                    // Fetch linked students
+                                    const { data: linkedStudents } = await (supabase as any)
+                                      .from('parent_students')
+                                      .select(`
+                                        student_id,
+                                        students!inner (
+                                          id,
+                                          user_id,
+                                          profiles!inner (
+                                            display_name,
+                                            email
+                                          )
+                                        )
+                                      `)
+                                      .eq('parent_id', parent.id) as any;
+
+                                    const formattedStudents = linkedStudents?.map((link: any) => ({
                                       id: link.students.id,
                                       name: link.students.profiles.display_name,
                                       email: link.students.profiles.email
                                     })) || [];
-                                    setSelectedStudentsForParent(linkedStudents);
-                                  });
-                              }}
-                              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center"
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (confirm(`Are you sure you want to delete parent "${parent.name}"? This will completely remove them from the system.`)) {
-                                  try {
-                                    // FIXED: Use API endpoint with Bearer token instead of direct Supabase query
-                                    const { data: { session } } = await supabase.auth.getSession();
-                                    if (!session) {
-                                      showNotification('Please login as school administrator', 'error');
-                                      return;
+
+                                    setParentLinkedStudents(formattedStudents);
+                                    setShowViewParent(parent);
+                                  }}
+                                  className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="View Parent"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowEditParent(parent);
+                                    // Pre-populate selected students for edit
+                                    (supabase
+                                      .from('parent_students')
+                                      .select(`
+                                        students!inner (
+                                          id,
+                                          profiles!inner (
+                                            display_name,
+                                            email
+                                          )
+                                        )
+                                      `)
+                                      .eq('parent_id', parent.id) as any)
+                                      .then(({ data }: any) => {
+                                        const linkedStudents = data?.map((link: any) => ({
+                                          id: link.students.id,
+                                          name: link.students.profiles.display_name,
+                                          email: link.students.profiles.email
+                                        })) || [];
+                                        setSelectedStudentsForParent(linkedStudents);
+                                      });
+                                  }}
+                                  className="p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Edit Parent"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(`Are you sure you want to delete parent "${parent.name}"? This will completely remove them from the system.`)) {
+                                      try {
+                                        // FIXED: Use API endpoint with Bearer token instead of direct Supabase query
+                                        const { data: { session } } = await supabase.auth.getSession();
+                                        if (!session) {
+                                          showNotification('Please login as school administrator', 'error');
+                                          return;
+                                        }
+
+                                        const response = await fetch('/api/school/delete-parents', {
+                                          method: 'DELETE',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${session.access_token}`
+                                          },
+                                          body: JSON.stringify({ parentIds: [parent.id] })
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                          throw new Error(data.error || 'Failed to delete parent');
+                                        }
+
+                                        if (data.success) {
+                                          showNotification(
+                                            `Parent "${parent.name}" deleted successfully`,
+                                            'success',
+                                            3000,
+                                            'Completely removed from all systems including authentication'
+                                          );
+                                          refreshData();
+                                        } else {
+                                          throw new Error(data.error || 'Unknown error occurred');
+                                        }
+                                      } catch (error: any) {
+                                        console.error('Error deleting parent:', error);
+                                        showNotification(
+                                          'Failed to delete parent',
+                                          'error',
+                                          5000,
+                                          error.message
+                                        );
+                                      }
                                     }
-
-                                    const response = await fetch('/api/school/delete-parents', {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${session.access_token}`
-                                      },
-                                      body: JSON.stringify({ parentIds: [parent.id] })
-                                    });
-
-                                    const data = await response.json();
-
-                                    if (!response.ok) {
-                                      throw new Error(data.error || 'Failed to delete parent');
-                                    }
-
-                                    if (data.success) {
-                                      showNotification(
-                                        `Parent "${parent.name}" deleted successfully`,
-                                        'success',
-                                        3000,
-                                        'Completely removed from all systems including authentication'
-                                      );
-                                      refreshData();
-                                    } else {
-                                      throw new Error(data.error || 'Unknown error occurred');
-                                    }
-                                  } catch (error: any) {
-                                    console.error('Error deleting parent:', error);
-                                    showNotification(
-                                      'Failed to delete parent',
-                                      'error',
-                                      5000,
-                                      error.message
-                                    );
-                                  }
-                                }
-                              }}
-                              className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center"
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </button>
+                                  }}
+                                  className="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
+                                  title="Delete Parent"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
