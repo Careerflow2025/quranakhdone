@@ -2463,7 +2463,7 @@ export default function SchoolDashboard() {
 
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-md">
-        <div className="p-4 border-b">
+        <div className="p-4 space-y-4">
           <div className="flex items-center space-x-3">
             {schoolInfo?.logo_url ? (
               <img
@@ -2481,9 +2481,8 @@ export default function SchoolDashboard() {
               <p className="text-xs text-gray-500">School Dashboard</p>
             </div>
           </div>
-        </div>
 
-        <nav className="p-4 space-y-1">
+          <nav className="space-y-1">
           {[
             { id: 'overview', label: 'Overview', icon: Home },
             { id: 'students', label: 'Students', icon: GraduationCap },
@@ -2519,7 +2518,8 @@ export default function SchoolDashboard() {
               <span className="font-medium">{item.label}</span>
             </button>
           ))}
-        </nav>
+          </nav>
+        </div>
       </div>
 
       {/* Main Content */}
