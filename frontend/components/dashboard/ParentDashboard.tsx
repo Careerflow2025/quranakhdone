@@ -290,11 +290,14 @@ export default function ParentDashboard() {
   } = useHomework();
 
   // Get assignments from database for the selected child
+  // CRITICAL: Pass currentChild?.id directly (undefined when no child selected)
+  // The hook's sync useEffect will update filters when child is selected
+  // Don't pass empty string fallback - let hook handle undefined properly
   const {
     assignments,
     isLoading: assignmentsLoading,
     error: assignmentsError
-  } = useAssignments(currentChild?.id || '');
+  } = useAssignments(currentChild?.id);
 
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
