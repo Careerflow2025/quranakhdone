@@ -20,7 +20,7 @@ import {
   TrendingUp, Eye, Mail, Phone, MapPin, BarChart3, ChevronRight, ChevronLeft, Folder, FolderOpen, LogOut,
   Menu, Shield, Key, CreditCard, DollarSign, Target, Activity, Zap, Package, Grid, List,
   ChevronDown, School, PieChart, Move, ArrowRight, X, XCircle, CheckCircle, RefreshCw, Send, Plus, Info,
-  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare, Brain, ClipboardCheck
+  User, Star, CornerUpLeft, Paperclip, MessageSquare, Bookmark, CheckSquare, Brain, ClipboardCheck, Highlighter
 } from 'lucide-react';
 
 const ClassBuilder = dynamic(() => import('./ClassBuilder'), {
@@ -158,6 +158,77 @@ export default function SchoolDashboard() {
     }
   }, [activeTab, user?.schoolId]);
 
+  // Fetch school-wide statistics for overview tab
+  useEffect(() => {
+    async function fetchSchoolStatistics() {
+      if (!user?.schoolId || activeTab !== 'overview') return;
+
+      try {
+        console.log('📊 Fetching school-wide statistics...');
+
+        // Fetch all highlights for the school (homework is green+gold highlights)
+        const { data: allHighlightsData } = await supabase
+          .from('highlights')
+          .select('id, color')
+          .eq('school_id', user.schoolId);
+
+        // Homework count: green (pending) + gold (completed)
+        const homeworkCount = allHighlightsData?.filter((h: any) =>
+          h.color === 'green' || h.color === 'gold'
+        ).length || 0;
+
+        // Total highlights count
+        const highlightsCount = allHighlightsData?.length || 0;
+
+        // Fetch all assignments for the school
+        const { data: allAssignmentsData } = await supabase
+          .from('assignments')
+          .select('id')
+          .eq('school_id', user.schoolId);
+
+        const assignmentsCount = allAssignmentsData?.length || 0;
+
+        // Fetch all targets for the school (both individual and class-wide)
+        const { data: directTargetsData } = await supabase
+          .from('targets')
+          .select('id')
+          .eq('school_id', user.schoolId);
+
+        const { data: junctionTargetsData } = await supabase
+          .from('target_students')
+          .select('target_id')
+          .in('target_id', (await supabase
+            .from('targets')
+            .select('id')
+            .eq('school_id', user.schoolId)
+          ).data?.map((t: any) => t.id) || []);
+
+        // Combine and deduplicate targets
+        const allTargetIds = new Set();
+        directTargetsData?.forEach((t: any) => allTargetIds.add(t.id));
+        junctionTargetsData?.forEach((t: any) => allTargetIds.add(t.target_id));
+        const targetsCount = allTargetIds.size;
+
+        // Update state
+        setTotalSchoolHomework(homeworkCount);
+        setTotalSchoolHighlights(highlightsCount);
+        setTotalSchoolAssignments(assignmentsCount);
+        setTotalSchoolTargets(targetsCount);
+
+        console.log('✅ School statistics fetched:', {
+          homework: homeworkCount,
+          highlights: highlightsCount,
+          assignments: assignmentsCount,
+          targets: targetsCount
+        });
+      } catch (error) {
+        console.error('❌ Error fetching school statistics:', error);
+      }
+    }
+
+    fetchSchoolStatistics();
+  }, [activeTab, user?.schoolId]);
+
   // DEBUG: Log reportData changes
   useEffect(() => {
     if (activeTab === 'reports' && reportData) {
@@ -247,6 +318,12 @@ export default function SchoolDashboard() {
   const [editingTeacher, setEditingTeacher] = useState<any>(null);
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [selectedTeachersForClass, setSelectedTeachersForClass] = useState<any[]>([]);
+
+  // School-wide statistics for overview
+  const [totalSchoolHomework, setTotalSchoolHomework] = useState(0);
+  const [totalSchoolHighlights, setTotalSchoolHighlights] = useState(0);
+  const [totalSchoolAssignments, setTotalSchoolAssignments] = useState(0);
+  const [totalSchoolTargets, setTotalSchoolTargets] = useState(0);
   const [selectedStudentsForClass, setSelectedStudentsForClass] = useState<any[]>([]);
   const [classTeacherSearch, setClassTeacherSearch] = useState('');
   const [classSchedules, setClassSchedules] = useState<any[]>([]);
@@ -2624,148 +2701,177 @@ export default function SchoolDashboard() {
         {/* [I'm including just the overview section as an example, but ALL sections should be included] */}
         <div className="p-6">
           {activeTab === 'overview' && (
-            <div className="space-y-6">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <GraduationCap className="w-8 h-8 text-emerald-600" />
-                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                      {stats.totalStudents > 0 ? 'Active' : 'Empty'}
-                    </span>
+            <>
+              {/* Welcome Header - Full Width */}
+              <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 shadow-xl mb-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <div>
+                      <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                        Welcome back, {user?.fullName || 'Admin'}
+                      </h1>
+                      <p className="text-emerald-50 text-xl">
+                        Manage your school with {stats.totalStudents} students, {stats.totalTeachers} teachers, and {stats.totalClasses} classes
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white/20 backdrop-blur-md rounded-2xl px-8 py-5 border border-white/30 shadow-lg">
+                      <div className="text-right">
+                        <p className="text-emerald-100 text-sm uppercase tracking-wide font-medium">Today</p>
+                        <p className="text-white text-2xl font-bold">
+                          {new Date().toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900">{stats.totalStudents}</h3>
-                  <p className="text-gray-600 text-sm">Total Students</p>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <Users className="w-8 h-8 text-blue-600" />
-                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                      {stats.totalTeachers > 0 ? 'Active' : 'Empty'}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">{stats.totalTeachers}</h3>
-                  <p className="text-gray-600 text-sm">Total Teachers</p>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <Users className="w-8 h-8 text-purple-600" />
-                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                      {stats.totalParents > 0 ? 'Active' : 'Empty'}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">{stats.totalParents}</h3>
-                  <p className="text-gray-600 text-sm">Total Parents</p>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <School className="w-8 h-8 text-orange-600" />
-                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                      {stats.totalClasses > 0 ? 'Active' : 'Empty'}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">{stats.totalClasses}</h3>
-                  <p className="text-gray-600 text-sm">Total Classes</p>
                 </div>
               </div>
 
-              {/* Welcome Message for Empty School */}
-              {stats.totalStudents === 0 && stats.totalTeachers === 0 && (
-                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-8 text-white">
-                  <h2 className="text-2xl font-bold mb-4">Welcome to QuranAkh!</h2>
-                  <p className="mb-6 text-emerald-100">
-                    Your school is set up successfully. Start by adding your teachers and students to get started.
-                  </p>
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={() => {
-                        setAddModalType('teacher');
-                        setShowAddModal(true);
-                      }}
-                      className="px-6 py-2 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 font-medium"
-                    >
-                      Add First Teacher
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAddModalType('student');
-                        setShowAddModal(true);
-                      }}
-                      className="px-6 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 font-medium"
-                    >
-                      Add First Student
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-4 gap-4">
-                  <button
-                    onClick={() => {
-                      setAddModalType('student');
-                      setShowAddModal(true);
-                    }}
-                    className="p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
-                  >
-                    <UserPlus className="w-6 h-6 text-emerald-600 mb-2" />
-                    <p className="text-sm font-medium text-gray-900">Add Student</p>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAddModalType('teacher');
-                      setShowAddModal(true);
-                    }}
-                    className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <Users className="w-6 h-6 text-blue-600 mb-2" />
-                    <p className="text-sm font-medium text-gray-900">Add Teacher</p>
-                  </button>
-                  <button
-                    onClick={() => setShowCreateClass(true)}
-                    className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                  >
-                    <School className="w-6 h-6 text-purple-600 mb-2" />
-                    <p className="text-sm font-medium text-gray-900">Create Class</p>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setBulkUploadType('students');
-                      setShowBulkUpload(true);
-                    }}
-                    className="p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-                  >
-                    <Upload className="w-6 h-6 text-orange-600 mb-2" />
-                    <p className="text-sm font-medium text-gray-900">Bulk Upload</p>
-                  </button>
-                </div>
-              </div>
-
-              {/* Recent Activities */}
-              {recentActivities.length > 0 && (
-                <div className="bg-white rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
-                  <div className="space-y-3">
-                    {recentActivities.map((activity: any) => (
-                      <div key={activity.id} className="flex items-start space-x-3">
-                        <div className={`p-2 rounded-lg ${activity.color}`}>
-                          <activity.icon className="w-5 h-5" />
+              {/* Premium Stats Cards - 2 Rows */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                  {/* Total Students Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-emerald-50 rounded-xl shadow-sm group-hover:bg-emerald-100 transition-colors duration-300">
+                          <GraduationCap className="w-8 h-8 text-emerald-600" />
                         </div>
-                        <div className="flex-1">
-                          <p className="text-gray-900">{activity.description}</p>
-                          <p className="text-sm text-gray-500">{activity.time}</p>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{stats.totalStudents}</p>
                         </div>
                       </div>
-                    ))}
+                      <div className="h-1 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Teachers Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
+                          <Users className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Teachers</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalTeachers}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Parents Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-purple-50 rounded-xl shadow-sm group-hover:bg-purple-100 transition-colors duration-300">
+                          <Users className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Parents</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{stats.totalParents}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-purple-200 to-purple-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Classes Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-orange-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-orange-50 rounded-xl shadow-sm group-hover:bg-orange-100 transition-colors duration-300">
+                          <School className="w-8 h-8 text-orange-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Classes</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-orange-600 transition-colors duration-300">{stats.totalClasses}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-orange-200 to-orange-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Homework Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-cyan-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-cyan-50 rounded-xl shadow-sm group-hover:bg-cyan-100 transition-colors duration-300">
+                          <BookOpen className="w-8 h-8 text-cyan-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-cyan-600 transition-colors duration-300">{totalSchoolHomework}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-cyan-200 to-cyan-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Highlights Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-amber-50 rounded-xl shadow-sm group-hover:bg-amber-100 transition-colors duration-300">
+                          <Highlighter className="w-8 h-8 text-amber-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Highlights</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalSchoolHighlights}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Assignments Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-indigo-50 rounded-xl shadow-sm group-hover:bg-indigo-100 transition-colors duration-300">
+                          <FileText className="w-8 h-8 text-indigo-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalSchoolAssignments}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-indigo-200 to-indigo-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* Total Targets Card */}
+                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-pink-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 bg-pink-50 rounded-xl shadow-sm group-hover:bg-pink-100 transition-colors duration-300">
+                          <Target className="w-8 h-8 text-pink-600" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
+                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-pink-600 transition-colors duration-300">{totalSchoolTargets}</p>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-gradient-to-r from-pink-200 to-pink-400 rounded-full"></div>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </>
           )}
 
           {/* Students Tab */}
