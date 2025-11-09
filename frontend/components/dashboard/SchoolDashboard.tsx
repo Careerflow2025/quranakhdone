@@ -4183,11 +4183,16 @@ export default function SchoolDashboard() {
 
               {/* Highlights Display - Grouped by Student */}
               {!highlightsLoading && !highlightsError && (() => {
-                // Get class enrollments for filtering
-                const classEnrollments = new Map();
+                // Build student-to-class mapping for filtering
+                // We need to use a simpler approach: match class names from students data
+                const studentToClassMap = new Map();
                 students.forEach((student: any) => {
-                  if (student.classes && student.classes.length > 0) {
-                    classEnrollments.set(student.id, student.classes[0].id);
+                  if (student.class) {
+                    // Find the class ID by matching the class name
+                    const matchingClass = classes.find((c: any) => c.name === student.class);
+                    if (matchingClass) {
+                      studentToClassMap.set(student.id, matchingClass.id);
+                    }
                   }
                 });
 
@@ -4201,7 +4206,7 @@ export default function SchoolDashboard() {
 
                   // Class filter
                   if (highlightsClassFilter !== 'all') {
-                    const studentClassId = classEnrollments.get(h.student_id);
+                    const studentClassId = studentToClassMap.get(h.student_id);
                     if (studentClassId !== highlightsClassFilter) return false;
                   }
 
