@@ -37,4 +37,4 @@ next-env.d.ts
 # IMPORTANT: Never commit credentials
 .env.local
 .env.production
-.env.development
+.env.development# Force cache clear - Sun, Nov  9, 2025  8:34:17 PM
