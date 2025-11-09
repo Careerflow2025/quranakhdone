@@ -295,10 +295,10 @@ export default function ParentDashboard() {
           setTotalAssignments(allAssignments?.length || 0);
         }
 
-        // Fetch ALL targets via junction table
+        // Fetch ALL targets via junction table (no id column, just target_id and student_id)
         const { data: allTargets, error: targetsError } = await supabase
           .from('target_students')
-          .select('id, student_id, target_id')
+          .select('student_id, target_id, progress')
           .in('student_id', childIds);
 
         console.log('🎯 ALL Targets fetched:', {
