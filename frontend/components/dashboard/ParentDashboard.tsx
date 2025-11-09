@@ -94,6 +94,7 @@ export default function ParentDashboard() {
   const [parentId, setParentId] = useState<string | null>(null);
   const [isLoadingParent, setIsLoadingParent] = useState(true);
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
+  const [schoolName, setSchoolName] = useState<string>('QuranLearning Academy');
 
   // Aggregated Stats for All Children
   const [totalHighlights, setTotalHighlights] = useState(0);
@@ -101,32 +102,37 @@ export default function ParentDashboard() {
   const [totalAssignments, setTotalAssignments] = useState(0);
   const [totalTargets, setTotalTargets] = useState(0);
 
-  // Fetch school logo
+  // Fetch school logo and name
   useEffect(() => {
-    async function fetchSchoolLogo() {
+    async function fetchSchoolData() {
       if (!user?.schoolId) return;
 
       try {
         const { data, error } = await supabase
           .from('schools')
-          .select('logo_url')
+          .select('logo_url, name')
           .eq('id', user.schoolId)
           .single();
 
         if (error) {
-          console.error('Error fetching school logo:', error);
+          console.error('Error fetching school data:', error);
           return;
         }
 
-        if (data?.logo_url) {
-          setSchoolLogo(data.logo_url);
+        if (data) {
+          if (data.logo_url) {
+            setSchoolLogo(data.logo_url);
+          }
+          if (data.name) {
+            setSchoolName(data.name);
+          }
         }
       } catch (error) {
-        console.error('Error fetching school logo:', error);
+        console.error('Error fetching school data:', error);
       }
     }
 
-    fetchSchoolLogo();
+    fetchSchoolData();
   }, [user?.schoolId]);
 
   // Fetch parent_id from user_id
@@ -1026,7 +1032,7 @@ export default function ParentDashboard() {
                   <h1 className="text-xl font-bold text-gray-900">
                     Parent Dashboard
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">QuranLearning Academy</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{schoolName}</p>
                 </div>
               </div>
 
