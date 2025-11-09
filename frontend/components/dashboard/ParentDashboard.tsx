@@ -2112,6 +2112,16 @@ export default function ParentDashboard() {
         {/* Assignments Tab - Database-linked (EXACT Student Dashboard implementation) */}
         {activeTab === 'assignments' && (
           <div className="space-y-6">
+            {/* DEBUG LOGGING */}
+            {console.log('🔍 PARENT DASHBOARD ASSIGNMENTS DEBUG:', {
+              currentChildId: currentChild?.id,
+              currentChildName: currentChild?.name,
+              totalAssignments: assignments?.length || 0,
+              assignmentsData: assignments?.slice(0, 3),
+              assignmentsLoading,
+              assignmentsError
+            })}
+
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
               <div>
