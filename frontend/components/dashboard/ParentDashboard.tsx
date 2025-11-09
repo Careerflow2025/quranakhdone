@@ -265,19 +265,24 @@ export default function ParentDashboard() {
           console.error('Error fetching all highlights:', allHighlightsError);
         }
 
-        // Count homework highlights (type='homework')
+        // Count homework highlights (color='green' OR 'gold')
+        // Homework system: green = pending homework, gold = completed homework
         const homeworkHighlights = allHighlights?.filter((h: any) =>
-          h.type === 'homework'
+          h.color === 'green' || h.color === 'gold'
         ) || [];
 
         console.log('✅ Highlight Counts:', {
           totalHighlights: allHighlights?.length || 0,
-          homework: homeworkHighlights.length
+          homework: homeworkHighlights.length,
+          homeworkBreakdown: {
+            pending: allHighlights?.filter((h: any) => h.color === 'green').length || 0,
+            completed: allHighlights?.filter((h: any) => h.color === 'gold').length || 0
+          }
         });
 
         // Total Highlights = ALL highlights (including homework)
         setTotalHighlights(allHighlights?.length || 0);
-        // Total Homework = Only homework type highlights
+        // Total Homework = green (pending) + gold (completed) highlights
         setTotalHomework(homeworkHighlights.length);
 
         // Fetch ALL assignments
