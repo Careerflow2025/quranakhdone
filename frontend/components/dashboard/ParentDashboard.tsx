@@ -93,6 +93,35 @@ export default function ParentDashboard() {
   const [children, setChildren] = useState<any[]>([]);
   const [parentId, setParentId] = useState<string | null>(null);
   const [isLoadingParent, setIsLoadingParent] = useState(true);
+  const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
+
+  // Fetch school logo
+  useEffect(() => {
+    async function fetchSchoolLogo() {
+      if (!user?.schoolId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('schools')
+          .select('logo_url')
+          .eq('id', user.schoolId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching school logo:', error);
+          return;
+        }
+
+        if (data?.logo_url) {
+          setSchoolLogo(data.logo_url);
+        }
+      } catch (error) {
+        console.error('Error fetching school logo:', error);
+      }
+    }
+
+    fetchSchoolLogo();
+  }, [user?.schoolId]);
 
   // Fetch parent_id from user_id
   useEffect(() => {
@@ -832,14 +861,20 @@ export default function ParentDashboard() {
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between relative">
-            {/* Left Side - Logo, Title & Child Selector */}
+            {/* Left Side - School Logo, Title & Child Selector */}
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
-                <img
-                  src="/quranakh-logo.png"
-                  alt="QuranAkh Logo"
-                  className="w-12 h-12 object-contain"
-                />
+                {schoolLogo ? (
+                  <img
+                    src={schoolLogo}
+                    alt="School Logo"
+                    className="w-12 h-12 object-contain"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                )}
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">
                     Parent Dashboard
@@ -901,6 +936,15 @@ export default function ParentDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Center - QuranAkh Business Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+              <img
+                src="/quranakh-logo.png"
+                alt="QuranAkh Logo"
+                className="w-12 h-12 object-contain"
+              />
             </div>
 
             {/* Right Side - Notifications & Profile */}
