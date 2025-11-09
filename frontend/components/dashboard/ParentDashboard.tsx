@@ -238,12 +238,12 @@ export default function ParentDashboard() {
 
         const childIds = children.map((child: any) => child.id);
 
-        // Fetch highlights count (excluding homework which has color='green')
+        // Fetch highlights count (excluding homework which has type='homework')
         const { count: highlightsCount, error: highlightsError } = await supabase
           .from('highlights')
           .select('*', { count: 'exact', head: true })
           .in('student_id', childIds)
-          .neq('color', 'green'); // Exclude homework
+          .or('type.is.null,type.neq.homework'); // Exclude type='homework'
 
         if (highlightsError) {
           console.error('Error fetching highlights count:', highlightsError);
@@ -251,12 +251,12 @@ export default function ParentDashboard() {
           setTotalHighlights(highlightsCount || 0);
         }
 
-        // Fetch homework count (highlights with color='green')
+        // Fetch homework count (highlights with type='homework')
         const { count: homeworkCount, error: homeworkError } = await supabase
           .from('highlights')
           .select('*', { count: 'exact', head: true })
           .in('student_id', childIds)
-          .eq('color', 'green');
+          .eq('type', 'homework'); // type='homework'
 
         if (homeworkError) {
           console.error('Error fetching homework count:', homeworkError);
@@ -276,9 +276,9 @@ export default function ParentDashboard() {
           setTotalAssignments(assignmentsCount || 0);
         }
 
-        // Fetch targets count
+        // Fetch targets count via target_students junction table
         const { count: targetsCount, error: targetsError } = await supabase
-          .from('targets')
+          .from('target_students')
           .select('*', { count: 'exact', head: true })
           .in('student_id', childIds);
 
