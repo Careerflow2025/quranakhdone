@@ -237,63 +237,87 @@ export default function ParentDashboard() {
         if (!session) return;
 
         const childIds = children.map((child: any) => child.id);
+        console.log('🔍 Fetching stats for child IDs:', childIds);
 
-        // Fetch highlights count (excluding homework which has type='homework')
-        const { count: highlightsCount, error: highlightsError } = await supabase
+        // Fetch ALL highlights (fetch actual data to debug)
+        const { data: allHighlights, error: allHighlightsError } = await supabase
           .from('highlights')
-          .select('*', { count: 'exact', head: true })
-          .in('student_id', childIds)
-          .or('type.is.null,type.neq.homework'); // Exclude type='homework'
-
-        if (highlightsError) {
-          console.error('Error fetching highlights count:', highlightsError);
-        } else {
-          setTotalHighlights(highlightsCount || 0);
-        }
-
-        // Fetch homework count (highlights with type='homework')
-        const { count: homeworkCount, error: homeworkError } = await supabase
-          .from('highlights')
-          .select('*', { count: 'exact', head: true })
-          .in('student_id', childIds)
-          .eq('type', 'homework'); // type='homework'
-
-        if (homeworkError) {
-          console.error('Error fetching homework count:', homeworkError);
-        } else {
-          setTotalHomework(homeworkCount || 0);
-        }
-
-        // Fetch assignments count
-        const { count: assignmentsCount, error: assignmentsError } = await supabase
-          .from('assignments')
-          .select('*', { count: 'exact', head: true })
+          .select('id, student_id, type, color')
           .in('student_id', childIds);
+
+        console.log('📊 ALL Highlights fetched:', {
+          total: allHighlights?.length || 0,
+          byType: allHighlights?.reduce((acc: any, h: any) => {
+            acc[h.type || 'null'] = (acc[h.type || 'null'] || 0) + 1;
+            return acc;
+          }, {})
+        });
+
+        if (allHighlightsError) {
+          console.error('Error fetching all highlights:', allHighlightsError);
+        }
+
+        // Filter highlights (excluding homework)
+        const regularHighlights = allHighlights?.filter((h: any) =>
+          h.type !== 'homework'
+        ) || [];
+
+        // Filter homework (type='homework')
+        const homeworkHighlights = allHighlights?.filter((h: any) =>
+          h.type === 'homework'
+        ) || [];
+
+        console.log('✅ Filtered Highlights:', {
+          regular: regularHighlights.length,
+          homework: homeworkHighlights.length
+        });
+
+        setTotalHighlights(regularHighlights.length);
+        setTotalHomework(homeworkHighlights.length);
+
+        // Fetch ALL assignments
+        const { data: allAssignments, error: assignmentsError } = await supabase
+          .from('assignments')
+          .select('id, student_id, status')
+          .in('student_id', childIds);
+
+        console.log('📝 ALL Assignments fetched:', {
+          total: allAssignments?.length || 0,
+          byStatus: allAssignments?.reduce((acc: any, a: any) => {
+            acc[a.status] = (acc[a.status] || 0) + 1;
+            return acc;
+          }, {})
+        });
 
         if (assignmentsError) {
-          console.error('Error fetching assignments count:', assignmentsError);
+          console.error('Error fetching assignments:', assignmentsError);
         } else {
-          setTotalAssignments(assignmentsCount || 0);
+          setTotalAssignments(allAssignments?.length || 0);
         }
 
-        // Fetch targets count via target_students junction table
-        const { count: targetsCount, error: targetsError } = await supabase
+        // Fetch ALL targets via junction table
+        const { data: allTargets, error: targetsError } = await supabase
           .from('target_students')
-          .select('*', { count: 'exact', head: true })
+          .select('id, student_id, target_id')
           .in('student_id', childIds);
 
+        console.log('🎯 ALL Targets fetched:', {
+          total: allTargets?.length || 0,
+          data: allTargets
+        });
+
         if (targetsError) {
-          console.error('Error fetching targets count:', targetsError);
+          console.error('Error fetching targets:', targetsError);
         } else {
-          setTotalTargets(targetsCount || 0);
+          setTotalTargets(allTargets?.length || 0);
         }
 
-        console.log('📊 Aggregated Stats:', {
+        console.log('📊 FINAL Aggregated Stats:', {
           children: children.length,
-          highlights: highlightsCount || 0,
-          homework: homeworkCount || 0,
-          assignments: assignmentsCount || 0,
-          targets: targetsCount || 0
+          highlights: regularHighlights.length,
+          homework: homeworkHighlights.length,
+          assignments: allAssignments?.length || 0,
+          targets: allTargets?.length || 0
         });
 
       } catch (error) {
