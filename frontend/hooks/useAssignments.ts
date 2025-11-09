@@ -98,11 +98,15 @@ export function useAssignments(initialStudentId?: string) {
   const [currentAssignment, setCurrentAssignment] = useState<AssignmentWithDetails | null>(null);
   const [filters, setFilters] = useState<AssignmentFilters>(() => {
     // CRITICAL FIX: If initialStudentId is provided (Student Dashboard), automatically filter by that student_id
-    const initialFilters = initialStudentId ? { student_id: initialStudentId } : {};
+    // IMPORTANT: Check for both undefined/null AND empty string to prevent showing all assignments
+    const initialFilters = (initialStudentId && initialStudentId.trim() !== '')
+      ? { student_id: initialStudentId }
+      : {};
     console.log('🔧 useAssignments INITIALIZING with:', {
       initialStudentId,
       initialFilters,
-      willFilterByStudent: !!initialStudentId
+      willFilterByStudent: !!(initialStudentId && initialStudentId.trim() !== ''),
+      isEmptyString: initialStudentId === ''
     });
     return initialFilters;
   });
@@ -129,6 +133,21 @@ export function useAssignments(initialStudentId?: string) {
         setError('User not authenticated');
         setIsLoading(false);
         return;
+      }
+
+      // CRITICAL SAFETY CHECK: If initialStudentId was provided (Student Dashboard),
+      // prevent fetching until student_id is actually set
+      if (initialStudentId !== undefined && initialStudentId !== null) {
+        // Student Dashboard mode - must have valid student_id
+        const activeFilters = customFilters || filters;
+        if (!activeFilters.student_id || activeFilters.student_id.trim() === '') {
+          console.warn('⚠️ PREVENTING FETCH: Student Dashboard without valid student_id', {
+            initialStudentId,
+            filterStudentId: activeFilters.student_id
+          });
+          setIsLoading(false);
+          return; // Don't fetch - wait for student_id to be set
+        }
       }
 
       try {
@@ -231,7 +250,7 @@ export function useAssignments(initialStudentId?: string) {
         setIsLoading(false);
       }
     },
-    [user, filters, currentPage]
+    [user, filters, currentPage, initialStudentId]
   );
 
   /**
