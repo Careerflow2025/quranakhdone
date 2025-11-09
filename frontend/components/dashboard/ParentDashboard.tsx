@@ -2117,9 +2117,16 @@ export default function ParentDashboard() {
               currentChildId: currentChild?.id,
               currentChildName: currentChild?.name,
               totalAssignments: assignments?.length || 0,
-              assignmentsData: assignments?.slice(0, 3),
               assignmentsLoading,
-              assignmentsError
+              assignmentsError,
+              firstThreeAssignments: assignments?.slice(0, 3).map(a => ({
+                id: a.id,
+                title: a.title,
+                status: a.status,
+                hasHighlight: !!a.highlight,
+                highlightColor: a.highlight?.color,
+                isGold: a.highlight?.color === 'gold'
+              }))
             })}
 
             {/* Header */}

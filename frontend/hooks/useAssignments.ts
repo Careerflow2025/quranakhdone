@@ -798,15 +798,19 @@ export function useAssignments(initialStudentId?: string) {
   // ============================================================================
 
   /**
-   * CRITICAL: Sync filters when initialStudentId changes from empty to a real value
-   * This handles the case where StudentDashboard starts with studentInfo.id = ''
-   * and then updates it to the actual student ID
+   * CRITICAL: Sync filters when initialStudentId changes
+   * This handles BOTH cases:
+   * 1. StudentDashboard: empty '' → real ID (initial load)
+   * 2. ParentDashboard: real ID → different real ID (child switching)
    */
   useEffect(() => {
     if (initialStudentId && initialStudentId.trim() !== '') {
-      // Student ID is now available - update filters if not already set
-      if (!filters.student_id || filters.student_id.trim() === '') {
-        console.log('🔄 Syncing filters with new student ID:', initialStudentId);
+      // Student ID is valid - sync filters if different from current filter
+      if (filters.student_id !== initialStudentId) {
+        console.log('🔄 Syncing filters with new student ID:', {
+          from: filters.student_id || '(empty)',
+          to: initialStudentId
+        });
         setFilters({ student_id: initialStudentId });
       }
     }
