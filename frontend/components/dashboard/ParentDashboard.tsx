@@ -2872,49 +2872,13 @@ export default function ParentDashboard() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {children.map((child: any) => (
                       <div key={child.id} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-md ${
-                              child.gender === 'boy'
-                                ? 'bg-gradient-to-br from-blue-400 to-blue-600'
-                                : 'bg-gradient-to-br from-pink-400 to-pink-600'
-                            }`}>
-                              <User className="w-8 h-8 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2">
-                                <p className="font-bold text-gray-900">{child.name}</p>
-                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                                  Active
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 mt-1">{child.class} • Age {child.age}</p>
-                              <div className="grid grid-cols-2 gap-2 mt-3">
-                                <div className="flex items-center">
-                                  <Book className="w-3 h-3 text-gray-500 mr-1" />
-                                  <span className="text-xs text-gray-600">{child.memorized}</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <TrendingUp className="w-3 h-3 text-gray-500 mr-1" />
-                                  <span className="text-xs text-gray-600">{child.progress}% Progress</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <Award className="w-3 h-3 text-gray-500 mr-1" />
-                                  <span className="text-xs text-gray-600">Score: {child.tajweedScore}%</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <Calendar className="w-3 h-3 text-gray-500 mr-1" />
-                                  <span className="text-xs text-gray-600">Attend: {child.attendance}%</span>
-                                </div>
-                              </div>
-                              <div className="mt-3 pt-3 border-t border-gray-200">
-                                <p className="text-xs text-gray-500">Last Active: {child.lastSession}</p>
-                              </div>
-                            </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <p className="font-bold text-gray-900">{child.name}</p>
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              Active
+                            </span>
                           </div>
-                          <button className="text-gray-400 hover:text-gray-600 transition">
-                            <ChevronRight className="w-5 h-5" />
-                          </button>
                         </div>
                       </div>
                     ))}
