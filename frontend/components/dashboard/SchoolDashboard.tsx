@@ -4405,7 +4405,7 @@ export default function SchoolDashboard() {
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-4 mt-6">
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-blue-100 text-sm">Total</p>
                     <p className="text-2xl font-bold">{assignments.length}</p>
@@ -4413,18 +4413,6 @@ export default function SchoolDashboard() {
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-blue-100 text-sm">Pending</p>
                     <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'assigned').length}</p>
-                  </div>
-                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                    <p className="text-blue-100 text-sm">Submitted</p>
-                    <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'submitted').length}</p>
-                  </div>
-                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                    <p className="text-blue-100 text-sm">Completed</p>
-                    <p className="text-2xl font-bold">{assignments.filter((a: any) => a.status === 'completed').length}</p>
-                  </div>
-                  <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                    <p className="text-blue-100 text-sm">Late</p>
-                    <p className="text-2xl font-bold text-red-200">{assignments.filter((a: any) => a.late && a.status !== 'completed').length}</p>
                   </div>
                 </div>
               </div>
@@ -4455,12 +4443,9 @@ export default function SchoolDashboard() {
                       onChange={(e) => setAssignmentsStatusFilter(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="all">All Statuses</option>
+                      <option value="all">All</option>
                       <option value="assigned">Pending</option>
-                      <option value="submitted">Submitted</option>
-                      <option value="reviewed">Reviewed</option>
                       <option value="completed">Completed</option>
-                      <option value="late">Late</option>
                     </select>
                   </div>
 
