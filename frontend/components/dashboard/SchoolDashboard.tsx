@@ -2462,8 +2462,8 @@ export default function SchoolDashboard() {
       </div>
 
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md">
-        <div className="p-4 space-y-4">
+      <div className="w-64 bg-white shadow-md overflow-y-auto">
+        <div className="p-4 pb-0 space-y-4">
           <div className="flex items-center space-x-3">
             {schoolInfo?.logo_url ? (
               <img
