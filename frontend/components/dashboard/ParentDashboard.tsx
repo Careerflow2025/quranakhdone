@@ -832,68 +832,31 @@ export default function ParentDashboard() {
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between relative">
-            {/* Left Side - Logo & Title */}
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <BookOpen className="w-6 h-6 text-white" />
+            {/* Left Side - Logo, Title & Child Selector */}
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    Parent Dashboard
+                  </h1>
+                  <p className="text-xs text-gray-500 mt-0.5">QuranLearning Academy</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Parent Dashboard
-                </h1>
-                <p className="text-xs text-gray-500 mt-0.5">QuranLearning Academy</p>
-              </div>
-            </div>
 
-            {/* Center - Enhanced Child Selector */}
-            <div className="flex-1 max-w-lg mx-8">
+              {/* Child Selector - Simplified */}
               <div className="relative child-selector-container">
                 <button
                   onClick={() => {
                     console.log('🔘 Child selector clicked. Current state:', showChildSelector, 'Children:', children.length);
                     setShowChildSelector(!showChildSelector);
                   }}
-                  className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-200 border border-blue-200 shadow-sm hover:shadow-md"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-200 border border-blue-200 shadow-sm hover:shadow-md"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ring-2 ring-white shadow-md ${
-                      currentChild.gender === 'boy'
-                        ? 'bg-gradient-to-br from-blue-400 to-blue-600'
-                        : 'bg-gradient-to-br from-pink-400 to-pink-600'
-                    }`}>
-                      <User className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-gray-900 text-lg">{currentChild.name}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          currentChild.gender === 'boy'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-pink-100 text-pink-700'
-                        }`}>
-                          {currentChild.age} years
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-3 mt-1">
-                        <span className="text-xs text-gray-600 flex items-center">
-                          <Users className="w-3 h-3 mr-1" />
-                          {currentChild.class}
-                        </span>
-                        <span className="text-xs text-gray-600 flex items-center">
-                          <Book className="w-3 h-3 mr-1" />
-                          {currentChild.memorized}
-                        </span>
-                        <span className="text-xs text-gray-600 flex items-center">
-                          <TrendingUp className="w-3 h-3 mr-1" />
-                          {currentChild.progress}% Progress
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-gray-500">Switch Child</span>
-                    <ChevronDown className={`w-5 h-5 text-gray-600 transition-transform ${showChildSelector ? 'rotate-180' : ''}`} />
-                  </div>
+                  <span className="font-semibold text-gray-900">{currentChild.name}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showChildSelector ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showChildSelector && (
@@ -911,62 +874,24 @@ export default function ParentDashboard() {
                             setSelectedChild(index);
                             setShowChildSelector(false);
                           }}
-                          className={`w-full text-left p-4 rounded-lg mb-1 transition-all duration-200 ${
+                          className={`w-full text-left p-3 rounded-lg mb-1 transition-all duration-200 ${
                             selectedChild === index
                               ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-sm'
                               : 'hover:bg-gray-50 border-2 border-transparent'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-md ring-2 ring-white ${
-                                child.gender === 'boy'
-                                  ? 'bg-gradient-to-br from-blue-400 to-blue-600'
-                                  : 'bg-gradient-to-br from-pink-400 to-pink-600'
-                              }`}>
-                                <User className="w-7 h-7 text-white" />
-                              </div>
-                              <div>
-                                <div className="flex items-center space-x-2">
-                                  <p className="font-semibold text-gray-900">{child.name}</p>
-                                  {selectedChild === index && (
-                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                                      Active
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-4 mt-1">
-                                  <span className="text-xs text-gray-600">
-                                    <strong>Class:</strong> {child.class}
-                                  </span>
-                                  <span className="text-xs text-gray-600">
-                                    <strong>Age:</strong> {child.age}
-                                  </span>
-                                  <span className="text-xs text-gray-600">
-                                    <strong>Memorized:</strong> {child.memorized}
-                                  </span>
-                                </div>
-                                <div className="flex items-center space-x-4 mt-2">
-                                  <div className="flex items-center">
-                                    <div className="w-24 bg-gray-200 rounded-full h-1.5">
-                                      <div
-                                        className="bg-gradient-to-r from-blue-500 to-indigo-500 h-1.5 rounded-full"
-                                        style={{width: `${child.progress}%`}}
-                                      ></div>
-                                    </div>
-                                    <span className="text-xs text-gray-600 ml-2">{child.progress}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <p className="font-semibold text-gray-900">{child.name}</p>
                               {selectedChild === index && (
-                                <Check className="w-5 h-5 text-green-600" />
+                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                                  Active
+                                </span>
                               )}
-                              <span className="text-xs text-gray-500">
-                                Last seen: {child.lastSession}
-                              </span>
                             </div>
+                            {selectedChild === index && (
+                              <Check className="w-5 h-5 text-green-600" />
+                            )}
                           </div>
                         </button>
                       ))}
@@ -1135,10 +1060,6 @@ export default function ParentDashboard() {
                     >
                       <User className="w-4 h-4" />
                       <span>Parent Profile</span>
-                    </button>
-                    <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2">
-                      <Settings className="w-4 h-4" />
-                      <span>Settings</span>
                     </button>
                     <hr className="my-1" />
                     <button
