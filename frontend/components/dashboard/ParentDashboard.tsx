@@ -835,9 +835,11 @@ export default function ParentDashboard() {
             {/* Left Side - Logo, Title & Child Selector */}
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
+                <img
+                  src="/quranakh-logo.png"
+                  alt="QuranAkh Logo"
+                  className="w-12 h-12 object-contain"
+                />
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">
                     Parent Dashboard
@@ -860,7 +862,7 @@ export default function ParentDashboard() {
                 </button>
 
                 {showChildSelector && (
-                  <div className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                  <div className="absolute top-full mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                     <div className="bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3">
                       <h3 className="text-white font-semibold">Select Child to Monitor</h3>
                       <p className="text-blue-100 text-xs mt-0.5">Click to switch between your children</p>
@@ -899,15 +901,6 @@ export default function ParentDashboard() {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Center - QuranAkh Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
-              <img
-                src="/quranakh-logo.png"
-                alt="QuranAkh Logo"
-                className="w-12 h-12 object-contain"
-              />
             </div>
 
             {/* Right Side - Notifications & Profile */}
