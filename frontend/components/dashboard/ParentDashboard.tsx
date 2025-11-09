@@ -2373,9 +2373,20 @@ export default function ParentDashboard() {
           )
         )}
 
-        {/* Gradebook Tab */}
+        {/* Gradebook Tab - Using GradebookPanel Component (SAME AS STUDENT DASHBOARD) */}
         {activeTab === 'gradebook' && (
-          <GradebookPanel userRole="parent" />
+          !currentChild?.id ? (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No child selected</p>
+              <p className="text-gray-400 text-sm mt-1">Please select a child to view their gradebook</p>
+            </div>
+          ) : (
+            <GradebookPanel
+              userRole="parent"
+              studentId={currentChild.id}
+            />
+          )
         )}
 
         {/* Mastery Tab */}
