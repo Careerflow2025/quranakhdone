@@ -265,22 +265,19 @@ export default function ParentDashboard() {
           console.error('Error fetching all highlights:', allHighlightsError);
         }
 
-        // Filter highlights (excluding homework)
-        const regularHighlights = allHighlights?.filter((h: any) =>
-          h.type !== 'homework'
-        ) || [];
-
-        // Filter homework (type='homework')
+        // Count homework highlights (type='homework')
         const homeworkHighlights = allHighlights?.filter((h: any) =>
           h.type === 'homework'
         ) || [];
 
-        console.log('✅ Filtered Highlights:', {
-          regular: regularHighlights.length,
+        console.log('✅ Highlight Counts:', {
+          totalHighlights: allHighlights?.length || 0,
           homework: homeworkHighlights.length
         });
 
-        setTotalHighlights(regularHighlights.length);
+        // Total Highlights = ALL highlights (including homework)
+        setTotalHighlights(allHighlights?.length || 0);
+        // Total Homework = Only homework type highlights
         setTotalHomework(homeworkHighlights.length);
 
         // Fetch ALL assignments
@@ -303,42 +300,52 @@ export default function ParentDashboard() {
           setTotalAssignments(allAssignments?.length || 0);
         }
 
-        // Fetch ALL targets via junction table (no id column, just target_id and student_id)
-        const { data: allTargets, error: targetsError } = await supabase
-          .from('target_students')
-          .select('student_id, target_id, progress')
-          .in('student_id', childIds);
-
-        console.log('🎯 ALL Targets fetched from target_students junction table:', {
-          total: allTargets?.length || 0,
-          data: allTargets,
-          childIds: childIds,
-          error: targetsError
-        });
-
-        // Also check targets table directly to see if targets exist but are not linked
+        // Try fetching targets directly by student_id first (individual targets)
         const { data: directTargets, error: directError } = await supabase
           .from('targets')
-          .select('id, title, type, student_id');
+          .select('id, title, type, student_id')
+          .in('student_id', childIds);
 
-        console.log('🎯 Direct targets table query (should show all targets in school):', {
+        console.log('🎯 Direct targets (individual) fetched:', {
           total: directTargets?.length || 0,
           data: directTargets,
           error: directError
         });
 
-        if (targetsError) {
-          console.error('Error fetching targets from junction table:', targetsError);
-        } else {
-          setTotalTargets(allTargets?.length || 0);
-        }
+        // Also try junction table for class-wide targets
+        const { data: junctionTargets, error: junctionError } = await supabase
+          .from('target_students')
+          .select('student_id, target_id, progress')
+          .in('student_id', childIds);
+
+        console.log('🎯 Junction targets (class-wide) fetched:', {
+          total: junctionTargets?.length || 0,
+          data: junctionTargets,
+          error: junctionError
+        });
+
+        // Combine both - use direct targets count + junction targets count
+        // Avoid duplicates by using Set of target IDs
+        const allTargetIds = new Set();
+        directTargets?.forEach((t: any) => allTargetIds.add(t.id));
+        junctionTargets?.forEach((t: any) => allTargetIds.add(t.target_id));
+
+        const totalTargetsCount = allTargetIds.size;
+
+        console.log('🎯 FINAL Targets Count:', {
+          directCount: directTargets?.length || 0,
+          junctionCount: junctionTargets?.length || 0,
+          uniqueTotal: totalTargetsCount
+        });
+
+        setTotalTargets(totalTargetsCount);
 
         console.log('📊 FINAL Aggregated Stats:', {
           children: children.length,
-          highlights: regularHighlights.length,
+          highlights: allHighlights?.length || 0,
           homework: homeworkHighlights.length,
           assignments: allAssignments?.length || 0,
-          targets: allTargets?.length || 0
+          targets: totalTargetsCount
         });
 
       } catch (error) {
