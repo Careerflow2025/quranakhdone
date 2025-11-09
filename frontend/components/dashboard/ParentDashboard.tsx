@@ -5,6 +5,8 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useHighlights } from '@/hooks/useHighlights';
 import { useHomework } from '@/hooks/useHomework';
 import { useAssignments } from '@/hooks/useAssignments';
+import { useProgress } from '@/hooks/useProgress';
+import { useMastery } from '@/hooks/useMastery';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -22,6 +24,7 @@ import CalendarPanel from '@/components/calendar/CalendarPanel';
 import MasteryPanel from '@/components/mastery/MasteryPanel';
 import AssignmentsPanel from '@/components/assignments/AssignmentsPanel';
 import AttendancePanel from '@/components/attendance/AttendancePanel';
+import ProgressSection from '@/components/dashboard/ProgressSection';
 import { useAuthStore } from '@/store/authStore';
 import { useParentStudentLinks } from '@/hooks/useParentStudentLinks';
 import { supabase } from '@/lib/supabase';
@@ -299,6 +302,12 @@ export default function ParentDashboard() {
     error: assignmentsError
   } = useAssignments(currentChild?.id);
 
+  // Progress Hook - for targets, attendance, study time
+  const { progressData, isLoading: isLoadingProgress, fetchProgress } = useProgress();
+
+  // Mastery Hook - for Quran mastery tracking
+  const { studentOverview: masteryData, isLoading: isMasteryLoading, fetchStudentMastery } = useMastery(currentChild?.id);
+
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
   // Transform database highlights to UI format
@@ -381,6 +390,22 @@ export default function ParentDashboard() {
       });
     }
   }, [currentChild?.id, fetchHomework]);
+
+  // Fetch progress data when selected child changes
+  useEffect(() => {
+    if (currentChild?.id) {
+      console.log('📊 Fetching progress data for child:', currentChild.id);
+      fetchProgress(currentChild.id);
+    }
+  }, [currentChild?.id, fetchProgress]);
+
+  // Fetch mastery data when selected child changes
+  useEffect(() => {
+    if (currentChild?.id) {
+      console.log('📖 Fetching mastery data for child:', currentChild.id);
+      fetchStudentMastery(currentChild.id);
+    }
+  }, [currentChild?.id, fetchStudentMastery]);
 
   // Load Quran text based on current mushaf page (ADDED from Student Dashboard)
   useEffect(() => {
@@ -2326,411 +2351,26 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* Progress Tab */}
+
+        {/* Progress Tab - Using ProgressSection Component (SAME AS STUDENT DASHBOARD) */}
         {activeTab === 'progress' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-2xl font-bold mb-6 flex items-center">
-                <TrendingUp className="w-7 h-7 mr-3 text-indigo-600" />
-                {currentChild.name}'s Progress Overview
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="relative w-32 h-32 mx-auto">
-                    <svg width="128" height="128" className="transform -rotate-90">
-                      <circle cx="64" cy="64" r="56" stroke="#e5e7eb" strokeWidth="12" fill="none" />
-                      <circle
-                        cx="64" cy="64" r="56"
-                        stroke="#10b981"
-                        strokeWidth="12"
-                        fill="none"
-                        strokeDasharray={`${currentChild.progress * 3.52} 352`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-3xl font-bold">{currentChild.progress}%</span>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-gray-600">Overall Progress</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm">Memorization</span>
-                      <span className="text-sm font-medium">75%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm">Tajweed</span>
-                      <span className="text-sm font-medium">{currentChild.tajweedScore}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${currentChild.tajweedScore}%` }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm">Revision</span>
-                      <span className="text-sm font-medium">60%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-gray-600">Sessions This Week</span>
-                    <span className="font-semibold">5</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-gray-600">Practice Time</span>
-                    <span className="font-semibold">4.5 hrs</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-gray-600">Attendance</span>
-                    <span className="font-semibold">{currentChild.attendance}%</span>
-                  </div>
-                </div>
-              </div>
+          !currentChild?.id ? (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No child selected</p>
+              <p className="text-gray-400 text-sm mt-1">Please select a child to view their progress</p>
             </div>
-
-            {/* Attendance Statistics Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-xl font-bold mb-6 flex items-center">
-                <Calendar className="w-6 h-6 mr-2 text-blue-600" />
-                {currentChild.name}'s Class Attendance & Platform Activity
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {/* Physical Attendance Circle */}
-                <div className="text-center">
-                  <div className="relative w-24 h-24 mx-auto">
-                    <svg width="96" height="96" className="transform -rotate-90">
-                      <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="8" fill="none" />
-                      <circle
-                        cx="48" cy="48" r="40"
-                        stroke={currentChild.physicalAttendance >= 90 ? '#10b981' :
-                                currentChild.physicalAttendance >= 75 ? '#f59e0b' : '#ef4444'}
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${currentChild.physicalAttendance * 2.51} 251`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div>
-                        <span className="text-xl font-bold">{currentChild.physicalAttendance}%</span>
-                        <p className="text-[10px] text-gray-600">Physical</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs text-gray-600 font-medium">Class Attendance</p>
-                  <p className="text-[10px] text-gray-500">({currentChild.classSchedule?.length || 0} days/week)</p>
-                </div>
-
-                {/* Platform Activity Circle */}
-                <div className="text-center">
-                  <div className="relative w-24 h-24 mx-auto">
-                    <svg width="96" height="96" className="transform -rotate-90">
-                      <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="8" fill="none" />
-                      <circle
-                        cx="48" cy="48" r="40"
-                        stroke="#3b82f6"
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${currentChild.platformActivity * 2.51} 251`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div>
-                        <span className="text-xl font-bold">{currentChild.platformActivity}%</span>
-                        <p className="text-[10px] text-gray-600">Platform</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs text-gray-600 font-medium">Digital Activity</p>
-                  <p className="text-[10px] text-gray-500">(Daily usage)</p>
-                </div>
-
-                {/* This Month Breakdown */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-700 mb-3">This Month</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-green-50 rounded">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm">Present</span>
-                      </div>
-                      <span className="font-semibold text-green-700">18 days</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-yellow-50 rounded">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-sm">Late</span>
-                      </div>
-                      <span className="font-semibold text-yellow-700">2 days</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-red-50 rounded">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-sm">Absent</span>
-                      </div>
-                      <span className="font-semibold text-red-700">1 day</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm">Excused</span>
-                      </div>
-                      <span className="font-semibold text-blue-700">1 day</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* This Week Stats */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-700 mb-3">This Week</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Classes</span>
-                      <span className="font-semibold">5/5</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">On Time</span>
-                      <span className="font-semibold">4 days</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Perfect Days</span>
-                      <span className="font-semibold text-green-600">4</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Punctuality</span>
-                      <span className="font-semibold text-green-600">Excellent</span>
-                    </div>
-                    <div className="pt-2 border-t">
-                      <span className="text-sm text-gray-600">Performance</span>
-                      <div className="flex items-center mt-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <Star className="w-4 h-4 text-yellow-500" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Term Summary */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-700 mb-3">Term Summary</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Total Classes</span>
-                      <span className="font-semibold">120</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Attended</span>
-                      <span className="font-semibold text-green-600">110</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Missed</span>
-                      <span className="font-semibold text-red-600">10</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Excused</span>
-                      <span className="font-semibold text-blue-600">7</span>
-                    </div>
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Grade</span>
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          currentChild.attendance >= 90 ? 'bg-green-100 text-green-700' :
-                          currentChild.attendance >= 75 ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {currentChild.attendance >= 90 ? 'Excellent' :
-                           currentChild.attendance >= 75 ? 'Good' : 'Needs Improvement'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Weekly Class Schedule & Attendance */}
-              <div className="mt-6 pt-6 border-t">
-                <div className="mb-4">
-                  <h4 className="font-semibold text-gray-700">Weekly Class Schedule & Attendance</h4>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {currentChild.name}'s classes: <span className="font-medium text-blue-600">
-                      {currentChild.classSchedule?.join(', ') || 'Not set'}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-7 gap-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day: any, index: any) => {
-                    const fullDay = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
-                    const hasClass = currentChild.classSchedule?.includes(fullDay) || false;
-
-                    // Show attendance only for scheduled class days
-                    let attendance = 'no-class';
-                    let timeIn = '';
-                    if (hasClass) {
-                      // Example attendance data
-                      if (fullDay === 'Monday') {
-                        attendance = 'present';
-                        timeIn = '9:00am';
-                      } else if (fullDay === 'Thursday') {
-                        attendance = 'late';
-                        timeIn = '9:15am';
-                      } else if (fullDay === 'Saturday') {
-                        attendance = 'present';
-                        timeIn = '8:55am';
-                      }
-                    }
-
-                    const bgColor = !hasClass ? 'bg-gray-50 border-gray-200' :
-                                   attendance === 'present' ? 'bg-green-100 border-green-500' :
-                                   attendance === 'late' ? 'bg-yellow-100 border-yellow-500' :
-                                   attendance === 'absent' ? 'bg-red-100 border-red-500' :
-                                   'bg-blue-50 border-blue-300';
-
-                    const icon = !hasClass ? '' :
-                                attendance === 'present' ? '✓' :
-                                attendance === 'late' ? '⏰' :
-                                attendance === 'absent' ? '✗' : '•';
-
-                    const textColor = !hasClass ? 'text-gray-400' :
-                                     attendance === 'present' ? 'text-green-700' :
-                                     attendance === 'late' ? 'text-yellow-700' :
-                                     attendance === 'absent' ? 'text-red-700' :
-                                     'text-blue-600';
-
-                    return (
-                      <div key={day} className="text-center">
-                        <div className={`aspect-square ${bgColor} border-2 rounded-lg flex flex-col items-center justify-center relative transition-all ${
-                          hasClass ? 'shadow-sm' : 'opacity-50'
-                        }`}>
-                          {hasClass && (
-                            <div className="absolute -top-1 -right-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            </div>
-                          )}
-                          <span className={`text-lg font-bold ${textColor}`}>{icon}</span>
-                          {timeIn && (
-                            <span className="text-[9px] text-gray-500">{timeIn}</span>
-                          )}
-                        </div>
-                        <span className={`text-xs mt-1 block ${hasClass ? 'font-medium text-blue-600' : 'text-gray-400'}`}>
-                          {day}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-xs">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-gray-600">Scheduled Class</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-green-500 rounded"></div>
-                    <span className="text-gray-600">Present</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-                    <span className="text-gray-600">Late</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-red-500 rounded"></div>
-                    <span className="text-gray-600">Absent</span>
-                  </div>
-                </div>
-
-                {/* Platform Activity for Class Days */}
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold text-gray-700 mb-3">Platform Activity on Class Days</h4>
-                  <div className="space-y-3">
-                    {currentChild.classSchedule?.map((day: any) => {
-                      // Sample platform activity data
-                      const activityData = {
-                        'Monday': { minutes: 45, assignments: 2, quranPages: 3, homework: 1 },
-                        'Thursday': { minutes: 60, assignments: 3, quranPages: 5, homework: 2 },
-                        'Saturday': { minutes: 30, assignments: 1, quranPages: 2, homework: 1 }
-                      };
-                      const activity = activityData[day as keyof typeof activityData] || { minutes: 0, assignments: 0, quranPages: 0, homework: 0 };
-                      const activityPercent = (activity.minutes / 90) * 100;
-
-                      return (
-                        <div key={day} className="bg-blue-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-sm">{day}</span>
-                            <div className="flex items-center space-x-3 text-xs">
-                              <span className="text-blue-600 font-medium">{activity.minutes} min</span>
-                              <span className="text-green-600">✓ Attended</span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-200 rounded-full h-2 mb-2">
-                            <div
-                              className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${Math.min(activityPercent, 100)}%` }}
-                            ></div>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
-                            <span>{activity.assignments} assignments</span>
-                            <span>{activity.quranPages} pages</span>
-                            <span>{activity.homework} homework</span>
-                          </div>
-                        </div>
-                      );
-                    }) || <p className="text-sm text-gray-500">No class schedule available</p>}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Targets Summary */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Active Targets Progress</h3>
-              <div className="space-y-4">
-                {childTargets.filter((t: any) => t.status === 'active').map((target: any) => (
-                  <div key={target.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium">{target.title}</p>
-                      <p className="text-sm text-gray-600">Due: {target.dueDate}</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-32">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              target.progress >= 75 ? 'bg-green-500' :
-                              target.progress >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
-                            style={{ width: `${target.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <span className="font-semibold w-12 text-right">{target.progress}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          ) : (
+            <ProgressSection
+              progressData={progressData}
+              isLoading={isLoadingProgress}
+              assignments={assignments}
+              homeworkData={transformedHomework}
+              studentId={currentChild.id}
+              masteryData={masteryData}
+              masteryLoading={isMasteryLoading}
+            />
+          )
         )}
 
         {/* Gradebook Tab */}
