@@ -198,9 +198,10 @@ export default function SchoolDashboard() {
 
         const assignmentsCount = allAssignmentsData?.length || 0;
 
-        // IMPORTANT: Total Highlights = Homework + Assignments
-        // This includes assignments that don't have highlights yet
-        const highlightsCount = homeworkCount + assignmentsCount;
+        // IMPORTANT: Total Highlights = UNIQUE highlights in database
+        // Not homework + assignments because some gold highlights are counted in BOTH
+        // (8 gold highlights are both completed homework AND linked to assignments)
+        const highlightsCount = allHighlightsData?.length || 0;
 
         // Fetch all targets for the school (both individual and class-wide)
         const { data: directTargetsData } = await supabase
@@ -233,7 +234,7 @@ export default function SchoolDashboard() {
           homework: homeworkCount,
           assignments: assignmentsCount,
           totalHighlights: highlightsCount,
-          calculation: `${homeworkCount} (homework) + ${assignmentsCount} (assignments) = ${highlightsCount}`,
+          explanation: `Total Highlights (${highlightsCount}) = unique highlights in DB. Note: 8 gold highlights are counted in BOTH homework (${homeworkCount}) and assignments (${assignmentsCount})`,
           targets: targetsCount
         });
       } catch (error) {
