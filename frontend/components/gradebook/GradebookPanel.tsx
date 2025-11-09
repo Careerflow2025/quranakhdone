@@ -800,12 +800,71 @@ export default function GradebookPanel({ userRole = 'teacher', studentId }: Grad
                       <h3 className="font-semibold text-gray-900 mb-1">
                         {entry.assignment_title}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-3">
-                        {entry.rubric_name || 'No rubric'}
-                      </p>
 
-                      {/* Criteria Grades */}
+                      {/* Rubric Name with View Details Button */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <p className="text-sm text-gray-500">
+                          {entry.rubric_name || 'No rubric'}
+                        </p>
+                        {entry.rubric && (
+                          <button
+                            onClick={() => handleToggleRubricDetails(entry.assignment_id)}
+                            className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium transition"
+                          >
+                            {expandedRubricId === entry.assignment_id ? (
+                              <>
+                                <ChevronUp className="w-3 h-3" />
+                                Hide Details
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-3 h-3" />
+                                View Rubric Details
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Expandable Rubric Details Section */}
+                      {expandedRubricId === entry.assignment_id && entry.rubric && (
+                        <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className="w-5 h-5 text-purple-600" />
+                            <h4 className="font-semibold text-purple-900">Rubric Breakdown</h4>
+                          </div>
+
+                          {entry.rubric.description && (
+                            <p className="text-sm text-purple-700 mb-3">{entry.rubric.description}</p>
+                          )}
+
+                          <div className="space-y-2">
+                            {entry.rubric.criteria?.map((criterion: any) => (
+                              <div key={criterion.id} className="bg-white rounded-lg p-3 border border-purple-100">
+                                <div className="flex items-start justify-between mb-1">
+                                  <p className="font-medium text-gray-900 text-sm">{criterion.name}</p>
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-purple-600 font-semibold">{criterion.weight}%</span>
+                                    <span className="text-gray-500">{criterion.max_score} pts max</span>
+                                  </div>
+                                </div>
+                                {criterion.description && (
+                                  <p className="text-xs text-gray-600 mt-1">{criterion.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-3 pt-3 border-t border-purple-200 flex items-center justify-between text-xs">
+                            <span className="text-purple-700 font-medium">Total Weight:</span>
+                            <span className="text-purple-900 font-bold">{entry.rubric.total_weight || 100}%</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Child's Grades for Each Criterion */}
                       <div className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">Child's Grades:</p>
                         {entry.grades.map((grade) => (
                           <div key={grade.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                             <div className="flex-1">
