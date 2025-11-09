@@ -135,21 +135,6 @@ export function useAssignments(initialStudentId?: string) {
         return;
       }
 
-      // CRITICAL SAFETY CHECK: If initialStudentId was provided (Student Dashboard),
-      // prevent fetching until student_id is actually set
-      if (initialStudentId !== undefined && initialStudentId !== null) {
-        // Student Dashboard mode - must have valid student_id
-        const activeFilters = customFilters || filters;
-        if (!activeFilters.student_id || activeFilters.student_id.trim() === '') {
-          console.warn('⚠️ PREVENTING FETCH: Student Dashboard without valid student_id', {
-            initialStudentId,
-            filterStudentId: activeFilters.student_id
-          });
-          setIsLoading(false);
-          return; // Don't fetch - wait for student_id to be set
-        }
-      }
-
       try {
         setIsLoading(true);
         setError(null);
@@ -160,7 +145,8 @@ export function useAssignments(initialStudentId?: string) {
           customFilters,
           stateFilters: filters,
           activeFilters,
-          hasStudentId: !!activeFilters.student_id
+          hasStudentId: !!activeFilters.student_id,
+          initialStudentId
         });
 
         // Build query parameters
@@ -810,6 +796,21 @@ export function useAssignments(initialStudentId?: string) {
   // ============================================================================
   // Effects
   // ============================================================================
+
+  /**
+   * CRITICAL: Sync filters when initialStudentId changes from empty to a real value
+   * This handles the case where StudentDashboard starts with studentInfo.id = ''
+   * and then updates it to the actual student ID
+   */
+  useEffect(() => {
+    if (initialStudentId && initialStudentId.trim() !== '') {
+      // Student ID is now available - update filters if not already set
+      if (!filters.student_id || filters.student_id.trim() === '') {
+        console.log('🔄 Syncing filters with new student ID:', initialStudentId);
+        setFilters({ student_id: initialStudentId });
+      }
+    }
+  }, [initialStudentId, filters.student_id]);
 
   /**
    * Initial data fetch - fetch assignments when filters or pagination changes
