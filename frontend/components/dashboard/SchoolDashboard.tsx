@@ -2737,12 +2737,12 @@ export default function SchoolDashboard() {
 
         {/* Content Area - ALL THE BEAUTIFUL UI CONTINUES FROM HERE */}
         {/* [I'm including just the overview section as an example, but ALL sections should be included] */}
-        <div className="p-6">
+        <div className="p-2 sm:p-4 md:p-6">
           {activeTab === 'overview' && (
             <>
               {/* Welcome Header - Full Width */}
               <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 shadow-xl mb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-10">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
                       <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
@@ -2770,8 +2770,8 @@ export default function SchoolDashboard() {
               </div>
 
               {/* Premium Stats Cards - 2 Rows */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+              <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8">
                   {/* Total Students Card */}
                   <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
