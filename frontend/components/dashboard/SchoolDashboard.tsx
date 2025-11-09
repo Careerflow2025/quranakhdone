@@ -3889,8 +3889,8 @@ export default function SchoolDashboard() {
                     className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Teachers</option>
-                    {[...new Set(homeworkList.map((hw: any) => hw.teacherName))].map((teacherName: any) => (
-                      <option key={teacherName} value={teacherName}>{teacherName}</option>
+                    {teachers.map((teacher: any) => (
+                      <option key={teacher.id} value={teacher.name}>{teacher.name}</option>
                     ))}
                   </select>
 
@@ -3900,8 +3900,8 @@ export default function SchoolDashboard() {
                     className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Classes</option>
-                    {[...new Set(homeworkList.map((hw: any) => hw.class).filter(Boolean))].map((className: any) => (
-                      <option key={className} value={className}>{className}</option>
+                    {classes.map((cls: any) => (
+                      <option key={cls.id} value={cls.name}>{cls.name}</option>
                     ))}
                   </select>
 
