@@ -167,17 +167,30 @@ export default function SchoolDashboard() {
         console.log('📊 Fetching school-wide statistics...');
 
         // Fetch all highlights for the school (homework is green+gold highlights)
+        // IMPORTANT: Include ALL statuses (active, gold, archived) to get complete count
         const { data: allHighlightsData } = await supabase
           .from('highlights')
-          .select('id, color')
+          .select('id, color, status')
           .eq('school_id', user.schoolId);
+
+        console.log('🔍 DEBUG: All highlights data:', {
+          total: allHighlightsData?.length,
+          byStatus: allHighlightsData?.reduce((acc: any, h: any) => {
+            acc[h.status] = (acc[h.status] || 0) + 1;
+            return acc;
+          }, {}),
+          byColor: allHighlightsData?.reduce((acc: any, h: any) => {
+            acc[h.color] = (acc[h.color] || 0) + 1;
+            return acc;
+          }, {})
+        });
 
         // Homework count: green (pending) + gold (completed)
         const homeworkCount = allHighlightsData?.filter((h: any) =>
           h.color === 'green' || h.color === 'gold'
         ).length || 0;
 
-        // Total highlights count
+        // Total highlights count (ALL highlights regardless of status)
         const highlightsCount = allHighlightsData?.length || 0;
 
         // Fetch all assignments for the school
@@ -324,6 +337,7 @@ export default function SchoolDashboard() {
   const [totalSchoolHighlights, setTotalSchoolHighlights] = useState(0);
   const [totalSchoolAssignments, setTotalSchoolAssignments] = useState(0);
   const [totalSchoolTargets, setTotalSchoolTargets] = useState(0);
+  const [schoolAdminName, setSchoolAdminName] = useState<string>('Admin');
   const [selectedStudentsForClass, setSelectedStudentsForClass] = useState<any[]>([]);
   const [classTeacherSearch, setClassTeacherSearch] = useState('');
   const [classSchedules, setClassSchedules] = useState<any[]>([]);
