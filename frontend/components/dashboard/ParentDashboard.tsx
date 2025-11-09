@@ -1321,23 +1321,39 @@ export default function ParentDashboard() {
       <div className="px-4 sm:px-6 lg:px-12 py-6">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Child Overview Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">{currentChild.name}'s Learning Journey</h2>
-                  <p className="text-blue-100">Performance Overview • {currentChild.class}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-blue-100">Last Active</p>
-                  <p className="text-lg font-semibold">{currentChild.lastSession}</p>
+          <>
+            {/* Welcome Header - Full Width */}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 shadow-xl mb-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                      Welcome back, {user?.fullName || 'Parent'}
+                    </h1>
+                    <p className="text-blue-50 text-xl">
+                      Monitor your {children.length} {children.length === 1 ? 'child\'s' : 'children\'s'} learning journey
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 bg-white/20 backdrop-blur-md rounded-2xl px-8 py-5 border border-white/30 shadow-lg">
+                    <div className="text-right">
+                      <p className="text-blue-100 text-sm uppercase tracking-wide font-medium">Today</p>
+                      <p className="text-white text-2xl font-bold">
+                        {new Date().toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Enhanced Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Premium Stats Cards */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
