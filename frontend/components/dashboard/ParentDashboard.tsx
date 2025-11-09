@@ -95,6 +95,12 @@ export default function ParentDashboard() {
   const [isLoadingParent, setIsLoadingParent] = useState(true);
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
 
+  // Aggregated Stats for All Children
+  const [totalHighlights, setTotalHighlights] = useState(0);
+  const [totalHomework, setTotalHomework] = useState(0);
+  const [totalAssignments, setTotalAssignments] = useState(0);
+  const [totalTargets, setTotalTargets] = useState(0);
+
   // Fetch school logo
   useEffect(() => {
     async function fetchSchoolLogo() {
@@ -213,6 +219,90 @@ export default function ParentDashboard() {
 
     fetchChildren();
   }, [parentId, getChildren]);
+
+  // Fetch aggregated stats for all children
+  useEffect(() => {
+    async function fetchAggregatedStats() {
+      if (!children || children.length === 0) {
+        // Reset totals if no children
+        setTotalHighlights(0);
+        setTotalHomework(0);
+        setTotalAssignments(0);
+        setTotalTargets(0);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const childIds = children.map((child: any) => child.id);
+
+        // Fetch highlights count (excluding homework which has color='green')
+        const { count: highlightsCount, error: highlightsError } = await supabase
+          .from('highlights')
+          .select('*', { count: 'exact', head: true })
+          .in('student_id', childIds)
+          .neq('color', 'green'); // Exclude homework
+
+        if (highlightsError) {
+          console.error('Error fetching highlights count:', highlightsError);
+        } else {
+          setTotalHighlights(highlightsCount || 0);
+        }
+
+        // Fetch homework count (highlights with color='green')
+        const { count: homeworkCount, error: homeworkError } = await supabase
+          .from('highlights')
+          .select('*', { count: 'exact', head: true })
+          .in('student_id', childIds)
+          .eq('color', 'green');
+
+        if (homeworkError) {
+          console.error('Error fetching homework count:', homeworkError);
+        } else {
+          setTotalHomework(homeworkCount || 0);
+        }
+
+        // Fetch assignments count
+        const { count: assignmentsCount, error: assignmentsError } = await supabase
+          .from('assignments')
+          .select('*', { count: 'exact', head: true })
+          .in('student_id', childIds);
+
+        if (assignmentsError) {
+          console.error('Error fetching assignments count:', assignmentsError);
+        } else {
+          setTotalAssignments(assignmentsCount || 0);
+        }
+
+        // Fetch targets count
+        const { count: targetsCount, error: targetsError } = await supabase
+          .from('targets')
+          .select('*', { count: 'exact', head: true })
+          .in('student_id', childIds);
+
+        if (targetsError) {
+          console.error('Error fetching targets count:', targetsError);
+        } else {
+          setTotalTargets(targetsCount || 0);
+        }
+
+        console.log('📊 Aggregated Stats:', {
+          children: children.length,
+          highlights: highlightsCount || 0,
+          homework: homeworkCount || 0,
+          assignments: assignmentsCount || 0,
+          targets: targetsCount || 0
+        });
+
+      } catch (error) {
+        console.error('Error fetching aggregated stats:', error);
+      }
+    }
+
+    fetchAggregatedStats();
+  }, [children]);
 
   // Helper function to calculate age from date of birth
   function calculateAge(dob: string): number {
@@ -1381,7 +1471,7 @@ export default function ParentDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Highlights</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">0</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalHighlights}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full"></div>
@@ -1398,7 +1488,7 @@ export default function ParentDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">0</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{totalHomework}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"></div>
@@ -1415,7 +1505,7 @@ export default function ParentDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">0</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalAssignments}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-indigo-200 to-indigo-400 rounded-full"></div>
@@ -1432,101 +1522,10 @@ export default function ParentDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">0</p>
+                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{totalTargets}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-purple-200 to-purple-400 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Two Column Layout for Activity and Performance */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Activity */}
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Completed Surah Al-Mulk</p>
-                      <p className="text-sm text-gray-600 mt-0.5">Memorization milestone achieved</p>
-                      <p className="text-xs text-gray-500 mt-2">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Revision Session</p>
-                      <p className="text-sm text-gray-600 mt-0.5">Juz 29 - 45 minutes practice</p>
-                      <p className="text-xs text-gray-500 mt-2">1 day ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
-                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Homework Assigned</p>
-                      <p className="text-sm text-gray-600 mt-0.5">Practice Surah Al-Qalam with tajweed</p>
-                      <p className="text-xs text-gray-500 mt-2">2 days ago</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Weekly Performance */}
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900">Weekly Performance</h2>
-                  <select className="text-sm border border-gray-200 rounded-lg px-3 py-1">
-                    <option>This Week</option>
-                    <option>Last Week</option>
-                    <option>Last Month</option>
-                  </select>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Practice Time</span>
-                      <span className="text-sm font-bold text-gray-900">5h 30m</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full" style={{width: '75%'}}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Homework Completion</span>
-                      <span className="text-sm font-bold text-gray-900">4/5 Tasks</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style={{width: '80%'}}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Class Participation</span>
-                      <span className="text-sm font-bold text-gray-900">Excellent</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style={{width: '90%'}}></div>
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Teacher's Note</span>
-                      <span className="text-xs text-gray-500">Yesterday</span>
-                    </div>
-                    <p className="text-sm text-gray-700 mt-2 italic">"Excellent progress this week! Keep up the good work with daily practice."</p>
-                  </div>
                 </div>
               </div>
             </div>
