@@ -6550,8 +6550,6 @@ export default function SchoolDashboard() {
                         <th className="text-center py-3 px-4 font-medium text-gray-700">Classes</th>
                         <th className="text-center py-3 px-4 font-medium text-gray-700">Assignments Created</th>
                         <th className="text-center py-3 px-4 font-medium text-gray-700">Completion Rate</th>
-                        <th className="text-center py-3 px-4 font-medium text-gray-700">Avg Response Time</th>
-                        <th className="text-center py-3 px-4 font-medium text-gray-700">Performance</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -6577,19 +6575,11 @@ export default function SchoolDashboard() {
                                 {teacher.completionRate || 0}%
                               </span>
                             </td>
-                            <td className="text-center py-3 px-4 text-gray-600">
-                              {teacher.response_time || 'N/A'}
-                            </td>
-                            <td className="text-center py-3 px-4">
-                              <span className="text-gray-500 text-sm">
-                                {teacher.rating ? `${teacher.rating}/5` : 'No ratings yet'}
-                              </span>
-                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="text-center py-8 text-gray-500">
+                          <td colSpan={4} className="text-center py-8 text-gray-500">
                             No teacher data available
                           </td>
                         </tr>

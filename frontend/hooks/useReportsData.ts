@@ -295,12 +295,9 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
           return {
             id: teacher.id,
             name: teacher.profiles?.display_name || 'Unknown',
-            class_count: classCount || 0,  // REAL class count
+            class_count: classCount || 0,
             assignmentsCreated: assignmentCount || 0,
-            completionRate,
-            // NO FAKE DATA - only real metrics
-            response_time: null,  // Will be calculated when we have real response data
-            rating: null  // NO FAKE STARS - will add when we have real ratings
+            completionRate
           };
         })
       );
@@ -314,23 +311,16 @@ export function useReportsData(startDate?: Date, endDate?: Date) {
         completedAssignments,
         pendingAssignments,
         overdueAssignments,
-        totalHomework: 0, // Will be populated when homework system is ready
-        submittedHomework: 0,
         averageCompletionRate,
         averageGrade,
         totalAttendanceRecords,
         presentCount,
         absentCount,
         attendanceRate,
-        dailyActiveUsers: 0, // Will need activity tracking
-        weeklyActiveUsers: 0,
-        monthlyActiveUsers: 0,
         assignmentsTrend,
         attendanceTrend,
-        performanceTrend: [], // Will be populated with grade trends
         classwiseData,
-        teacherPerformance,
-        studentProgress: [] // Will be populated with student-wise progress
+        teacherPerformance
       });
 
     } catch (err: any) {
