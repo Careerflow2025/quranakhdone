@@ -3637,7 +3637,7 @@ export default function SchoolDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {classes.map((cls: any) => {
+                      {classes.map((cls: any, index: number) => {
                         // Parse schedule_json to display properly
                         const schedule = cls.schedule_json || {};
                         const schedules = schedule.schedules || [];
@@ -3650,32 +3650,43 @@ export default function SchoolDashboard() {
                         // Calculate utilization percentage
                         const utilization = cls.capacity ? (cls.student_count / cls.capacity) * 100 : 0;
 
+                        // Gradient color variations for visual diversity
+                        const gradients = [
+                          'from-indigo-500 via-indigo-600 to-blue-600',
+                          'from-cyan-500 via-cyan-600 to-teal-600',
+                          'from-violet-500 via-violet-600 to-purple-600',
+                          'from-emerald-500 via-emerald-600 to-green-600',
+                          'from-rose-500 via-rose-600 to-red-600',
+                          'from-amber-500 via-amber-600 to-yellow-600'
+                        ];
+                        const gradient = gradients[index % gradients.length];
+
                         return (
-                          <div key={cls.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
-                            {/* Card Header with Gradient */}
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
-                              <div className="flex items-start justify-between mb-2">
-                                <h3 className="font-bold text-lg text-gray-900 line-clamp-2">{cls.name}</h3>
-                                <div className="flex flex-col items-end gap-1">
+                          <div key={cls.id} className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden flex flex-col h-full">
+                            {/* Card Header with Vibrant Gradient and Animation */}
+                            <div className={`relative bg-gradient-to-r ${gradient} p-5 pb-6`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                              <div className="flex items-start justify-between mb-3">
+                                <h3 className="font-bold text-xl text-white line-clamp-2 flex-1 pr-2">{cls.name}</h3>
+                                <div className="flex flex-col items-end gap-1.5">
                                   {cls.grade && (
-                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                                    <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-semibold">
                                       {cls.grade}
                                     </span>
                                   )}
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                    utilization > 90 ? 'bg-red-100 text-red-700' :
-                                    utilization > 70 ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-green-100 text-green-700'
-                                  }`}>
+                                  <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-semibold">
                                     {cls.student_count || 0}/{cls.capacity || 30}
                                   </span>
                                 </div>
                               </div>
 
                               {/* Room Badge */}
-                              <div className="flex items-center text-sm text-gray-600">
-                                <MapPin className="w-3 h-3 mr-1" />
+                              <div className="flex items-center text-sm text-white/90">
+                                <MapPin className="w-4 h-4 mr-1.5" />
                                 <span className="font-medium">{cls.room || 'No Room Assigned'}</span>
+                              </div>
                               </div>
                             </div>
 
@@ -3792,12 +3803,12 @@ export default function SchoolDashboard() {
                               <div className="flex-1"></div>
 
                               {/* Action Buttons - Always at Bottom */}
-                              <div className="flex space-x-2 mt-4 pt-4 border-t">
+                              <div className="flex space-x-2 mt-4 pt-4 border-t border-gray-100">
                                 <button
                                   onClick={() => handleViewClass(cls.id)}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Eye className="w-4 h-4 mr-1" />
+                                  <Eye className="w-4 h-4 mr-1.5" />
                                   View
                                 </button>
                                 <button
@@ -3805,16 +3816,16 @@ export default function SchoolDashboard() {
                                     setEditingClass(cls);
                                     setEditClassSchedules(cls.schedule_json?.schedules || []);
                                   }}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Edit className="w-4 h-4 mr-1" />
+                                  <Edit className="w-4 h-4 mr-1.5" />
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteClass(cls.id, cls.name)}
-                                  className="flex-1 px-3 py-2 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center"
+                                  className="flex-1 px-3 py-2.5 text-sm font-medium bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center"
                                 >
-                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  <Trash2 className="w-4 h-4 mr-1.5" />
                                   Delete
                                 </button>
                               </div>
