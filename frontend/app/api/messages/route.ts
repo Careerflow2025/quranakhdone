@@ -276,10 +276,13 @@ export async function GET(request: NextRequest) {
     let attachmentsByMessageId = new Map();
 
     if (messageIds.length > 0) {
-      const { data: attachments } = await supabase
+      console.log('📎 Fetching attachments for message IDs:', messageIds);
+      const { data: attachments, error: attachmentsError } = await supabase
         .from('message_attachments')
         .select('*')
         .in('message_id', messageIds);
+
+      console.log('📎 Attachments query result:', { count: attachments?.length || 0, error: attachmentsError });
 
       if (attachments) {
         // Group attachments by message_id
@@ -289,6 +292,7 @@ export async function GET(request: NextRequest) {
           }
           attachmentsByMessageId.get(att.message_id).push(att);
         });
+        console.log('📎 Grouped attachments by message:', Array.from(attachmentsByMessageId.entries()).map(([id, atts]) => ({ message_id: id, count: atts.length })));
       }
     }
 
@@ -319,15 +323,20 @@ export async function GET(request: NextRequest) {
           reply_count = replyCount || 0;
         }
 
+        const msgAttachments = attachmentsByMessageId.get(msg.id) || [];
+        console.log(`📎 Message ${msg.id.substring(0, 8)}... has ${msgAttachments.length} attachments`);
+
         return {
           ...msg,
           sender: sender || undefined,
           recipient: recipient || undefined,
           reply_count,
-          attachments: attachmentsByMessageId.get(msg.id) || [],
+          attachments: msgAttachments,
         };
       })
     );
+
+    console.log('📨 Returning', populatedMessages.length, 'messages, attachments per message:', populatedMessages.map(m => ({ id: m.id.substring(0, 8), attachments: m.attachments?.length || 0 })));
 
     // 7. Calculate stats (including both individual and group messages)
     // Individual unread messages
