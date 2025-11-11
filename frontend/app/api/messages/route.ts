@@ -499,6 +499,198 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 4.5 Validate recipient is allowed based on sender role
+    if (senderProfile.role === 'teacher') {
+      // Teachers can only message: their students, parents of their students, school admins
+
+      // Get teacher record
+      const { data: teacher, error: teacherError } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (teacherError || !teacher) {
+        return NextResponse.json<ErrorResponse>(
+          {
+            success: false,
+            error: 'Teacher record not found',
+            code: 'TEACHER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // If recipient is admin/owner, allow
+      if (recipientProfile.role === 'owner' || recipientProfile.role === 'admin') {
+        // Allowed - admins can receive from anyone
+      }
+      // If recipient is teacher, deny
+      else if (recipientProfile.role === 'teacher') {
+        return NextResponse.json<ErrorResponse>(
+          {
+            success: false,
+            error: 'Teachers cannot send messages to other teachers',
+            code: 'RECIPIENT_NOT_ALLOWED',
+          },
+          { status: 403 }
+        );
+      }
+      // If recipient is student, verify they are in teacher's classes
+      else if (recipientProfile.role === 'student') {
+        const { data: student, error: studentError } = await supabase
+          .from('students')
+          .select('id')
+          .eq('user_id', recipient_user_id)
+          .single();
+
+        if (studentError || !student) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'Student record not found',
+              code: 'STUDENT_NOT_FOUND',
+            },
+            { status: 404 }
+          );
+        }
+
+        // Get teacher's classes
+        const { data: classTeachers, error: classError } = await supabase
+          .from('class_teachers')
+          .select('class_id')
+          .eq('teacher_id', teacher.id);
+
+        if (classError) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'Failed to fetch teacher classes',
+              code: 'DATABASE_ERROR',
+            },
+            { status: 500 }
+          );
+        }
+
+        const classIds = classTeachers?.map(ct => ct.class_id) || [];
+
+        if (classIds.length === 0) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'You are not teaching any classes',
+              code: 'NO_CLASSES',
+            },
+            { status: 403 }
+          );
+        }
+
+        // Check if student is enrolled in any of teacher's classes
+        const { data: enrollments, error: enrollmentError } = await supabase
+          .from('class_enrollments')
+          .select('student_id')
+          .in('class_id', classIds)
+          .eq('student_id', student.id);
+
+        if (enrollmentError || !enrollments || enrollments.length === 0) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'You can only send messages to students in your classes',
+              code: 'STUDENT_NOT_IN_CLASS',
+            },
+            { status: 403 }
+          );
+        }
+      }
+      // If recipient is parent, verify they are parent of teacher's student
+      else if (recipientProfile.role === 'parent') {
+        const { data: parent, error: parentError } = await supabase
+          .from('parents')
+          .select('id')
+          .eq('user_id', recipient_user_id)
+          .single();
+
+        if (parentError || !parent) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'Parent record not found',
+              code: 'PARENT_NOT_FOUND',
+            },
+            { status: 404 }
+          );
+        }
+
+        // Get parent's children
+        const { data: parentStudents, error: childrenError } = await supabase
+          .from('parent_students')
+          .select('student_id')
+          .eq('parent_id', parent.id);
+
+        if (childrenError || !parentStudents || parentStudents.length === 0) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'Parent has no linked students',
+              code: 'NO_CHILDREN',
+            },
+            { status: 404 }
+          );
+        }
+
+        const childrenIds = parentStudents.map(ps => ps.student_id);
+
+        // Get teacher's classes
+        const { data: classTeachers, error: classError } = await supabase
+          .from('class_teachers')
+          .select('class_id')
+          .eq('teacher_id', teacher.id);
+
+        if (classError) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'Failed to fetch teacher classes',
+              code: 'DATABASE_ERROR',
+            },
+            { status: 500 }
+          );
+        }
+
+        const classIds = classTeachers?.map(ct => ct.class_id) || [];
+
+        if (classIds.length === 0) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'You are not teaching any classes',
+              code: 'NO_CLASSES',
+            },
+            { status: 403 }
+          );
+        }
+
+        // Check if any of parent's children are in teacher's classes
+        const { data: enrollments, error: enrollmentError } = await supabase
+          .from('class_enrollments')
+          .select('student_id')
+          .in('class_id', classIds)
+          .in('student_id', childrenIds);
+
+        if (enrollmentError || !enrollments || enrollments.length === 0) {
+          return NextResponse.json<ErrorResponse>(
+            {
+              success: false,
+              error: 'You can only send messages to parents of students in your classes',
+              code: 'PARENT_NOT_LINKED',
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     // 5. Create message record
     const messageData = {
       school_id: senderProfile.school_id,

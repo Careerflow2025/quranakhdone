@@ -109,33 +109,47 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     return body.substring(0, maxLength) + '...';
   };
 
-  // Fetch available recipients when compose modal opens
+  // Fetch allowed recipients when compose modal opens (role-based filtering)
   useEffect(() => {
     const fetchRecipients = async () => {
-      if (!showComposeModal || !user?.schoolId) return;
+      if (!showComposeModal || !user?.id) return;
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, email, role')
-          .eq('school_id', user.schoolId)
-          .neq('user_id', user.id) // Exclude current user
-          .order('display_name');
+        // Fetch allowed recipients based on user role via API endpoint
+        const { data: { session } } = await supabase.auth.getSession();
 
-        if (error) {
-          console.error('Error fetching recipients:', error);
+        if (!session) {
+          console.error('No session found');
           return;
         }
 
-        setAvailableRecipients(data || []);
-        setFilteredRecipients(data || []);
+        const response = await fetch('/api/messages/allowed-recipients', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.error('Failed to fetch allowed recipients:', response.statusText);
+          return;
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.recipients) {
+          setAvailableRecipients(result.recipients);
+          setFilteredRecipients(result.recipients);
+        }
       } catch (error) {
         console.error('Error fetching recipients:', error);
       }
     };
 
     fetchRecipients();
-  }, [showComposeModal, user?.schoolId, user?.id]);
+  }, [showComposeModal, user?.id]);
 
   // Filter recipients based on search query
   useEffect(() => {
