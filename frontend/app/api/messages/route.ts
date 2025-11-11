@@ -217,6 +217,11 @@ export async function GET(request: NextRequest) {
       if (!recipientsError && recipients && recipients.length > 0) {
         const messageIds = recipients.map(r => r.message_id);
 
+        // Create a map of message_id -> read_at for quick lookup
+        const recipientReadMap = new Map(
+          recipients.map(r => [r.message_id, r.read_at])
+        );
+
         let groupQuery = supabase
           .from('messages')
           .select('*')
@@ -248,8 +253,12 @@ export async function GET(request: NextRequest) {
         const { data: groupData, error: groupError } = await groupQuery;
 
         if (!groupError && groupData) {
-          groupMessages = groupData;
-          totalCount += groupData.length;
+          // Merge read_at from message_recipients into group messages
+          groupMessages = groupData.map(msg => ({
+            ...msg,
+            read_at: recipientReadMap.get(msg.id) || msg.read_at
+          }));
+          totalCount += groupMessages.length;
         }
       }
     }
