@@ -263,20 +263,20 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                         ${!message.is_read ? 'bg-blue-600' : 'bg-gray-400'}
                       `}>
                         {(currentFolder === 'sent'
-                          ? message.recipient.display_name
-                          : message.sender.display_name
+                          ? message.recipient?.display_name || 'All'
+                          : message.sender?.display_name || 'System'
                         ).charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={`font-semibold truncate ${!message.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
                             {currentFolder === 'sent'
-                              ? message.recipient.display_name
-                              : message.sender.display_name
+                              ? message.recipient?.display_name || 'All Recipients'
+                              : message.sender?.display_name || 'System'
                             }
                           </span>
                           <span className="text-xs text-gray-500">
-                            ({currentFolder === 'sent' ? message.recipient.role : message.sender.role})
+                            ({currentFolder === 'sent' ? message.recipient?.role || 'group' : message.sender?.role || 'system'})
                           </span>
                         </div>
                         {message.subject && (

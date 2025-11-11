@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { createClientWithAuth } from '@/lib/supabase-server';
 import {
   validateListNotificationsRequest,
   canViewUserNotifications,
@@ -31,8 +31,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase client with auth (reads from Authorization header OR cookies)
+    const supabase = createClientWithAuth();
 
     // 2. Get authenticated user
     const {
