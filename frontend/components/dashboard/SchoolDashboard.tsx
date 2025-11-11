@@ -1639,14 +1639,23 @@ export default function SchoolDashboard() {
   // Mark message as read
   const markMessageAsRead = async (messageId: any) => {
     try {
-      await (supabase as any).rpc('mark_message_read', {
-        p_message_id: messageId,
-        p_user_id: user?.id || ''
+      // Call the API endpoint that handles both individual and group messages
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark message as read: ${response.status}`);
+      }
+
+      console.log('✅ Message marked as read:', messageId);
 
       // Update local state
       setMessages((prev: any) => prev.map((msg: any) =>
-        msg.id === messageId ? { ...msg, unread: false } : msg
+        msg.id === messageId ? { ...msg, unread: false, read_at: new Date().toISOString() } : msg
       ));
     } catch (error: any) {
       console.error('Error marking message as read:', error);
