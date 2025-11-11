@@ -134,24 +134,32 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. Build query based on folder
-    let query = supabase
+    // Note: We need to handle both individual messages (to_user_id) and group messages (message_recipients)
+    // For group messages, we'll fetch them separately and merge with individual messages
+
+    let individualMessages: any[] = [];
+    let groupMessages: any[] = [];
+    let totalCount = 0;
+
+    // Fetch individual messages
+    let individualQuery = supabase
       .from('messages')
       .select('*', { count: 'exact' })
       .eq('school_id', profile.school_id);
 
-    // Apply folder filtering
+    // Apply folder filtering for individual messages
     switch (folder) {
       case 'inbox':
-        query = query.eq('to_user_id', user.id);
+        individualQuery = individualQuery.eq('to_user_id', user.id);
         break;
       case 'sent':
-        query = query.eq('from_user_id', user.id);
+        individualQuery = individualQuery.eq('from_user_id', user.id);
         break;
       case 'unread':
-        query = query.eq('to_user_id', user.id).is('read_at', null);
+        individualQuery = individualQuery.eq('to_user_id', user.id).is('read_at', null);
         break;
       case 'all':
-        query = query.or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`);
+        individualQuery = individualQuery.or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`);
         break;
       default:
         return NextResponse.json<ErrorResponse>(
@@ -164,17 +172,10 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    // Apply pagination and ordering
-    const offset = (page - 1) * limit;
-    query = query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const { data: individualData, error: individualError, count: individualCount } = await individualQuery;
 
-    // Execute query
-    const { data: messages, error: messagesError, count } = await query;
-
-    if (messagesError) {
-      console.error('Error fetching messages:', messagesError);
+    if (individualError) {
+      console.error('Error fetching individual messages:', individualError);
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
@@ -184,6 +185,65 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    individualMessages = individualData || [];
+    totalCount = individualCount || 0;
+
+    // Fetch group messages (where user is in message_recipients)
+    // Only for inbox, unread, and all folders
+    if (folder === 'inbox' || folder === 'unread' || folder === 'all') {
+      const { data: recipients, error: recipientsError } = await supabase
+        .from('message_recipients')
+        .select('message_id, read_at')
+        .eq('recipient_id', user.id);
+
+      if (!recipientsError && recipients && recipients.length > 0) {
+        const messageIds = recipients.map(r => r.message_id);
+
+        let groupQuery = supabase
+          .from('messages')
+          .select('*')
+          .eq('school_id', profile.school_id)
+          .in('id', messageIds);
+
+        // For unread folder, filter by unread group messages
+        if (folder === 'unread') {
+          const unreadMessageIds = recipients
+            .filter(r => r.read_at === null)
+            .map(r => r.message_id);
+
+          if (unreadMessageIds.length > 0) {
+            groupQuery = supabase
+              .from('messages')
+              .select('*')
+              .eq('school_id', profile.school_id)
+              .in('id', unreadMessageIds);
+          } else {
+            // No unread group messages
+            groupQuery = supabase
+              .from('messages')
+              .select('*')
+              .eq('school_id', profile.school_id)
+              .in('id', []);
+          }
+        }
+
+        const { data: groupData, error: groupError } = await groupQuery;
+
+        if (!groupError && groupData) {
+          groupMessages = groupData;
+          totalCount += groupData.length;
+        }
+      }
+    }
+
+    // Combine and sort messages
+    const allMessages = [...individualMessages, ...groupMessages]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    // Apply pagination to combined results
+    const offset = (page - 1) * limit;
+    const messages = allMessages.slice(offset, offset + limit);
 
     // 5. Populate sender and recipient data
     const populatedMessages = await Promise.all(
@@ -221,14 +281,26 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // 6. Calculate stats
-    const { count: unreadCount } = await supabase
+    // 6. Calculate stats (including both individual and group messages)
+    // Individual unread messages
+    const { count: individualUnreadCount } = await supabase
       .from('messages')
       .select('id', { count: 'exact', head: true })
       .eq('school_id', profile.school_id)
       .eq('to_user_id', user.id)
       .is('read_at', null);
 
+    // Group unread messages
+    const { data: unreadRecipients } = await supabase
+      .from('message_recipients')
+      .select('message_id')
+      .eq('recipient_id', user.id)
+      .is('read_at', null);
+
+    const groupUnreadCount = unreadRecipients?.length || 0;
+    const totalUnreadCount = (individualUnreadCount || 0) + groupUnreadCount;
+
+    // Total thread count (both individual and group)
     const { count: threadCount } = await supabase
       .from('messages')
       .select('id', { count: 'exact', head: true })
@@ -237,20 +309,20 @@ export async function GET(request: NextRequest) {
       .is('thread_id', null);
 
     // 7. Return response
-    const totalPages = Math.ceil((count || 0) / limit);
+    const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json<ListMessagesResponse>(
       {
         success: true,
         messages: populatedMessages,
         stats: {
-          total_unread: unreadCount || 0,
+          total_unread: totalUnreadCount,
           total_threads: threadCount || 0,
         },
         pagination: {
           page,
           total_pages: totalPages,
-          total: count || 0,
+          total: totalCount,
         },
       },
       { status: 200 }
