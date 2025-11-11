@@ -206,7 +206,28 @@ export async function GET(
       );
     }
 
-    // 8. Populate sender and recipient data for root message
+    // 8. Fetch attachments for root message and replies
+    const allMessageIds = [rootMessage.id, ...(replies || []).map(r => r.id)];
+    const attachmentsByMessageId = new Map();
+
+    if (allMessageIds.length > 0) {
+      const { data: attachments } = await supabase
+        .from('message_attachments')
+        .select('*')
+        .in('message_id', allMessageIds)
+        .is('deleted_at', null);
+
+      if (attachments) {
+        attachments.forEach((att: any) => {
+          if (!attachmentsByMessageId.has(att.message_id)) {
+            attachmentsByMessageId.set(att.message_id, []);
+          }
+          attachmentsByMessageId.get(att.message_id).push(att);
+        });
+      }
+    }
+
+    // 9. Populate sender and recipient data for root message
     const { data: rootSender } = await supabase
       .from('profiles')
       .select('user_id, display_name, email, role')
@@ -223,9 +244,10 @@ export async function GET(
       ...rootMessage,
       sender: rootSender || undefined,
       recipient: rootRecipient || undefined,
+      attachments: attachmentsByMessageId.get(rootMessage.id) || [],
     };
 
-    // 9. Populate sender and recipient data for all replies
+    // 10. Populate sender and recipient data for all replies
     const populatedReplies = await Promise.all(
       (replies || []).map(async (reply) => {
         const { data: sender } = await supabase
@@ -244,6 +266,7 @@ export async function GET(
           ...reply,
           sender: sender || undefined,
           recipient: recipient || undefined,
+          attachments: attachmentsByMessageId.get(reply.id) || [],
         };
       })
     );
