@@ -1514,64 +1514,46 @@ export default function SchoolDashboard() {
         return;
       }
 
-      // Prepare recipient details based on type
-      let recipientDetails = null;
-      if (recipientType === 'specific_class' && selectedClass) {
-        recipientDetails = { class_id: selectedClass };
-      } else if (recipientType === 'individual' && selectedRecipients.length > 0) {
-        recipientDetails = { user_ids: selectedRecipients.map((r: any) => r.user_id || r.id) };
-      }
-
-      console.log('Sending message with:', {
+      // Prepare message data based on recipient type
+      let messageData: any = {
         school_id: user.schoolId,
-        sender_id: user.id,
+        from_user_id: user.id, // Changed from sender_id
         subject: subject || 'No Subject',
         body: body,
-        recipient_type: recipientType
-      });
+        recipient_type: recipientType,
+        read_at: null,
+        topic: 'general',
+        extension: 'standard',
+        payload: null,
+        event: null,
+        private: false
+      };
+
+      // For individual messages, set to_user_id (required by constraint)
+      if (recipientType === 'individual' && selectedRecipients.length > 0) {
+        const recipientUserId = selectedRecipients[0].user_id || selectedRecipients[0].id;
+        messageData.to_user_id = recipientUserId;
+        console.log('Sending individual message to:', recipientUserId);
+      } else if (recipientType === 'specific_class' && selectedClass) {
+        // For group messages, to_user_id should be NULL
+        messageData.to_user_id = null;
+        messageData.recipient_details = { class_id: selectedClass };
+        console.log('Sending group message to class:', selectedClass);
+      } else {
+        // For other group types (all_parents, all_teachers, etc.), to_user_id should be NULL
+        messageData.to_user_id = null;
+        console.log('Sending group message type:', recipientType);
+      }
+
+      console.log('Sending message with:', messageData);
 
       const { data, error } = await (supabase as any)
         .from('messages')
-        .insert({
-          school_id: user.schoolId,
-          sender_id: user.id,
-          subject: subject || 'No Subject',
-          body: body,
-          priority: priority,
-          recipient_type: recipientType,
-          recipient_details: recipientDetails,
-          sent_via_email: sendViaEmail
-        })
+        .insert(messageData)
         .select();
 
       if (error) {
         console.error('Send message error details:', error);
-        // Try without select() if that's causing issues
-        if (error.message?.includes('select')) {
-          const { data: retryData, error: retryError } = await (supabase as any)
-            .from('messages')
-            .insert({
-              school_id: user.schoolId,
-              sender_id: user.id,
-              subject: subject || 'No Subject',
-              body: body,
-              priority: priority,
-              recipient_type: recipientType,
-              recipient_details: recipientDetails,
-              sent_via_email: sendViaEmail
-            });
-
-          if (!retryError) {
-            showNotification('Message sent successfully!', 'success');
-            setShowComposeMessage(false);
-            setMessageSubject('');
-            setMessageContent('');
-            setMessageRecipientType('all');
-            setSelectedRecipients([]);
-            setTimeout(() => loadMessages(), 1000);
-            return;
-          }
-        }
         throw error;
       }
 
