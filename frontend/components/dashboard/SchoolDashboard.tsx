@@ -373,6 +373,8 @@ export default function SchoolDashboard() {
   const [replyMessage, setReplyMessage] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
+  const [messageAttachments, setMessageAttachments] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
 
   // Professional Notification System
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -1490,6 +1492,24 @@ export default function SchoolDashboard() {
       // Sort by date
       allMessages.sort((a, b) => new Date(b.created_at || b.messages?.created_at).getTime() - new Date(a.created_at || a.messages?.created_at).getTime());
 
+      // Fetch attachments for all messages
+      if (allMessages.length > 0) {
+        const messageIds = allMessages.map((m: any) => m.id).filter(Boolean);
+        if (messageIds.length > 0) {
+          const { data: attachments } = await (supabase as any)
+            .from('message_attachments')
+            .select('*')
+            .in('message_id', messageIds);
+
+          if (attachments) {
+            // Attach to messages
+            allMessages.forEach((msg: any) => {
+              msg.attachments = attachments.filter((att: any) => att.message_id === msg.id);
+            });
+          }
+        }
+      }
+
       setMessages(allMessages);
 
       // Get unread count
@@ -1556,6 +1576,41 @@ export default function SchoolDashboard() {
         throw error;
       }
 
+      const newMessageId = data[0].id;
+
+      // Upload attachments if any
+      if (messageAttachments.length > 0) {
+        setUploadingAttachments(true);
+        try {
+          const uploadedUrls = await uploadAttachments(newMessageId);
+
+          // Store attachment URLs in the database
+          if (uploadedUrls.length > 0) {
+            const attachmentRecords = uploadedUrls.map(url => ({
+              message_id: newMessageId,
+              url: url,
+              filename: messageAttachments[uploadedUrls.indexOf(url)]?.name || 'file',
+              mime_type: messageAttachments[uploadedUrls.indexOf(url)]?.type || 'application/octet-stream',
+              size: messageAttachments[uploadedUrls.indexOf(url)]?.size || 0
+            }));
+
+            const { error: attachmentError } = await (supabase as any)
+              .from('message_attachments')
+              .insert(attachmentRecords);
+
+            if (attachmentError) {
+              console.error('Error saving attachment records:', attachmentError);
+              // Don't throw - message was sent successfully, just log the error
+            }
+          }
+        } catch (uploadError) {
+          console.error('Error uploading attachments:', uploadError);
+          showNotification('Message sent, but some attachments failed to upload', 'warning');
+        } finally {
+          setUploadingAttachments(false);
+        }
+      }
+
       showNotification('Message sent successfully!', 'success');
       setShowComposeMessage(false);
 
@@ -1564,6 +1619,7 @@ export default function SchoolDashboard() {
       setMessageContent('');
       setMessageRecipientType('all');
       setSelectedRecipients([]);
+      setMessageAttachments([]);
 
       // Reload messages after a short delay to allow trigger to complete
       setTimeout(() => {
@@ -1572,6 +1628,72 @@ export default function SchoolDashboard() {
     } catch (error: any) {
       console.error('Error sending message:', error);
       showNotification('Failed to send message: ' + (error.message || 'Unknown error'), 'error');
+    }
+  };
+
+  // Handle file attachment selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+
+      // Check file sizes (max 20MB per file)
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      const oversizedFiles = fileArray.filter(file => file.size > maxSize);
+
+      if (oversizedFiles.length > 0) {
+        showNotification(
+          `Some files exceed 20MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`,
+          'error'
+        );
+        return;
+      }
+
+      setMessageAttachments(prev => [...prev, ...fileArray]);
+      showNotification(`${fileArray.length} file(s) added`, 'success');
+    }
+  };
+
+  // Remove attachment
+  const removeAttachment = (index: number) => {
+    setMessageAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Upload attachments to Supabase Storage
+  const uploadAttachments = async (messageId: string): Promise<string[]> => {
+    if (messageAttachments.length === 0) return [];
+
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of messageAttachments) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user?.schoolId}/${user?.id}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { data, error } = await (supabase as any).storage
+          .from('attachments')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) {
+          console.error('Error uploading file:', file.name, error);
+          throw error;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = (supabase as any).storage
+          .from('attachments')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Error uploading attachments:', error);
+      throw error;
     }
   };
 
@@ -5981,20 +6103,37 @@ export default function SchoolDashboard() {
                         {/* Attachments if any */}
                         {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
                           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                              <Paperclip className="w-4 h-4" />
                               Attachments ({selectedMessage.attachments.length})
                             </h4>
                             <div className="space-y-2">
                               {selectedMessage.attachments.map((attachment: any, i: any) => (
-                                <div key={i} className="flex items-center space-x-2">
-                                  <Paperclip className="w-4 h-4 text-gray-500" />
+                                <div
+                                  key={i}
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+                                >
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm font-medium text-gray-900 truncate">
+                                        {attachment.filename || attachment.name || 'File'}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
+                                        {attachment.mime_type && ` • ${attachment.mime_type.split('/')[1]?.toUpperCase()}`}
+                                      </div>
+                                    </div>
+                                  </div>
                                   <a
                                     href={attachment.url}
-                                    className="text-sm text-blue-600 hover:underline"
+                                    download
+                                    className="flex-shrink-0 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                    {attachment.name}
+                                    <Download className="w-4 h-4" />
+                                    Download
                                   </a>
                                 </div>
                               ))}
@@ -9689,6 +9828,65 @@ export default function SchoolDashboard() {
               </div>
             </div>
 
+            {/* File Attachments */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Attachments (Optional)
+              </label>
+              <div className="space-y-2">
+                {/* File Input Button */}
+                <div>
+                  <input
+                    type="file"
+                    id="message-attachments"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.txt"
+                  />
+                  <label
+                    htmlFor="message-attachments"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg cursor-pointer transition-colors"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                    Attach Files
+                  </label>
+                  <span className="ml-2 text-xs text-gray-500">Max 20MB per file</span>
+                </div>
+
+                {/* Selected Files List */}
+                {messageAttachments.length > 0 && (
+                  <div className="space-y-1">
+                    {messageAttachments.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm text-gray-700 truncate">
+                              {file.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(index)}
+                          className="text-red-500 hover:text-red-700 p-1 flex-shrink-0"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6">
               <button
@@ -9698,6 +9896,7 @@ export default function SchoolDashboard() {
                   setMessageContent('');
                   setSelectedRecipients([]);
                   setRecipientSearch('');
+                  setMessageAttachments([]);
                 }}
                 className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
               >
@@ -9713,11 +9912,20 @@ export default function SchoolDashboard() {
                     messagePriority || 'normal'
                   );
                 }}
-                disabled={!messageSubject || !messageContent}
+                disabled={!messageSubject || !messageContent || uploadingAttachments}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" />
-                Send Message
+                {uploadingAttachments ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Send Message
+                  </>
+                )}
               </button>
             </div>
           </div>
