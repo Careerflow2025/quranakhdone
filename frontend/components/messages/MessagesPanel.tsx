@@ -256,20 +256,66 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
   // Handle compose submit
   const handleComposeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!composeForm.recipient_user_id || !composeForm.subject || !composeForm.body) {
-      alert('Please fill in all required fields');
-      return;
+
+    // Validation based on message type
+    if (messageType === 'individual') {
+      if (!composeForm.recipient_user_id || !composeForm.subject || !composeForm.body) {
+        alert('Please fill in all required fields');
+        return;
+      }
+    } else {
+      // Group message validation
+      if (!composeForm.body) {
+        alert('Please enter a message');
+        return;
+      }
+      if (groupMessageType === 'specific_class' && !selectedClassId) {
+        alert('Please select a class');
+        return;
+      }
     }
 
     setIsSubmitting(true);
-    const success = await sendMessage(composeForm);
-    setIsSubmitting(false);
 
-    if (success) {
+    try {
+      if (messageType === 'individual') {
+        // Send individual message
+        const success = await sendMessage(composeForm);
+        if (!success) throw new Error('Failed to send individual message');
+      } else {
+        // Send group message
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Not authenticated');
+
+        const response = await fetch('/api/messages/send-group', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            recipient_type: groupMessageType,
+            ...(groupMessageType === 'specific_class' ? { class_id: selectedClassId } : {}),
+            subject: composeForm.subject || undefined,
+            body: composeForm.body,
+          }),
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Failed to send group message');
+
+        console.log(`✅ Group message sent to ${result.recipient_count} recipients`);
+      }
+
       handleCloseComposeModal();
       alert('Message sent successfully!');
-    } else {
-      alert('Failed to send message. Please try again.');
+      refreshMessages(); // Refresh to show sent message
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      alert(error.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -521,10 +567,88 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
             </div>
 
             <form onSubmit={handleComposeSubmit} className="p-6 space-y-4">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Recipient *
-                </label>
+              {/* Message Type Selector - Only show for teachers */}
+              {currentUser?.role === 'teacher' && (
+                <div className="space-y-4 pb-4 border-b border-gray-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Message Type *
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="messageType"
+                        value="individual"
+                        checked={messageType === 'individual'}
+                        onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Individual Message</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="messageType"
+                        value="group"
+                        checked={messageType === 'group'}
+                        onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Group Message</span>
+                    </label>
+                  </div>
+
+                  {/* Group Message Options */}
+                  {messageType === 'group' && (
+                    <div className="space-y-4 pt-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Send To *
+                        </label>
+                        <select
+                          value={groupMessageType}
+                          onChange={(e) => setGroupMessageType(e.target.value as 'all_students' | 'all_parents' | 'specific_class')}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required
+                        >
+                          <option value="all_students">All Students (in my classes)</option>
+                          <option value="all_parents">All Parents (of my students)</option>
+                          <option value="specific_class">Specific Class</option>
+                        </select>
+                      </div>
+
+                      {/* Class Selector - Only show for specific_class */}
+                      {groupMessageType === 'specific_class' && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Select Class *
+                          </label>
+                          <select
+                            value={selectedClassId}
+                            onChange={(e) => setSelectedClassId(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required
+                          >
+                            <option value="">Choose a class...</option>
+                            {teacherClasses.map((classItem) => (
+                              <option key={classItem.id} value={classItem.id}>
+                                {classItem.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Recipient Field - Only show for individual messages */}
+              {messageType === 'individual' && (
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Recipient *
+                  </label>
                 <div className="relative">
                   <input
                     ref={recipientInputRef}
@@ -605,21 +729,44 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                   </div>
                 )}
               </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject *
+                  Subject {messageType === 'individual' && '*'}
                 </label>
                 <input
                   type="text"
                   value={composeForm.subject}
                   onChange={(e) => setComposeForm({ ...composeForm, subject: e.target.value })}
-                  placeholder="Enter subject..."
+                  placeholder={messageType === 'group' ? 'Enter subject (optional)' : 'Enter subject...'}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   maxLength={200}
-                  required
+                  required={messageType === 'individual'}
                 />
               </div>
+
+              {/* Group Message Info */}
+              {messageType === 'group' && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">Group Message</p>
+                      <p>
+                        {groupMessageType === 'all_students' && 'This message will be sent to all students in your classes.'}
+                        {groupMessageType === 'all_parents' && 'This message will be sent to all parents of your students.'}
+                        {groupMessageType === 'specific_class' && selectedClassId &&
+                          `This message will be sent to all students and parents in ${teacherClasses.find(c => c.id === selectedClassId)?.name || 'the selected class'}.`}
+                        {groupMessageType === 'specific_class' && !selectedClassId &&
+                          'Please select a class to send this message to.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
