@@ -69,6 +69,10 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
   const [replyBody, setReplyBody] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Attachment upload state
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Recipient search state
   const [recipientSearchQuery, setRecipientSearchQuery] = useState('');
   const [availableRecipients, setAvailableRecipients] = useState<Array<{
@@ -251,6 +255,95 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     setRecipientSearchQuery('');
     setSelectedRecipient(null);
     setShowRecipientDropdown(false);
+  };
+
+  // Handle file selection
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size exceeds 10MB limit');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'audio/mpeg',
+      'audio/wav',
+      'audio/m4a',
+      'audio/mp4',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('File type not allowed. Allowed: images, PDFs, Word documents, and audio files');
+      return;
+    }
+
+    setUploadingAttachment(true);
+
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('message_id_temp', Date.now().toString());
+
+      // Upload file
+      const response = await fetch('/api/messages/upload-attachment', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      // Add attachment to form
+      setComposeForm({
+        ...composeForm,
+        attachments: [...composeForm.attachments, {
+          url: result.url,
+          mime_type: result.mime_type,
+          file_name: result.file_name,
+          file_size: result.file_size,
+        }],
+      });
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file. Please try again.');
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  // Handle remove attachment
+  const handleRemoveAttachment = (index: number) => {
+    setComposeForm({
+      ...composeForm,
+      attachments: composeForm.attachments.filter((_, i) => i !== index),
+    });
   };
 
   // Handle compose submit
@@ -784,6 +877,57 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 <div className="text-xs text-gray-500 mt-1">
                   {composeForm.body.length} / 10,000 characters
                 </div>
+              </div>
+
+              {/* Attachments Section */}
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept="image/*,application/pdf,.doc,.docx,audio/*"
+                />
+                <button
+                  type="button"
+                  onClick={handleFileSelect}
+                  disabled={uploadingAttachment}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Paperclip className="w-4 h-4" />
+                  {uploadingAttachment ? 'Uploading...' : 'Attach File'}
+                </button>
+
+                {/* Attachment Preview List */}
+                {composeForm.attachments.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {composeForm.attachments.map((attachment, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Paperclip className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {attachment.file_name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(attachment.file_size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttachment(index)}
+                          className="ml-3 p-1 text-red-600 hover:bg-red-50 rounded transition flex-shrink-0"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-4 pt-4">
