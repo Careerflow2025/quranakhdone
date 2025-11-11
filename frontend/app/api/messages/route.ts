@@ -406,7 +406,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { recipient_user_id, subject, body: messageBody, thread_id } = body;
+    const { recipient_user_id, subject, body: messageBody, thread_id, attachments } = body;
 
     // Validate required fields
     if (!recipient_user_id || !messageBody) {
@@ -726,7 +726,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Populate sender and recipient data
+    // 6. Save attachments if provided
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      const attachmentsData = attachments.map((att: any) => ({
+        message_id: newMessage.id,
+        url: att.url,
+        mime_type: att.mime_type,
+        file_name: att.file_name,
+        file_size: att.file_size,
+        uploaded_by: user.id,
+      }));
+
+      const { error: attachmentError } = await supabase
+        .from('message_attachments')
+        .insert(attachmentsData);
+
+      if (attachmentError) {
+        console.error('Error saving attachments:', attachmentError);
+        // Don't fail the message send if attachments fail, just log it
+      }
+    }
+
+    // 7. Populate sender and recipient data
     const populatedMessage = {
       ...newMessage,
       sender: {
@@ -742,9 +763,10 @@ export async function POST(request: NextRequest) {
         role: recipientProfile.role,
       },
       reply_count: 0,
+      attachments: attachments || [],
     };
 
-    // 7. Return response
+    // 8. Return response
     return NextResponse.json<SendMessageResponse>(
       {
         success: true,

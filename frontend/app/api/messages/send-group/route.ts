@@ -21,6 +21,12 @@ interface SendGroupMessageRequest {
   class_id?: string; // Required if recipient_type === 'specific_class'
   subject?: string;
   body: string;
+  attachments?: Array<{
+    url: string;
+    mime_type: string;
+    file_name: string;
+    file_size: number;
+  }>;
 }
 
 interface GroupMessageResponse {
@@ -39,7 +45,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body: SendGroupMessageRequest = await request.json();
-    const { recipient_type, class_id, subject, body: messageBody } = body;
+    const { recipient_type, class_id, subject, body: messageBody, attachments } = body;
 
     // Validate required fields
     if (!recipient_type || !messageBody) {
@@ -364,6 +370,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save attachments if provided
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      const attachmentsData = attachments.map((att: any) => ({
+        message_id: newMessage.id,
+        url: att.url,
+        mime_type: att.mime_type,
+        file_name: att.file_name,
+        file_size: att.file_size,
+        uploaded_by: user.id,
+      }));
+
+      const { error: attachmentError } = await supabase
+        .from('message_attachments')
+        .insert(attachmentsData);
+
+      if (attachmentError) {
+        console.error('Error saving group message attachments:', attachmentError);
+        // Don't fail the message send if attachments fail, just log it
+      }
+    }
+
     console.log(`✅ Group message sent to ${recipientUserIds.length} recipients`);
 
     return NextResponse.json<GroupMessageResponse>(
@@ -377,6 +404,7 @@ export async function POST(request: NextRequest) {
             email: senderProfile.email,
             role: senderProfile.role,
           },
+          attachments: attachments || [],
         },
         recipient_count: recipientUserIds.length,
       },
