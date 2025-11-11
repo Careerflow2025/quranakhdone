@@ -16,7 +16,8 @@
       "mcp__supabase__execute_sql",
       "mcp__supabase__list_tables",
       "mcp__supabase__list_migrations",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__supabase__apply_migration"
     ],
     "deny": [],
     "ask": []
