@@ -6002,6 +6002,12 @@ export default function SchoolDashboard() {
                             {message.body}
                           </p>
                           <div className="flex items-center mt-2 space-x-2">
+                            {message.attachments && message.attachments.length > 0 && (
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs flex items-center gap-1">
+                                <Paperclip className="w-3 h-3" />
+                                {message.attachments.length} {message.attachments.length === 1 ? 'file' : 'files'}
+                              </span>
+                            )}
                             {message.recipient_type === 'all' && (
                               <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">
                                 All Users
