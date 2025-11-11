@@ -14,7 +14,9 @@
       "Bash(git push:*)",
       "Bash(find:*)",
       "mcp__supabase__execute_sql",
-      "mcp__supabase__list_tables"
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_migrations",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
