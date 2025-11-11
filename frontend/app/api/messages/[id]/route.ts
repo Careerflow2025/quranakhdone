@@ -285,47 +285,103 @@ export async function PATCH(
       );
     }
 
-    // 4. Get message and verify user is recipient
+    // 4. Get message
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .select('*')
       .eq('id', messageId)
       .eq('school_id', profile.school_id)
-      .eq('to_user_id', user.id)
       .single();
 
     if (messageError || !message) {
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Message not found or you are not the recipient',
+          error: 'Message not found',
           code: 'MESSAGE_NOT_FOUND',
         },
         { status: 404 }
       );
     }
 
-    // 5. Update read_at timestamp
-    const { data: updatedMessage, error: updateError } = await supabase
-      .from('messages')
-      .update({ read_at: new Date().toISOString() })
-      .eq('id', messageId)
-      .select()
-      .single();
+    // 5. Verify user is recipient (individual or group message)
+    let isRecipient = false;
 
-    if (updateError) {
-      console.error('Error updating message:', updateError);
+    if (message.to_user_id) {
+      // Individual message
+      isRecipient = message.to_user_id === user.id;
+    } else {
+      // Group message - check message_recipients
+      const { data: recipientRecord } = await supabase
+        .from('message_recipients')
+        .select('id')
+        .eq('message_id', messageId)
+        .eq('recipient_id', user.id)
+        .single();
+
+      isRecipient = !!recipientRecord;
+    }
+
+    if (!isRecipient) {
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
-          error: 'Failed to mark message as read',
-          code: 'UPDATE_ERROR',
+          error: 'You are not a recipient of this message',
+          code: 'FORBIDDEN',
         },
-        { status: 500 }
+        { status: 403 }
       );
     }
 
-    // 6. Populate sender and recipient data
+    // 6. Mark as read (different logic for individual vs group)
+    const now = new Date().toISOString();
+    let updatedMessage;
+
+    if (message.to_user_id) {
+      // Individual message - update messages table
+      const { data, error: updateError } = await supabase
+        .from('messages')
+        .update({ read_at: now })
+        .eq('id', messageId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating message:', updateError);
+        return NextResponse.json<ErrorResponse>(
+          {
+            success: false,
+            error: 'Failed to mark message as read',
+            code: 'UPDATE_ERROR',
+          },
+          { status: 500 }
+        );
+      }
+      updatedMessage = data;
+    } else {
+      // Group message - update message_recipients table
+      const { error: updateError } = await supabase
+        .from('message_recipients')
+        .update({ read_at: now })
+        .eq('message_id', messageId)
+        .eq('recipient_id', user.id);
+
+      if (updateError) {
+        console.error('Error updating message_recipients:', updateError);
+        return NextResponse.json<ErrorResponse>(
+          {
+            success: false,
+            error: 'Failed to mark message as read',
+            code: 'UPDATE_ERROR',
+          },
+          { status: 500 }
+        );
+      }
+      // For group messages, return original message (read_at stays null in messages table)
+      updatedMessage = message;
+    }
+
+    // 7. Populate sender and recipient data
     const { data: sender } = await supabase
       .from('profiles')
       .select('user_id, display_name, email, role')
@@ -343,7 +399,7 @@ export async function PATCH(
       },
     };
 
-    // 7. Return response
+    // 8. Return response
     return NextResponse.json<MarkAsReadResponse>(
       {
         success: true,
