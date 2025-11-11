@@ -25,6 +25,10 @@ interface Recipient {
 interface AllowedRecipientsResponse {
   success: true;
   recipients: Recipient[];
+  teacher_classes?: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 interface ErrorResponse {
@@ -396,10 +400,42 @@ export async function GET(request: NextRequest) {
       return nameA.localeCompare(nameB);
     });
 
+    // If user is a teacher, include their classes for group messaging
+    let teacherClasses: Array<{ id: string; name: string }> = [];
+    if (profile.role === 'teacher') {
+      // Get teacher record (already fetched above for teachers)
+      const { data: teacher } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (teacher) {
+        // Get teacher's classes
+        const { data: classTeachers } = await supabase
+          .from('class_teachers')
+          .select('class_id')
+          .eq('teacher_id', teacher.id);
+
+        const classIds = classTeachers?.map(ct => ct.class_id) || [];
+
+        if (classIds.length > 0) {
+          const { data: classes } = await supabase
+            .from('classes')
+            .select('id, name')
+            .in('id', classIds)
+            .order('name');
+
+          teacherClasses = classes || [];
+        }
+      }
+    }
+
     return NextResponse.json<AllowedRecipientsResponse>(
       {
         success: true,
         recipients: uniqueRecipients,
+        ...(profile.role === 'teacher' ? { teacher_classes: teacherClasses } : {}),
       },
       { status: 200 }
     );

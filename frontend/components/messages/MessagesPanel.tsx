@@ -59,6 +59,12 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     attachments: [] as Array<{ url: string; mime_type: string; file_name: string; file_size: number }>,
   });
 
+  // Group messaging state
+  const [messageType, setMessageType] = useState<'individual' | 'group'>('individual');
+  const [groupMessageType, setGroupMessageType] = useState<'all_students' | 'all_parents' | 'specific_class'>('all_students');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [teacherClasses, setTeacherClasses] = useState<Array<{ id: string; name: string }>>([]);
+
   // Reply form state
   const [replyBody, setReplyBody] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,6 +148,11 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
         if (result.success && result.recipients) {
           setAvailableRecipients(result.recipients);
           setFilteredRecipients(result.recipients);
+
+          // If teacher classes are provided, store them for group messaging
+          if (result.teacher_classes) {
+            setTeacherClasses(result.teacher_classes);
+          }
         }
       } catch (error) {
         console.error('Error fetching recipients:', error);
