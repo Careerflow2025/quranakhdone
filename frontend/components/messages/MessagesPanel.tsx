@@ -306,6 +306,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
       // Upload file
       const response = await fetch('/api/messages/upload-attachment', {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
 
