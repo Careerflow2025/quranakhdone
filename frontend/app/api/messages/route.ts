@@ -98,13 +98,30 @@ export async function GET(request: NextRequest) {
     // 1. Initialize Supabase client with auth
     const supabase = createClient();
 
+    // DEBUG: Log auth headers and cookies
+    const authHeader = request.headers.get('authorization');
+    const cookies = request.headers.get('cookie');
+    console.log('📋 GET /api/messages - Auth Debug:', {
+      hasAuthHeader: !!authHeader,
+      authHeaderPreview: authHeader?.substring(0, 20) + '...',
+      hasCookies: !!cookies,
+      cookieCount: cookies?.split(';').length || 0,
+    });
+
     // 2. Get authenticated user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
+    console.log('👤 User auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message,
+    });
+
     if (authError || !user) {
+      console.error('❌ Authentication failed:', authError);
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
