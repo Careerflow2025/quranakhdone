@@ -5,8 +5,9 @@
  */
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { Database } from './database.types';
+import { createClient as createBrowserClient } from '@supabase/supabase-js';
 
 /**
  * Creates a Supabase client for use in Server Components and API Routes
@@ -44,6 +45,39 @@ export function createClient() {
       },
     }
   );
+}
+
+/**
+ * Creates a Supabase client that reads auth from Authorization header
+ * Used for API routes when frontend sends Bearer token
+ */
+export function createClientWithAuth() {
+  const headersList = headers();
+  const authHeader = headersList.get('authorization');
+
+  // If Authorization header exists, use it
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+
+    return createBrowserClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      }
+    );
+  }
+
+  // Fall back to cookie-based auth
+  return createClient();
 }
 
 /**
