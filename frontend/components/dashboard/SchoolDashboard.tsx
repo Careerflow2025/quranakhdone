@@ -1698,6 +1698,25 @@ export default function SchoolDashboard() {
     }
   };
 
+  // Programmatic download handler for attachments
+  const handleDownloadAttachment = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      showNotification('Failed to download file', 'error');
+    }
+  };
+
   // Handle reply to message
   const handleReplyMessage = async (message: any) => {
     try {
@@ -6132,14 +6151,13 @@ export default function SchoolDashboard() {
                                       </div>
                                     </div>
                                   </div>
-                                  <a
-                                    href={attachment.url}
-                                    download={attachment.file_name || 'file'}
+                                  <button
+                                    onClick={() => handleDownloadAttachment(attachment.url, attachment.file_name || 'file')}
                                     className="flex-shrink-0 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
                                   >
                                     <Download className="w-4 h-4" />
                                     Download
-                                  </a>
+                                  </button>
                                 </div>
                               ))}
                             </div>

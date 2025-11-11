@@ -271,7 +271,28 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
     const messages = allMessages.slice(offset, offset + limit);
 
-    // 5. Populate sender and recipient data
+    // 5. Fetch attachments for all messages
+    const messageIds = messages.map(m => m.id);
+    let attachmentsByMessageId = new Map();
+
+    if (messageIds.length > 0) {
+      const { data: attachments } = await supabase
+        .from('message_attachments')
+        .select('*')
+        .in('message_id', messageIds);
+
+      if (attachments) {
+        // Group attachments by message_id
+        attachments.forEach((att: any) => {
+          if (!attachmentsByMessageId.has(att.message_id)) {
+            attachmentsByMessageId.set(att.message_id, []);
+          }
+          attachmentsByMessageId.get(att.message_id).push(att);
+        });
+      }
+    }
+
+    // 6. Populate sender and recipient data
     const populatedMessages = await Promise.all(
       (messages || []).map(async (msg) => {
         // Get sender profile
@@ -303,11 +324,12 @@ export async function GET(request: NextRequest) {
           sender: sender || undefined,
           recipient: recipient || undefined,
           reply_count,
+          attachments: attachmentsByMessageId.get(msg.id) || [],
         };
       })
     );
 
-    // 6. Calculate stats (including both individual and group messages)
+    // 7. Calculate stats (including both individual and group messages)
     // Individual unread messages
     const { count: individualUnreadCount } = await supabase
       .from('messages')
@@ -334,7 +356,7 @@ export async function GET(request: NextRequest) {
       .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
       .is('thread_id', null);
 
-    // 7. Return response
+    // 8. Return response
     const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json<ListMessagesResponse>(

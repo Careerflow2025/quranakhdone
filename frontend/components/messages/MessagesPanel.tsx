@@ -185,6 +185,24 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     setShowRecipientDropdown(false);
   };
 
+  // Programmatic download handler for attachments
+  const handleDownloadAttachment = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
+  };
+
   // Handle recipient input change
   const handleRecipientInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRecipientSearchQuery(e.target.value);
@@ -693,13 +711,15 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                         {currentThread.root_message.attachments.map((att) => (
                           <div
                             key={att.id}
-                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm hover:border-blue-300 transition-colors cursor-pointer"
+                            onClick={() => handleDownloadAttachment(att.url, att.file_name)}
                           >
                             <Paperclip className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-700">{att.file_name}</span>
                             <span className="text-gray-400">
                               ({(att.file_size / 1024).toFixed(1)} KB)
                             </span>
+                            <span className="text-blue-600 text-xs ml-2">Download</span>
                           </div>
                         ))}
                       </div>
