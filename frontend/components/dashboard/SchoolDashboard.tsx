@@ -1639,23 +1639,51 @@ export default function SchoolDashboard() {
   // Mark message as read
   const markMessageAsRead = async (messageId: any) => {
     try {
-      // Call the API endpoint that handles both individual and group messages
-      const response = await fetch(`/api/messages/${messageId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const now = new Date().toISOString();
 
-      if (!response.ok) {
-        throw new Error(`Failed to mark message as read: ${response.status}`);
+      // First, get the message to check if it's individual or group
+      const { data: message, error: fetchError } = await (supabase as any)
+        .from('messages')
+        .select('*')
+        .eq('id', messageId)
+        .single();
+
+      if (fetchError || !message) {
+        console.error('Error fetching message:', fetchError);
+        return;
+      }
+
+      // Check if this is an individual message or group message
+      if (message.to_user_id) {
+        // Individual message - update messages table
+        const { error: updateError } = await (supabase as any)
+          .from('messages')
+          .update({ read_at: now })
+          .eq('id', messageId);
+
+        if (updateError) {
+          console.error('Error updating individual message:', updateError);
+          return;
+        }
+      } else {
+        // Group message - update message_recipients table
+        const { error: updateError } = await (supabase as any)
+          .from('message_recipients')
+          .update({ read_at: now })
+          .eq('message_id', messageId)
+          .eq('recipient_id', user?.id || '');
+
+        if (updateError) {
+          console.error('Error updating group message recipient:', updateError);
+          return;
+        }
       }
 
       console.log('✅ Message marked as read:', messageId);
 
       // Update local state
       setMessages((prev: any) => prev.map((msg: any) =>
-        msg.id === messageId ? { ...msg, unread: false, read_at: new Date().toISOString() } : msg
+        msg.id === messageId ? { ...msg, unread: false, read_at: now } : msg
       ));
     } catch (error: any) {
       console.error('Error marking message as read:', error);
