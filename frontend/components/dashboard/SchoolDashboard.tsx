@@ -6134,10 +6134,8 @@ export default function SchoolDashboard() {
                                   </div>
                                   <a
                                     href={attachment.url}
-                                    download
+                                    download={attachment.file_name || 'file'}
                                     className="flex-shrink-0 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                   >
                                     <Download className="w-4 h-4" />
                                     Download

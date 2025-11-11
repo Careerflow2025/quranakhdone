@@ -388,7 +388,26 @@ export function useTeacherData() {
         .eq('read', false);
 
       if (messagesData) {
-        setMessages(messagesData);
+        // Fetch attachments for all messages
+        const messageIds = messagesData.map((m: any) => m.id);
+        let messagesWithAttachments = messagesData;
+
+        if (messageIds.length > 0) {
+          const { data: attachments } = await supabase
+            .from('message_attachments')
+            .select('*')
+            .in('message_id', messageIds);
+
+          if (attachments) {
+            // Attach to messages
+            messagesWithAttachments = messagesData.map((msg: any) => ({
+              ...msg,
+              attachments: attachments.filter((att: any) => att.message_id === msg.id)
+            }));
+          }
+        }
+
+        setMessages(messagesWithAttachments);
         setStats(prev => ({ ...prev, unreadMessages: messagesData.length }));
       }
 
