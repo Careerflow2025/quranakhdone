@@ -1576,15 +1576,58 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Handle reply to message - TODO: Implement full functionality
-  const handleReplyMessage = (message: any) => {
-    console.log('Reply to message:', message);
-    // TODO: Implement reply functionality
-    // This should:
-    // 1. Open compose modal with recipient pre-filled
-    // 2. Add "Re: " to subject
-    // 3. Include original message in body
-    showNotification('Reply functionality coming soon', 'info');
+  // Handle reply to message
+  const handleReplyMessage = async (message: any) => {
+    try {
+      console.log('Reply to message:', message);
+
+      // Get the sender's profile (who we're replying to)
+      const senderId = message.from_user_id || message.sender_id;
+
+      if (!senderId) {
+        showNotification('Cannot determine message sender', 'error');
+        return;
+      }
+
+      // Fetch sender profile
+      const { data: senderProfile, error: profileError } = await (supabase as any)
+        .from('profiles')
+        .select('user_id, display_name, email, role')
+        .eq('user_id', senderId)
+        .single();
+
+      if (profileError || !senderProfile) {
+        console.error('Error fetching sender profile:', profileError);
+        showNotification('Cannot load sender information', 'error');
+        return;
+      }
+
+      // Set up reply
+      setMessageRecipientType('individual');
+      setSelectedRecipients([{
+        id: senderProfile.user_id,
+        user_id: senderProfile.user_id,
+        display_name: senderProfile.display_name,
+        email: senderProfile.email,
+        role: senderProfile.role
+      }]);
+
+      // Add "Re: " to subject if not already there
+      const subject = message.subject || 'No Subject';
+      const replySubject = subject.startsWith('Re: ') ? subject : `Re: ${subject}`;
+      setMessageSubject(replySubject);
+
+      // Clear content (or optionally include original message)
+      setMessageContent('');
+
+      // Open compose modal
+      setShowComposeMessage(true);
+
+      showNotification(`Replying to ${senderProfile.display_name || senderProfile.email}`, 'info');
+    } catch (error: any) {
+      console.error('Error setting up reply:', error);
+      showNotification('Failed to set up reply', 'error');
+    }
   };
 
   // Handle delete message - TODO: Implement full functionality
