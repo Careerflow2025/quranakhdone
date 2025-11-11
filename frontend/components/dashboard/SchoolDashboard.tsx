@@ -5815,7 +5815,7 @@ export default function SchoolDashboard() {
                         // Apply filter
                         if (messageFilter === 'unread' && !msg.unread) return false;
                         if (messageFilter === 'sent' && msg.type !== 'sent') return false;
-                        if (messageFilter === 'starred' && !msg.is_starred) return false;
+                        if (messageFilter === 'starred' && !msg.starred) return false;
 
                         // Apply search
                         if (messageSearchTerm) {
