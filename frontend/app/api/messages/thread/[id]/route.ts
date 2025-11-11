@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { createClientWithAuth } from '@/lib/supabase-server';
 
 
 // Force dynamic rendering - prevent static generation at build time
@@ -67,8 +67,8 @@ export async function GET(
   try {
     const threadId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase client with auth (reads from Authorization header OR cookies)
+    const supabase = createClientWithAuth();
 
     // 2. Get authenticated user
     const {
@@ -152,9 +152,28 @@ export async function GET(
     }
 
     // 6. Verify user has access to this thread
-    const hasAccess =
-      rootMessage.from_user_id === user.id ||
-      rootMessage.to_user_id === user.id;
+    // For individual messages: check from_user_id or to_user_id
+    // For group messages: check message_recipients table
+    let hasAccess = false;
+
+    if (rootMessage.to_user_id) {
+      // Individual message
+      hasAccess =
+        rootMessage.from_user_id === user.id ||
+        rootMessage.to_user_id === user.id;
+    } else {
+      // Group message - check message_recipients
+      const { data: recipientRecord } = await supabase
+        .from('message_recipients')
+        .select('id')
+        .eq('message_id', rootMessage.id)
+        .eq('recipient_id', user.id)
+        .single();
+
+      hasAccess =
+        rootMessage.from_user_id === user.id ||
+        !!recipientRecord;
+    }
 
     if (!hasAccess) {
       return NextResponse.json<ErrorResponse>(
