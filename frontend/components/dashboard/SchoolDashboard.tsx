@@ -373,7 +373,6 @@ export default function SchoolDashboard() {
   const [replyMessage, setReplyMessage] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [messagePriority, setMessagePriority] = useState('normal');
-  const [sendViaEmail, setSendViaEmail] = useState(true);
 
   // Professional Notification System
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -1505,7 +1504,7 @@ export default function SchoolDashboard() {
   };
 
   // Send Message function
-  const handleSendMessage = async (recipient: any, subject: any, body: any, recipientType: any, priority = 'normal', sendViaEmail = false) => {
+  const handleSendMessage = async (recipient: any, subject: any, body: any, recipientType: any, priority = 'normal') => {
     try {
       // Make sure we have required values
       if (!user?.id || !user?.schoolId) {
@@ -9688,20 +9687,6 @@ export default function SchoolDashboard() {
                   <option value="urgent">Urgent</option>
                 </select>
               </div>
-
-              {/* Send via Email option */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="sendEmail"
-                  className="mr-2"
-                  onChange={(e) => setSendViaEmail(e.target.checked)}
-                  defaultChecked
-                />
-                <label htmlFor="sendEmail" className="text-sm text-gray-700">
-                  Also send via email
-                </label>
-              </div>
             </div>
 
             {/* Action Buttons */}
@@ -9725,8 +9710,7 @@ export default function SchoolDashboard() {
                     messageSubject,
                     messageContent,
                     messageRecipientType,
-                    messagePriority || 'normal',
-                    sendViaEmail || false
+                    messagePriority || 'normal'
                   );
                 }}
                 disabled={!messageSubject || !messageContent}
