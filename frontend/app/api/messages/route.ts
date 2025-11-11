@@ -280,9 +280,10 @@ export async function GET(request: NextRequest) {
       const { data: attachments, error: attachmentsError } = await supabase
         .from('message_attachments')
         .select('*')
-        .in('message_id', messageIds);
+        .in('message_id', messageIds)
+        .is('deleted_at', null);
 
-      console.log('📎 Attachments query result:', { count: attachments?.length || 0, error: attachmentsError });
+      console.log('📎 Attachments query result:', { count: attachments?.length || 0, error: attachmentsError, data: attachments });
 
       if (attachments) {
         // Group attachments by message_id
