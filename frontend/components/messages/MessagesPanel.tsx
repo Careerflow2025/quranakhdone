@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Mail, Send, X, Paperclip, Search, Filter, User,
   ChevronLeft, ChevronRight, MessageSquare, Eye,
@@ -14,12 +14,15 @@ import {
   AlertCircle, Inbox, SendHorizontal, Bell, Users
 } from 'lucide-react';
 import { useMessages, Message, MessageThread, SendMessageData } from '@/hooks/useMessages';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
 
 interface MessagesPanelProps {
   userRole?: 'owner' | 'admin' | 'teacher' | 'student' | 'parent';
 }
 
 export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelProps) {
+  const { user } = useAuthStore();
   const {
     isLoading,
     error,
@@ -60,12 +63,29 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
   const [replyBody, setReplyBody] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Available recipients (mock data - in production, fetch from API)
-  const [availableRecipients, setAvailableRecipients] = useState<Array<{ id: string; name: string; role: string }>>([
-    { id: '1', name: 'Student One', role: 'student' },
-    { id: '2', name: 'Teacher Two', role: 'teacher' },
-    { id: '3', name: 'Parent Three', role: 'parent' },
-  ]);
+  // Recipient search state
+  const [recipientSearchQuery, setRecipientSearchQuery] = useState('');
+  const [availableRecipients, setAvailableRecipients] = useState<Array<{
+    user_id: string;
+    display_name: string;
+    email: string;
+    role: string;
+  }>>([]);
+  const [filteredRecipients, setFilteredRecipients] = useState<Array<{
+    user_id: string;
+    display_name: string;
+    email: string;
+    role: string;
+  }>>([]);
+  const [showRecipientDropdown, setShowRecipientDropdown] = useState(false);
+  const [selectedRecipient, setSelectedRecipient] = useState<{
+    user_id: string;
+    display_name: string;
+    email: string;
+    role: string;
+  } | null>(null);
+  const recipientInputRef = useRef<HTMLInputElement>(null);
+  const recipientDropdownRef = useRef<HTMLDivElement>(null);
 
   // Format date
   const formatDate = (dateString: string): string => {
@@ -89,6 +109,107 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     return body.substring(0, maxLength) + '...';
   };
 
+  // Fetch available recipients when compose modal opens
+  useEffect(() => {
+    const fetchRecipients = async () => {
+      if (!showComposeModal || !user?.schoolId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email, role')
+          .eq('school_id', user.schoolId)
+          .neq('user_id', user.id) // Exclude current user
+          .order('display_name');
+
+        if (error) {
+          console.error('Error fetching recipients:', error);
+          return;
+        }
+
+        setAvailableRecipients(data || []);
+        setFilteredRecipients(data || []);
+      } catch (error) {
+        console.error('Error fetching recipients:', error);
+      }
+    };
+
+    fetchRecipients();
+  }, [showComposeModal, user?.schoolId, user?.id]);
+
+  // Filter recipients based on search query
+  useEffect(() => {
+    if (!recipientSearchQuery.trim()) {
+      setFilteredRecipients(availableRecipients);
+      return;
+    }
+
+    const query = recipientSearchQuery.toLowerCase();
+    const filtered = availableRecipients.filter(recipient =>
+      recipient.display_name?.toLowerCase().includes(query) ||
+      recipient.email?.toLowerCase().includes(query) ||
+      recipient.role?.toLowerCase().includes(query)
+    );
+    setFilteredRecipients(filtered);
+  }, [recipientSearchQuery, availableRecipients]);
+
+  // Handle clicking outside recipient dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        recipientDropdownRef.current &&
+        !recipientDropdownRef.current.contains(event.target as Node) &&
+        recipientInputRef.current &&
+        !recipientInputRef.current.contains(event.target as Node)
+      ) {
+        setShowRecipientDropdown(false);
+      }
+    };
+
+    if (showRecipientDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showRecipientDropdown]);
+
+  // Handle recipient selection
+  const handleRecipientSelect = (recipient: {
+    user_id: string;
+    display_name: string;
+    email: string;
+    role: string;
+  }) => {
+    setSelectedRecipient(recipient);
+    setRecipientSearchQuery(recipient.display_name || recipient.email);
+    setComposeForm({ ...composeForm, recipient_user_id: recipient.user_id });
+    setShowRecipientDropdown(false);
+  };
+
+  // Handle recipient input change
+  const handleRecipientInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRecipientSearchQuery(e.target.value);
+    setShowRecipientDropdown(true);
+    // Clear selected recipient if user types
+    if (selectedRecipient) {
+      setSelectedRecipient(null);
+      setComposeForm({ ...composeForm, recipient_user_id: '' });
+    }
+  };
+
+  // Reset compose modal state when closing
+  const handleCloseComposeModal = () => {
+    setShowComposeModal(false);
+    setComposeForm({
+      recipient_user_id: '',
+      subject: '',
+      body: '',
+      attachments: [],
+    });
+    setRecipientSearchQuery('');
+    setSelectedRecipient(null);
+    setShowRecipientDropdown(false);
+  };
+
   // Handle compose submit
   const handleComposeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,13 +223,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     setIsSubmitting(false);
 
     if (success) {
-      setShowComposeModal(false);
-      setComposeForm({
-        recipient_user_id: '',
-        subject: '',
-        body: '',
-        attachments: [],
-      });
+      handleCloseComposeModal();
       alert('Message sent successfully!');
     } else {
       alert('Failed to send message. Please try again.');
@@ -355,7 +470,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">Compose Message</h3>
               <button
-                onClick={() => setShowComposeModal(false)}
+                onClick={handleCloseComposeModal}
                 className="p-2 hover:bg-gray-100 rounded-lg transition"
               >
                 <X className="w-5 h-5" />
@@ -363,23 +478,89 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
             </div>
 
             <form onSubmit={handleComposeSubmit} className="p-6 space-y-4">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Recipient *
                 </label>
-                <select
-                  value={composeForm.recipient_user_id}
-                  onChange={(e) => setComposeForm({ ...composeForm, recipient_user_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select recipient...</option>
-                  {availableRecipients.map((recipient) => (
-                    <option key={recipient.id} value={recipient.id}>
-                      {recipient.name} ({recipient.role})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    ref={recipientInputRef}
+                    type="text"
+                    value={recipientSearchQuery}
+                    onChange={handleRecipientInputChange}
+                    onFocus={() => setShowRecipientDropdown(true)}
+                    placeholder="Type name, email, or role to search..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                    required={!composeForm.recipient_user_id}
+                  />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                </div>
+
+                {/* Selected recipient badge */}
+                {selectedRecipient && (
+                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">{selectedRecipient.display_name || selectedRecipient.email}</span>
+                    <span className="text-blue-600">({selectedRecipient.role})</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRecipient(null);
+                        setRecipientSearchQuery('');
+                        setComposeForm({ ...composeForm, recipient_user_id: '' });
+                      }}
+                      className="hover:bg-blue-200 rounded-full p-0.5"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Dropdown results */}
+                {showRecipientDropdown && filteredRecipients.length > 0 && (
+                  <div
+                    ref={recipientDropdownRef}
+                    className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  >
+                    {filteredRecipients.map((recipient) => (
+                      <button
+                        key={recipient.user_id}
+                        type="button"
+                        onClick={() => handleRecipientSelect(recipient)}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-0"
+                      >
+                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {(recipient.display_name || recipient.email)?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 truncate">
+                            {recipient.display_name || 'No name'}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {recipient.email}
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            recipient.role === 'student' ? 'bg-green-100 text-green-800' :
+                            recipient.role === 'teacher' ? 'bg-blue-100 text-blue-800' :
+                            recipient.role === 'parent' ? 'bg-purple-100 text-purple-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {recipient.role}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* No results message */}
+                {showRecipientDropdown && filteredRecipients.length === 0 && recipientSearchQuery.trim() && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-gray-500">
+                    No recipients found matching "{recipientSearchQuery}"
+                  </div>
+                )}
               </div>
 
               <div>
@@ -435,7 +616,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowComposeModal(false)}
+                  onClick={handleCloseComposeModal}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                 >
                   Cancel
