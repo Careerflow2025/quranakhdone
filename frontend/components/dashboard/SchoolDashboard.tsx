@@ -5943,7 +5943,7 @@ export default function SchoolDashboard() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <button
-                              onClick={() => {/* TODO: Implement handleStarMessage(selectedMessage.id) */}}
+                              onClick={() => handleStarMessage(selectedMessage.id)}
                               className={`p-2 rounded-lg hover:bg-gray-100 ${
                                 selectedMessage.starred ? 'text-yellow-500' : 'text-gray-400'
                               }`}
