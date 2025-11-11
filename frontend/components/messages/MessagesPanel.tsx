@@ -484,15 +484,15 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {currentThread.root_message.sender.display_name.charAt(0).toUpperCase()}
+                        {(currentThread.root_message.sender?.display_name || 'System').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-gray-900">
-                            {currentThread.root_message.sender.display_name}
+                            {currentThread.root_message.sender?.display_name || 'System'}
                           </span>
                           <span className="text-xs text-gray-500">
-                            ({currentThread.root_message.sender.role})
+                            ({currentThread.root_message.sender?.role || 'system'})
                           </span>
                           <span className="text-xs text-gray-400">•</span>
                           <span className="text-xs text-gray-500">
@@ -500,7 +500,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
-                          To: {currentThread.root_message.recipient.display_name}
+                          To: {currentThread.root_message.recipient?.display_name || 'All Recipients'}
                         </div>
                       </div>
                     </div>
@@ -530,15 +530,15 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                     <div key={reply.id} className="ml-12 bg-white border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                          {reply.sender.display_name.charAt(0).toUpperCase()}
+                          {(reply.sender?.display_name || 'User').charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-gray-900 text-sm">
-                              {reply.sender.display_name}
+                              {reply.sender?.display_name || 'User'}
                             </span>
                             <span className="text-xs text-gray-500">
-                              ({reply.sender.role})
+                              ({reply.sender?.role || 'user'})
                             </span>
                             <span className="text-xs text-gray-400">•</span>
                             <span className="text-xs text-gray-500">
