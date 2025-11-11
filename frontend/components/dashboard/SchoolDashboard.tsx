@@ -1589,9 +1589,10 @@ export default function SchoolDashboard() {
             const attachmentRecords = uploadedUrls.map(url => ({
               message_id: newMessageId,
               url: url,
-              filename: messageAttachments[uploadedUrls.indexOf(url)]?.name || 'file',
+              file_name: messageAttachments[uploadedUrls.indexOf(url)]?.name || 'file',
               mime_type: messageAttachments[uploadedUrls.indexOf(url)]?.type || 'application/octet-stream',
-              size: messageAttachments[uploadedUrls.indexOf(url)]?.size || 0
+              file_size: messageAttachments[uploadedUrls.indexOf(url)]?.size || 0,
+              uploaded_by: user?.id
             }));
 
             const { error: attachmentError } = await (supabase as any)
@@ -6123,10 +6124,10 @@ export default function SchoolDashboard() {
                                     <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                       <div className="text-sm font-medium text-gray-900 truncate">
-                                        {attachment.filename || attachment.name || 'File'}
+                                        {attachment.file_name || attachment.name || 'File'}
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
+                                        {attachment.file_size ? `${(attachment.file_size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
                                         {attachment.mime_type && ` • ${attachment.mime_type.split('/')[1]?.toUpperCase()}`}
                                       </div>
                                     </div>
