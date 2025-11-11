@@ -472,6 +472,7 @@ export async function POST(request: NextRequest) {
       school_id: senderProfile.school_id,
       from_user_id: user.id,
       to_user_id: recipient_user_id,
+      recipient_type: 'individual', // Required for check constraint
       subject: subject || null,
       body: messageBody.trim(),
       thread_id: thread_id || null,

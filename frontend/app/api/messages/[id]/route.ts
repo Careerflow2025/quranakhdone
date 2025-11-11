@@ -168,6 +168,7 @@ export async function POST(
       school_id: profile.school_id,
       from_user_id: user.id,
       to_user_id: recipient_user_id,
+      recipient_type: 'individual', // Required for check constraint
       subject: originalMessage.subject,
       body: replyBody.trim(),
       thread_id: thread_id,
