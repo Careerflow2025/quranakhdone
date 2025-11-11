@@ -1384,13 +1384,13 @@ export default function SchoolDashboard() {
         .from('messages')
         .select('*')
         .eq('school_id', user?.schoolId || '')
-        .eq('sender_id', user?.id || '')
+        .eq('from_user_id', user?.id || '')
         .order('created_at', { ascending: false });
 
       // Get sender profiles separately
       let sentWithProfiles = [];
       if (sentMessages && !sentError) {
-        const senderIds = [...new Set(sentMessages.map((m: any) => m.sender_id))];
+        const senderIds = [...new Set(sentMessages.map((m: any) => m.from_user_id))];
         const { data: senderProfiles } = await (supabase as any)
           .from('profiles')
           .select('user_id, display_name, email, role')
@@ -1398,18 +1398,40 @@ export default function SchoolDashboard() {
 
         sentWithProfiles = sentMessages.map((msg: any) => ({
           ...msg,
-          sender: senderProfiles?.find((p: any) => p.user_id === msg.sender_id) || null
+          sender: senderProfiles?.find((p: any) => p.user_id === msg.from_user_id) || null
         }));
       }
 
-      // Get received messages
+      // Get INDIVIDUAL received messages (direct messages to this user)
+      const { data: individualReceived, error: individualError } = await (supabase as any)
+        .from('messages')
+        .select('*')
+        .eq('school_id', user?.schoolId || '')
+        .eq('to_user_id', user?.id || '')
+        .order('created_at', { ascending: false });
+
+      let individualReceivedWithProfiles = [];
+      if (individualReceived && !individualError) {
+        const senderIds = [...new Set(individualReceived.map((m: any) => m.from_user_id))];
+        const { data: senderProfiles } = await (supabase as any)
+          .from('profiles')
+          .select('user_id, display_name, email, role')
+          .in('user_id', senderIds);
+
+        individualReceivedWithProfiles = individualReceived.map((msg: any) => ({
+          ...msg,
+          sender: senderProfiles?.find((p: any) => p.user_id === msg.from_user_id) || null
+        }));
+      }
+
+      // Get GROUP received messages (where user is in message_recipients)
       const { data: receivedRecords, error: receivedError } = await (supabase as any)
         .from('message_recipients')
         .select('*')
         .eq('recipient_id', user?.id || '')
         .order('created_at', { ascending: false });
 
-      let receivedMessages = [];
+      let groupReceivedMessages = [];
       if (receivedRecords && !receivedError && receivedRecords.length > 0) {
         const messageIds = receivedRecords.map((r: any) => r.message_id);
         const { data: messages } = await (supabase as any)
@@ -1418,15 +1440,15 @@ export default function SchoolDashboard() {
           .in('id', messageIds);
 
         if (messages) {
-          const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
+          const senderIds = [...new Set(messages.map((m: any) => m.from_user_id))];
           const { data: senderProfiles } = await (supabase as any)
             .from('profiles')
             .select('user_id, display_name, email, role')
             .in('user_id', senderIds);
 
-          receivedMessages = receivedRecords.map((rec: any) => {
+          groupReceivedMessages = receivedRecords.map((rec: any) => {
             const message = messages.find((m: any) => m.id === rec.message_id);
-            const sender = senderProfiles?.find((p: any) => p.user_id === (message as any)?.sender_id);
+            const sender = senderProfiles?.find((p: any) => p.user_id === (message as any)?.from_user_id);
             return {
               ...rec,
               messages: {
@@ -1439,19 +1461,29 @@ export default function SchoolDashboard() {
       }
 
       if (sentError) console.error('Error loading sent messages:', sentError);
-      if (receivedError) console.error('Error loading received messages:', receivedError);
+      if (individualError) console.error('Error loading individual received messages:', individualError);
+      if (receivedError) console.error('Error loading group received messages:', receivedError);
 
       // Combine and format messages
       const allMessages = [
+        // Sent messages
         ...(sentWithProfiles || []).map((msg: any) => ({
           ...msg,
           type: 'sent',
           unread: false
         })),
-        ...(receivedMessages || []).map((rec: any) => ({
+        // Individual received messages (direct replies from parents/teachers)
+        ...(individualReceivedWithProfiles || []).map((msg: any) => ({
+          ...msg,
+          type: 'received',
+          unread: !msg.read_at,
+          read_at: msg.read_at
+        })),
+        // Group received messages (from message_recipients)
+        ...(groupReceivedMessages || []).map((rec: any) => ({
           ...rec.messages,
           type: 'received',
-          unread: !rec.is_read,
+          unread: !rec.read_at,
           read_at: rec.read_at
         }))
       ];
