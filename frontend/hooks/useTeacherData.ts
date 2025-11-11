@@ -384,8 +384,8 @@ export function useTeacherData() {
       const { data: messagesData } = await supabase
         .from('messages')
         .select('*')
-        .eq('recipient_id', user.id)
-        .eq('read', false);
+        .eq('to_user_id', user.id)
+        .is('read_at', null);
 
       if (messagesData) {
         // Fetch attachments for all messages
