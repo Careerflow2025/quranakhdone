@@ -1630,15 +1630,46 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Handle delete message - TODO: Implement full functionality
+  // Handle delete message
   const handleDeleteMessage = async (messageId: any) => {
-    console.log('Delete message:', messageId);
-    // TODO: Implement delete functionality
-    // This should:
-    // 1. Show confirmation dialog
-    // 2. Delete from database
-    // 3. Update UI
-    showNotification('Delete functionality coming soon', 'info');
+    try {
+      console.log('Delete message:', messageId);
+
+      // Show confirmation dialog
+      const confirmed = window.confirm('Are you sure you want to delete this message? This action cannot be undone.');
+
+      if (!confirmed) {
+        return;
+      }
+
+      // Delete the message from database
+      const { error: deleteError } = await (supabase as any)
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (deleteError) {
+        console.error('Error deleting message:', deleteError);
+        showNotification('Failed to delete message', 'error');
+        return;
+      }
+
+      // Update local state - remove message from list
+      setMessages((prev: any) => prev.filter((msg: any) => msg.id !== messageId));
+
+      // Close message detail view if it's the deleted message
+      if (selectedMessage?.id === messageId) {
+        setSelectedMessage(null);
+      }
+
+      showNotification('Message deleted successfully', 'success');
+
+      // Reload messages to ensure consistency
+      setTimeout(() => loadMessages(), 500);
+    } catch (error: any) {
+      console.error('Error deleting message:', error);
+      showNotification('Failed to delete message: ' + (error.message || 'Unknown error'), 'error');
+    }
   };
 
   // Handle star/unstar message - TODO: Implement full functionality
