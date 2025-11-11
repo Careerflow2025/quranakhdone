@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { createClientWithAuth } from '@/lib/supabase-server';
 
 
 // Force dynamic rendering - prevent static generation at build time
@@ -82,8 +82,8 @@ export async function POST(
       );
     }
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase client with auth (reads from Authorization header OR cookies)
+    const supabase = createClientWithAuth();
 
     // 2. Get authenticated user
     const {
@@ -247,8 +247,8 @@ export async function PATCH(
   try {
     const messageId = params.id;
 
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase client with auth (reads from Authorization header OR cookies)
+    const supabase = createClientWithAuth();
 
     // 2. Get authenticated user
     const {
