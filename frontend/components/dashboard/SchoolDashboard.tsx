@@ -9826,10 +9826,9 @@ export default function SchoolDashboard() {
                   <option value="urgent">Urgent</option>
                 </select>
               </div>
-            </div>
 
-            {/* File Attachments */}
-            <div className="mt-4">
+              {/* File Attachments */}
+              <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Attachments (Optional)
               </label>
@@ -9884,6 +9883,7 @@ export default function SchoolDashboard() {
                     ))}
                   </div>
                 )}
+              </div>
               </div>
             </div>
 
