@@ -1672,14 +1672,90 @@ export default function SchoolDashboard() {
     }
   };
 
-  // Handle star/unstar message - TODO: Implement full functionality
+  // Handle star/unstar message
   const handleStarMessage = async (messageId: any) => {
-    console.log('Star/unstar message:', messageId);
-    // TODO: Implement star functionality
-    // This should:
-    // 1. Toggle star status in database
-    // 2. Update UI immediately
-    showNotification('Star functionality coming soon', 'info');
+    try {
+      console.log('Star/unstar message:', messageId);
+
+      if (!user?.id) {
+        showNotification('User session error', 'error');
+        return;
+      }
+
+      // Find the message to check its current starred status
+      const message = messages.find((msg: any) => msg.id === messageId);
+
+      if (!message) {
+        showNotification('Message not found', 'error');
+        return;
+      }
+
+      const isCurrentlyStarred = message.starred || false;
+      const newStarredStatus = !isCurrentlyStarred;
+
+      // Check if this is an individual message or group message
+      if (message.to_user_id) {
+        // Individual message - update messages table
+        const { error: updateError } = await (supabase as any)
+          .from('messages')
+          .update({ starred: newStarredStatus })
+          .eq('id', messageId);
+
+        if (updateError) {
+          console.error('Error updating starred status:', updateError);
+          showNotification('Failed to update starred status', 'error');
+          return;
+        }
+      } else {
+        // Group message - use starred_messages table
+        if (newStarredStatus) {
+          // Star the message
+          const { error: insertError } = await (supabase as any)
+            .from('starred_messages')
+            .insert({
+              message_id: messageId,
+              user_id: user.id
+            });
+
+          if (insertError) {
+            console.error('Error starring message:', insertError);
+            showNotification('Failed to star message', 'error');
+            return;
+          }
+        } else {
+          // Unstar the message
+          const { error: deleteError } = await (supabase as any)
+            .from('starred_messages')
+            .delete()
+            .eq('message_id', messageId)
+            .eq('user_id', user.id);
+
+          if (deleteError) {
+            console.error('Error unstarring message:', deleteError);
+            showNotification('Failed to unstar message', 'error');
+            return;
+          }
+        }
+      }
+
+      // Update local state immediately
+      setMessages((prev: any) => prev.map((msg: any) =>
+        msg.id === messageId ? { ...msg, starred: newStarredStatus } : msg
+      ));
+
+      // Update selected message if it's the starred one
+      if (selectedMessage?.id === messageId) {
+        setSelectedMessage({ ...selectedMessage, starred: newStarredStatus });
+      }
+
+      showNotification(
+        newStarredStatus ? 'Message starred' : 'Message unstarred',
+        'success'
+      );
+    } catch (error: any) {
+      console.error('Error toggling starred status:', error);
+      showNotification('Failed to update starred status: ' + (error.message || 'Unknown error'), 'error');
+    }
   };
   // Handle send reply - TODO: Implement full functionality
   const handleSendReply = async () => {
