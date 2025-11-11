@@ -1410,12 +1410,12 @@ export default function SchoolDashboard() {
         .order('created_at', { ascending: false });
 
       let receivedMessages = [];
-      if (receivedRecords && !receivedError) {
+      if (receivedRecords && !receivedError && receivedRecords.length > 0) {
         const messageIds = receivedRecords.map((r: any) => r.message_id);
         const { data: messages } = await (supabase as any)
           .from('messages')
           .select('*')
-          .in('user_id', messageIds);
+          .in('id', messageIds);
 
         if (messages) {
           const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
