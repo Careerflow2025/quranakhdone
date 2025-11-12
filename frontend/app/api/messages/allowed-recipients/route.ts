@@ -241,6 +241,7 @@ export async function GET(request: NextRequest) {
       // Students can message:
       // 1. Their teachers
       // 2. School admins
+      // 3. Other students in their classes (classmates)
 
       // Get student record
       const { data: student, error: studentError } = await supabase
@@ -287,6 +288,39 @@ export async function GET(request: NextRequest) {
 
                   if (!profilesError && teacherProfiles) {
                     allowedRecipients.push(...teacherProfiles);
+                  }
+                }
+              }
+            }
+
+            // Get classmates (other students in same classes)
+            const { data: classmateEnrollments, error: classmateError } = await supabase
+              .from('class_enrollments')
+              .select('student_id')
+              .in('class_id', classIds)
+              .neq('student_id', student.id); // Exclude self
+
+            if (!classmateError && classmateEnrollments) {
+              const classmateIds = [...new Set(classmateEnrollments.map(e => e.student_id))];
+
+              if (classmateIds.length > 0) {
+                // Get classmate user IDs
+                const { data: classmates, error: classmatesError } = await supabase
+                  .from('students')
+                  .select('id, user_id')
+                  .in('id', classmateIds);
+
+                if (!classmatesError && classmates) {
+                  const classmateUserIds = classmates.map(s => s.user_id);
+
+                  // Get classmate profiles
+                  const { data: classmateProfiles, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('user_id, display_name, email, role')
+                    .in('user_id', classmateUserIds);
+
+                  if (!profilesError && classmateProfiles) {
+                    allowedRecipients.push(...classmateProfiles);
                   }
                 }
               }

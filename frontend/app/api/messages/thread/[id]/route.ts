@@ -157,12 +157,12 @@ export async function GET(
     let hasAccess = false;
 
     if (rootMessage.to_user_id) {
-      // Individual message
+      // Individual message - user must be sender or recipient
       hasAccess =
         rootMessage.from_user_id === user.id ||
         rootMessage.to_user_id === user.id;
     } else {
-      // Group message - check message_recipients
+      // Group message - check message_recipients table
       const { data: recipientRecord } = await supabase
         .from('message_recipients')
         .select('id')
@@ -170,9 +170,22 @@ export async function GET(
         .eq('recipient_id', user.id)
         .single();
 
+      // User has access if they are the sender OR a recipient of the group message
       hasAccess =
         rootMessage.from_user_id === user.id ||
         !!recipientRecord;
+    }
+
+    // Additional check for replies: if user is involved in any reply, they have access to the thread
+    if (!hasAccess) {
+      const { data: involvedReplies } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('thread_id', rootMessage.id)
+        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+        .limit(1);
+
+      hasAccess = !!involvedReplies && involvedReplies.length > 0;
     }
 
     if (!hasAccess) {

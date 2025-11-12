@@ -442,7 +442,6 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     setSelectedMessage(message);
     const threadId = message.thread_id || message.id;
     await fetchThread(threadId);
-    setShowThreadModal(true);
   };
 
   // Handle mark as read
