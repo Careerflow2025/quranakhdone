@@ -465,66 +465,69 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
   });
 
   return (
-    <div className="h-full bg-white rounded-lg shadow-lg">
+    <div className="h-full bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-xl overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Mail className="w-6 h-6 text-blue-600" />
+      <div className="bg-white border-b border-gray-100 px-8 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Mail className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Messages</h2>
-              <p className="text-sm text-gray-500">
-                {totalUnread} unread • {totalMessages} total
-              </p>
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Messages</h2>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                  {totalUnread} unread
+                </span>
+                <span className="text-sm text-gray-500">{totalMessages} total messages</span>
+              </div>
             </div>
           </div>
           <button
             onClick={() => setShowComposeModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-medium"
           >
-            <Send className="w-4 h-4" />
-            Compose
+            <Send className="w-5 h-5" />
+            Compose New
           </button>
         </div>
 
         {/* Search and Filters */}
-        <div className="mt-4 flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex-1 relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search messages..."
+              placeholder="Search messages, contacts, or content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all placeholder-gray-400"
             />
           </div>
-          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <button className="p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 hover:border-gray-300 transition-all">
             <Filter className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>
 
       {/* Folder Tabs */}
-      <div className="border-b border-gray-200 px-6">
-        <div className="flex gap-1">
+      <div className="bg-white border-b border-gray-100 px-8">
+        <div className="flex gap-2">
           {(['inbox', 'sent', 'unread', 'all'] as const).map((folder) => (
             <button
               key={folder}
               onClick={() => changeFolder(folder)}
               className={`
-                px-4 py-3 font-medium text-sm capitalize transition border-b-2
+                relative px-6 py-4 font-semibold text-sm capitalize transition-all border-b-2
                 ${currentFolder === folder
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                  ? 'text-blue-600 border-blue-600 bg-blue-50/50'
+                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50'
                 }
               `}
             >
-              {folder}
+              <span className="relative z-10">{folder}</span>
               {folder === 'unread' && totalUnread > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full">
+                <span className="ml-2 px-2.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-sm">
                   {totalUnread}
                 </span>
               )}
@@ -534,93 +537,107 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
       </div>
 
       {/* Messages List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading messages...</div>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-600 font-medium">Loading messages...</p>
+            </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-red-600 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              {error}
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center gap-3 text-red-700">
+              <AlertCircle className="w-6 h-6 flex-shrink-0" />
+              <p className="font-medium">{error}</p>
             </div>
           </div>
         ) : filteredMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-            <Inbox className="w-16 h-16 mb-4 text-gray-300" />
-            <p className="text-lg font-medium">No messages</p>
-            <p className="text-sm">Your {currentFolder} is empty</p>
+            <div className="bg-gray-100 p-6 rounded-full mb-4">
+              <Inbox className="w-16 h-16 text-gray-400" />
+            </div>
+            <p className="text-xl font-semibold text-gray-700 mb-1">No messages</p>
+            <p className="text-sm text-gray-500">Your {currentFolder} folder is empty</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="space-y-3">
             {filteredMessages.map((message) => (
               <div
                 key={message.id}
                 onClick={() => handleOpenThread(message)}
                 className={`
-                  p-4 cursor-pointer transition hover:bg-gray-50
-                  ${!message.is_read ? 'bg-blue-50' : ''}
+                  bg-white rounded-xl p-5 cursor-pointer transition-all hover:shadow-lg border
+                  ${!message.is_read
+                    ? 'border-blue-200 shadow-md shadow-blue-100'
+                    : 'border-gray-200 hover:border-gray-300'}
                 `}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={`
+                    w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md
+                    ${!message.is_read
+                      ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                      : 'bg-gradient-to-br from-gray-400 to-gray-500'}
+                  `}>
+                    {(currentFolder === 'sent'
+                      ? message.recipient?.display_name || 'All'
+                      : message.sender?.display_name || 'System'
+                    ).charAt(0).toUpperCase()}
+                  </div>
+
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <div className={`
-                        w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold
-                        ${!message.is_read ? 'bg-blue-600' : 'bg-gray-400'}
-                      `}>
-                        {(currentFolder === 'sent'
-                          ? message.recipient?.display_name || 'All'
-                          : message.sender?.display_name || 'System'
-                        ).charAt(0).toUpperCase()}
-                      </div>
+                    <div className="flex items-start justify-between gap-4 mb-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-semibold truncate ${!message.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`font-bold truncate text-base ${!message.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
                             {currentFolder === 'sent'
                               ? message.recipient?.display_name || 'All Recipients'
                               : message.sender?.display_name || 'System'
                             }
                           </span>
-                          <span className="text-xs text-gray-500">
-                            ({currentFolder === 'sent' ? message.recipient?.role || 'group' : message.sender?.role || 'system'})
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            {currentFolder === 'sent' ? message.recipient?.role || 'group' : message.sender?.role || 'system'}
                           </span>
                         </div>
                         {message.subject && (
-                          <div className={`text-sm truncate ${!message.is_read ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+                          <div className={`text-sm mb-1 truncate ${!message.is_read ? 'font-semibold text-gray-900' : 'font-medium text-gray-600'}`}>
                             {message.subject}
                           </div>
                         )}
-                        <div className="text-sm text-gray-500 truncate">
+                        <p className="text-sm text-gray-500 line-clamp-2">
                           {getPreview(message.body)}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+                          {formatDate(message.created_at)}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {!message.is_read && currentFolder !== 'sent' && (
+                            <button
+                              onClick={(e) => handleMarkAsRead(message.id, e)}
+                              className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+                              title="Mark as read"
+                            >
+                              <Eye className="w-4 h-4 text-blue-600" />
+                            </button>
+                          )}
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="p-1.5 bg-gray-100 rounded-lg">
+                              <Paperclip className="w-4 h-4 text-gray-600" />
+                            </div>
+                          )}
+                          {message.reply_count !== undefined && message.reply_count > 0 && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 rounded-lg">
+                              <MessageSquare className="w-4 h-4 text-blue-600" />
+                              <span className="text-xs font-semibold text-blue-600">{message.reply_count}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="text-sm text-gray-500 whitespace-nowrap">
-                      {formatDate(message.created_at)}
-                    </div>
-                    {!message.is_read && currentFolder !== 'sent' && (
-                      <button
-                        onClick={(e) => handleMarkAsRead(message.id, e)}
-                        className="p-1 hover:bg-blue-100 rounded transition"
-                        title="Mark as read"
-                      >
-                        <Eye className="w-4 h-4 text-blue-600" />
-                      </button>
-                    )}
-                    {message.attachments && message.attachments.length > 0 && (
-                      <Paperclip className="w-4 h-4 text-gray-400" />
-                    )}
-                    {message.reply_count !== undefined && message.reply_count > 0 && (
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <MessageSquare className="w-4 h-4" />
-                        {message.reply_count}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -631,25 +648,25 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="border-t border-gray-200 p-4">
+        <div className="bg-white border-t border-gray-100 px-8 py-5">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages} • {totalMessages} total messages
+            <div className="text-sm font-medium text-gray-600">
+              Page {currentPage} of {totalPages} • <span className="text-gray-900">{totalMessages}</span> total messages
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => changePage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all shadow-sm hover:shadow"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
               </button>
               <button
                 onClick={() => changePage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all shadow-sm hover:shadow"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-5 h-5 text-gray-600" />
               </button>
             </div>
           </div>
@@ -658,303 +675,314 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
 
       {/* Compose Modal */}
       {showComposeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Compose Message</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                  <Send className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Compose Message</h3>
+              </div>
               <button
                 onClick={handleCloseComposeModal}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                className="p-2.5 hover:bg-white rounded-xl transition-all hover:shadow-md"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
-            <form onSubmit={handleComposeSubmit} className="p-6 space-y-4">
-              {/* Message Type Selector - Only show for teachers */}
-              {userRole === 'teacher' && (
-                <div className="space-y-4 pb-4 border-b border-gray-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Message Type *
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="messageType"
-                        value="individual"
-                        checked={messageType === 'individual'}
-                        onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">Individual Message</span>
+            <form onSubmit={handleComposeSubmit} className="flex-1 overflow-y-auto">
+              <div className="px-8 py-6 space-y-6">
+                {/* Message Type Selector - Only show for teachers */}
+                {userRole === 'teacher' && (
+                  <div className="space-y-4 pb-6 border-b border-gray-100">
+                    <label className="block text-sm font-bold text-gray-900 mb-3">
+                      Message Type *
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="messageType"
-                        value="group"
-                        checked={messageType === 'group'}
-                        onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">Group Message</span>
-                    </label>
-                  </div>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all hover:bg-blue-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 has-[:not(:checked)]:border-gray-200">
+                        <input
+                          type="radio"
+                          name="messageType"
+                          value="individual"
+                          checked={messageType === 'individual'}
+                          onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-900">Individual Message</span>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all hover:bg-blue-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 has-[:not(:checked)]:border-gray-200">
+                        <input
+                          type="radio"
+                          name="messageType"
+                          value="group"
+                          checked={messageType === 'group'}
+                          onChange={(e) => setMessageType(e.target.value as 'individual' | 'group')}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-900">Group Message</span>
+                      </label>
+                    </div>
 
-                  {/* Group Message Options */}
-                  {messageType === 'group' && (
-                    <div className="space-y-4 pt-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Send To *
-                        </label>
-                        <select
-                          value={groupMessageType}
-                          onChange={(e) => setGroupMessageType(e.target.value as 'all_students' | 'all_parents' | 'specific_class')}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          required
-                        >
-                          <option value="all_students">All Students (in my classes)</option>
-                          <option value="all_parents">All Parents (of my students)</option>
-                          <option value="specific_class">Specific Class</option>
-                        </select>
-                      </div>
-
-                      {/* Class Selector - Only show for specific_class */}
-                      {groupMessageType === 'specific_class' && (
+                    {/* Group Message Options */}
+                    {messageType === 'group' && (
+                      <div className="space-y-5 pt-5">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Select Class *
+                          <label className="block text-sm font-bold text-gray-900 mb-2">
+                            Send To *
                           </label>
                           <select
-                            value={selectedClassId}
-                            onChange={(e) => setSelectedClassId(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={groupMessageType}
+                            onChange={(e) => setGroupMessageType(e.target.value as 'all_students' | 'all_parents' | 'specific_class')}
+                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm hover:border-gray-300 text-gray-900 font-medium"
                             required
                           >
-                            <option value="">Choose a class...</option>
-                            {teacherClasses.map((classItem) => (
-                              <option key={classItem.id} value={classItem.id}>
-                                {classItem.name}
-                              </option>
-                            ))}
+                            <option value="all_students">All Students (in my classes)</option>
+                            <option value="all_parents">All Parents (of my students)</option>
+                            <option value="specific_class">Specific Class</option>
                           </select>
                         </div>
-                      )}
+
+                        {/* Class Selector - Only show for specific_class */}
+                        {groupMessageType === 'specific_class' && (
+                          <div>
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
+                              Select Class *
+                            </label>
+                            <select
+                              value={selectedClassId}
+                              onChange={(e) => setSelectedClassId(e.target.value)}
+                              className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm hover:border-gray-300 text-gray-900 font-medium"
+                              required
+                            >
+                              <option value="">Choose a class...</option>
+                              {teacherClasses.map((classItem) => (
+                                <option key={classItem.id} value={classItem.id}>
+                                  {classItem.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Recipient Field - Only show for individual messages */}
+                {messageType === 'individual' && (
+                  <div className="relative">
+                    <label className="block text-sm font-bold text-gray-900 mb-2">
+                      Recipient *
+                    </label>
+                    <div className="relative">
+                      <input
+                        ref={recipientInputRef}
+                        type="text"
+                        value={recipientSearchQuery}
+                        onChange={handleRecipientInputChange}
+                        onFocus={() => setShowRecipientDropdown(true)}
+                        placeholder="Type name, email, or role to search..."
+                        className="w-full px-4 py-3 pr-12 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm hover:border-gray-300 text-gray-900"
+                        required={!composeForm.recipient_user_id}
+                      />
+                      <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     </div>
-                  )}
-                </div>
-              )}
 
-              {/* Recipient Field - Only show for individual messages */}
-              {messageType === 'individual' && (
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Recipient *
-                  </label>
-                <div className="relative">
-                  <input
-                    ref={recipientInputRef}
-                    type="text"
-                    value={recipientSearchQuery}
-                    onChange={handleRecipientInputChange}
-                    onFocus={() => setShowRecipientDropdown(true)}
-                    placeholder="Type name, email, or role to search..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                    required={!composeForm.recipient_user_id}
-                  />
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                </div>
-
-                {/* Selected recipient badge */}
-                {selectedRecipient && (
-                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    <User className="w-4 h-4" />
-                    <span className="font-medium">{selectedRecipient.display_name || selectedRecipient.email}</span>
-                    <span className="text-blue-600">({selectedRecipient.role})</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedRecipient(null);
-                        setRecipientSearchQuery('');
-                        setComposeForm({ ...composeForm, recipient_user_id: '' });
-                      }}
-                      className="hover:bg-blue-200 rounded-full p-0.5"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-
-                {/* Dropdown results */}
-                {showRecipientDropdown && filteredRecipients.length > 0 && (
-                  <div
-                    ref={recipientDropdownRef}
-                    className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  >
-                    {filteredRecipients.map((recipient) => (
-                      <button
-                        key={recipient.user_id}
-                        type="button"
-                        onClick={() => handleRecipientSelect(recipient)}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-0"
-                      >
-                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                          {(recipient.display_name || recipient.email)?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
-                            {recipient.display_name || 'No name'}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {recipient.email}
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            recipient.role === 'student' ? 'bg-green-100 text-green-800' :
-                            recipient.role === 'teacher' ? 'bg-blue-100 text-blue-800' :
-                            recipient.role === 'parent' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {recipient.role}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* No results message */}
-                {showRecipientDropdown && filteredRecipients.length === 0 && recipientSearchQuery.trim() && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-gray-500">
-                    No recipients found matching "{recipientSearchQuery}"
-                  </div>
-                )}
-              </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject {messageType === 'individual' && '*'}
-                </label>
-                <input
-                  type="text"
-                  value={composeForm.subject}
-                  onChange={(e) => setComposeForm({ ...composeForm, subject: e.target.value })}
-                  placeholder={messageType === 'group' ? 'Enter subject (optional)' : 'Enter subject...'}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={200}
-                  required={messageType === 'individual'}
-                />
-              </div>
-
-              {/* Group Message Info */}
-              {messageType === 'group' && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="text-sm text-blue-800">
-                      <p className="font-medium mb-1">Group Message</p>
-                      <p>
-                        {groupMessageType === 'all_students' && 'This message will be sent to all students in your classes.'}
-                        {groupMessageType === 'all_parents' && 'This message will be sent to all parents of your students.'}
-                        {groupMessageType === 'specific_class' && selectedClassId &&
-                          `This message will be sent to all students and parents in ${teacherClasses.find(c => c.id === selectedClassId)?.name || 'the selected class'}.`}
-                        {groupMessageType === 'specific_class' && !selectedClassId &&
-                          'Please select a class to send this message to.'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message *
-                </label>
-                <textarea
-                  value={composeForm.body}
-                  onChange={(e) => setComposeForm({ ...composeForm, body: e.target.value })}
-                  placeholder="Type your message here..."
-                  rows={8}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  maxLength={10000}
-                  required
-                />
-                <div className="text-xs text-gray-500 mt-1">
-                  {composeForm.body.length} / 10,000 characters
-                </div>
-              </div>
-
-              {/* Attachments Section */}
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  accept="image/*,application/pdf,.doc,.docx,audio/*"
-                />
-                <button
-                  type="button"
-                  onClick={handleFileSelect}
-                  disabled={uploadingAttachment}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Paperclip className="w-4 h-4" />
-                  {uploadingAttachment ? 'Uploading...' : 'Attach File'}
-                </button>
-
-                {/* Attachment Preview List */}
-                {composeForm.attachments.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {composeForm.attachments.map((attachment, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <Paperclip className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {attachment.file_name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {(attachment.file_size / 1024).toFixed(1)} KB
-                            </p>
-                          </div>
-                        </div>
+                    {/* Selected recipient badge */}
+                    {selectedRecipient && (
+                      <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-900 rounded-xl text-sm shadow-sm border border-blue-200">
+                        <User className="w-4 h-4" />
+                        <span className="font-bold">{selectedRecipient.display_name || selectedRecipient.email}</span>
+                        <span className="text-blue-700 font-medium">({selectedRecipient.role})</span>
                         <button
                           type="button"
-                          onClick={() => handleRemoveAttachment(index)}
-                          className="ml-3 p-1 text-red-600 hover:bg-red-50 rounded transition flex-shrink-0"
+                          onClick={() => {
+                            setSelectedRecipient(null);
+                            setRecipientSearchQuery('');
+                            setComposeForm({ ...composeForm, recipient_user_id: '' });
+                          }}
+                          className="hover:bg-blue-200 rounded-full p-1 transition-all"
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Dropdown results */}
+                    {showRecipientDropdown && filteredRecipients.length > 0 && (
+                      <div
+                        ref={recipientDropdownRef}
+                        className="absolute z-10 mt-2 w-full bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
+                      >
+                        {filteredRecipients.map((recipient) => (
+                          <button
+                            key={recipient.user_id}
+                            type="button"
+                            onClick={() => handleRecipientSelect(recipient)}
+                            className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-all flex items-center gap-3 border-b border-gray-100 last:border-0 first:rounded-t-xl last:rounded-b-xl"
+                          >
+                            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                              {(recipient.display_name || recipient.email)?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-gray-900 truncate">
+                                {recipient.display_name || 'No name'}
+                              </div>
+                              <div className="text-sm text-gray-500 truncate">
+                                {recipient.email}
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className={`px-3 py-1 text-xs font-bold rounded-full shadow-sm ${
+                                recipient.role === 'student' ? 'bg-green-100 text-green-800' :
+                                recipient.role === 'teacher' ? 'bg-blue-100 text-blue-800' :
+                                recipient.role === 'parent' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {recipient.role}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* No results message */}
+                    {showRecipientDropdown && filteredRecipients.length === 0 && recipientSearchQuery.trim() && (
+                      <div className="absolute z-10 mt-2 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl p-5 text-center">
+                        <p className="text-gray-500 font-medium">No recipients found matching "{recipientSearchQuery}"</p>
                   </div>
                 )}
               </div>
+              )}
 
-              <div className="flex items-center gap-4 pt-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    Subject {messageType === 'individual' && '*'}
+                  </label>
+                  <input
+                    type="text"
+                    value={composeForm.subject}
+                    onChange={(e) => setComposeForm({ ...composeForm, subject: e.target.value })}
+                    placeholder={messageType === 'group' ? 'Enter subject (optional)' : 'Enter subject...'}
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm hover:border-gray-300 text-gray-900 font-medium"
+                    maxLength={200}
+                    required={messageType === 'individual'}
+                  />
+                </div>
+
+                {/* Group Message Info */}
+                {messageType === 'group' && (
+                  <div className="p-5 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-500 rounded-lg shadow-md">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="text-sm text-blue-900 flex-1">
+                        <p className="font-bold mb-1.5">Group Message</p>
+                        <p className="font-medium">
+                          {groupMessageType === 'all_students' && 'This message will be sent to all students in your classes.'}
+                          {groupMessageType === 'all_parents' && 'This message will be sent to all parents of your students.'}
+                          {groupMessageType === 'specific_class' && selectedClassId &&
+                            `This message will be sent to all students and parents in ${teacherClasses.find(c => c.id === selectedClassId)?.name || 'the selected class'}.`}
+                          {groupMessageType === 'specific_class' && !selectedClassId &&
+                            'Please select a class to send this message to.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    Message *
+                  </label>
+                  <textarea
+                    value={composeForm.body}
+                    onChange={(e) => setComposeForm({ ...composeForm, body: e.target.value })}
+                    placeholder="Type your message here..."
+                    rows={8}
+                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm hover:border-gray-300 resize-none text-gray-900 font-medium"
+                    maxLength={10000}
+                    required
+                  />
+                  <div className="text-xs font-medium text-gray-500 mt-2">
+                    {composeForm.body.length} / 10,000 characters
+                  </div>
+                </div>
+
+                {/* Attachments Section */}
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*,application/pdf,.doc,.docx,audio/*"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleFileSelect}
+                    disabled={uploadingAttachment}
+                    className="flex items-center gap-2 px-5 py-3 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                    {uploadingAttachment ? 'Uploading...' : 'Attach File'}
+                  </button>
+
+                  {/* Attachment Preview List */}
+                  {composeForm.attachments.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {composeForm.attachments.map((attachment, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all shadow-sm"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <Paperclip className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 truncate">
+                                {attachment.file_name}
+                              </p>
+                              <p className="text-xs font-medium text-gray-500">
+                                {(attachment.file_size / 1024).toFixed(1)} KB
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAttachment(index)}
+                            className="ml-3 p-2 text-red-600 hover:bg-red-100 rounded-xl transition-all flex-shrink-0"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 bg-gray-50 px-8 py-5 flex items-center gap-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Sending...
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
+                      <Send className="w-5 h-5" />
                       Send Message
                     </>
                   )}
@@ -962,7 +990,7 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 <button
                   type="button"
                   onClick={handleCloseComposeModal}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="px-6 py-3.5 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-white hover:border-gray-300 transition-all shadow-sm font-bold"
                 >
                   Cancel
                 </button>
@@ -974,79 +1002,91 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
 
       {/* Thread Modal */}
       {showThreadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
-                  {currentThread?.root_message.subject || 'Message Thread'}
-                </h3>
-                {currentThread && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {currentThread.participant_count} participants • {currentThread.replies.length} replies
-                  </p>
-                )}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                  <MessageSquare className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {currentThread?.root_message.subject || 'Message Thread'}
+                  </h3>
+                  {currentThread && (
+                    <p className="text-sm text-gray-600 mt-1 font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span>{currentThread.participant_count} participants</span>
+                        <span className="text-gray-400">•</span>
+                        <span>{currentThread.replies.length} replies</span>
+                      </span>
+                    </p>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => {
                   setShowThreadModal(false);
                   closeThread();
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                className="p-2.5 hover:bg-white rounded-xl transition-all hover:shadow-md"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
             {isLoadingThread ? (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-gray-500">Loading conversation...</div>
+              <div className="flex-1 flex items-center justify-center py-20">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-gray-600 font-medium">Loading conversation...</p>
+                </div>
               </div>
             ) : currentThread ? (
               <>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto bg-gray-50 p-8 space-y-5">
                   {/* Root Message */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-purple-100">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                         {(currentThread.root_message.sender?.display_name || 'System').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-gray-900 text-base">
                             {currentThread.root_message.sender?.display_name || 'System'}
                           </span>
-                          <span className="text-xs text-gray-500">
-                            ({currentThread.root_message.sender?.role || 'system'})
+                          <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-700">
+                            {currentThread.root_message.sender?.role || 'system'}
                           </span>
                           <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs font-medium text-gray-500">
                             {formatDate(currentThread.root_message.created_at)}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          To: {currentThread.root_message.recipient?.display_name || 'All Recipients'}
+                        <div className="text-sm text-gray-600 font-medium">
+                          To: <span className="text-gray-900">{currentThread.root_message.recipient?.display_name || 'All Recipients'}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-gray-800 whitespace-pre-wrap">
+                    <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
                       {currentThread.root_message.body}
                     </div>
                     {currentThread.root_message.attachments && currentThread.root_message.attachments.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {currentThread.root_message.attachments.map((att) => (
                           <div
                             key={att.id}
-                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm hover:border-blue-300 transition-colors cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 border-2 border-purple-200 rounded-xl text-sm hover:border-purple-300 transition-all cursor-pointer shadow-sm hover:shadow"
                             onClick={() => handleDownloadAttachment(att.url, att.file_name)}
                           >
-                            <Paperclip className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-700">{att.file_name}</span>
-                            <span className="text-gray-400">
+                            <Paperclip className="w-4 h-4 text-purple-600" />
+                            <span className="text-gray-900 font-medium">{att.file_name}</span>
+                            <span className="text-gray-500 font-medium">
                               ({(att.file_size / 1024).toFixed(1)} KB)
                             </span>
-                            <span className="text-blue-600 text-xs ml-2">Download</span>
+                            <span className="text-purple-600 text-xs font-bold ml-1">Download</span>
                           </div>
                         ))}
                       </div>
@@ -1055,27 +1095,27 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
 
                   {/* Replies */}
                   {currentThread.replies.map((reply) => (
-                    <div key={reply.id} className="ml-12 bg-white border border-gray-200 rounded-lg p-4">
+                    <div key={reply.id} className="ml-16 bg-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
                           {(reply.sender?.display_name || 'User').charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-gray-900 text-sm">
+                            <span className="font-bold text-gray-900">
                               {reply.sender?.display_name || 'User'}
                             </span>
-                            <span className="text-xs text-gray-500">
-                              ({reply.sender?.role || 'user'})
+                            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700">
+                              {reply.sender?.role || 'user'}
                             </span>
                             <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs font-medium text-gray-500">
                               {formatDate(reply.created_at)}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-gray-800 text-sm whitespace-pre-wrap">
+                      <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
                         {reply.body}
                       </div>
                     </div>
@@ -1083,34 +1123,34 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 </div>
 
                 {/* Reply Input */}
-                <div className="border-t border-gray-200 p-6">
-                  <div className="mb-3">
+                <div className="border-t border-gray-100 bg-white px-8 py-6">
+                  <div className="mb-4">
                     <textarea
                       value={replyBody}
                       onChange={(e) => setReplyBody(e.target.value)}
                       placeholder="Type your reply..."
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      rows={4}
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm hover:border-gray-300 resize-none text-gray-900 font-medium"
                       maxLength={10000}
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs font-medium text-gray-500">
                       {replyBody.length} / 10,000 characters
                     </div>
                     <button
                       onClick={handleReplySubmit}
                       disabled={!replyBody.trim() || isSubmitting}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Sending...
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4" />
+                          <Send className="w-5 h-5" />
                           Send Reply
                         </>
                       )}
@@ -1119,8 +1159,14 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
-                Failed to load conversation
+              <div className="flex-1 flex items-center justify-center py-20">
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="p-4 bg-red-100 rounded-full">
+                    <AlertCircle className="w-10 h-10 text-red-600" />
+                  </div>
+                  <p className="text-lg font-bold text-gray-900">Failed to load conversation</p>
+                  <p className="text-sm text-gray-500">Please try again later</p>
+                </div>
               </div>
             )}
           </div>
