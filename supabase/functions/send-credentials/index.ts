@@ -1,10 +1,14 @@
-// Supabase Edge Function to send credential emails via Resend API
+// Supabase Edge Function to send credential emails via SMTP
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+const SMTP_HOST = Deno.env.get('SMTP_HOST') || 'smtp.office365.com'
+const SMTP_PORT = parseInt(Deno.env.get('SMTP_PORT') || '587')
+const SMTP_USER = Deno.env.get('SMTP_USER')!
+const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
@@ -186,27 +190,31 @@ serve(async (req) => {
 </html>
     `
 
-    // Send email via Resend API
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
+    // Send email via SMTP
+    console.log('Connecting to SMTP:', SMTP_HOST, 'Port:', SMTP_PORT, 'User:', SMTP_USER);
+
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: SMTP_USER,
+          password: SMTP_PASSWORD,
+        },
       },
-      body: JSON.stringify({
-        from: 'QuranAkh <onboarding@resend.dev>',
-        to: [to],
-        subject: `Your ${schoolName} Account Credentials`,
-        html: emailHtml,
-      }),
     });
 
-    const result = await response.json();
-    console.log('Resend API Response:', result);
+    await client.send({
+      from: SMTP_USER,
+      to: to,
+      subject: `Your ${schoolName} Account Credentials`,
+      content: 'Please view this email in HTML',
+      html: emailHtml,
+    });
 
-    if (!response.ok) {
-      throw new Error(`Resend API Error: ${JSON.stringify(result)}`);
-    }
+    await client.close();
+    console.log('Email sent successfully via SMTP');
 
     // Update the sent_at timestamp in database
     await supabase
@@ -216,13 +224,19 @@ serve(async (req) => {
 
     console.log('Email sent successfully, database updated');
 
-    return new Response(JSON.stringify({ success: true, messageId: result.id }), {
+    return new Response(JSON.stringify({ success: true, message: 'Email sent successfully' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
     console.error('Edge function error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorDetails = {
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    };
+    console.error('Full error details:', JSON.stringify(errorDetails));
+    return new Response(JSON.stringify(errorDetails), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
