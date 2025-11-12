@@ -192,15 +192,19 @@ serve(async (req) => {
     `
 
     let emailSent = false;
+    let lastError = null;
 
     // Try SMTP first if credentials are provided
     if (SMTP_USER && SMTP_PASSWORD) {
       try {
+        console.log('Attempting SMTP send to:', to);
+        console.log('SMTP Config:', { host: SMTP_HOST, port: SMTP_PORT, user: SMTP_USER });
+
         const client = new SMTPClient({
           connection: {
             hostname: SMTP_HOST,
             port: SMTP_PORT,
-            tls: SMTP_PORT === 465,
+            tls: true,  // Always use TLS for port 587
             auth: {
               username: SMTP_USER,
               password: SMTP_PASSWORD,
@@ -218,9 +222,13 @@ serve(async (req) => {
 
         await client.close();
         emailSent = true;
+        console.log('SMTP send successful');
       } catch (smtpError) {
-        console.error('SMTP failed:', smtpError);
+        console.error('SMTP Error Details:', smtpError);
+        lastError = smtpError.message || String(smtpError);
       }
+    } else {
+      console.error('SMTP credentials missing:', { hasUser: !!SMTP_USER, hasPassword: !!SMTP_PASSWORD });
     }
 
     // Fallback to Resend if SMTP fails and Resend key exists
