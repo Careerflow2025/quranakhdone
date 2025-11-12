@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { createClientWithAuth } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,8 +17,8 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Initialize Supabase client with auth
-    const supabase = createClient();
+    // 1. Initialize Supabase client with auth from Authorization header
+    const supabase = createClientWithAuth();
 
     // 2. Get authenticated user
     const {
