@@ -10,9 +10,9 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase-client';
+import { supabase } from '@/lib/supabase';
 import { NotificationSection } from '@/lib/types/notifications';
-import { useAuthStore } from '@/lib/store/auth-store';
+import { useAuthStore } from '@/store/authStore';
 
 interface NotificationCounts {
   [key: string]: number;
@@ -46,7 +46,6 @@ export function useSectionNotifications(): UseSectionNotificationsReturn {
 
     try {
       setError(null);
-      const supabase = createClient();
 
       // Get the session token
       const { data: { session } } = await supabase.auth.getSession();
@@ -85,8 +84,6 @@ export function useSectionNotifications(): UseSectionNotificationsReturn {
     if (!user) return;
 
     try {
-      const supabase = createClient();
-
       // Get the session token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -136,8 +133,6 @@ export function useSectionNotifications(): UseSectionNotificationsReturn {
    */
   useEffect(() => {
     if (!user) return;
-
-    const supabase = createClient();
 
     // Initial fetch
     fetchCounts();
