@@ -380,6 +380,153 @@ export function useMessages(initialFolder: MessageFolder = 'inbox') {
     }
   }, [user]); // Only depend on user, not fetchMessages to avoid infinite loop
 
+  // ============================================================================
+  // REAL-TIME SUBSCRIPTIONS - Professional 100M Pound Company Experience
+  // ============================================================================
+
+  // Real-time subscription for inbox messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('🔴 Setting up real-time inbox subscription for user:', user.id);
+
+    // Create channel for inbox updates
+    const inboxChannel = supabase
+      .channel(`inbox-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `to_user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          console.log('🔔 New message received:', payload.new);
+
+          // Refresh messages to get full data with sender info
+          await fetchMessages(currentFolder, currentPage);
+
+          // Show notification (could add toast notification here)
+          console.log('📬 New message notification triggered');
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `to_user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          console.log('📝 Message updated:', payload.new);
+
+          // Update local state for read receipts
+          const updatedMessage = payload.new as any;
+          setMessages(prev => prev.map(msg =>
+            msg.id === updatedMessage.id
+              ? { ...msg, read_at: updatedMessage.read_at, is_read: !!updatedMessage.read_at }
+              : msg
+          ));
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Inbox subscription status:', status);
+      });
+
+    // Also subscribe to group messages via message_recipients
+    const groupChannel = supabase
+      .channel(`group-messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'message_recipients',
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          console.log('🔔 New group message recipient record:', payload.new);
+
+          // Refresh messages to show new group message
+          await fetchMessages(currentFolder, currentPage);
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Group messages subscription status:', status);
+      });
+
+    // Cleanup on unmount
+    return () => {
+      console.log('🔴 Cleaning up inbox subscriptions');
+      supabase.removeChannel(inboxChannel);
+      supabase.removeChannel(groupChannel);
+    };
+  }, [user?.id, currentFolder, currentPage, fetchMessages]);
+
+  // Real-time subscription for current thread
+  useEffect(() => {
+    if (!user?.id || !currentThread) return;
+
+    const threadId = currentThread.root_message.id;
+    console.log('🔴 Setting up real-time thread subscription for thread:', threadId);
+
+    // Create channel for thread updates
+    const threadChannel = supabase
+      .channel(`thread-${threadId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `thread_id=eq.${threadId}`,
+        },
+        async (payload) => {
+          console.log('💬 New reply in thread:', payload.new);
+
+          // Refresh current thread to show new reply
+          await fetchThread(threadId);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `thread_id=eq.${threadId}`,
+        },
+        async (payload) => {
+          console.log('📝 Reply updated in thread:', payload.new);
+
+          // Update thread with new read status
+          const updatedMessage = payload.new as any;
+          setCurrentThread(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              replies: prev.replies.map(r =>
+                r.id === updatedMessage.id
+                  ? { ...r, read_at: updatedMessage.read_at, is_read: !!updatedMessage.read_at }
+                  : r
+              ),
+            };
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Thread subscription status:', status);
+      });
+
+    // Cleanup when thread changes or unmounts
+    return () => {
+      console.log('🔴 Cleaning up thread subscription');
+      supabase.removeChannel(threadChannel);
+    };
+  }, [user?.id, currentThread?.root_message.id, fetchThread]);
+
   // Refresh function
   const refreshMessages = useCallback(async () => {
     await fetchMessages(currentFolder, currentPage);
