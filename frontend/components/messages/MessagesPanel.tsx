@@ -842,7 +842,6 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
           </div>
         )}
       </div>
-      </div>
 
       {/* Compose Modal */}
       {showComposeModal && (
