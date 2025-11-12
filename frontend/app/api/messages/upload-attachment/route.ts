@@ -43,6 +43,15 @@ interface ErrorResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug: Log request headers
+    const headersList = request.headers;
+    console.log('📋 Upload Attachment - Auth Debug:', {
+      hasAuthHeader: headersList.has('authorization'),
+      authHeaderPreview: headersList.get('authorization')?.substring(0, 20) + '...',
+      hasCookies: headersList.has('cookie'),
+      cookiePreview: headersList.get('cookie')?.substring(0, 50) + '...',
+    });
+
     // Initialize Supabase client with auth
     const supabase = createClientWithAuth();
 
@@ -52,7 +61,17 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser();
 
+    console.log('👤 Upload - User auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message,
+    });
+
     if (authError || !user) {
+      console.error('❌ Upload - Authentication failed:', {
+        error: authError?.message,
+        hasUser: !!user,
+      });
       return NextResponse.json<ErrorResponse>(
         {
           success: false,
