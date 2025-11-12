@@ -190,23 +190,30 @@ serve(async (req) => {
 </html>
     `
 
-    // Send email via SMTP
-    console.log('Connecting to SMTP:', SMTP_HOST, 'Port:', SMTP_PORT, 'User:', SMTP_USER);
+    // Send email via SMTP with proper error handling
+    console.log('SMTP Configuration:', {
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      user: SMTP_USER,
+      hasPassword: !!SMTP_PASSWORD
+    });
 
     // Validate SMTP configuration
     if (!SMTP_USER || !SMTP_PASSWORD) {
-      throw new Error('SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD secrets.');
+      const errorMsg = 'SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD secrets.';
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     let emailSent = false;
-    let lastError = null;
 
     try {
+      console.log('Creating SMTP client...');
       const client = new SMTPClient({
         connection: {
           hostname: SMTP_HOST,
           port: SMTP_PORT,
-          tls: false, // Use STARTTLS for port 587
+          tls: false,
           auth: {
             username: SMTP_USER,
             password: SMTP_PASSWORD,
@@ -214,21 +221,26 @@ serve(async (req) => {
         },
       });
 
+      console.log('Sending email...');
       await client.send({
         from: SMTP_USER,
         to: to,
         subject: `Your ${schoolName} Account Credentials`,
-        content: 'Please view this email in HTML',
+        content: 'text/html',
         html: emailHtml,
       });
 
+      console.log('Closing SMTP connection...');
       await client.close();
       emailSent = true;
-      console.log('Email sent successfully via SMTP');
-    } catch (smtpError) {
-      console.error('SMTP Error:', smtpError);
-      lastError = smtpError;
-      throw new Error(`Failed to send email via SMTP: ${smtpError.message}`);
+      console.log('Email sent successfully via SMTP to:', to);
+    } catch (smtpError: any) {
+      console.error('SMTP Error Details:', {
+        message: smtpError.message,
+        name: smtpError.name,
+        stack: smtpError.stack,
+      });
+      throw new Error(`Failed to send email via SMTP: ${smtpError.message || 'Unknown SMTP error'}`);
     }
 
     // Update the sent_at timestamp in database
