@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabase';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSectionNotifications } from '@/hooks/useSectionNotifications';
+import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import { useTeacherData } from '@/hooks/useTeacherData';
 import { useHomework } from '@/hooks/useHomework';
 import { useHighlights } from '@/hooks/useHighlights';
@@ -105,6 +107,9 @@ export default function TeacherDashboard() {
     refresh: refreshNotifications
   } = useNotifications();
 
+  // Section notifications hook for badge system
+  const { markSectionRead, getSectionCount } = useSectionNotifications();
+
   // Homework State
   const [homeworkFilter, setHomeworkFilter] = useState('all');
   const [homeworkSearchQuery, setHomeworkSearchQuery] = useState('');
@@ -128,6 +133,22 @@ export default function TeacherDashboard() {
 
   // Navigation tabs
   const tabs = ['overview', 'my classes', 'students', 'assignments', 'gradebook', 'mastery', 'homework', 'highlights', 'targets', 'attendance', 'messages', 'events'];
+
+  // Map tab names to notification sections
+  const tabToSection: Record<string, string> = {
+    'overview': 'overview',
+    'my classes': 'classes',
+    'students': 'students',
+    'assignments': 'assignments',
+    'gradebook': 'gradebook',
+    'mastery': 'mastery',
+    'homework': 'homework',
+    'highlights': 'highlights',
+    'targets': 'targets',
+    'attendance': 'attendance',
+    'messages': 'messages',
+    'events': 'calendar'
+  };
 
   // Function to mark homework as complete (turns green to gold)
   const markHomeworkComplete = async (homeworkId: string) => {
@@ -419,19 +440,34 @@ export default function TeacherDashboard() {
         {/* Tab Navigation */}
         <div className="px-4 sm:px-6 lg:px-8">
           <nav className="flex justify-center space-x-8 overflow-x-auto">
-            {tabs.map((tab: any) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                  activeTab === tab
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1).replace(' ', ' ')}
-              </button>
-            ))}
+            {tabs.map((tab: any) => {
+              const sectionId = tabToSection[tab];
+              const hasNotifications = getSectionCount(sectionId) > 0;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    // Mark section as read when clicked
+                    if (hasNotifications) {
+                      markSectionRead(sectionId);
+                    }
+                    setActiveTab(tab);
+                  }}
+                  className={`relative py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === tab
+                      ? 'border-blue-600 text-blue-600'
+                      : hasNotifications
+                      ? 'border-blue-300 text-blue-500 hover:text-blue-700 hover:border-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="relative inline-block">
+                    {tab.charAt(0).toUpperCase() + tab.slice(1).replace(' ', ' ')}
+                    <NotificationBadge section={sectionId} className="absolute -top-2 -right-6" />
+                  </span>
+                </button>
+              );
+            })}
           </nav>
         </div>
       </header>

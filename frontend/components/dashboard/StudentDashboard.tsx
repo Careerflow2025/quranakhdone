@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSectionNotifications } from '@/hooks/useSectionNotifications';
+import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import { useHighlights } from '@/hooks/useHighlights';
 import { supabase } from '@/lib/supabase';
 import {
@@ -240,6 +242,9 @@ export default function StudentDashboard() {
       window.location.href = '/login';
     }
   };
+
+  // Section notifications hook for badge system
+  const { markSectionRead, getSectionCount } = useSectionNotifications();
 
   // Core States
   const [activeTab, setActiveTab] = useState('quran'); // 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -933,155 +938,47 @@ export default function StudentDashboard() {
       <div className="bg-white border-b shadow-sm">
         <div className="flex justify-center">
           <nav className="flex space-x-2 py-1">
-            <button
-              onClick={() => setActiveTab('quran')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'quran'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4" />
-                <span>Quran</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('homework')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'homework'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4" />
-                <span>Homework</span>
-                {safeHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length > 0 && (
-                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {safeHighlights.filter((h: any) => h.type === 'homework' && h.status === 'pending').length}
+            {[
+              { id: 'quran', label: 'Quran', icon: BookOpen, section: 'quran' },
+              { id: 'homework', label: 'Homework', icon: BookOpen, section: 'homework' },
+              { id: 'assignments', label: 'Assignments', icon: FileText, section: 'assignments' },
+              { id: 'gradebook', label: 'Gradebook', icon: Award, section: 'gradebook' },
+              { id: 'mastery', label: 'Mastery', icon: Target, section: 'mastery' },
+              { id: 'calendar', label: 'Calendar', icon: CalendarIcon, section: 'calendar' },
+              { id: 'attendance', label: 'Attendance', icon: Clock, section: 'attendance' },
+              { id: 'progress', label: 'Progress', icon: TrendingUp, section: 'progress' },
+              { id: 'targets', label: 'Targets', icon: Target, section: 'targets' },
+              { id: 'messages', label: 'Messages', icon: Mail, section: 'messages' }
+            ].map((tab) => {
+              const hasNotifications = getSectionCount(tab.section) > 0;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    // Mark section as read when clicked
+                    if (hasNotifications) {
+                      markSectionRead(tab.section);
+                    }
+                    setActiveTab(tab.id);
+                  }}
+                  className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'text-white bg-green-600 shadow-sm'
+                      : hasNotifications
+                      ? 'text-green-600 bg-green-50 hover:bg-green-100'
+                      : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+                  }`}
+                >
+                  <span className="flex items-center space-x-2 relative">
+                    <div className="relative">
+                      <tab.icon className="w-4 h-4" />
+                      <NotificationBadge section={tab.section} />
+                    </div>
+                    <span>{tab.label}</span>
                   </span>
-                )}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('assignments')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'assignments'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <span>Assignments</span>
-                {safeHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length > 0 && (
-                  <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {safeHighlights.filter((h: any) => h.type === 'assignment' && h.status === 'pending').length}
-                  </span>
-                )}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('gradebook')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'gradebook'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Award className="w-4 h-4" />
-                <span>Gradebook</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('mastery')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'mastery'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
-                <span>Mastery</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'calendar'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <CalendarIcon className="w-4 h-4" />
-                <span>Calendar</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'attendance'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Clock className="w-4 h-4" />
-                <span>Attendance</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('progress')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'progress'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Progress</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('targets')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'targets'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
-                <span>Targets</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('messages')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
-                activeTab === 'messages'
-                  ? 'text-white bg-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Mail className="w-4 h-4" />
-                <span>Messages</span>
-              </span>
-            </button>
+                </button>
+              );
+            })}
           </nav>
         </div>
       </div>

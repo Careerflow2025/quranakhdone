@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSectionNotifications } from '@/hooks/useSectionNotifications';
+import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import { useHighlights } from '@/hooks/useHighlights';
 import { useHomework } from '@/hooks/useHomework';
 import { useAssignments } from '@/hooks/useAssignments';
@@ -403,6 +405,9 @@ export default function ParentDashboard() {
     physicalAttendance: 0,
     platformActivity: 0,
   };
+
+  // Section notifications hook for badge system
+  const { markSectionRead, getSectionCount } = useSectionNotifications();
 
   // Core States
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'quran', 'homework', 'assignments', 'progress', 'targets', 'messages'
@@ -1274,183 +1279,49 @@ export default function ParentDashboard() {
       <div className="bg-white border-b shadow-sm">
         <div className="flex justify-center overflow-x-auto">
           <nav className="flex space-x-2 py-1 px-4">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'overview'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4" />
-                <span>Overview</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('quran')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'quran'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4" />
-                <span>Quran View</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('homework')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'homework'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4" />
-                <span>Homework</span>
-                {highlights.filter((h: any) => h.type === 'homework').length > 0 && (
-                  <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'homework').length}
+            {[
+              { id: 'overview', label: 'Overview', icon: BarChart3, section: 'overview' },
+              { id: 'quran', label: 'Quran View', icon: BookOpen, section: 'quran' },
+              { id: 'homework', label: 'Homework', icon: BookOpen, section: 'homework' },
+              { id: 'highlights', label: 'Highlights', icon: Bookmark, section: 'highlights' },
+              { id: 'assignments', label: 'Assignments', icon: FileText, section: 'assignments' },
+              { id: 'progress', label: 'Progress', icon: TrendingUp, section: 'progress' },
+              { id: 'gradebook', label: 'Gradebook', icon: Award, section: 'gradebook' },
+              { id: 'mastery', label: 'Mastery', icon: Target, section: 'mastery' },
+              { id: 'calendar', label: 'Calendar', icon: CalendarIcon, section: 'calendar' },
+              { id: 'attendance', label: 'Attendance', icon: Clock, section: 'attendance' },
+              { id: 'targets', label: 'Targets', icon: Target, section: 'targets' },
+              { id: 'messages', label: 'Messages', icon: Mail, section: 'messages' }
+            ].map((tab) => {
+              const hasNotifications = getSectionCount(tab.section) > 0;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    // Mark section as read when clicked
+                    if (hasNotifications) {
+                      markSectionRead(tab.section);
+                    }
+                    setActiveTab(tab.id);
+                  }}
+                  className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'text-white bg-blue-600 shadow-sm'
+                      : hasNotifications
+                      ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  <span className="flex items-center space-x-2 relative">
+                    <div className="relative">
+                      <tab.icon className="w-4 h-4" />
+                      <NotificationBadge section={tab.section} />
+                    </div>
+                    <span>{tab.label}</span>
                   </span>
-                )}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('highlights')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'highlights'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Bookmark className="w-4 h-4" />
-                <span>Highlights</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('assignments')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'assignments'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <span>Assignments</span>
-                {highlights.filter((h: any) => h.type === 'assignment').length > 0 && (
-                  <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {highlights.filter((h: any) => h.type === 'assignment').length}
-                  </span>
-                )}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('progress')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'progress'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Progress</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('gradebook')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'gradebook'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Award className="w-4 h-4" />
-                <span>Gradebook</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('mastery')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'mastery'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
-                <span>Mastery</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'calendar'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <CalendarIcon className="w-4 h-4" />
-                <span>Calendar</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'attendance'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Clock className="w-4 h-4" />
-                <span>Attendance</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('targets')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'targets'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
-                <span>Targets</span>
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('messages')}
-              className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'messages'
-                  ? 'text-white bg-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <span className="flex items-center space-x-2">
-                <Mail className="w-4 h-4" />
-                <span>Messages</span>
-              </span>
-            </button>
+                </button>
+              );
+            })}
           </nav>
         </div>
       </div>

@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSectionNotifications } from '@/hooks/useSectionNotifications';
+import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import { useHighlights } from '@/hooks/useHighlights';
 import { useTargets } from '@/hooks/useTargets';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -125,6 +127,9 @@ export default function SchoolDashboard() {
 
   // Active tab state (needed before useEffect that checks it)
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Section notifications hook for badge system
+  const { markSectionRead, getSectionCount } = useSectionNotifications();
 
   // Get reports data with date filtering
   const {
@@ -2832,23 +2837,35 @@ export default function SchoolDashboard() {
             { id: 'reports', label: 'Reports', icon: BarChart3 },
             { id: 'credentials', label: 'Credentials', icon: Key },
             { id: 'settings', label: 'Settings', icon: Settings },
-          ].map((item: any) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                console.log('🔘 Menu clicked:', item.id);
-                setActiveTab(item.id);
-              }}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                activeTab === item.id
-                  ? 'bg-emerald-50 text-emerald-600'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-            </button>
-          ))}
+          ].map((item: any) => {
+            const hasNotifications = getSectionCount(item.id) > 0;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  console.log('🔘 Menu clicked:', item.id);
+                  // Mark section as read when clicked
+                  if (hasNotifications) {
+                    markSectionRead(item.id);
+                  }
+                  setActiveTab(item.id);
+                }}
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : hasNotifications
+                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  <NotificationBadge section={item.id} />
+                </div>
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
           </nav>
         </div>
       </div>
