@@ -1,474 +1,301 @@
 /**
- * Notification System Type Definitions
+ * Real-Time Notification Badge System
  *
- * Created: 2025-10-20
- * Purpose: Complete type system for multi-channel notification system
- * Features: In-app, email, push notifications, user preferences, event-driven
+ * Purpose: Section-based notification badges on sidebar/navigation icons
+ * Features: Real-time updates, unread counts per section, mark as read on click
+ * Created: 2025-11-12
  */
 
 // ============================================================================
-// Database Row Types
+// Core Types
 // ============================================================================
 
-export type NotificationChannel = 'in_app' | 'email' | 'push';
+export type NotificationSection =
+  | 'assignments'
+  | 'highlights'
+  | 'gradebook'
+  | 'mastery'
+  | 'attendance'
+  | 'targets'
+  | 'classes'
+  | 'messages'
+  | 'credentials'
+  | 'analytics';
 
 export type NotificationType =
+  // Assignment notifications
   | 'assignment_created'
+  | 'assignment_viewed'
   | 'assignment_submitted'
   | 'assignment_reviewed'
   | 'assignment_completed'
   | 'assignment_reopened'
   | 'assignment_due_soon'
   | 'assignment_overdue'
-  | 'homework_assigned'
-  | 'homework_completed'
+  // Highlight notifications
+  | 'highlight_created'
+  | 'highlight_updated'
+  | 'highlight_deleted'
+  | 'highlight_note_added'
+  // Gradebook notifications
+  | 'grade_posted'
+  | 'grade_updated'
+  | 'rubric_attached'
+  // Mastery notifications
+  | 'mastery_level_updated'
+  | 'mastery_milestone_reached'
+  // Attendance notifications
+  | 'attendance_marked'
+  | 'attendance_updated'
+  // Target notifications
   | 'target_created'
-  | 'target_milestone_completed'
-  | 'target_due_soon'
-  | 'grade_submitted'
-  | 'mastery_improved'
+  | 'target_updated'
+  | 'target_completed'
+  // Class notifications
+  | 'class_created'
+  | 'class_updated'
+  | 'student_enrolled'
+  | 'teacher_assigned'
+  // Message notifications
   | 'message_received'
-  | 'system_announcement';
+  | 'message_reply'
+  | 'group_message_received'
+  // Credential notifications
+  | 'credentials_sent'
+  | 'user_created'
+  // Analytics notifications
+  | 'report_generated'
+  | 'export_ready';
 
-export interface NotificationRow {
-  id: string;
-  school_id: string;
-  user_id: string;
-  channel: NotificationChannel;
-  type: NotificationType;
-  payload: Record<string, unknown>;
-  sent_at: string | null;
-  read_at: string | null;
-  created_at: string;
-}
-
-export interface DeviceRow {
-  id: string;
-  user_id: string;
-  push_token: string;
-  platform: 'ios' | 'android' | 'web';
-  updated_at: string;
-}
-
-// Notification preferences stored in user profiles or separate table
-export interface NotificationPreferenceRow {
-  user_id: string;
-  in_app_enabled: boolean;
-  email_enabled: boolean;
-  push_enabled: boolean;
-  assignment_notifications: boolean;
-  homework_notifications: boolean;
-  target_notifications: boolean;
-  grade_notifications: boolean;
-  mastery_notifications: boolean;
-  message_notifications: boolean;
-  quiet_hours_start: string | null; // HH:MM format
-  quiet_hours_end: string | null; // HH:MM format
-  updated_at: string;
-}
-
-// ============================================================================
-// Enhanced Types with Relations
-// ============================================================================
-
-export interface NotificationWithDetails extends NotificationRow {
-  recipient?: {
-    id: string;
-    display_name: string;
-    email: string;
-  };
-  is_read: boolean;
-  time_ago?: string; // Human-readable time (e.g., "2 hours ago")
-}
-
-export interface NotificationPreferencesWithDefaults
-  extends NotificationPreferenceRow {
-  has_push_devices: boolean;
-  push_devices_count: number;
-}
-
-// ============================================================================
-// API Request Types
-// ============================================================================
-
-export interface SendNotificationRequest {
-  user_id: string;
-  type: NotificationType;
-  channels: NotificationChannel[];
-  payload: Record<string, unknown>;
-  scheduled_for?: string; // ISO timestamp for future delivery
-}
-
-export interface BulkSendNotificationRequest {
-  user_ids: string[];
-  type: NotificationType;
-  channels: NotificationChannel[];
-  payload: Record<string, unknown>;
-}
-
-export interface ListNotificationsRequest {
-  user_id?: string; // If admin/teacher wants to view specific user's notifications
-  channel?: NotificationChannel;
-  type?: NotificationType;
-  read?: boolean; // Filter by read/unread
-  limit?: number;
-  offset?: number;
-  start_date?: string;
-  end_date?: string;
-}
-
-export interface MarkReadRequest {
-  notification_id: string;
-}
-
-export interface MarkAllReadRequest {
-  user_id?: string; // For marking all user's notifications as read
-  type?: NotificationType; // Optional: mark all of specific type as read
-}
-
-export interface UpdatePreferencesRequest {
-  in_app_enabled?: boolean;
-  email_enabled?: boolean;
-  push_enabled?: boolean;
-  assignment_notifications?: boolean;
-  homework_notifications?: boolean;
-  target_notifications?: boolean;
-  grade_notifications?: boolean;
-  mastery_notifications?: boolean;
-  message_notifications?: boolean;
-  quiet_hours_start?: string | null;
-  quiet_hours_end?: string | null;
-}
-
-export interface RegisterDeviceRequest {
-  push_token: string;
-  platform: 'ios' | 'android' | 'web';
-}
-
-// ============================================================================
-// API Response Types
-// ============================================================================
-
-export interface SendNotificationResponse {
-  success: true;
-  data: {
-    notification: NotificationWithDetails;
-    delivery_status: {
-      in_app?: 'sent' | 'failed';
-      email?: 'queued' | 'sent' | 'failed';
-      push?: 'queued' | 'sent' | 'failed';
-    };
-  };
-  message: string;
-}
-
-export interface BulkSendNotificationResponse {
-  success: true;
-  data: {
-    sent_count: number;
-    failed_count: number;
-    notifications: NotificationWithDetails[];
-  };
-  message: string;
-}
-
-export interface ListNotificationsResponse {
-  success: true;
-  data: {
-    notifications: NotificationWithDetails[];
-    pagination: {
-      total: number;
-      limit: number;
-      offset: number;
-      has_more: boolean;
-    };
-    summary: {
-      unread_count: number;
-      total_count: number;
-    };
-  };
-}
-
-export interface MarkReadResponse {
-  success: true;
-  data: {
-    notification: NotificationWithDetails;
-  };
-  message: string;
-}
-
-export interface MarkAllReadResponse {
-  success: true;
-  data: {
-    marked_count: number;
-  };
-  message: string;
-}
-
-export interface GetPreferencesResponse {
-  success: true;
-  data: {
-    preferences: NotificationPreferencesWithDefaults;
-  };
-}
-
-export interface UpdatePreferencesResponse {
-  success: true;
-  data: {
-    preferences: NotificationPreferencesWithDefaults;
-  };
-  message: string;
-}
-
-export interface RegisterDeviceResponse {
-  success: true;
-  data: {
-    device: DeviceRow;
-  };
-  message: string;
-}
-
-export interface NotificationErrorResponse {
-  success: false;
-  error: string;
-  code: NotificationErrorCode;
-  details?: Record<string, unknown>;
-}
-
-export type NotificationErrorCode =
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'VALIDATION_ERROR'
-  | 'INVALID_CHANNEL'
-  | 'INVALID_TYPE'
-  | 'USER_NOT_FOUND'
-  | 'NOTIFICATION_NOT_FOUND'
-  | 'DELIVERY_FAILED'
-  | 'DATABASE_ERROR'
-  | 'INTERNAL_ERROR';
-
-// ============================================================================
-// Notification Payload Types
-// ============================================================================
-
-export interface AssignmentNotificationPayload {
-  assignment_id: string;
-  assignment_title: string;
-  student_name: string;
-  teacher_name: string;
-  due_at?: string;
+export interface NotificationMetadata {
+  // Assignment related
+  assignment_id?: string;
+  student_id?: string;
+  teacher_id?: string;
+  // Highlight related
+  highlight_id?: string;
+  ayah_id?: string;
+  // Grade related
+  grade_id?: string;
+  criterion_id?: string;
+  score?: number;
+  // Mastery related
+  mastery_id?: string;
+  level?: string;
+  // Attendance related
+  attendance_id?: string;
+  session_date?: string;
   status?: string;
-  reason?: string; // For reopened
+  // Target related
+  target_id?: string;
+  // Class related
+  class_id?: string;
+  // Message related
+  message_id?: string;
+  conversation_id?: string;
+  sender_id?: string;
+  // Credential related
+  credential_id?: string;
+  user_id?: string;
+  role?: string;
+  // Analytics related
+  report_id?: string;
+  export_id?: string;
+  // Navigation
+  url?: string;
+  [key: string]: any;
 }
 
-export interface HomeworkNotificationPayload {
-  homework_id: string;
-  student_name: string;
-  teacher_name: string;
-  ayah_reference: string; // e.g., "Surah 1, Ayah 1-7"
-  due_at?: string;
-}
-
-export interface TargetNotificationPayload {
-  target_id: string;
-  target_title: string;
-  milestone_title?: string;
-  student_name?: string;
-  class_name?: string;
-  due_at?: string;
-  progress_percentage?: number;
-}
-
-export interface GradeNotificationPayload {
-  assignment_id: string;
-  assignment_title: string;
-  student_name: string;
-  overall_score: number;
-  letter_grade: string;
-  graded_by: string;
-}
-
-export interface MasteryNotificationPayload {
-  student_name: string;
-  ayah_reference: string;
-  old_level: string;
-  new_level: string;
-  surah: number;
-  ayah: number;
-}
-
-export interface MessageNotificationPayload {
-  message_id: string;
-  sender_name: string;
-  message_preview: string; // First 100 chars
-  thread_id?: string;
-}
-
-export interface SystemAnnouncementPayload {
+export interface Notification {
+  id: string;
+  user_id: string;
+  school_id: string;
+  section: NotificationSection;
+  type: NotificationType;
   title: string;
   message: string;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  action_url?: string;
+  metadata: NotificationMetadata;
+  read: boolean;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
+
+export interface NotificationCount {
+  section: NotificationSection;
+  count: number;
+}
+
+// ============================================================================
+// API Request/Response Types
+// ============================================================================
+
+export interface CreateNotificationInput {
+  user_id: string;
+  school_id: string;
+  section: NotificationSection;
+  type: NotificationType;
+  title: string;
+  message: string;
+  metadata?: NotificationMetadata;
+}
+
+export interface UpdateNotificationInput {
+  read?: boolean;
+  read_at?: string | null;
+}
+
+export interface NotificationFilters {
+  section?: NotificationSection;
+  type?: NotificationType;
+  read?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+// ============================================================================
+// Section Configuration for UI
+// ============================================================================
+
+export interface SectionConfig {
+  section: NotificationSection;
+  label: string;
+  icon: string;
+  color: string;
+  route: string;
+}
+
+export const SECTION_CONFIGS: Record<NotificationSection, Omit<SectionConfig, 'section'>> = {
+  assignments: {
+    label: 'Assignments',
+    icon: '📋',
+    color: 'blue',
+    route: '/assignments',
+  },
+  highlights: {
+    label: 'Highlights',
+    icon: '✨',
+    color: 'yellow',
+    route: '/highlights',
+  },
+  gradebook: {
+    label: 'Gradebook',
+    icon: '📊',
+    color: 'green',
+    route: '/gradebook',
+  },
+  mastery: {
+    label: 'Mastery',
+    icon: '🎯',
+    color: 'purple',
+    route: '/mastery',
+  },
+  attendance: {
+    label: 'Attendance',
+    icon: '📅',
+    color: 'indigo',
+    route: '/attendance',
+  },
+  targets: {
+    label: 'Targets',
+    icon: '🎯',
+    color: 'orange',
+    route: '/targets',
+  },
+  classes: {
+    label: 'Classes',
+    icon: '🏫',
+    color: 'cyan',
+    route: '/classes',
+  },
+  messages: {
+    label: 'Messages',
+    icon: '💬',
+    color: 'pink',
+    route: '/messages',
+  },
+  credentials: {
+    label: 'Credentials',
+    icon: '🔑',
+    color: 'red',
+    route: '/credentials',
+  },
+  analytics: {
+    label: 'Analytics',
+    icon: '📈',
+    color: 'teal',
+    route: '/analytics',
+  },
+};
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
 /**
- * Get notification title based on type
+ * Get section configuration
  */
-export function getNotificationTitle(
-  type: NotificationType,
-  payload: Record<string, unknown>
-): string {
-  const p = payload as any;
-
-  const titles: Record<NotificationType, string> = {
-    assignment_created: `New Assignment: ${p.assignment_title || 'Assignment'}`,
-    assignment_submitted: `${p.student_name || 'Student'} submitted: ${p.assignment_title || 'Assignment'}`,
-    assignment_reviewed: `Assignment Reviewed: ${p.assignment_title || 'Assignment'}`,
-    assignment_completed: `Assignment Completed: ${p.assignment_title || 'Assignment'}`,
-    assignment_reopened: `Assignment Reopened: ${p.assignment_title || 'Assignment'}`,
-    assignment_due_soon: `Due Soon: ${p.assignment_title || 'Assignment'}`,
-    assignment_overdue: `Overdue: ${p.assignment_title || 'Assignment'}`,
-    homework_assigned: `New Homework: ${p.ayah_reference || 'Quran Practice'}`,
-    homework_completed: `Homework Completed by ${p.student_name || 'Student'}`,
-    target_created: `New Target: ${p.target_title || 'Goal'}`,
-    target_milestone_completed: `Milestone Completed: ${p.milestone_title || 'Milestone'}`,
-    target_due_soon: `Target Due Soon: ${p.target_title || 'Goal'}`,
-    grade_submitted: `Grade Received: ${p.assignment_title || 'Assignment'}`,
-    mastery_improved: `Mastery Improved: ${p.ayah_reference || 'Ayah'}`,
-    message_received: `New Message from ${p.sender_name || 'User'}`,
-    system_announcement: p.title || 'System Announcement',
+export function getSectionConfig(section: NotificationSection): SectionConfig {
+  return {
+    section,
+    ...SECTION_CONFIGS[section],
   };
-
-  return titles[type] || 'Notification';
 }
 
 /**
- * Get notification body/description based on type
+ * Format notification message based on type
  */
-export function getNotificationBody(
+export function formatNotificationMessage(
   type: NotificationType,
-  payload: Record<string, unknown>
-): string {
-  const p = payload as any;
-
-  const bodies: Record<NotificationType, string> = {
-    assignment_created: `Due ${p.due_at ? new Date(p.due_at).toLocaleDateString() : 'soon'}`,
-    assignment_submitted: `Submitted for review on ${new Date().toLocaleDateString()}`,
-    assignment_reviewed: `Your teacher has reviewed your work`,
-    assignment_completed: `Great job! Assignment marked as completed`,
-    assignment_reopened: `Reason: ${p.reason || 'Needs revision'}`,
-    assignment_due_soon: `Due ${p.due_at ? new Date(p.due_at).toLocaleDateString() : 'soon'}`,
-    assignment_overdue: `This assignment is overdue. Please submit as soon as possible`,
-    homework_assigned: `Practice ${p.ayah_reference || 'assigned ayahs'}`,
-    homework_completed: `${p.student_name || 'Student'} completed their homework`,
-    target_created: p.class_name ? `For class: ${p.class_name}` : 'Individual target',
-    target_milestone_completed: `Progress: ${p.progress_percentage || 0}%`,
-    target_due_soon: `Due ${p.due_at ? new Date(p.due_at).toLocaleDateString() : 'soon'}`,
-    grade_submitted: `Score: ${p.overall_score || 0}% (${p.letter_grade || 'N/A'})`,
-    mastery_improved: `${p.old_level} → ${p.new_level}`,
-    message_received: p.message_preview || 'Click to read message',
-    system_announcement: p.message || 'Important announcement',
-  };
-
-  return bodies[type] || '';
-}
-
-/**
- * Get notification icon based on type
- */
-export function getNotificationIcon(type: NotificationType): string {
-  const icons: Record<NotificationType, string> = {
-    assignment_created: '📝',
-    assignment_submitted: '✅',
-    assignment_reviewed: '👀',
-    assignment_completed: '🎉',
-    assignment_reopened: '🔄',
-    assignment_due_soon: '⏰',
-    assignment_overdue: '⚠️',
-    homework_assigned: '📖',
-    homework_completed: '✨',
-    target_created: '🎯',
-    target_milestone_completed: '🏆',
-    target_due_soon: '⏳',
-    grade_submitted: '📊',
-    mastery_improved: '⬆️',
-    message_received: '💬',
-    system_announcement: '📢',
-  };
-
-  return icons[type] || '🔔';
-}
-
-/**
- * Check if notification should be sent based on user preferences
- */
-export function shouldSendNotification(
-  type: NotificationType,
-  channel: NotificationChannel,
-  preferences: NotificationPreferenceRow | null
-): boolean {
-  // No preferences = send all notifications (default)
-  if (!preferences) {
-    return true;
+  metadata: NotificationMetadata
+): { title: string; message: string } {
+  switch (type) {
+    case 'assignment_created':
+      return {
+        title: 'New Assignment',
+        message: 'A new assignment has been created for you',
+      };
+    case 'assignment_submitted':
+      return {
+        title: 'Assignment Submitted',
+        message: 'Student has submitted their assignment',
+      };
+    case 'assignment_completed':
+      return {
+        title: 'Assignment Completed',
+        message: 'Your assignment has been marked as completed',
+      };
+    case 'assignment_due_soon':
+      return {
+        title: 'Assignment Due Soon',
+        message: 'You have an assignment due within 24 hours',
+      };
+    case 'highlight_created':
+      return {
+        title: 'New Highlight',
+        message: 'A new highlight has been added',
+      };
+    case 'grade_posted':
+      return {
+        title: 'New Grade',
+        message: `Grade posted: ${metadata.score || 'N/A'}`,
+      };
+    case 'message_received':
+      return {
+        title: 'New Message',
+        message: 'You have received a new message',
+      };
+    case 'credentials_sent':
+      return {
+        title: 'Credentials Sent',
+        message: 'Login credentials have been sent',
+      };
+    default:
+      return {
+        title: 'New Notification',
+        message: 'You have a new notification',
+      };
   }
-
-  // Check channel is enabled
-  if (channel === 'in_app' && !preferences.in_app_enabled) return false;
-  if (channel === 'email' && !preferences.email_enabled) return false;
-  if (channel === 'push' && !preferences.push_enabled) return false;
-
-  // Check type category is enabled
-  if (type.startsWith('assignment_') && !preferences.assignment_notifications)
-    return false;
-  if (type.startsWith('homework_') && !preferences.homework_notifications)
-    return false;
-  if (type.startsWith('target_') && !preferences.target_notifications)
-    return false;
-  if (type.startsWith('grade_') && !preferences.grade_notifications)
-    return false;
-  if (type.startsWith('mastery_') && !preferences.mastery_notifications)
-    return false;
-  if (type === 'message_received' && !preferences.message_notifications)
-    return false;
-
-  // System announcements always send
-  if (type === 'system_announcement') return true;
-
-  return true;
-}
-
-/**
- * Check if current time is within quiet hours
- */
-export function isQuietHours(
-  preferences: NotificationPreferenceRow | null
-): boolean {
-  if (
-    !preferences ||
-    !preferences.quiet_hours_start ||
-    !preferences.quiet_hours_end
-  ) {
-    return false;
-  }
-
-  const now = new Date();
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-  const start = preferences.quiet_hours_start;
-  const end = preferences.quiet_hours_end;
-
-  // Handle overnight quiet hours (e.g., 22:00 - 08:00)
-  if (start > end) {
-    return currentTime >= start || currentTime <= end;
-  }
-
-  // Normal quiet hours (e.g., 12:00 - 14:00)
-  return currentTime >= start && currentTime <= end;
 }
 
 /**
@@ -494,63 +321,23 @@ export function getTimeAgo(timestamp: string): string {
 }
 
 /**
- * Get default notification preferences
+ * Get notification icon based on type
  */
-export function getDefaultPreferences(
-  user_id: string
-): NotificationPreferenceRow {
-  return {
-    user_id,
-    in_app_enabled: true,
-    email_enabled: true,
-    push_enabled: false, // Require explicit opt-in
-    assignment_notifications: true,
-    homework_notifications: true,
-    target_notifications: true,
-    grade_notifications: true,
-    mastery_notifications: true,
-    message_notifications: true,
-    quiet_hours_start: null,
-    quiet_hours_end: null,
-    updated_at: new Date().toISOString(),
+export function getNotificationIcon(type: NotificationType): string {
+  const icons: Partial<Record<NotificationType, string>> = {
+    assignment_created: '📝',
+    assignment_submitted: '✅',
+    assignment_reviewed: '👀',
+    assignment_completed: '🎉',
+    assignment_reopened: '🔄',
+    assignment_due_soon: '⏰',
+    assignment_overdue: '⚠️',
+    highlight_created: '✨',
+    grade_posted: '📊',
+    mastery_level_updated: '⬆️',
+    message_received: '💬',
+    credentials_sent: '🔑',
   };
+
+  return icons[type] || '🔔';
 }
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-export const NOTIFICATION_CONSTANTS = {
-  DEFAULT_PAGINATION_LIMIT: 20,
-  MAX_PAGINATION_LIMIT: 100,
-  NOTIFICATION_EXPIRY_DAYS: 30, // Auto-delete after 30 days
-  MAX_PAYLOAD_SIZE: 5000, // Max bytes for payload JSON
-  BATCH_SEND_LIMIT: 100, // Max users per batch send
-  QUIET_HOURS_DEFAULT_START: '22:00',
-  QUIET_HOURS_DEFAULT_END: '08:00',
-} as const;
-
-export const NOTIFICATION_CHANNELS: NotificationChannel[] = [
-  'in_app',
-  'email',
-  'push',
-];
-
-export const NOTIFICATION_TYPES: NotificationType[] = [
-  'assignment_created',
-  'assignment_submitted',
-  'assignment_reviewed',
-  'assignment_completed',
-  'assignment_reopened',
-  'assignment_due_soon',
-  'assignment_overdue',
-  'homework_assigned',
-  'homework_completed',
-  'target_created',
-  'target_milestone_completed',
-  'target_due_soon',
-  'grade_submitted',
-  'mastery_improved',
-  'message_received',
-  'system_announcement',
-];
