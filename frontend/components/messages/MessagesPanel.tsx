@@ -47,7 +47,6 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
 
   // UI State
   const [showComposeModal, setShowComposeModal] = useState(false);
-  const [showThreadModal, setShowThreadModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
@@ -465,69 +464,67 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
   });
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-xl overflow-hidden flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-              <Mail className="w-7 h-7 text-white" />
+    <div className="h-full bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-xl overflow-hidden flex">
+      {/* LEFT PANE - Message List */}
+      <div className="w-[380px] bg-white border-r border-gray-200 flex flex-col">
+        {/* Header */}
+        <div className="border-b border-gray-100 px-6 py-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Mail className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Messages</h2>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Messages</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                   {totalUnread} unread
                 </span>
-                <span className="text-sm text-gray-500">{totalMessages} total messages</span>
+                <span className="text-xs text-gray-500">{totalMessages} total</span>
               </div>
             </div>
           </div>
+
           <button
             onClick={() => setShowComposeModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-medium"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-medium text-sm"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4" />
             Compose New
           </button>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+        {/* Search */}
+        <div className="px-4 py-3 border-b border-gray-100">
+          <div className="relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search messages, contacts, or content..."
+              placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all placeholder-gray-400"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all placeholder-gray-400"
             />
           </div>
-          <button className="p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 hover:border-gray-300 transition-all">
-            <Filter className="w-5 h-5 text-gray-600" />
-          </button>
         </div>
-      </div>
 
-      {/* Folder Tabs */}
-      <div className="bg-white border-b border-gray-100 px-8">
-        <div className="flex gap-2">
-          {(['inbox', 'sent', 'unread', 'all'] as const).map((folder) => (
+        {/* Folder Tabs */}
+        <div className="bg-white border-b border-gray-100 px-2">
+          <div className="flex gap-1">
+            {(['inbox', 'sent', 'unread', 'all'] as const).map((folder) => (
             <button
               key={folder}
               onClick={() => changeFolder(folder)}
               className={`
-                relative px-6 py-4 font-semibold text-sm capitalize transition-all border-b-2
+                flex-1 relative px-3 py-2.5 font-semibold text-xs capitalize transition-all border-b-2
                 ${currentFolder === folder
-                  ? 'text-blue-600 border-blue-600 bg-blue-50/50'
+                  ? 'text-blue-600 border-blue-600 bg-blue-50'
                   : 'text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50'
                 }
               `}
             >
               <span className="relative z-10">{folder}</span>
               {folder === 'unread' && totalUnread > 0 && (
-                <span className="ml-2 px-2.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-sm">
+                <span className="ml-1.5 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
                   {totalUnread}
                 </span>
               )}
@@ -536,46 +533,44 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
         </div>
       </div>
 
-      {/* Messages List */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-gray-600 font-medium">Loading messages...</p>
+        {/* Compact Messages List */}
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-600 font-medium text-sm">Loading...</p>
+              </div>
             </div>
-          </div>
-        ) : error ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center gap-3 text-red-700">
-              <AlertCircle className="w-6 h-6 flex-shrink-0" />
-              <p className="font-medium">{error}</p>
+          ) : error ? (
+            <div className="p-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <p className="font-medium text-sm">{error}</p>
+              </div>
             </div>
-          </div>
-        ) : filteredMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-            <div className="bg-gray-100 p-6 rounded-full mb-4">
-              <Inbox className="w-16 h-16 text-gray-400" />
+          ) : filteredMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 px-4">
+              <div className="bg-gray-100 p-4 rounded-full mb-3">
+                <Inbox className="w-10 h-10 text-gray-400" />
+              </div>
+              <p className="text-base font-semibold text-gray-700 mb-1">No messages</p>
+              <p className="text-xs text-gray-500">Your {currentFolder} folder is empty</p>
             </div>
-            <p className="text-xl font-semibold text-gray-700 mb-1">No messages</p>
-            <p className="text-sm text-gray-500">Your {currentFolder} folder is empty</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredMessages.map((message) => (
+          ) : (
+            filteredMessages.map((message) => (
               <div
                 key={message.id}
                 onClick={() => handleOpenThread(message)}
                 className={`
-                  bg-white rounded-xl p-5 cursor-pointer transition-all hover:shadow-lg border
-                  ${!message.is_read
-                    ? 'border-blue-200 shadow-md shadow-blue-100'
-                    : 'border-gray-200 hover:border-gray-300'}
+                  px-4 py-3 cursor-pointer transition-all border-b border-gray-100 hover:bg-blue-50
+                  ${selectedMessage?.id === message.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''}
+                  ${!message.is_read ? 'bg-blue-50/30' : 'bg-white'}
                 `}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md
+                    w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0
                     ${!message.is_read
                       ? 'bg-gradient-to-br from-blue-500 to-blue-600'
                       : 'bg-gradient-to-br from-gray-400 to-gray-500'}
@@ -587,91 +582,267 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`font-bold truncate text-base ${!message.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
-                            {currentFolder === 'sent'
-                              ? message.recipient?.display_name || 'All Recipients'
-                              : message.sender?.display_name || 'System'
-                            }
-                          </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            {currentFolder === 'sent' ? message.recipient?.role || 'group' : message.sender?.role || 'system'}
-                          </span>
-                        </div>
-                        {message.subject && (
-                          <div className={`text-sm mb-1 truncate ${!message.is_read ? 'font-semibold text-gray-900' : 'font-medium text-gray-600'}`}>
-                            {message.subject}
-                          </div>
-                        )}
-                        <p className="text-sm text-gray-500 line-clamp-2">
-                          {getPreview(message.body)}
-                        </p>
-                      </div>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className={`font-bold truncate text-sm ${!message.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
+                        {currentFolder === 'sent'
+                          ? message.recipient?.display_name || 'All Recipients'
+                          : message.sender?.display_name || 'System'
+                        }
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-500 whitespace-nowrap">
+                        {formatDate(message.created_at)}
+                      </span>
+                    </div>
 
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
-                          {formatDate(message.created_at)}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {!message.is_read && currentFolder !== 'sent' && (
-                            <button
-                              onClick={(e) => handleMarkAsRead(message.id, e)}
-                              className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
-                              title="Mark as read"
-                            >
-                              <Eye className="w-4 h-4 text-blue-600" />
-                            </button>
-                          )}
-                          {message.attachments && message.attachments.length > 0 && (
-                            <div className="p-1.5 bg-gray-100 rounded-lg">
-                              <Paperclip className="w-4 h-4 text-gray-600" />
-                            </div>
-                          )}
-                          {message.reply_count !== undefined && message.reply_count > 0 && (
-                            <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 rounded-lg">
-                              <MessageSquare className="w-4 h-4 text-blue-600" />
-                              <span className="text-xs font-semibold text-blue-600">{message.reply_count}</span>
-                            </div>
-                          )}
-                        </div>
+                    {message.subject && (
+                      <div className={`text-xs mb-0.5 truncate ${!message.is_read ? 'font-semibold text-gray-900' : 'font-medium text-gray-600'}`}>
+                        {message.subject}
                       </div>
+                    )}
+
+                    <p className="text-xs text-gray-500 line-clamp-1">
+                      {getPreview(message.body)}
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-1">
+                      {message.attachments && message.attachments.length > 0 && (
+                        <div className="flex items-center gap-1 text-gray-500">
+                          <Paperclip className="w-3 h-3" />
+                          <span className="text-[10px]">{message.attachments.length}</span>
+                        </div>
+                      )}
+                      {message.reply_count !== undefined && message.reply_count > 0 && (
+                        <div className="flex items-center gap-1 text-blue-600">
+                          <MessageSquare className="w-3 h-3" />
+                          <span className="text-[10px] font-semibold">{message.reply_count}</span>
+                        </div>
+                      )}
+                      {!message.is_read && (
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-white border-t border-gray-100 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600">
+                Page {currentPage}/{totalPages}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => changePage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <button
+                  onClick={() => changePage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="bg-white border-t border-gray-100 px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-600">
-              Page {currentPage} of {totalPages} • <span className="text-gray-900">{totalMessages}</span> total messages
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => changePage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all shadow-sm hover:shadow"
-              >
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <button
-                onClick={() => changePage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all shadow-sm hover:shadow"
-              >
-                <ChevronRight className="w-5 h-5 text-gray-600" />
-              </button>
+      {/* RIGHT PANE - Conversation View */}
+      <div className="flex-1 flex flex-col bg-white">
+        {!selectedMessage && !currentThread ? (
+          /* Empty State - No message selected */
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="flex flex-col items-center gap-4 text-center max-w-md">
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full">
+                <Mail className="w-16 h-16 text-blue-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-gray-900">Select a message to view</h3>
+                <p className="text-sm text-gray-500">
+                  Choose a message from the list to read the full conversation and reply
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : isLoadingThread ? (
+          /* Loading State */
+          <div className="flex-1 flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-600 font-medium">Loading conversation...</p>
+            </div>
+          </div>
+        ) : currentThread ? (
+          /* Thread View */
+          <>
+            {/* Thread Header */}
+            <div className="border-b border-gray-200 px-6 py-4 bg-gradient-to-r from-purple-50 to-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold text-gray-900 truncate">
+                      {currentThread.root_message.subject || 'Message Thread'}
+                    </h3>
+                    <p className="text-sm text-gray-600 font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span>{currentThread.participant_count} participants</span>
+                        <span className="text-gray-400">•</span>
+                        <span>{currentThread.replies.length} replies</span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    closeThread();
+                  }}
+                  className="p-2 hover:bg-white rounded-lg transition-all hover:shadow-md flex-shrink-0 ml-4"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </div>
+
+            {/* Messages Container */}
+            <div className="flex-1 overflow-y-auto bg-gray-50 p-6 space-y-4">
+              {/* Root Message */}
+              <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-purple-100">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0">
+                    {(currentThread.root_message.sender?.display_name || 'System').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-bold text-gray-900 text-base truncate">
+                        {currentThread.root_message.sender?.display_name || 'System'}
+                      </span>
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-700 flex-shrink-0">
+                        {currentThread.root_message.sender?.role || 'system'}
+                      </span>
+                      <span className="text-xs text-gray-400 flex-shrink-0">•</span>
+                      <span className="text-xs font-medium text-gray-500 flex-shrink-0">
+                        {formatDate(currentThread.root_message.created_at)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium truncate">
+                      To: <span className="text-gray-900">{currentThread.root_message.recipient?.display_name || 'All Recipients'}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
+                  {currentThread.root_message.body}
+                </div>
+                {currentThread.root_message.attachments && currentThread.root_message.attachments.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {currentThread.root_message.attachments.map((att) => (
+                      <div
+                        key={att.id}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 border-2 border-purple-200 rounded-xl text-sm hover:border-purple-300 transition-all cursor-pointer shadow-sm hover:shadow"
+                        onClick={() => handleDownloadAttachment(att.url, att.file_name)}
+                      >
+                        <Paperclip className="w-4 h-4 text-purple-600" />
+                        <span className="text-gray-900 font-medium">{att.file_name}</span>
+                        <span className="text-gray-500 font-medium">
+                          ({(att.file_size / 1024).toFixed(1)} KB)
+                        </span>
+                        <span className="text-purple-600 text-xs font-bold ml-1">Download</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Replies */}
+              {currentThread.replies.map((reply) => (
+                <div key={reply.id} className="ml-12 bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold shadow-md flex-shrink-0">
+                      {(reply.sender?.display_name || 'User').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-gray-900 truncate">
+                          {reply.sender?.display_name || 'User'}
+                        </span>
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700 flex-shrink-0">
+                          {reply.sender?.role || 'user'}
+                        </span>
+                        <span className="text-xs text-gray-400 flex-shrink-0">•</span>
+                        <span className="text-xs font-medium text-gray-500 flex-shrink-0">
+                          {formatDate(reply.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
+                    {reply.body}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Reply Input */}
+            <div className="border-t border-gray-200 bg-white px-6 py-4">
+              <div className="mb-3">
+                <textarea
+                  value={replyBody}
+                  onChange={(e) => setReplyBody(e.target.value)}
+                  placeholder="Type your reply..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm hover:border-gray-300 resize-none text-gray-900 font-medium text-sm"
+                  maxLength={10000}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-medium text-gray-500">
+                  {replyBody.length} / 10,000 characters
+                </div>
+                <button
+                  onClick={handleReplySubmit}
+                  disabled={!replyBody.trim() || isSubmitting}
+                  className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold text-sm"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send Reply
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Error State */
+          <div className="flex-1 flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="p-4 bg-red-100 rounded-full">
+                <AlertCircle className="w-10 h-10 text-red-600" />
+              </div>
+              <p className="text-lg font-bold text-gray-900">Failed to load conversation</p>
+              <p className="text-sm text-gray-500">Please try again later</p>
+            </div>
+          </div>
+        )}
+      </div>
+      </div>
 
       {/* Compose Modal */}
       {showComposeModal && (
@@ -996,179 +1167,6 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Thread Modal */}
-      {showThreadModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white">
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
-                  <MessageSquare className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    {currentThread?.root_message.subject || 'Message Thread'}
-                  </h3>
-                  {currentThread && (
-                    <p className="text-sm text-gray-600 mt-1 font-medium">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span>{currentThread.participant_count} participants</span>
-                        <span className="text-gray-400">•</span>
-                        <span>{currentThread.replies.length} replies</span>
-                      </span>
-                    </p>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowThreadModal(false);
-                  closeThread();
-                }}
-                className="p-2.5 hover:bg-white rounded-xl transition-all hover:shadow-md"
-              >
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
-
-            {isLoadingThread ? (
-              <div className="flex-1 flex items-center justify-center py-20">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-gray-600 font-medium">Loading conversation...</p>
-                </div>
-              </div>
-            ) : currentThread ? (
-              <>
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto bg-gray-50 p-8 space-y-5">
-                  {/* Root Message */}
-                  <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-purple-100">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                        {(currentThread.root_message.sender?.display_name || 'System').charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-gray-900 text-base">
-                            {currentThread.root_message.sender?.display_name || 'System'}
-                          </span>
-                          <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-700">
-                            {currentThread.root_message.sender?.role || 'system'}
-                          </span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs font-medium text-gray-500">
-                            {formatDate(currentThread.root_message.created_at)}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-600 font-medium">
-                          To: <span className="text-gray-900">{currentThread.root_message.recipient?.display_name || 'All Recipients'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
-                      {currentThread.root_message.body}
-                    </div>
-                    {currentThread.root_message.attachments && currentThread.root_message.attachments.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {currentThread.root_message.attachments.map((att) => (
-                          <div
-                            key={att.id}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 border-2 border-purple-200 rounded-xl text-sm hover:border-purple-300 transition-all cursor-pointer shadow-sm hover:shadow"
-                            onClick={() => handleDownloadAttachment(att.url, att.file_name)}
-                          >
-                            <Paperclip className="w-4 h-4 text-purple-600" />
-                            <span className="text-gray-900 font-medium">{att.file_name}</span>
-                            <span className="text-gray-500 font-medium">
-                              ({(att.file_size / 1024).toFixed(1)} KB)
-                            </span>
-                            <span className="text-purple-600 text-xs font-bold ml-1">Download</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Replies */}
-                  {currentThread.replies.map((reply) => (
-                    <div key={reply.id} className="ml-16 bg-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                          {(reply.sender?.display_name || 'User').charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-900">
-                              {reply.sender?.display_name || 'User'}
-                            </span>
-                            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700">
-                              {reply.sender?.role || 'user'}
-                            </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs font-medium text-gray-500">
-                              {formatDate(reply.created_at)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-gray-800 whitespace-pre-wrap leading-relaxed font-medium">
-                        {reply.body}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Reply Input */}
-                <div className="border-t border-gray-100 bg-white px-8 py-6">
-                  <div className="mb-4">
-                    <textarea
-                      value={replyBody}
-                      onChange={(e) => setReplyBody(e.target.value)}
-                      placeholder="Type your reply..."
-                      rows={4}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm hover:border-gray-300 resize-none text-gray-900 font-medium"
-                      maxLength={10000}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs font-medium text-gray-500">
-                      {replyBody.length} / 10,000 characters
-                    </div>
-                    <button
-                      onClick={handleReplySubmit}
-                      disabled={!replyBody.trim() || isSubmitting}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-5 h-5" />
-                          Send Reply
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center py-20">
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="p-4 bg-red-100 rounded-full">
-                    <AlertCircle className="w-10 h-10 text-red-600" />
-                  </div>
-                  <p className="text-lg font-bold text-gray-900">Failed to load conversation</p>
-                  <p className="text-sm text-gray-500">Please try again later</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
