@@ -1,14 +1,10 @@
-// Supabase Edge Function to send credential emails via SMTP
+// Supabase Edge Function to send credential emails via Resend API
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const SMTP_HOST = Deno.env.get('SMTP_HOST') || 'smtp.office365.com'
-const SMTP_PORT = parseInt(Deno.env.get('SMTP_PORT') || '587')
-const SMTP_USER = Deno.env.get('SMTP_USER')!
-const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD')!
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
@@ -190,57 +186,28 @@ serve(async (req) => {
 </html>
     `
 
-    // Send email via SMTP with proper error handling
-    console.log('SMTP Configuration:', {
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      user: SMTP_USER,
-      hasPassword: !!SMTP_PASSWORD
+    // Send email via Resend API
+    console.log('Sending email to:', to, 'for role:', role);
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'QuranAkh School <noreply@quranakh.com>',
+        to: [to],
+        subject: `Your ${schoolName} Account Credentials`,
+        html: emailHtml,
+      }),
     });
 
-    // Validate SMTP configuration
-    if (!SMTP_USER || !SMTP_PASSWORD) {
-      const errorMsg = 'SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD secrets.';
-      console.error(errorMsg);
-      throw new Error(errorMsg);
-    }
+    const result = await response.json();
+    console.log('Resend API Response:', result);
 
-    let emailSent = false;
-
-    try {
-      console.log('Creating SMTP client...');
-      const client = new SMTPClient({
-        connection: {
-          hostname: SMTP_HOST,
-          port: SMTP_PORT,
-          tls: false,
-          auth: {
-            username: SMTP_USER,
-            password: SMTP_PASSWORD,
-          },
-        },
-      });
-
-      console.log('Sending email...');
-      await client.send({
-        from: SMTP_USER,
-        to: to,
-        subject: `Your ${schoolName} Account Credentials`,
-        content: 'text/html',
-        html: emailHtml,
-      });
-
-      console.log('Closing SMTP connection...');
-      await client.close();
-      emailSent = true;
-      console.log('Email sent successfully via SMTP to:', to);
-    } catch (smtpError: any) {
-      console.error('SMTP Error Details:', {
-        message: smtpError.message,
-        name: smtpError.name,
-        stack: smtpError.stack,
-      });
-      throw new Error(`Failed to send email via SMTP: ${smtpError.message || 'Unknown SMTP error'}`);
+    if (!response.ok) {
+      throw new Error(`Resend API Error: ${JSON.stringify(result)}`);
     }
 
     // Update the sent_at timestamp in database
@@ -251,7 +218,7 @@ serve(async (req) => {
 
     console.log('Email sent successfully, database updated');
 
-    return new Response(JSON.stringify({ success: true, message: 'Email sent successfully' }), {
+    return new Response(JSON.stringify({ success: true, messageId: result.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
