@@ -298,15 +298,25 @@ export default function MessagesPanel({ userRole = 'teacher' }: MessagesPanelPro
     setUploadingAttachment(true);
 
     try {
+      // Get auth session for Authorization header
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Please login to upload files');
+        return;
+      }
+
       // Create FormData
       const formData = new FormData();
       formData.append('file', file);
       formData.append('message_id_temp', Date.now().toString());
 
-      // Upload file
+      // Upload file with Authorization header
       const response = await fetch('/api/messages/upload-attachment', {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: formData,
       });
 
