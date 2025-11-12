@@ -1,17 +1,10 @@
-// Supabase Edge Function to send credential emails using SMTP
+// Supabase Edge Function to send credential emails via Resend API
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-
-// Email configuration - Try multiple methods
-const SMTP_HOST = Deno.env.get('SMTP_HOST') || 'smtp-mail.outlook.com'
-const SMTP_PORT = parseInt(Deno.env.get('SMTP_PORT') || '587')
-const SMTP_USER = Deno.env.get('SMTP_USER') || Deno.env.get('OUTLOOK_EMAIL')
-const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD') || Deno.env.get('OUTLOOK_PASSWORD')
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
@@ -40,6 +33,8 @@ serve(async (req) => {
 
   try {
     const { to, name, email, password, role, schoolName } = await req.json() as EmailRequest
+
+    console.log('Sending email to:', to, 'for role:', role);
 
     // Create email HTML
     const emailHtml = `
@@ -166,7 +161,7 @@ serve(async (req) => {
       </div>
 
       <center>
-        <a href="${SUPABASE_URL}" class="button">Login to Your Account</a>
+        <a href="https://quranakh.com" class="button">Login to Your Account</a>
       </center>
 
       <h3>What's Next?</h3>
@@ -184,87 +179,49 @@ serve(async (req) => {
 
     <div class="footer">
       <p>© ${new Date().getFullYear()} QuranAkh School Management System</p>
-      <p>This is an automated message from akh@quranakh.com</p>
+      <p>This is an automated message from QuranAkh</p>
     </div>
   </div>
 </body>
 </html>
     `
 
-    let emailSent = false;
-    let lastError = null;
+    // Send email via Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'QuranAkh <onboarding@resend.dev>',
+        to: [to],
+        subject: `Your ${schoolName} Account Credentials`,
+        html: emailHtml,
+      }),
+    });
 
-    // Try SMTP first if credentials are provided
-    if (SMTP_USER && SMTP_PASSWORD) {
-      try {
-        console.log('Attempting SMTP send to:', to);
-        console.log('SMTP Config:', { host: SMTP_HOST, port: SMTP_PORT, user: SMTP_USER });
+    const result = await response.json();
+    console.log('Resend API Response:', result);
 
-        const client = new SMTPClient({
-          connection: {
-            hostname: SMTP_HOST,
-            port: SMTP_PORT,
-            tls: false,  // Use STARTTLS for port 587, not direct TLS
-            auth: {
-              username: SMTP_USER,
-              password: SMTP_PASSWORD,
-            },
-          },
-        });
-
-        await client.send({
-          from: SMTP_USER,
-          to: to,
-          subject: `Your ${schoolName} Account Credentials`,
-          content: 'Please view this email in HTML',
-          html: emailHtml,
-        });
-
-        await client.close();
-        emailSent = true;
-        console.log('SMTP send successful');
-      } catch (smtpError) {
-        console.error('SMTP Error Details:', smtpError);
-        lastError = smtpError.message || String(smtpError);
-      }
-    } else {
-      console.error('SMTP credentials missing:', { hasUser: !!SMTP_USER, hasPassword: !!SMTP_PASSWORD });
+    if (!response.ok) {
+      throw new Error(`Resend API Error: ${JSON.stringify(result)}`);
     }
 
-    // Fallback to Resend if SMTP fails and Resend key exists
-    if (!emailSent && RESEND_API_KEY) {
-      const emailResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'QuranAkh <noreply@quranakh.com>',
-          to: [to],
-          subject: `Your ${schoolName} Account Credentials`,
-          html: emailHtml,
-        }),
-      });
+    // Update the sent_at timestamp in database
+    await supabase
+      .from('user_credentials')
+      .update({ sent_at: new Date().toISOString() })
+      .eq('email', email)
 
-      emailSent = emailResponse.ok;
-    }
+    console.log('Email sent successfully, database updated');
 
-    if (emailSent) {
-      // Update the sent_at timestamp in database
-      await supabase
-        .from('user_credentials')
-        .update({ sent_at: new Date().toISOString() })
-        .eq('email', email)
-
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      })
-    } else {
-      throw new Error('Failed to send email - no email service configured')
-    }
+    return new Response(JSON.stringify({ success: true, messageId: result.id }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
   } catch (error) {
+    console.error('Edge function error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
