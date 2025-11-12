@@ -24,7 +24,18 @@ interface EmailRequest {
   schoolName: string
 }
 
+// CORS headers for production
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     const { to, name, email, password, role, schoolName } = await req.json() as EmailRequest
 
@@ -237,7 +248,7 @@ serve(async (req) => {
         .eq('email', email)
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
     } else {
@@ -245,7 +256,7 @@ serve(async (req) => {
     }
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
   }
