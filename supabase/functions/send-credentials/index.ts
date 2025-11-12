@@ -204,7 +204,7 @@ serve(async (req) => {
           connection: {
             hostname: SMTP_HOST,
             port: SMTP_PORT,
-            tls: true,  // Always use TLS for port 587
+            tls: false,  // Use STARTTLS for port 587, not direct TLS
             auth: {
               username: SMTP_USER,
               password: SMTP_PASSWORD,
