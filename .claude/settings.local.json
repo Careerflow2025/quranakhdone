@@ -19,7 +19,8 @@
       "Bash(curl:*)",
       "mcp__supabase__apply_migration",
       "mcp__supabase__update_storage_config",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(npx supabase:*)"
     ],
     "deny": [],
     "ask": []

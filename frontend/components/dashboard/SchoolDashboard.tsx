@@ -1273,26 +1273,15 @@ export default function SchoolDashboard() {
         .eq('id', user?.schoolId || '')
         .single();
 
-      // Call the edge function to send email
-      const emailHtml = `
-        <h2>Welcome to ${(schoolData as any)?.name || 'QuranAkh School'}</h2>
-        <p>Hello ${credential.profiles?.display_name || 'User'},</p>
-        <p>Your ${credential.role} account has been created.</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Your Login Credentials:</h3>
-          <p><strong>Email:</strong> ${credential.email}</p>
-          <p><strong>Password:</strong> ${credential.password}</p>
-          <p><strong>Role:</strong> ${credential.role}</p>
-        </div>
-        <p><strong>Important:</strong> Only the school administration can change passwords.</p>
-        <p>Login at: https://quranakh.com</p>
-      `;
-
-      const { error } = await supabase.functions.invoke('send-email', {
+      // Call the send-credentials edge function with correct payload
+      const { error } = await supabase.functions.invoke('send-credentials', {
         body: {
           to: credential.email,
-          subject: `Your ${(schoolData as any)?.name || 'QuranAkh School'} Login Credentials`,
-          html: emailHtml
+          name: credential.profiles?.display_name || 'User',
+          email: credential.email,
+          password: credential.password,
+          role: credential.role,
+          schoolName: (schoolData as any)?.name || 'QuranAkh School'
         }
       });
 
