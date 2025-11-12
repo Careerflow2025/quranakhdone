@@ -193,28 +193,43 @@ serve(async (req) => {
     // Send email via SMTP
     console.log('Connecting to SMTP:', SMTP_HOST, 'Port:', SMTP_PORT, 'User:', SMTP_USER);
 
-    const client = new SMTPClient({
-      connection: {
-        hostname: SMTP_HOST,
-        port: SMTP_PORT,
-        tls: true,
-        auth: {
-          username: SMTP_USER,
-          password: SMTP_PASSWORD,
+    // Validate SMTP configuration
+    if (!SMTP_USER || !SMTP_PASSWORD) {
+      throw new Error('SMTP credentials not configured. Please set SMTP_USER and SMTP_PASSWORD secrets.');
+    }
+
+    let emailSent = false;
+    let lastError = null;
+
+    try {
+      const client = new SMTPClient({
+        connection: {
+          hostname: SMTP_HOST,
+          port: SMTP_PORT,
+          tls: false, // Use STARTTLS for port 587
+          auth: {
+            username: SMTP_USER,
+            password: SMTP_PASSWORD,
+          },
         },
-      },
-    });
+      });
 
-    await client.send({
-      from: SMTP_USER,
-      to: to,
-      subject: `Your ${schoolName} Account Credentials`,
-      content: 'Please view this email in HTML',
-      html: emailHtml,
-    });
+      await client.send({
+        from: SMTP_USER,
+        to: to,
+        subject: `Your ${schoolName} Account Credentials`,
+        content: 'Please view this email in HTML',
+        html: emailHtml,
+      });
 
-    await client.close();
-    console.log('Email sent successfully via SMTP');
+      await client.close();
+      emailSent = true;
+      console.log('Email sent successfully via SMTP');
+    } catch (smtpError) {
+      console.error('SMTP Error:', smtpError);
+      lastError = smtpError;
+      throw new Error(`Failed to send email via SMTP: ${smtpError.message}`);
+    }
 
     // Update the sent_at timestamp in database
     await supabase
