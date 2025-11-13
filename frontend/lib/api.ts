@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AuthService } from './auth';
+import { supabase } from './supabase';
 
 // Define ApiResponse type locally to avoid import issues
 type ApiResponse<T> = {
@@ -26,8 +27,13 @@ class ApiClient {
   private setupInterceptors() {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
-      (config) => {
-        const token = AuthService.getToken();
+      async (config) => {
+        // CRITICAL FIX: Get token from Supabase session instead of localStorage
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        console.log('🔑 ApiClient interceptor - Token:', token ? 'EXISTS' : 'MISSING');
+
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -46,7 +52,9 @@ class ApiClient {
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          
+
+          console.error('❌ 401 Unauthorized - Token expired or invalid');
+
           // Token expired, logout user
           AuthService.logout();
           return Promise.reject(error);
