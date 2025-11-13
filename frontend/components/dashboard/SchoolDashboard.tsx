@@ -66,6 +66,9 @@ const MISTAKE_TYPES = [
 ];
 
 export default function SchoolDashboard() {
+  // CRITICAL DEBUG: Visual debug panel state
+  const [showDebugPanel, setShowDebugPanel] = useState(true);
+
   // Reports filters (declare early for useReportsData)
   const [reportPeriod, setReportPeriod] = useState('week');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -3106,6 +3109,24 @@ export default function SchoolDashboard() {
   // Component UI render
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* CRITICAL DEBUG PANEL - PERSISTS THROUGH REDIRECTS */}
+      {showDebugPanel && (
+        <div className="fixed top-4 left-4 z-[99999] bg-red-600 text-white p-4 rounded-lg shadow-2xl max-w-md text-xs font-mono">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold text-sm">🔥 DEBUG PANEL</span>
+            <button onClick={() => setShowDebugPanel(false)} className="text-white hover:text-gray-200">✕</button>
+          </div>
+          <div className="space-y-1">
+            <div>Click Time: {localStorage.getItem('DEBUG_quranViewClicked') || 'Not clicked yet'}</div>
+            <div>Tab Before: {localStorage.getItem('DEBUG_activeTab_before') || 'N/A'}</div>
+            <div>Tab After: {localStorage.getItem('DEBUG_activeTab_after') || 'N/A'}</div>
+            <div>Current URL: {typeof window !== 'undefined' ? window.location.pathname : 'N/A'}</div>
+            <div>Active Tab: {activeTab}</div>
+            <div>Has Student: {viewingStudentQuran ? 'YES' : 'NO'}</div>
+          </div>
+        </div>
+      )}
+
       {/* Professional Notification System */}
       <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
         {notifications.map((notification: any) => (
