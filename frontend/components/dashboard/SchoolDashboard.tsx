@@ -9201,22 +9201,32 @@ export default function SchoolDashboard() {
               }
             }}>
               <div className="space-y-4">
+                {/* Editable: Name */}
                 <input
                   name="name"
                   type="text"
                   defaultValue={showEditParent.name}
-                  placeholder="Parent Name"
+                  placeholder="Parent Name *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-                <input
-                  name="email"
-                  type="email"
-                  defaultValue={showEditParent.email}
-                  placeholder="Email"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
+
+                {/* READ-ONLY: Email (cannot be changed) */}
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={showEditParent.email || ''}
+                    placeholder="Email"
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    disabled
+                    readOnly
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                    Locked
+                  </span>
+                </div>
+
+                {/* Editable: Phone */}
                 <input
                   name="phone"
                   type="tel"
@@ -9224,6 +9234,8 @@ export default function SchoolDashboard() {
                   placeholder="Phone Number"
                   className="w-full px-3 py-2 border rounded-lg"
                 />
+
+                {/* Editable: Address */}
                 <input
                   name="address"
                   type="text"
