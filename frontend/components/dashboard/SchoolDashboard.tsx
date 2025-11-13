@@ -4218,15 +4218,20 @@ export default function SchoolDashboard() {
 
             return null;
           })()}
-          {activeTab === 'student-quran' && viewingStudentQuran && (
-            <div className="space-y-6">
-              {/* Header with Back Button */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={() => {
-                        setActiveTab('students');
+          {activeTab === 'student-quran' && viewingStudentQuran && (() => {
+            console.log('🔥🔥🔥 ABOUT TO RENDER QURAN VIEWER');
+            console.log('🔥🔥🔥 studentSafeHighlights:', studentSafeHighlights);
+            console.log('🔥🔥🔥 MISTAKE_TYPES:', MISTAKE_TYPES);
+            console.log('🔥🔥🔥 currentSurah:', currentSurah);
+            return (
+              <div className="space-y-6">
+                {/* Header with Back Button */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={() => {
+                          setActiveTab('students');
                         setViewingStudentQuran(null);
                       }}
                       className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
@@ -4386,7 +4391,8 @@ export default function SchoolDashboard() {
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Teachers Tab */}
           {activeTab === 'teachers' && (

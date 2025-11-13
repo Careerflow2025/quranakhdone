@@ -25,7 +25,8 @@
       "Bash(cat:*)",
       "Bash(git revert:*)",
       "Bash(npx tsc:*)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__chrome-devtools__navigate_page"
     ],
     "deny": [],
     "ask": []
