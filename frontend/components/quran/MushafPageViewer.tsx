@@ -56,7 +56,8 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
     if (studentId) {
       fetchHighlights({ student_id: studentId });
     }
-  }, [studentId, fetchHighlights]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]); // fetchHighlights is stable from Zustand store
 
   const handleMouseUp = useCallback((e: MouseEvent) => {
     if (!isTeacher) return;

@@ -280,7 +280,8 @@ export default function SchoolDashboard() {
     };
 
     loadQuranText();
-  }, [viewingStudentQuran, currentMushafPage, selectedScript, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewingStudentQuran?.id, currentMushafPage, selectedScript, activeTab]); // Only depend on ID, not entire object
 
   // Transform highlights from database format to UI format
   useEffect(() => {
