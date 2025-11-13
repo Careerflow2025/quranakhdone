@@ -156,11 +156,25 @@ export async function GET(
     // For group messages: check message_recipients table
     let hasAccess = false;
 
+    console.log('🔐 Access check for thread:', {
+      threadId: rootMessage.id,
+      currentUserId: user.id,
+      fromUserId: rootMessage.from_user_id,
+      toUserId: rootMessage.to_user_id,
+      hasToUser: !!rootMessage.to_user_id
+    });
+
     if (rootMessage.to_user_id) {
       // Individual message - user must be sender or recipient
       hasAccess =
         rootMessage.from_user_id === user.id ||
         rootMessage.to_user_id === user.id;
+
+      console.log('🔐 Individual message access check:', {
+        isSender: rootMessage.from_user_id === user.id,
+        isRecipient: rootMessage.to_user_id === user.id,
+        hasAccess
+      });
     } else {
       // Group message - check message_recipients table
       const { data: recipientRecord } = await supabase
@@ -174,6 +188,12 @@ export async function GET(
       hasAccess =
         rootMessage.from_user_id === user.id ||
         !!recipientRecord;
+
+      console.log('🔐 Group message access check:', {
+        isSender: rootMessage.from_user_id === user.id,
+        hasRecipientRecord: !!recipientRecord,
+        hasAccess
+      });
     }
 
     // Additional check for replies: if user is involved in any reply, they have access to the thread
@@ -186,7 +206,14 @@ export async function GET(
         .limit(1);
 
       hasAccess = !!involvedReplies && involvedReplies.length > 0;
+
+      console.log('🔐 Reply involvement check:', {
+        replyCount: involvedReplies?.length || 0,
+        hasAccess
+      });
     }
+
+    console.log('🔐 Final access decision:', { hasAccess });
 
     if (!hasAccess) {
       return NextResponse.json<ErrorResponse>(
