@@ -2055,18 +2055,21 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* Notes Conversation Modal */}
+      {/* Notes Conversation Modal - Popup Overlay */}
       {showNotesModal && selectedHighlightForNotes && (
-        <NotesPanel
-          highlightId={selectedHighlightForNotes}
-          onClose={() => {
-            setShowNotesModal(false);
-            setSelectedHighlightForNotes(null);
-          }}
-          studentId={studentInfo.id}
-          teacherId={studentInfo.teacherId}
-          isStudent={true}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <NotesPanel
+              highlightId={selectedHighlightForNotes}
+              mode="modal"
+              onClose={() => {
+                setShowNotesModal(false);
+                setSelectedHighlightForNotes(null);
+              }}
+              readOnly={false}
+            />
+          </div>
+        </div>
       )}
 
     </div>
