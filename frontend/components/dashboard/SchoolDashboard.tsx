@@ -2820,7 +2820,7 @@ export default function SchoolDashboard() {
 
           <nav className="space-y-1">
           {/* Group 1: Overview */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100/60 rounded-lg p-1 border border-blue-200">
+          <div className="bg-gradient-to-br from-rose-50 to-rose-100/60 rounded-lg p-1 border border-rose-200">
           {[
             { id: 'overview', label: 'Overview', icon: Home },
           ].map((item: any) => {
