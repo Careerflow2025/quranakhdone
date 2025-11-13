@@ -3303,7 +3303,9 @@ export default function SchoolDashboard() {
               <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8">
                   {/* Total Students Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('students')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3320,7 +3322,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Teachers Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('teachers')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3337,7 +3341,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Parents Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('parents')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3354,7 +3360,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Classes Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-orange-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('classes')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-orange-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3371,7 +3379,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Homework Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-cyan-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('homework')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-cyan-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3388,7 +3398,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Highlights Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('highlights')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3405,7 +3417,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Assignments Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('assignments')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
@@ -3422,7 +3436,9 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Total Targets Card */}
-                  <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-pink-500 overflow-hidden">
+                  <div
+                    onClick={() => setActiveTab('targets')}
+                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-pink-500 overflow-hidden cursor-pointer">
                     <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
