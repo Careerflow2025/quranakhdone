@@ -128,6 +128,9 @@ export default function SchoolDashboard() {
   // Active tab state (needed before useEffect that checks it)
   const [activeTab, setActiveTab] = useState('overview');
 
+  // State for viewing student's Quran view
+  const [viewingStudentQuran, setViewingStudentQuran] = useState<any>(null);
+
   // Section notifications hook for badge system
   const { markSectionRead, getSectionCount } = useSectionNotifications();
 
@@ -2684,6 +2687,12 @@ export default function SchoolDashboard() {
     setShowStudentDetails(student);
   };
 
+  // View Student's Quran
+  const handleViewStudentQuran = (student: any) => {
+    setViewingStudentQuran(student);
+    setActiveTab('student-quran');
+  };
+
   // Edit Student
   const handleEditStudent = (student: any) => {
     setEditingStudent(student);
@@ -3702,6 +3711,13 @@ export default function SchoolDashboard() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center space-x-1">
                                   <button
+                                    onClick={() => handleViewStudentQuran(student)}
+                                    className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                                    title="View Quran"
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                  </button>
+                                  <button
                                     onClick={() => handleViewStudent(student)}
                                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                                     title="View Details"
@@ -3779,6 +3795,13 @@ export default function SchoolDashboard() {
                             <span className="text-xs text-gray-500">ID: {student.id.substring(0, 8)}</span>
                             <div className="flex items-center space-x-1">
                               <button
+                                onClick={() => handleViewStudentQuran(student)}
+                                className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg transition"
+                                title="View Quran"
+                              >
+                                <BookOpen className="w-4 h-4" />
+                              </button>
+                              <button
                                 onClick={() => handleViewStudent(student)}
                                 className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition"
                                 title="View"
@@ -3798,6 +3821,86 @@ export default function SchoolDashboard() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Student Quran View Tab - School Admin viewing a specific student's Quran */}
+          {activeTab === 'student-quran' && viewingStudentQuran && (
+            <div className="space-y-6">
+              {/* Header with Back Button */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => {
+                        setActiveTab('students');
+                        setViewingStudentQuran(null);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    >
+                      <CornerUpLeft className="w-4 h-4" />
+                      <span>Back to Students</span>
+                    </button>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {viewingStudentQuran.name ? viewingStudentQuran.name.split(' ').map((n: any) => n[0]).join('').toUpperCase() : 'ST'}
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">{viewingStudentQuran.name}'s Quran View</h2>
+                        <p className="text-sm text-gray-500">View this student's Quran progress, highlights, and annotations</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info Banner */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start space-x-3">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Viewing as School Administrator</p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      You are viewing {viewingStudentQuran.name}'s Quran interface with their highlights and annotations.
+                      This is a read-only view for monitoring student progress.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Student's Quran Interface - Embedded Student Dashboard for this student */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="text-center py-12">
+                  <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Student Quran View</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    The full Quran interface for {viewingStudentQuran.name} will be displayed here with:
+                  </p>
+                  <div className="max-w-md mx-auto text-left space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Student's highlights and annotations (read-only)</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Quran text with their selected script</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Navigation to view their progress across all surahs</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Teacher notes and feedback on their recitation</span>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Implementation Note:</strong> The full Quran viewer component will be integrated here,
+                      passing <code className="bg-yellow-100 px-1 rounded">studentId="{viewingStudentQuran.id}"</code> to fetch
+                      this specific student's data.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
