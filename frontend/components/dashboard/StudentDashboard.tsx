@@ -15,6 +15,7 @@ import {
   getDynamicScriptStyling
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
+import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import MushafPageViewer from '@/components/quran/MushafPageViewer';
 import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
 import MessagesPanel from '@/components/messages/MessagesPanel';
