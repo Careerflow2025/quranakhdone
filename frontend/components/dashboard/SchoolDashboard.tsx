@@ -2855,7 +2855,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 2: People & Classes */}
-          <div className="bg-gray-50/50 rounded-lg p-1 space-y-1">
+          <div className="bg-gray-100/40 rounded-lg p-1 space-y-1">
             {[
               { id: 'students', label: 'Students', icon: GraduationCap },
               { id: 'teachers', label: 'Teachers', icon: Users },
@@ -2895,7 +2895,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 3: Learning Activities */}
-          <div className="bg-blue-50/30 rounded-lg p-1 space-y-1">
+          <div className="bg-gray-50/60 rounded-lg p-1 space-y-1">
             {[
               { id: 'homework', label: 'Homework', icon: BookOpen },
               { id: 'highlights', label: 'Highlights', icon: Highlighter },
@@ -2934,7 +2934,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 4: Progress & Assessment */}
-          <div className="bg-emerald-50/30 rounded-lg p-1 space-y-1">
+          <div className="bg-gray-100/60 rounded-lg p-1 space-y-1">
             {[
               { id: 'targets', label: 'Targets', icon: Target },
               { id: 'attendance', label: 'Attendance', icon: CheckSquare },
@@ -3009,7 +3009,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 6: Admin & Settings */}
-          <div className="bg-purple-50/30 rounded-lg p-1 space-y-1">
+          <div className="bg-gray-50/40 rounded-lg p-1 space-y-1">
             {[
               { id: 'calendar', label: 'Calendar', icon: Calendar },
               { id: 'reports', label: 'Reports', icon: BarChart3 },
