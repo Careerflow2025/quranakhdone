@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import QuranViewer from '@/components/quran/QuranViewer';
+import MushafViewer from '@/components/quran/MushafViewer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,15 +149,12 @@ export default function StudentQuranPage() {
         </CardContent>
       </Card>
 
-      {/* Quran Viewer */}
-      <div className="bg-white rounded-lg shadow">
-        <QuranViewer
-          surah={selectedSurah}
-          studentId={studentId}
-          isTeacher={false}
-          className="p-6"
-        />
-      </div>
+      {/* Mushaf Viewer */}
+      <MushafViewer
+        surah={selectedSurah}
+        studentId={studentId}
+        isTeacher={false}
+      />
 
       {/* Reading Tips */}
       <Card className="bg-blue-50 border-blue-200">
