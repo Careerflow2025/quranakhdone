@@ -39,22 +39,29 @@ export const useHighlightStore = create<HighlightState>((set, get) => ({
 
   fetchHighlights: async (params) => {
     set({ isLoading: true });
-    
+
     try {
       const response = await highlightApi.getHighlights(params);
-      
+
       if (response.success && response.data) {
-        set({ 
-          highlights: response.data as Highlight[], 
-          isLoading: false 
+        // SAFETY: Ensure response.data is an array before setting
+        const highlightsArray = Array.isArray(response.data)
+          ? response.data
+          : [];
+
+        console.log('✅ Highlights loaded:', highlightsArray.length);
+
+        set({
+          highlights: highlightsArray as Highlight[],
+          isLoading: false
         });
       } else {
         console.error('Failed to fetch highlights:', response.error);
-        set({ isLoading: false });
+        set({ highlights: [], isLoading: false });
       }
     } catch (error) {
       console.error('Failed to fetch highlights:', error);
-      set({ isLoading: false });
+      set({ highlights: [], isLoading: false });
     }
   },
 

@@ -126,6 +126,12 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
   };
 
   const getAyahHighlights = (ayahNumber: number): Highlight[] => {
+    // SAFETY: Ensure highlights is always an array before filtering
+    if (!Array.isArray(highlights)) {
+      console.error('⚠️ highlights is not an array:', typeof highlights, highlights);
+      return [];
+    }
+
     return highlights.filter(h => {
       // Match by ayah number and surah
       const ayahData = pageData?.ayahs.find(a => a.number === ayahNumber);
