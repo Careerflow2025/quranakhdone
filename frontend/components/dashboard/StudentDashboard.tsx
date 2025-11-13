@@ -2057,8 +2057,8 @@ export default function StudentDashboard() {
 
       {/* Notes Conversation Modal - Popup Overlay */}
       {showNotesModal && selectedHighlightForNotes && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col">
             <NotesPanel
               highlightId={selectedHighlightForNotes}
               mode="modal"
