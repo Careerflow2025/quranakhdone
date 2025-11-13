@@ -33,7 +33,7 @@ import {
   TrendingUp, Eye, Mail, Phone, MapPin, BarChart3, ChevronRight, ChevronLeft, Folder, FolderOpen, LogOut,
   Menu, Shield, Key, CreditCard, DollarSign, Target, Activity, Zap, Package, Grid, List,
   ChevronDown, School, PieChart, Move, ArrowRight, X, XCircle, CheckCircle, RefreshCw, Send, Plus, Info,
-  User, Star, CornerUpLeft, Paperclip, MessageSquare, MessageCircle, Bookmark, CheckSquare, Brain, ClipboardCheck, Highlighter
+  User, Star, CornerUpLeft, Paperclip, MessageSquare, MessageCircle, Bookmark, CheckSquare, Brain, ClipboardCheck, Highlighter, Volume2
 } from 'lucide-react';
 
 const ClassBuilder = dynamic(() => import('./ClassBuilder'), {
