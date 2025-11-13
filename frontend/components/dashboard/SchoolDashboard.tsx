@@ -9774,6 +9774,7 @@ export default function SchoolDashboard() {
                     userId: editingStudent.user_id,
                     name: formData.get('name'),
                     dob: formData.get('dob'),
+                    age: formData.get('age') ? parseInt(formData.get('age') as string) : null,
                     gender: formData.get('gender'),
                     grade: formData.get('grade'),
                     phone: formData.get('phone'),
@@ -9886,20 +9887,16 @@ export default function SchoolDashboard() {
                     className="w-full px-3 py-2 border rounded-lg"
                   />
 
-                  {/* READ-ONLY: Age (calculated from DOB) */}
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={editingStudent.age != null ? editingStudent.age : ''}
-                      placeholder="Age"
-                      className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
-                      disabled
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                      Auto
-                    </span>
-                  </div>
+                  {/* Editable: Age */}
+                  <input
+                    name="age"
+                    type="number"
+                    defaultValue={editingStudent.age != null ? editingStudent.age : ''}
+                    placeholder="Age"
+                    min="0"
+                    max="120"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
