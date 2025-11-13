@@ -3366,6 +3366,7 @@ export default function SchoolDashboard() {
               { id: 'reports', label: 'Reports', icon: BarChart3 },
               { id: 'credentials', label: 'Credentials', icon: Key },
               { id: 'settings', label: 'Settings', icon: Settings },
+              { id: 'finance', label: 'Finance', icon: DollarSign },
             ].map((item: any) => {
               const hasNotifications = getSectionCount(item.id) > 0;
               return (
@@ -8148,6 +8149,24 @@ export default function SchoolDashboard() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Settings Section Test</h2>
               <p className="text-gray-600 mb-4">If you see this, the tab is working!</p>
               <SettingsSection />
+            </div>
+          )}
+
+          {/* Finance Tab - Coming Soon */}
+          {activeTab === 'finance' && (
+            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+              <div className="text-center space-y-6 p-8">
+                <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full">
+                  <DollarSign className="w-12 h-12 text-emerald-600" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold text-gray-900">Finance Module</h2>
+                  <p className="text-xl text-gray-600">Coming Soon</p>
+                </div>
+                <p className="text-gray-500 max-w-md mx-auto">
+                  We're working on bringing you comprehensive financial management tools including billing, payments, and reporting.
+                </p>
+              </div>
             </div>
           )}
         </div>
