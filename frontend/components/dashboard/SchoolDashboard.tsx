@@ -409,6 +409,57 @@ export default function SchoolDashboard() {
     }
   }, [selectedHighlightForNotes, dbHighlights, quranText]);
 
+  // Fetch teacher for the viewing student (for pen annotations)
+  useEffect(() => {
+    async function fetchStudentTeacher() {
+      if (!viewingStudentQuran?.id) return;
+
+      try {
+        // Get the student's teacher through class enrollment
+        const { data: teacherData, error } = await supabase
+          .from('class_enrollments')
+          .select(`
+            student_id,
+            class_id,
+            classes!inner(
+              id,
+              name,
+              class_teachers!inner(
+                teacher_id,
+                teachers!inner(
+                  id,
+                  user_id
+                )
+              )
+            )
+          `)
+          .eq('student_id', viewingStudentQuran.id)
+          .limit(1)
+          .single();
+
+        if (error) {
+          console.error('❌ Error fetching student teacher:', error);
+          return;
+        }
+
+        if (teacherData && teacherData.classes?.class_teachers?.[0]?.teachers?.id) {
+          const teacherId = teacherData.classes.class_teachers[0].teachers.id;
+          console.log('✅ Found teacher for student:', teacherId);
+
+          // Update viewingStudentQuran with teacherId
+          setViewingStudentQuran((prev: any) => ({
+            ...prev,
+            teacherId: teacherId
+          }));
+        }
+      } catch (err) {
+        console.error('❌ Error in fetchStudentTeacher:', err);
+      }
+    }
+
+    fetchStudentTeacher();
+  }, [viewingStudentQuran?.id]);
+
   // Handle clicking on a highlight to view notes (read-only for school admin)
   const handleHighlightClick = (highlightId: string) => {
     console.log('👁️ School admin viewing highlight:', highlightId);
