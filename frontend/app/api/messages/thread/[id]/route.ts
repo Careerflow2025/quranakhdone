@@ -177,21 +177,23 @@ export async function GET(
       });
     } else {
       // Group message - check message_recipients table
-      const { data: recipientRecord } = await supabase
+      const { data: recipientRecords, error: recipientError } = await supabase
         .from('message_recipients')
         .select('id')
         .eq('message_id', rootMessage.id)
         .eq('recipient_id', user.id)
-        .single();
+        .limit(1);
 
       // User has access if they are the sender OR a recipient of the group message
       hasAccess =
         rootMessage.from_user_id === user.id ||
-        !!recipientRecord;
+        (recipientRecords && recipientRecords.length > 0);
 
       console.log('🔐 Group message access check:', {
         isSender: rootMessage.from_user_id === user.id,
-        hasRecipientRecord: !!recipientRecord,
+        hasRecipientRecord: recipientRecords && recipientRecords.length > 0,
+        recipientRecordCount: recipientRecords?.length || 0,
+        recipientError: recipientError?.message,
         hasAccess
       });
     }

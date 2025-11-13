@@ -22,7 +22,9 @@
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(npx supabase:*)",
       "Bash(git reset:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git revert:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
