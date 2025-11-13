@@ -2854,7 +2854,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-gray-200 my-2" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-gray-400 to-transparent my-3 opacity-50" />
 
           {/* Group 2: People & Classes */}
           <div className="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg p-1 space-y-1 border border-blue-100/40">
@@ -2894,7 +2894,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-gray-200 my-2" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-gray-400 to-transparent my-3 opacity-50" />
 
           {/* Group 3: Learning Activities */}
           <div className="bg-gradient-to-br from-slate-50 to-gray-100/50 rounded-lg p-1 space-y-1 border border-slate-200/50">
@@ -2933,7 +2933,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-gray-200 my-2" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-gray-400 to-transparent my-3 opacity-50" />
 
           {/* Group 4: Progress & Assessment */}
           <div className="bg-gradient-to-br from-sky-50/30 to-cyan-50/30 rounded-lg p-1 space-y-1 border border-sky-100/40">
@@ -2973,7 +2973,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-gray-200 my-2" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-gray-400 to-transparent my-3 opacity-50" />
 
           {/* Group 5: Communication */}
           <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg p-1 border border-slate-200/50">
@@ -3010,7 +3010,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="h-px bg-gray-200 my-2" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-gray-400 to-transparent my-3 opacity-50" />
 
           {/* Group 6: Admin & Settings */}
           <div className="bg-gradient-to-br from-indigo-50/30 to-purple-50/30 rounded-lg p-1 space-y-1 border border-indigo-100/40">
