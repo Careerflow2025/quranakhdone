@@ -4239,7 +4239,7 @@ export default function SchoolDashboard() {
                         {viewingStudentQuran.name ? viewingStudentQuran.name.split(' ').map((n: any) => n[0]).join('').toUpperCase() : 'ST'}
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{viewingStudentQuran.name}'s Quran View</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">{viewingStudentQuran.name || 'Student'}'s Quran View</h2>
                         <p className="text-sm text-gray-500">View this student's Quran progress, highlights, and annotations</p>
                       </div>
                     </div>
@@ -4252,7 +4252,7 @@ export default function SchoolDashboard() {
                   <div>
                     <p className="text-sm font-medium text-blue-900">Viewing as School Administrator</p>
                     <p className="text-xs text-blue-700 mt-1">
-                      You are viewing {viewingStudentQuran.name}'s Quran interface with their highlights and annotations.
+                      You are viewing {viewingStudentQuran.name || 'this student'}'s Quran interface with their highlights and annotations.
                       This is a read-only view for monitoring student progress.
                     </p>
                   </div>
