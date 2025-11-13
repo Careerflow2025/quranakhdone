@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import MushafViewer from '@/components/quran/MushafViewer';
+import MushafPageViewer from '@/components/quran/MushafPageViewer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,7 +133,7 @@ export default function TeacherQuranPage() {
       </div>
 
       {/* Mushaf Viewer */}
-      <MushafViewer
+      <MushafPageViewer
         surah={selectedSurah}
         studentId={selectedStudent}
         isTeacher={true}
