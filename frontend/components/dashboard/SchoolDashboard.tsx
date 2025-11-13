@@ -2820,7 +2820,7 @@ export default function SchoolDashboard() {
 
           <nav className="space-y-1">
           {/* Group 1: Overview */}
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-2 border border-slate-200/50 shadow-sm">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg p-1 border border-slate-200/50">
           {[
             { id: 'overview', label: 'Overview', icon: Home },
           ].map((item: any) => {
@@ -2854,14 +2854,10 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-gray-300"></div>
-            </div>
-          </div>
+          <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 2: People & Classes */}
-          <div className="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-xl p-2 space-y-1 border border-blue-100/40 shadow-sm">
+          <div className="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg p-1 space-y-1 border border-blue-100/40">
             {[
               { id: 'students', label: 'Students', icon: GraduationCap },
               { id: 'teachers', label: 'Teachers', icon: Users },
@@ -2898,14 +2894,10 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-gray-300"></div>
-            </div>
-          </div>
+          <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 3: Learning Activities */}
-          <div className="bg-gradient-to-br from-slate-50 to-gray-100/50 rounded-xl p-2 space-y-1 border border-slate-200/50 shadow-sm">
+          <div className="bg-gradient-to-br from-slate-50 to-gray-100/50 rounded-lg p-1 space-y-1 border border-slate-200/50">
             {[
               { id: 'homework', label: 'Homework', icon: BookOpen },
               { id: 'highlights', label: 'Highlights', icon: Highlighter },
@@ -2941,14 +2933,10 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-gray-300"></div>
-            </div>
-          </div>
+          <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 4: Progress & Assessment */}
-          <div className="bg-gradient-to-br from-sky-50/30 to-cyan-50/30 rounded-xl p-2 space-y-1 border border-sky-100/40 shadow-sm">
+          <div className="bg-gradient-to-br from-sky-50/30 to-cyan-50/30 rounded-lg p-1 space-y-1 border border-sky-100/40">
             {[
               { id: 'targets', label: 'Targets', icon: Target },
               { id: 'attendance', label: 'Attendance', icon: CheckSquare },
@@ -2985,14 +2973,10 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-gray-300"></div>
-            </div>
-          </div>
+          <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 5: Communication */}
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-2 border border-slate-200/50 shadow-sm">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg p-1 border border-slate-200/50">
           {[
             { id: 'messages', label: 'Messages', icon: Mail },
           ].map((item: any) => {
@@ -3026,14 +3010,10 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Separator */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-gray-300"></div>
-            </div>
-          </div>
+          <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 6: Admin & Settings */}
-          <div className="bg-gradient-to-br from-indigo-50/30 to-purple-50/30 rounded-xl p-2 space-y-1 border border-indigo-100/40 shadow-sm">
+          <div className="bg-gradient-to-br from-indigo-50/30 to-purple-50/30 rounded-lg p-1 space-y-1 border border-indigo-100/40">
             {[
               { id: 'calendar', label: 'Calendar', icon: Calendar },
               { id: 'reports', label: 'Reports', icon: BarChart3 },
