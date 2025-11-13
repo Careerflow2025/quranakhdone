@@ -290,6 +290,8 @@ export default function StudentDashboard() {
   const [composeMessage, setComposeMessage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
 
   // Get notifications from API
   const {
@@ -2051,6 +2053,20 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Notes Conversation Modal */}
+      {showNotesModal && selectedHighlightForNotes && (
+        <NotesPanel
+          highlightId={selectedHighlightForNotes}
+          onClose={() => {
+            setShowNotesModal(false);
+            setSelectedHighlightForNotes(null);
+          }}
+          studentId={studentInfo.id}
+          teacherId={studentInfo.teacherId}
+          isStudent={true}
+        />
       )}
 
     </div>
