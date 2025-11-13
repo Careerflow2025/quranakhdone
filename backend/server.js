@@ -216,7 +216,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle new assignment notifications
-  socket.on('assignment_created', (data) => {
+  socket.on('assignment_created', async (data) => {
     // Notify the student who was assigned
     if (data.student_id) {
       const { data: studentUser } = await supabase
@@ -224,7 +224,7 @@ io.on('connection', (socket) => {
         .select('user_id')
         .eq('id', data.student_id)
         .single();
-      
+
       if (studentUser) {
         socket.to(`user_${studentUser.user_id}`).emit('new_assignment', {
           ...data,
@@ -239,7 +239,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle voice note uploads for real-time feedback
-  socket.on('voice_note_uploaded', (data) => {
+  socket.on('voice_note_uploaded', async (data) => {
     // Notify relevant users (student and parents)
     if (data.student_id) {
       // Get student user ID
@@ -248,7 +248,7 @@ io.on('connection', (socket) => {
         .select('user_id')
         .eq('id', data.student_id)
         .single();
-      
+
       if (studentUser) {
         socket.to(`user_${studentUser.user_id}`).emit('new_voice_note', {
           ...data,
@@ -257,13 +257,13 @@ io.on('connection', (socket) => {
             displayName: socket.user.displayName
           }
         });
-        
+
         // Also notify parents
         const { data: parents } = await supabase
           .from('parent_students')
           .select('parents(user_id)')
           .eq('student_id', data.student_id);
-        
+
         parents?.forEach(parent => {
           socket.to(`user_${parent.parents.user_id}`).emit('new_voice_note', {
             ...data,

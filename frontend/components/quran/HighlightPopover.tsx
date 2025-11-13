@@ -119,25 +119,23 @@ export default function HighlightPopover({
                 <button
                   key={mistake.value}
                   onClick={() => setSelectedMistake(mistake.value)}
-                  className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  className={`p-3 rounded-lg border-2 text-left transition-all hover:opacity-90 ${
                     selectedMistake === mistake.value
-                      ? 'border-current bg-opacity-20'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'ring-2 ring-offset-2'
+                      : ''
                   }`}
                   style={{
-                    backgroundColor: selectedMistake === mistake.value
-                      ? `${mistake.color}20`
-                      : undefined,
-                    borderColor: selectedMistake === mistake.value
-                      ? mistake.color
-                      : undefined,
-                    color: selectedMistake === mistake.value
-                      ? mistake.color
-                      : undefined,
+                    backgroundColor: `${mistake.color}30`,
+                    borderColor: mistake.color,
+                    color: mistake.color,
+                    ...(selectedMistake === mistake.value && {
+                      backgroundColor: `${mistake.color}50`,
+                      ringColor: mistake.color,
+                    }),
                   }}
                 >
-                  <div className="font-medium text-sm">{mistake.label}</div>
-                  <div className="text-xs opacity-80 mt-1">
+                  <div className="font-bold text-sm">{mistake.label}</div>
+                  <div className="text-xs mt-1" style={{ opacity: 0.85 }}>
                     {mistake.description}
                   </div>
                 </button>
