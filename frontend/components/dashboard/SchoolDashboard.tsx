@@ -166,6 +166,11 @@ export default function SchoolDashboard() {
   const [penWidth, setPenWidth] = useState(2);
   const [eraserMode, setEraserMode] = useState(false);
 
+  // Conversation Modal States (view-only for school admin) - MUST be declared before useEffect that uses them
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [conversationData, setConversationData] = useState<any>(null);
+
   // Fetch highlights for the student being viewed (for Quran viewer)
   const {
     highlights: dbHighlights,
@@ -693,11 +698,6 @@ export default function SchoolDashboard() {
   const [showViewTeacher, setShowViewTeacher] = useState(false);
   const [showEditTeacher, setShowEditTeacher] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
-
-  // Conversation Modal States (view-only for school admin)
-  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
-  const [showNotesModal, setShowNotesModal] = useState(false);
-  const [conversationData, setConversationData] = useState<any>(null);
 
   // Homework State (view-only for school)
   const [homeworkFilter, setHomeworkFilter] = useState({
