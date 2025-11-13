@@ -307,9 +307,12 @@ export default function SchoolDashboard() {
                   ayahIndex,
                   wordIndex,
                   mistakeType: dbHighlight.type,
+                  color: dbHighlight.color,
                   surahNumber: dbHighlight.surah,
                   ayahNumber: ayahNum,
-                  isCompleted: dbHighlight.status === 'completed'
+                  isCompleted: dbHighlight.status === 'gold',
+                  status: dbHighlight.status,
+                  isFullAyah: true
                 });
               }
             }
@@ -325,9 +328,12 @@ export default function SchoolDashboard() {
                 ayahIndex,
                 wordIndex,
                 mistakeType: dbHighlight.type,
+                color: dbHighlight.color,
                 surahNumber: dbHighlight.surah,
                 ayahNumber: dbHighlight.ayah_start,
-                isCompleted: dbHighlight.status === 'completed'
+                isCompleted: dbHighlight.status === 'gold',
+                status: dbHighlight.status,
+                isFullAyah: false
               });
             }
           }
@@ -341,10 +347,72 @@ export default function SchoolDashboard() {
   // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
   const studentSafeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
 
+  // Load conversation data when highlight is selected
+  useEffect(() => {
+    if (selectedHighlightForNotes && dbHighlights) {
+      console.log('💬 Loading conversation for highlight:', selectedHighlightForNotes);
+
+      // Find the highlight in dbHighlights by ID
+      const highlightWithNotes = dbHighlights.find((h: any) => h.id === selectedHighlightForNotes);
+
+      if (highlightWithNotes) {
+        // Get highlighted text from Quran
+        let highlightedText = '';
+        let wordRange = '';
+
+        if (quranText && quranText.ayahs && quranText.ayahs.length > 0) {
+          // Full ayah highlight
+          if (highlightWithNotes.word_start === null || highlightWithNotes.word_start === undefined) {
+            const ayahsInRange = quranText.ayahs.filter((a: any) =>
+              a.number >= highlightWithNotes.ayah_start && a.number <= highlightWithNotes.ayah_end
+            );
+            highlightedText = ayahsInRange.map((a: any) => a.text).join(' ');
+            wordRange = highlightWithNotes.ayah_start === highlightWithNotes.ayah_end
+              ? `Full Ayah ${highlightWithNotes.ayah_start}`
+              : `Full Ayahs ${highlightWithNotes.ayah_start}-${highlightWithNotes.ayah_end}`;
+          } else {
+            // Word-level highlight
+            const ayah = quranText.ayahs.find((a: any) => a.number === highlightWithNotes.ayah_start);
+            if (ayah && ayah.words) {
+              const words = ayah.words.slice(highlightWithNotes.word_start, highlightWithNotes.word_end + 1);
+              highlightedText = words.map((w: any) => typeof w === 'string' ? w : w.text).join(' ');
+              wordRange = highlightWithNotes.word_start === highlightWithNotes.word_end
+                ? `Word ${highlightWithNotes.word_start + 1}`
+                : `Words ${highlightWithNotes.word_start + 1}-${highlightWithNotes.word_end + 1}`;
+            }
+          }
+        }
+
+        // Structure the conversation data
+        const conversation = {
+          id: highlightWithNotes.id,
+          surah: highlightWithNotes.surah,
+          ayah: highlightWithNotes.ayah_start,
+          wordRange,
+          highlightedText,
+          mistakeType: highlightWithNotes.type,
+          color: highlightWithNotes.color,
+          createdAt: highlightWithNotes.created_at,
+          notes: highlightWithNotes.notes || []
+        };
+
+        setConversationData(conversation);
+        console.log('✅ Conversation data loaded:', conversation);
+      } else {
+        console.error('❌ Highlight not found in dbHighlights');
+      }
+    }
+  }, [selectedHighlightForNotes, dbHighlights, quranText]);
+
   // Handle clicking on a highlight to view notes (read-only for school admin)
   const handleHighlightClick = (highlightId: string) => {
     console.log('👁️ School admin viewing highlight:', highlightId);
-    // For now, just log - can add modal to show notes in future
+    // Find the database ID from the UI highlight ID
+    const highlight = highlights.find((h: any) => h.id === highlightId);
+    if (highlight && highlight.dbId) {
+      setSelectedHighlightForNotes(highlight.dbId);
+      setShowNotesModal(true);
+    }
   };
 
   // Fetch school-wide statistics for overview tab
@@ -625,6 +693,11 @@ export default function SchoolDashboard() {
   const [showViewTeacher, setShowViewTeacher] = useState(false);
   const [showEditTeacher, setShowEditTeacher] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
+
+  // Conversation Modal States (view-only for school admin)
+  const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [conversationData, setConversationData] = useState<any>(null);
 
   // Homework State (view-only for school)
   const [homeworkFilter, setHomeworkFilter] = useState({
@@ -11013,6 +11086,154 @@ export default function SchoolDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Notes Conversation Modal - Read-Only for School Admin */}
+      {showNotesModal && conversationData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <MessageCircle className="w-6 h-6 mr-2" />
+                  Conversation Thread
+                </h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  Surah {conversationData.surah}, Ayah {conversationData.ayah} • {conversationData.wordRange}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowNotesModal(false);
+                  setSelectedHighlightForNotes(null);
+                  setConversationData(null);
+                }}
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* View Only Badge */}
+            <div className="bg-yellow-50 px-6 py-3 border-b border-yellow-100">
+              <div className="flex items-center text-yellow-700">
+                <Eye className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">View Only Mode - School admin cannot reply to conversations</span>
+              </div>
+            </div>
+
+            {/* Modal Body - Conversation Thread */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              {/* Original Highlighted Text */}
+              {conversationData.highlightedText && (
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 mb-6 border border-gray-200">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Highlighter className="w-4 h-4 text-gray-600" />
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                        Original Highlight
+                      </span>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: conversationData.color === 'gold' ? 'rgba(250,204,21,0.2)' :
+                          conversationData.color === 'green' ? 'rgba(34,197,94,0.2)' :
+                          conversationData.color === 'purple' ? 'rgba(147,51,234,0.2)' :
+                          conversationData.color === 'orange' ? 'rgba(249,115,22,0.2)' :
+                          conversationData.color === 'red' ? 'rgba(239,68,68,0.2)' :
+                          conversationData.color === 'brown' ? 'rgba(113,63,18,0.2)' :
+                          'rgba(107,114,128,0.2)',
+                        color: conversationData.color === 'gold' ? '#ca8a04' :
+                          conversationData.color === 'green' ? '#16a34a' :
+                          conversationData.color === 'purple' ? '#7c3aed' :
+                          conversationData.color === 'orange' ? '#f97316' :
+                          conversationData.color === 'red' ? '#ef4444' :
+                          conversationData.color === 'brown' ? '#713f12' :
+                          '#374151'
+                      }}
+                    >
+                      {conversationData.mistakeType}
+                    </span>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-right font-arabic text-2xl leading-loose"
+                      style={{
+                        backgroundColor: conversationData.color === 'gold' ? 'rgba(250,204,21,0.15)' :
+                          conversationData.color === 'green' ? 'rgba(34,197,94,0.15)' :
+                          conversationData.color === 'purple' ? 'rgba(147,51,234,0.15)' :
+                          conversationData.color === 'orange' ? 'rgba(249,115,22,0.15)' :
+                          conversationData.color === 'red' ? 'rgba(239,68,68,0.15)' :
+                          conversationData.color === 'brown' ? 'rgba(113,63,18,0.15)' :
+                          'rgba(107,114,128,0.15)',
+                        borderRadius: '0.5rem',
+                        padding: '0.75rem'
+                      }}
+                    >
+                      {conversationData.highlightedText}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Created {new Date(conversationData.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes/Messages Thread */}
+              <div className="space-y-4">
+                {conversationData.notes.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No messages in this conversation yet</p>
+                  </div>
+                ) : (
+                  conversationData.notes.map((note: any, index: number) => {
+                    // Check if this note is from the student
+                    const isStudentMessage = note.author_user_id === viewingStudentQuran?.user_id;
+
+                    return (
+                      <div key={note.id || index} className="flex items-start space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+                          isStudentMessage
+                            ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                            : 'bg-gradient-to-br from-purple-400 to-purple-600'
+                        }`}>
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className={`rounded-xl p-4 ${
+                            isStudentMessage
+                              ? 'bg-blue-50 border border-blue-100'
+                              : 'bg-purple-50 border border-purple-100'
+                          }`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold text-sm text-gray-900">
+                                {isStudentMessage ? viewingStudentQuran?.name : (note.author_name || 'Teacher')}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(note.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                            {note.type === 'text' ? (
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{note.text}</p>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <Volume2 className="w-4 h-4 text-purple-600" />
+                                <audio controls src={note.audio_url} className="w-full">
+                                  Your browser does not support the audio element.
+                                </audio>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
