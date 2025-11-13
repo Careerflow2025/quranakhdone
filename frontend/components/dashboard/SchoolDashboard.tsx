@@ -906,7 +906,6 @@ export default function SchoolDashboard() {
           gender: studentData.gender,
           phone: studentData.phone,
           address: studentData.address,
-          parent: studentData.parent,
           schoolId: user?.schoolId
         })
       });
@@ -8167,8 +8166,7 @@ export default function SchoolDashboard() {
                 dob: formData.get('dob'),
                 gender: formData.get('gender'),
                 phone: formData.get('phone'),
-                address: formData.get('address'),
-                parent: formData.get('parent')
+                address: formData.get('address')
               });
             }}>
               <div className="grid grid-cols-2 gap-4">
@@ -8229,12 +8227,6 @@ export default function SchoolDashboard() {
                   type="text"
                   placeholder="Address"
                   className="w-full px-3 py-2 border rounded-lg"
-                />
-                <input
-                  name="parent"
-                  type="email"
-                  placeholder="Parent Email"
-                  className="w-full px-3 py-2 border rounded-lg col-span-2"
                 />
               </div>
               <div className="flex space-x-3 mt-6">
@@ -10078,10 +10070,24 @@ export default function SchoolDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
 
               try {
-                // Update teacher data with all fields
-                const { error: teacherError } = await (supabase as any)
-                  .from('teachers')
-                  .update({
+                // Get current user session for authorization
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                  showNotification('Please login as school administrator', 'error');
+                  return;
+                }
+
+                // Call API route to update teacher (uses service role key to bypass RLS)
+                const response = await fetch('/api/school/update-teacher', {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                  },
+                  body: JSON.stringify({
+                    teacherId: editingTeacher.id,
+                    userId: editingTeacher.user_id,
+                    name: formData.get('name'),
                     subject: formData.get('subject') || null,
                     qualification: formData.get('qualification') || null,
                     experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null,
@@ -10089,19 +10095,12 @@ export default function SchoolDashboard() {
                     address: formData.get('address') || null,
                     bio: formData.get('bio') || null
                   })
-                  .eq('id', editingTeacher.id);
+                });
 
-                if (teacherError) throw teacherError;
-
-                // Update profile data
-                const { error: profileError } = await (supabase as any)
-                  .from('profiles')
-                  .update({
-                    display_name: formData.get('name')
-                  })
-                  .eq('user_id', editingTeacher.user_id);
-
-                if (profileError) throw profileError;
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(errorData.error || 'Failed to update teacher');
+                }
 
                 refreshData();
                 setEditingTeacher(null);
@@ -10121,6 +10120,7 @@ export default function SchoolDashboard() {
               }
             }}>
               <div className="space-y-4">
+                {/* Editable: Name */}
                 <input
                   name="name"
                   type="text"
@@ -10129,6 +10129,22 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   required
                 />
+
+                {/* READ-ONLY: Email (cannot be changed) */}
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={editingTeacher.email || ''}
+                    placeholder="Email"
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    disabled
+                    readOnly
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                    Locked
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     name="subject"

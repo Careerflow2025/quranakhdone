@@ -71,15 +71,25 @@ export async function PUT(req: NextRequest) {
       teacherId,
       userId,
       name,
+      subject,
+      qualification,
+      experience,
+      phone,
+      address,
       bio,
       active
     } = body;
 
     // 1. Update teacher record
-    // Teachers table schema: id, user_id, school_id, bio, active, created_at
+    // Teachers table schema: id, user_id, school_id, subject, qualification, experience, phone, address, bio, active, created_at
     const { error: teacherError } = await supabaseAdmin
       .from('teachers')
       .update({
+        subject: subject || null,
+        qualification: qualification || null,
+        experience: experience || null,
+        phone: phone || null,
+        address: address || null,
         bio: bio || null,
         active: active !== undefined ? active : true
       })
