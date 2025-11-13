@@ -3002,10 +3002,18 @@ export default function SchoolDashboard() {
   const handleViewStudentQuran = (student: any) => {
     console.log('🔍 HANDLE VIEW STUDENT QURAN CLICKED:', student);
     console.log('🔍 Current activeTab:', activeTab);
+
+    // CRITICAL DEBUG: Store in localStorage to track across redirects
+    localStorage.setItem('DEBUG_quranViewClicked', new Date().toISOString());
+    localStorage.setItem('DEBUG_studentData', JSON.stringify(student));
+    localStorage.setItem('DEBUG_activeTab_before', activeTab);
+
     console.log('🔍 Setting viewingStudentQuran to:', student);
     setViewingStudentQuran(student);
     console.log('🔍 Setting activeTab to: student-quran');
     setActiveTab('student-quran');
+
+    localStorage.setItem('DEBUG_activeTab_after', 'student-quran');
     console.log('✅ handleViewStudentQuran complete');
   };
 
@@ -4175,6 +4183,17 @@ export default function SchoolDashboard() {
             console.log('🎨 RENDER CHECK - activeTab:', activeTab);
             console.log('🎨 RENDER CHECK - viewingStudentQuran:', viewingStudentQuran);
             console.log('🎨 RENDER CHECK - Should show Quran viewer:', activeTab === 'student-quran' && viewingStudentQuran);
+
+            // Check localStorage for debug info
+            const clickedTime = localStorage.getItem('DEBUG_quranViewClicked');
+            if (clickedTime) {
+              console.log('🔥 DEBUG: Quran view was clicked at:', clickedTime);
+              console.log('🔥 DEBUG: Student data:', localStorage.getItem('DEBUG_studentData'));
+              console.log('🔥 DEBUG: Tab before click:', localStorage.getItem('DEBUG_activeTab_before'));
+              console.log('🔥 DEBUG: Tab after click:', localStorage.getItem('DEBUG_activeTab_after'));
+              console.log('🔥 DEBUG: Current URL:', window.location.href);
+            }
+
             return null;
           })()}
           {activeTab === 'student-quran' && viewingStudentQuran && (
