@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useSchoolData } from '@/hooks/useSchoolData';
 import { useReportsData } from '@/hooks/useReportsData';
@@ -8,7 +8,6 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useSectionNotifications } from '@/hooks/useSectionNotifications';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import MushafPageViewer from '@/components/quran/MushafPageViewer';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useHighlights } from '@/hooks/useHighlights';
 import { useTargets } from '@/hooks/useTargets';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -4271,23 +4270,12 @@ export default function SchoolDashboard() {
                 {/* Main Quran Viewer - Using MushafPageViewer */}
                 <div className="col-span-8">
                   {viewingStudentQuran && viewingStudentQuran.id ? (
-                    <ErrorBoundary>
-                      <Suspense fallback={
-                        <div className="flex items-center justify-center h-screen bg-white rounded-xl">
-                          <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                            <p className="text-gray-600">Loading Mushaf Viewer...</p>
-                          </div>
-                        </div>
-                      }>
-                        <MushafPageViewer
-                          surah={currentSurah}
-                          studentId={viewingStudentQuran.id}
-                          isTeacher={false}
-                          className="max-h-screen"
-                        />
-                      </Suspense>
-                    </ErrorBoundary>
+                    <MushafPageViewer
+                      surah={currentSurah}
+                      studentId={viewingStudentQuran.id}
+                      isTeacher={false}
+                      className="max-h-screen"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-screen bg-white rounded-xl">
                       <p className="text-gray-600">Loading student data...</p>
