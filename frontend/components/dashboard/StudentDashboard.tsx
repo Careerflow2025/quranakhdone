@@ -1071,10 +1071,10 @@ export default function StudentDashboard() {
                 )}
 
                 {/* MushafPageViewer with highlights support */}
-                {user && (
+                {studentInfo?.id && (
                   <MushafPageViewer
                     surah={currentSurah}
-                    studentId={user.id}
+                    studentId={studentInfo.id}
                     isTeacher={false}
                     className="max-h-screen"
                   />
