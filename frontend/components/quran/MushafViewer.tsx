@@ -7,7 +7,7 @@ import { useHighlightStore } from '@/store/highlightStore';
 import { useAuthStore } from '@/store/authStore';
 import HighlightPopover from './HighlightPopover';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
-import MushafFrame from './MushafFrame';
+import MushafFrameElaborate from './MushafFrameElaborate';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MessageSquare } from 'lucide-react';
 
@@ -320,7 +320,7 @@ const MushafViewer: React.FC<MushafViewerProps> = ({
       <div className="mushaf-page-wrapper">
         <div className="mushaf-page">
           {/* Ornamental Frame */}
-          <MushafFrame />
+          <MushafFrameElaborate />
 
           {/* Page Content with Zoom Transform */}
           <div
@@ -406,21 +406,22 @@ const MushafViewer: React.FC<MushafViewerProps> = ({
         }
 
         .mushaf-page-content {
-          padding: 80px 60px;
+          padding: 80px 80px;
           transition: transform 0.2s ease;
           position: relative;
           z-index: 2;
         }
 
         .mushaf-text {
-          font-family: 'Amiri Quran', 'Traditional Arabic', 'Scheherazade New', serif;
-          font-size: 28px;
-          line-height: 65px;
+          font-family: 'Amiri Quran', 'Traditional Arabic', 'Scheherazade New', 'Arial Unicode MS', serif;
+          font-size: 24px;
+          line-height: 50px;
           text-align: justify;
-          color: #2C2416;
-          letter-spacing: -0.3px;
-          word-spacing: 3px;
+          color: #1a1a1a;
+          letter-spacing: -0.8px;
+          word-spacing: -2px;
           direction: rtl;
+          font-weight: 400;
         }
 
         .mushaf-ayah-text {
