@@ -3001,8 +3001,36 @@ export default function SchoolDashboard() {
   };
 
   // Edit Student
-  const handleEditStudent = (student: any) => {
-    setEditingStudent(student);
+  const handleEditStudent = async (student: any) => {
+    // Fetch parent email if linked
+    let parentEmail = null;
+    try {
+      const { data: parentLink } = await supabase
+        .from('parent_students')
+        .select(`
+          parent_id,
+          parents!inner(
+            user_id,
+            profiles!inner(
+              email
+            )
+          )
+        `)
+        .eq('student_id', student.id)
+        .limit(1)
+        .single();
+
+      if (parentLink && parentLink.parents?.profiles?.email) {
+        parentEmail = parentLink.parents.profiles.email;
+      }
+    } catch (error) {
+      console.log('No parent linked to this student');
+    }
+
+    setEditingStudent({
+      ...student,
+      parentEmail: parentEmail
+    });
   };
 
   // Delete Teacher Function
@@ -9822,6 +9850,7 @@ export default function SchoolDashboard() {
               }
             }}>
               <div className="space-y-4">
+                {/* Editable: Name */}
                 <input
                   name="name"
                   type="text"
@@ -9831,7 +9860,23 @@ export default function SchoolDashboard() {
                   required
                 />
 
+                {/* READ-ONLY: Email (cannot be changed) */}
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={editingStudent.email || ''}
+                    placeholder="Email"
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    disabled
+                    readOnly
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                    Locked
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
+                  {/* Editable: Date of Birth */}
                   <input
                     name="dob"
                     type="date"
@@ -9840,6 +9885,25 @@ export default function SchoolDashboard() {
                     max={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 border rounded-lg"
                   />
+
+                  {/* READ-ONLY: Age (calculated from DOB) */}
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={editingStudent.age || ''}
+                      placeholder="Age"
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                      disabled
+                      readOnly
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                      Auto
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Editable: Gender */}
                   <select
                     name="gender"
                     defaultValue={editingStudent.gender || ''}
@@ -9849,9 +9913,8 @@ export default function SchoolDashboard() {
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                  {/* Editable: Grade */}
                   <input
                     name="grade"
                     type="text"
@@ -9859,6 +9922,10 @@ export default function SchoolDashboard() {
                     placeholder="Grade/Level"
                     className="w-full px-3 py-2 border rounded-lg"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Editable: Phone */}
                   <input
                     name="phone"
                     type="tel"
@@ -9866,15 +9933,31 @@ export default function SchoolDashboard() {
                     placeholder="Phone Number"
                     className="w-full px-3 py-2 border rounded-lg"
                   />
+
+                  {/* Editable: Address */}
+                  <input
+                    name="address"
+                    type="text"
+                    defaultValue={editingStudent.address || ''}
+                    placeholder="Home Address"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
                 </div>
 
-                <input
-                  name="address"
-                  type="text"
-                  defaultValue={editingStudent.address || ''}
-                  placeholder="Home Address"
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
+                {/* READ-ONLY: Parent Email (shows linked parent) */}
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={editingStudent.parentEmail || 'No parent linked'}
+                    placeholder="Parent Email"
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    disabled
+                    readOnly
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                    View Only
+                  </span>
+                </div>
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
