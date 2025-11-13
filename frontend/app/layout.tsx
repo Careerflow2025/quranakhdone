@@ -21,6 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="stylesheet" href="/fonts.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className={inter.className}>
         <ServiceWorkerRegistration />

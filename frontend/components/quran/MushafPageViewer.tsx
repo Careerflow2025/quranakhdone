@@ -425,18 +425,39 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
           left: 0;
           right: 0;
           bottom: 0;
-          border: 40px solid;
-          border-image: linear-gradient(135deg, #D4AF37 0%, #F4E5A5 50%, #B8860B 100%) 1;
-          border-radius: 8px;
           pointer-events: none;
           z-index: 1;
+        }
 
-          /* Decorative pattern overlay */
+        .mushaf-border-overlay::before {
+          content: '';
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          right: 10px;
+          bottom: 10px;
+          border: 8px solid #8B7355;
+          border-radius: 4px;
+          box-shadow:
+            0 0 0 2px #D4AF37,
+            0 0 0 4px #8B7355,
+            inset 0 0 0 2px #D4AF37,
+            inset 0 0 0 4px #8B7355;
+        }
+
+        .mushaf-border-overlay::after {
+          content: '';
+          position: absolute;
+          top: 30px;
+          left: 30px;
+          right: 30px;
+          bottom: 30px;
+          border: 3px solid #D4AF37;
+          border-radius: 4px;
           background-image:
-            repeating-linear-gradient(0deg, transparent, transparent 35px, rgba(212, 175, 55, 0.1) 35px, rgba(212, 175, 55, 0.1) 40px),
-            repeating-linear-gradient(90deg, transparent, transparent 35px, rgba(212, 175, 55, 0.1) 35px, rgba(212, 175, 55, 0.1) 40px);
-          background-size: 40px 40px;
-          background-position: 20px 20px;
+            repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(212, 175, 55, 0.2) 20px, rgba(212, 175, 55, 0.2) 22px),
+            repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(212, 175, 55, 0.2) 20px, rgba(212, 175, 55, 0.2) 22px);
+          background-size: 22px 22px;
         }
 
         .mushaf-page-content {
@@ -462,15 +483,15 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
         }
 
         .mushaf-text {
-          font-family: 'KFGQPC Uthmanic Script HAFS', 'Amiri Quran', 'Traditional Arabic', 'Scheherazade New', 'Arial Unicode MS', serif;
-          font-size: 28px;
-          line-height: 70px;
+          font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', 'Arial Unicode MS', serif;
+          font-size: 32px;
+          line-height: 80px;
           text-align: justify;
           color: #000000;
-          letter-spacing: 0px;
-          word-spacing: 0px;
+          letter-spacing: 0.5px;
+          word-spacing: 2px;
           direction: rtl;
-          font-weight: 400;
+          font-weight: 700;
         }
 
         .mushaf-ayah-text {
