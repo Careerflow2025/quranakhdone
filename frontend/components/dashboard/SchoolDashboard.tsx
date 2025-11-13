@@ -8,7 +8,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useSectionNotifications } from '@/hooks/useSectionNotifications';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
 import MushafPageViewer from '@/components/quran/MushafPageViewer';
-import { useHighlights } from '@/hooks/useHighlights';
+import { useHighlightStore } from '@/store/highlightStore';
 import { useTargets } from '@/hooks/useTargets';
 import { useAttendance } from '@/hooks/useAttendance';
 import { supabase } from '@/lib/supabase';
@@ -123,16 +123,15 @@ export default function SchoolDashboard() {
     return new Date();
   }, [reportPeriod, customStartDate, customEndDate]);
 
-  // Get highlights data for all school students
+  // Use Zustand highlightStore for highlights
   const {
     highlights: allHighlights,
     isLoading: highlightsLoading,
-    error: highlightsError,
-    refreshHighlights
-  } = useHighlights(null); // null = all school highlights
+    fetchHighlights: refreshHighlights
+  } = useHighlightStore();
 
   // Safety check: ensure allHighlights is always an array
-  const safeHighlights = allHighlights || [];
+  const safeHighlights = Array.isArray(allHighlights) ? allHighlights : [];
 
   // Get attendance data for all school (no filters for admin/owner)
   const {
@@ -175,16 +174,13 @@ export default function SchoolDashboard() {
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [conversationData, setConversationData] = useState<any>(null);
 
-  // Fetch highlights for the student being viewed (for Quran viewer)
-  const {
-    highlights: dbHighlights,
-    isLoading: studentHighlightsLoading,
-    error: studentHighlightsError,
-    refreshHighlights: refreshStudentHighlights
-  } = useHighlights(viewingStudentQuran?.id || null);
-
-  // Transformed highlights for current page
-  const [highlights, setHighlights] = useState<any[]>([]);
+  // Fetch highlights when viewing a specific student's Quran
+  useEffect(() => {
+    if (viewingStudentQuran?.id) {
+      console.log('📥 Fetching highlights for student:', viewingStudentQuran.id);
+      refreshHighlights({ student_id: viewingStudentQuran.id });
+    }
+  }, [viewingStudentQuran?.id, refreshHighlights]);
 
   // Section notifications hook for badge system
   const { markSectionRead, getSectionCount } = useSectionNotifications();
