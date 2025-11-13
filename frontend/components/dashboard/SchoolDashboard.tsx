@@ -905,6 +905,8 @@ export default function SchoolDashboard() {
           dob: studentData.dob,
           gender: studentData.gender,
           phone: studentData.phone,
+          address: studentData.address,
+          parent: studentData.parent,
           schoolId: user?.schoolId
         })
       });
@@ -8136,7 +8138,9 @@ export default function SchoolDashboard() {
                 grade: formData.get('grade'),
                 dob: formData.get('dob'),
                 gender: formData.get('gender'),
-                phone: formData.get('phone')
+                phone: formData.get('phone'),
+                address: formData.get('address'),
+                parent: formData.get('parent')
               });
             }}>
               <div className="grid grid-cols-2 gap-4">
@@ -8191,6 +8195,18 @@ export default function SchoolDashboard() {
                   placeholder="Date of Birth"
                   className="w-full px-3 py-2 border rounded-lg"
                   max={new Date().toISOString().split('T')[0]}
+                />
+                <input
+                  name="address"
+                  type="text"
+                  placeholder="Address"
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+                <input
+                  name="parent"
+                  type="email"
+                  placeholder="Parent Email"
+                  className="w-full px-3 py-2 border rounded-lg col-span-2"
                 />
               </div>
               <div className="flex space-x-3 mt-6">
