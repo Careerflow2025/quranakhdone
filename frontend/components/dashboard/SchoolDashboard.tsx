@@ -8270,7 +8270,7 @@ export default function SchoolDashboard() {
                 phone: formData.get('phone'),
                 address: formData.get('address'),
                 bio: formData.get('bio'),
-                classIds: Array.from(formData.getAll('assignedClasses'))
+                classIds: [] // Teachers are assigned to classes in Class Builder
               });
             }}>
               <div className="space-y-4">
@@ -8330,26 +8330,6 @@ export default function SchoolDashboard() {
                   className="w-full px-3 py-2 border rounded-lg"
                   rows={3}
                 />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Assign Classes (Optional)
-                  </label>
-                  <select
-                    name="assignedClasses"
-                    multiple
-                    className="w-full px-3 py-2 border rounded-lg"
-                    size={Math.min(classes.length, 5)}
-                  >
-                    {classes.map(cls => (
-                      <option key={cls.id} value={cls.id}>
-                        {cls.name} {cls.room ? `(${cls.room})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Hold Ctrl/Cmd to select multiple classes
-                  </p>
-                </div>
               </div>
               <div className="flex space-x-3 mt-6">
                 <button
