@@ -169,9 +169,9 @@ export default function SchoolDashboard() {
   // Fetch highlights for the student being viewed (for Quran viewer)
   const {
     highlights: dbHighlights,
-    isLoading: highlightsLoading,
-    error: highlightsError,
-    refreshHighlights
+    isLoading: studentHighlightsLoading,
+    error: studentHighlightsError,
+    refreshHighlights: refreshStudentHighlights
   } = useHighlights(viewingStudentQuran?.id || null);
 
   // Transformed highlights for current page
@@ -339,7 +339,7 @@ export default function SchoolDashboard() {
   }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
 
   // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
-  const safeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
+  const studentSafeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
 
   // Handle clicking on a highlight to view notes (read-only for school admin)
   const handleHighlightClick = (highlightId: string) => {
@@ -4061,7 +4061,7 @@ export default function SchoolDashboard() {
                     <div className="space-y-1 max-h-48 overflow-y-auto">
                       {/* Show completed highlights first with gold color */}
                       {(() => {
-                        const completedHighlights = safeHighlights.filter((h: any) => h.isCompleted);
+                        const completedHighlights = studentSafeHighlights.filter((h: any) => h.isCompleted);
                         if (completedHighlights.length > 0) {
                           return (
                             <div className="p-1.5 rounded-md bg-yellow-400 text-xs">
@@ -4079,7 +4079,7 @@ export default function SchoolDashboard() {
 
                       {/* Show other highlights by type */}
                       {mistakeTypes.map((type: any) => {
-                        const typeHighlights = safeHighlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
+                        const typeHighlights = studentSafeHighlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
                         if (typeHighlights.length === 0) return null;
                         return (
                           <div key={type.id} className={`p-1.5 rounded-md ${type.bgColor} text-xs`}>
@@ -4091,7 +4091,7 @@ export default function SchoolDashboard() {
                           </div>
                         );
                       })}
-                      {safeHighlights.length === 0 && (
+                      {studentSafeHighlights.length === 0 && (
                         <p className="text-xs text-gray-400 text-center py-2">No highlights</p>
                       )}
                     </div>
@@ -4230,7 +4230,7 @@ export default function SchoolDashboard() {
                             const wordText = typeof word === 'string' ? word : (word.text || word);
 
                             // Get ALL highlights for this word
-                            const wordHighlights = safeHighlights.filter(
+                            const wordHighlights = studentSafeHighlights.filter(
                               (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                             );
 
@@ -5255,30 +5255,30 @@ export default function SchoolDashboard() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Total</p>
-                    <p className="text-2xl font-bold">{safeHighlights.length}</p>
+                    <p className="text-2xl font-bold">{studentSafeHighlights.length}</p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Homework (Green)</p>
                     <p className="text-2xl font-bold text-green-200">
-                      {safeHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
+                      {studentSafeHighlights.filter((h: any) => h.type === 'homework' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Recap (Purple)</p>
                     <p className="text-2xl font-bold text-purple-200">
-                      {safeHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
+                      {studentSafeHighlights.filter((h: any) => h.type === 'recap' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Tajweed (Orange)</p>
                     <p className="text-2xl font-bold text-orange-200">
-                      {safeHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
+                      {studentSafeHighlights.filter((h: any) => h.type === 'tajweed' && !h.completed_at).length}
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 rounded-lg p-4">
                     <p className="text-purple-100 text-sm">Completed (Gold)</p>
                     <p className="text-2xl font-bold text-yellow-200">
-                      {safeHighlights.filter((h: any) => h.completed_at !== null).length}
+                      {studentSafeHighlights.filter((h: any) => h.completed_at !== null).length}
                     </p>
                   </div>
                 </div>
@@ -5406,7 +5406,7 @@ export default function SchoolDashboard() {
                 });
 
                 // Filter highlights
-                const filteredHighlights = safeHighlights.filter((h: any) => {
+                const filteredHighlights = studentSafeHighlights.filter((h: any) => {
                   // Student filter
                   if (selectedStudentFilter !== 'all' && h.student_id !== selectedStudentFilter) return false;
 
