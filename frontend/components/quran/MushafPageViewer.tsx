@@ -34,7 +34,9 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
   className = '',
 }) => {
   console.log('🚀 MushafPageViewer LOADED - Page-based navigation active');
+  console.log('📥 MushafPageViewer props:', { surah, ayah, studentId, isTeacher, className });
   const { user } = useAuthStore();
+  console.log('👤 MushafPageViewer user:', user);
   const { highlights, fetchHighlights, createHighlight } = useHighlightStore();
 
   // Get starting page for the surah

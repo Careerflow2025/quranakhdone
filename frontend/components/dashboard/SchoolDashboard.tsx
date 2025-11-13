@@ -3001,8 +3001,13 @@ export default function SchoolDashboard() {
 
   // View Student's Quran
   const handleViewStudentQuran = (student: any) => {
+    console.log('🔍 HANDLE VIEW STUDENT QURAN CLICKED:', student);
+    console.log('🔍 Current activeTab:', activeTab);
+    console.log('🔍 Setting viewingStudentQuran to:', student);
     setViewingStudentQuran(student);
+    console.log('🔍 Setting activeTab to: student-quran');
     setActiveTab('student-quran');
+    console.log('✅ handleViewStudentQuran complete');
   };
 
   // Edit Student
@@ -4167,6 +4172,12 @@ export default function SchoolDashboard() {
           )}
 
           {/* Student Quran View Tab - School Admin viewing a specific student's Quran */}
+          {(() => {
+            console.log('🎨 RENDER CHECK - activeTab:', activeTab);
+            console.log('🎨 RENDER CHECK - viewingStudentQuran:', viewingStudentQuran);
+            console.log('🎨 RENDER CHECK - Should show Quran viewer:', activeTab === 'student-quran' && viewingStudentQuran);
+            return null;
+          })()}
           {activeTab === 'student-quran' && viewingStudentQuran && (
             <div className="space-y-6">
               {/* Header with Back Button */}
