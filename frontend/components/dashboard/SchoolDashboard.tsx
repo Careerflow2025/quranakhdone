@@ -969,10 +969,14 @@ export default function SchoolDashboard() {
           name: teacherData.name,
           email: teacherData.email,
           password: tempPassword,
+          subject: teacherData.subject || null,
+          qualification: teacherData.qualification || null,
+          experience: teacherData.experience || null,
+          phone: teacherData.phone || null,
+          address: teacherData.address || null,
+          bio: teacherData.bio || null,
           schoolId: user?.schoolId || schoolInfo?.id,
-          bio: teacherData.bio || '',  // Only optional teacher field in database
-          classIds: teacherData.assignedClasses || []  // For class_teachers linking
-          // FIX #4: Removed phone, subject, qualification, experience, address (not in database)
+          classIds: teacherData.classIds || []
         })
       });
 
@@ -8260,7 +8264,6 @@ export default function SchoolDashboard() {
               handleAddTeacher({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                password: formData.get('password'),
                 subject: formData.get('subject'),
                 qualification: formData.get('qualification'),
                 experience: formData.get('experience') ? parseInt(formData.get('experience') as string) : null,
@@ -8284,14 +8287,6 @@ export default function SchoolDashboard() {
                   placeholder="Email *"
                   className="w-full px-3 py-2 border rounded-lg"
                   required
-                />
-                <input
-                  name="password"
-                  type="password"
-                  placeholder="Password *"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                  minLength={8}
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <input
