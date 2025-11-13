@@ -3004,21 +3004,8 @@ export default function SchoolDashboard() {
 
   // View Student's Quran
   const handleViewStudentQuran = (student: any) => {
-    console.log('🔍 HANDLE VIEW STUDENT QURAN CLICKED:', student);
-    console.log('🔍 Current activeTab:', activeTab);
-
-    // CRITICAL DEBUG: Store in localStorage to track across redirects
-    localStorage.setItem('DEBUG_quranViewClicked', new Date().toISOString());
-    localStorage.setItem('DEBUG_studentData', JSON.stringify(student));
-    localStorage.setItem('DEBUG_activeTab_before', activeTab);
-
-    console.log('🔍 Setting viewingStudentQuran to:', student);
     setViewingStudentQuran(student);
-    console.log('🔍 Setting activeTab to: student-quran');
     setActiveTab('student-quran');
-
-    localStorage.setItem('DEBUG_activeTab_after', 'student-quran');
-    console.log('✅ handleViewStudentQuran complete');
   };
 
   // Edit Student
@@ -4218,13 +4205,8 @@ export default function SchoolDashboard() {
 
             return null;
           })()}
-          {activeTab === 'student-quran' && viewingStudentQuran && (() => {
-            console.log('🔥🔥🔥 ABOUT TO RENDER QURAN VIEWER');
-            console.log('🔥🔥🔥 studentSafeHighlights:', studentSafeHighlights);
-            console.log('🔥🔥🔥 MISTAKE_TYPES:', MISTAKE_TYPES);
-            console.log('🔥🔥🔥 currentSurah:', currentSurah);
-            return (
-              <div className="space-y-6">
+          {activeTab === 'student-quran' && viewingStudentQuran && (
+            <div className="space-y-6">
                 {/* Header with Back Button */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -4391,8 +4373,7 @@ export default function SchoolDashboard() {
                 </div>
               </div>
             </div>
-            );
-          })()}
+          )}
 
           {/* Teachers Tab */}
           {activeTab === 'teachers' && (
