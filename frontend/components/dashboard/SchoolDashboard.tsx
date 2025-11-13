@@ -55,6 +55,15 @@ const ClassBuilderUltra = dynamic(() => import('./ClassBuilderUltra'), {
 type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
 type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
 
+// Mistake Types for Highlights (static constant moved outside component for build optimization)
+const MISTAKE_TYPES = [
+  { id: 'recap', name: 'Recap/Review', color: 'purple', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+  { id: 'homework', name: 'Homework', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
+  { id: 'tajweed', name: 'Tajweed', color: 'orange', bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
+  { id: 'haraka', name: 'Haraka', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
+  { id: 'letter', name: 'Letter', color: 'brown', bgColor: 'bg-amber-100', textColor: 'text-amber-900' }
+];
+
 export default function SchoolDashboard() {
   // Reports filters (declare early for useReportsData)
   const [reportPeriod, setReportPeriod] = useState('week');
@@ -156,15 +165,6 @@ export default function SchoolDashboard() {
   const [penColor, setPenColor] = useState('#FF0000');
   const [penWidth, setPenWidth] = useState(2);
   const [eraserMode, setEraserMode] = useState(false);
-
-  // Mistake Types for Highlights (Read-only display for school admins viewing students)
-  const mistakeTypes = [
-    { id: 'recap', name: 'Recap/Review', color: 'purple', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
-    { id: 'homework', name: 'Homework', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-    { id: 'tajweed', name: 'Tajweed', color: 'orange', bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
-    { id: 'haraka', name: 'Haraka', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-700' },
-    { id: 'letter', name: 'Letter', color: 'brown', bgColor: 'bg-amber-100', textColor: 'text-amber-900' }
-  ];
 
   // Fetch highlights for the student being viewed (for Quran viewer)
   const {
@@ -4151,7 +4151,7 @@ export default function SchoolDashboard() {
                       })()}
 
                       {/* Show other highlights by type */}
-                      {mistakeTypes.map((type: any) => {
+                      {MISTAKE_TYPES.map((type: any) => {
                         const typeHighlights = studentSafeHighlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
                         if (typeHighlights.length === 0) return null;
                         return (
@@ -4312,7 +4312,7 @@ export default function SchoolDashboard() {
                               if (h.isCompleted) {
                                 return { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' };
                               }
-                              return mistakeTypes.find((m: any) => m.id === h.mistakeType);
+                              return MISTAKE_TYPES.find((m: any) => m.id === h.mistakeType);
                             }).filter(Boolean);
 
                             return (
