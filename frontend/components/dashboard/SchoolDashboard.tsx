@@ -2819,7 +2819,8 @@ export default function SchoolDashboard() {
           </div>
 
           <nav className="space-y-1">
-          {/* Group 1: Overview (alone) */}
+          {/* Group 1: Overview (alone) - DARKER */}
+          <div className="bg-gray-100/70 rounded-lg p-1">
           {[
             { id: 'overview', label: 'Overview', icon: Home },
           ].map((item: any) => {
@@ -2850,12 +2851,13 @@ export default function SchoolDashboard() {
               </button>
             );
           })}
+          </div>
 
           {/* Separator */}
           <div className="h-px bg-gray-200 my-2" />
 
-          {/* Group 2: People & Classes */}
-          <div className="bg-gray-100/40 rounded-lg p-1 space-y-1">
+          {/* Group 2: People & Classes - lighter */}
+          <div className="bg-gray-50/40 rounded-lg p-1 space-y-1">
             {[
               { id: 'students', label: 'Students', icon: GraduationCap },
               { id: 'teachers', label: 'Teachers', icon: Users },
@@ -2894,8 +2896,8 @@ export default function SchoolDashboard() {
           {/* Separator */}
           <div className="h-px bg-gray-200 my-2" />
 
-          {/* Group 3: Learning Activities */}
-          <div className="bg-gray-50/60 rounded-lg p-1 space-y-1">
+          {/* Group 3: Learning Activities - DARKER */}
+          <div className="bg-gray-100/70 rounded-lg p-1 space-y-1">
             {[
               { id: 'homework', label: 'Homework', icon: BookOpen },
               { id: 'highlights', label: 'Highlights', icon: Highlighter },
@@ -2933,8 +2935,8 @@ export default function SchoolDashboard() {
           {/* Separator */}
           <div className="h-px bg-gray-200 my-2" />
 
-          {/* Group 4: Progress & Assessment */}
-          <div className="bg-gray-100/60 rounded-lg p-1 space-y-1">
+          {/* Group 4: Progress & Assessment - lighter */}
+          <div className="bg-gray-50/40 rounded-lg p-1 space-y-1">
             {[
               { id: 'targets', label: 'Targets', icon: Target },
               { id: 'attendance', label: 'Attendance', icon: CheckSquare },
@@ -2973,7 +2975,8 @@ export default function SchoolDashboard() {
           {/* Separator */}
           <div className="h-px bg-gray-200 my-2" />
 
-          {/* Group 5: Communication */}
+          {/* Group 5: Communication - DARKER */}
+          <div className="bg-gray-100/70 rounded-lg p-1">
           {[
             { id: 'messages', label: 'Messages', icon: Mail },
           ].map((item: any) => {
@@ -3004,11 +3007,12 @@ export default function SchoolDashboard() {
               </button>
             );
           })}
+          </div>
 
           {/* Separator */}
           <div className="h-px bg-gray-200 my-2" />
 
-          {/* Group 6: Admin & Settings */}
+          {/* Group 6: Admin & Settings - lighter */}
           <div className="bg-gray-50/40 rounded-lg p-1 space-y-1">
             {[
               { id: 'calendar', label: 'Calendar', icon: Calendar },
