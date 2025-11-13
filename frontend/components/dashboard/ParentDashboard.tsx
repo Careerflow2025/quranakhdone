@@ -1562,10 +1562,10 @@ export default function ParentDashboard() {
                 )}
 
                 {/* MushafPageViewer with highlights support */}
-                {selectedChild && (
+                {currentChild?.id && (
                   <MushafPageViewer
                     surah={currentSurah}
-                    studentId={selectedChild.id}
+                    studentId={currentChild.id}
                     isTeacher={false}
                     className="max-h-screen"
                   />
