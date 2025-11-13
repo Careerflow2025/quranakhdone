@@ -2819,24 +2819,9 @@ export default function SchoolDashboard() {
           </div>
 
           <nav className="space-y-1">
+          {/* Group 1: Overview (alone) */}
           {[
             { id: 'overview', label: 'Overview', icon: Home },
-            { id: 'students', label: 'Students', icon: GraduationCap },
-            { id: 'teachers', label: 'Teachers', icon: Users },
-            { id: 'parents', label: 'Parents', icon: Users },
-            { id: 'classes', label: 'Classes', icon: School },
-            { id: 'homework', label: 'Homework', icon: BookOpen },
-            { id: 'highlights', label: 'Highlights', icon: Bookmark },
-            { id: 'assignments', label: 'Assignments', icon: FileText },
-            { id: 'targets', label: 'Targets', icon: Target },
-            { id: 'attendance', label: 'Attendance', icon: CheckSquare },
-            { id: 'mastery', label: 'Mastery', icon: Brain },
-            { id: 'gradebook', label: 'Gradebook', icon: ClipboardCheck },
-            { id: 'messages', label: 'Messages', icon: Mail },
-            { id: 'calendar', label: 'Calendar', icon: Calendar },
-            { id: 'reports', label: 'Reports', icon: BarChart3 },
-            { id: 'credentials', label: 'Credentials', icon: Key },
-            { id: 'settings', label: 'Settings', icon: Settings },
           ].map((item: any) => {
             const hasNotifications = getSectionCount(item.id) > 0;
             return (
@@ -2844,7 +2829,6 @@ export default function SchoolDashboard() {
                 key={item.id}
                 onClick={() => {
                   console.log('🔘 Menu clicked:', item.id);
-                  // Mark section as read when clicked
                   if (hasNotifications) {
                     markSectionRead(item.id);
                   }
@@ -2866,6 +2850,200 @@ export default function SchoolDashboard() {
               </button>
             );
           })}
+
+          {/* Separator */}
+          <div className="h-px bg-gray-200 my-2" />
+
+          {/* Group 2: People & Classes */}
+          <div className="bg-gray-50/50 rounded-lg p-1 space-y-1">
+            {[
+              { id: 'students', label: 'Students', icon: GraduationCap },
+              { id: 'teachers', label: 'Teachers', icon: Users },
+              { id: 'parents', label: 'Parents', icon: Users },
+              { id: 'classes', label: 'Classes', icon: School },
+            ].map((item: any) => {
+              const hasNotifications = getSectionCount(item.id) > 0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    console.log('🔘 Menu clicked:', item.id);
+                    if (hasNotifications) {
+                      markSectionRead(item.id);
+                    }
+                    setActiveTab(item.id);
+                  }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    activeTab === item.id
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : hasNotifications
+                      ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" />
+                    <NotificationBadge section={item.id} />
+                  </div>
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Separator */}
+          <div className="h-px bg-gray-200 my-2" />
+
+          {/* Group 3: Learning Activities */}
+          <div className="bg-blue-50/30 rounded-lg p-1 space-y-1">
+            {[
+              { id: 'homework', label: 'Homework', icon: BookOpen },
+              { id: 'highlights', label: 'Highlights', icon: Highlighter },
+              { id: 'assignments', label: 'Assignments', icon: FileText },
+            ].map((item: any) => {
+              const hasNotifications = getSectionCount(item.id) > 0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    console.log('🔘 Menu clicked:', item.id);
+                    if (hasNotifications) {
+                      markSectionRead(item.id);
+                    }
+                    setActiveTab(item.id);
+                  }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    activeTab === item.id
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : hasNotifications
+                      ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" />
+                    <NotificationBadge section={item.id} />
+                  </div>
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Separator */}
+          <div className="h-px bg-gray-200 my-2" />
+
+          {/* Group 4: Progress & Assessment */}
+          <div className="bg-emerald-50/30 rounded-lg p-1 space-y-1">
+            {[
+              { id: 'targets', label: 'Targets', icon: Target },
+              { id: 'attendance', label: 'Attendance', icon: CheckSquare },
+              { id: 'mastery', label: 'Mastery', icon: Brain },
+              { id: 'gradebook', label: 'Gradebook', icon: ClipboardCheck },
+            ].map((item: any) => {
+              const hasNotifications = getSectionCount(item.id) > 0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    console.log('🔘 Menu clicked:', item.id);
+                    if (hasNotifications) {
+                      markSectionRead(item.id);
+                    }
+                    setActiveTab(item.id);
+                  }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    activeTab === item.id
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : hasNotifications
+                      ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" />
+                    <NotificationBadge section={item.id} />
+                  </div>
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Separator */}
+          <div className="h-px bg-gray-200 my-2" />
+
+          {/* Group 5: Communication */}
+          {[
+            { id: 'messages', label: 'Messages', icon: Mail },
+          ].map((item: any) => {
+            const hasNotifications = getSectionCount(item.id) > 0;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  console.log('🔘 Menu clicked:', item.id);
+                  if (hasNotifications) {
+                    markSectionRead(item.id);
+                  }
+                  setActiveTab(item.id);
+                }}
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : hasNotifications
+                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  <NotificationBadge section={item.id} />
+                </div>
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Separator */}
+          <div className="h-px bg-gray-200 my-2" />
+
+          {/* Group 6: Admin & Settings */}
+          <div className="bg-purple-50/30 rounded-lg p-1 space-y-1">
+            {[
+              { id: 'calendar', label: 'Calendar', icon: Calendar },
+              { id: 'reports', label: 'Reports', icon: BarChart3 },
+              { id: 'credentials', label: 'Credentials', icon: Key },
+              { id: 'settings', label: 'Settings', icon: Settings },
+            ].map((item: any) => {
+              const hasNotifications = getSectionCount(item.id) > 0;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    console.log('🔘 Menu clicked:', item.id);
+                    if (hasNotifications) {
+                      markSectionRead(item.id);
+                    }
+                    setActiveTab(item.id);
+                  }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    activeTab === item.id
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : hasNotifications
+                      ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" />
+                    <NotificationBadge section={item.id} />
+                  </div>
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
           </nav>
         </div>
       </div>
