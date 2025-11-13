@@ -33,6 +33,7 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
   isTeacher = false,
   className = '',
 }) => {
+  console.log('🚀 MushafPageViewer LOADED - Page-based navigation active');
   const { user } = useAuthStore();
   const { highlights, fetchHighlights, createHighlight } = useHighlightStore();
 

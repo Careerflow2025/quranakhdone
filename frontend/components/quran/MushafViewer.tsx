@@ -33,6 +33,7 @@ const MushafViewer: React.FC<MushafViewerProps> = ({
   isTeacher = false,
   className = '',
 }) => {
+  console.log('⚠️ OLD MushafViewer LOADED - Should be using MushafPageViewer instead!');
   const { user } = useAuthStore();
   const { ayahs, selectedScript, isLoading, error, changeScript } = useQuran(surah);
   const { highlights, fetchHighlights, createHighlight } = useHighlightStore();
