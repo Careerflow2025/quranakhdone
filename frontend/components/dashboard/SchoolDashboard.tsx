@@ -2820,7 +2820,7 @@ export default function SchoolDashboard() {
 
           <nav className="space-y-1">
           {/* Group 1: Overview (alone) - DARKER */}
-          <div className="bg-orange-50/35 rounded-lg p-1">
+          <div className="bg-orange-100/50 rounded-lg p-1">
           {[
             { id: 'overview', label: 'Overview', icon: Home },
           ].map((item: any) => {
@@ -2897,7 +2897,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 3: Learning Activities - DARKER */}
-          <div className="bg-orange-50/35 rounded-lg p-1 space-y-1">
+          <div className="bg-orange-100/50 rounded-lg p-1 space-y-1">
             {[
               { id: 'homework', label: 'Homework', icon: BookOpen },
               { id: 'highlights', label: 'Highlights', icon: Highlighter },
@@ -2976,7 +2976,7 @@ export default function SchoolDashboard() {
           <div className="h-px bg-gray-200 my-2" />
 
           {/* Group 5: Communication - DARKER */}
-          <div className="bg-orange-50/35 rounded-lg p-1">
+          <div className="bg-orange-100/50 rounded-lg p-1">
           {[
             { id: 'messages', label: 'Messages', icon: Mail },
           ].map((item: any) => {
