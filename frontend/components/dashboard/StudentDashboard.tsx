@@ -292,6 +292,7 @@ export default function StudentDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
+  const [showNoteReply, setShowNoteReply] = useState<any>({}); // Legacy state for unused reply function
 
   // Get notifications from API
   const {
