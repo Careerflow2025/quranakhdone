@@ -359,9 +359,9 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
               {pageData.ayahs.map((ayahItem, index) => (
                 <React.Fragment key={`${ayahItem.surah.number}-${ayahItem.numberInSurah}`}>
                   {renderAyahText(ayahItem)}
-                  {/* Ayah number marker */}
-                  <span className="mushaf-ayah-number">
-                    &#x06DD;{ayahItem.numberInSurah}&#x06DE;
+                  {/* Ayah number marker with centered number */}
+                  <span className="mushaf-ayah-number-container">
+                    <span className="mushaf-ayah-number-text">{ayahItem.numberInSurah}</span>
                   </span>
                   {/* Space between ayahs */}
                   {index < pageData.ayahs.length - 1 && ' '}
@@ -507,13 +507,26 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
           display: inline;
         }
 
-        .mushaf-ayah-number {
-          display: inline-block;
-          font-size: 24px;
-          color: #8B7355;
-          margin: 0 6px;
-          font-weight: normal;
+        .mushaf-ayah-number-container {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          margin: 0 8px;
+          position: relative;
           vertical-align: middle;
+          border: 2px solid #8B7355;
+          border-radius: 50%;
+          background: radial-gradient(circle, #FAF8F3 60%, transparent 60%);
+        }
+
+        .mushaf-ayah-number-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #8B7355;
+          text-align: center;
+          line-height: 1;
         }
 
         .mushaf-highlight {
