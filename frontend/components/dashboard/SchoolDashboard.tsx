@@ -4028,7 +4028,7 @@ export default function SchoolDashboard() {
                               </td>
                               <td className="px-6 py-4">
                                 <p className="text-sm text-gray-900">
-                                  {student.age ? `${student.age} yrs` : <span className="text-orange-600 text-xs">Age not set</span>}
+                                  {student.age != null ? `${student.age} yrs` : <span className="text-orange-600 text-xs">Age not set</span>}
                                 </p>
                                 <p className="text-xs text-gray-500">{student.gender || 'Not specified'}</p>
                               </td>
@@ -9890,7 +9890,7 @@ export default function SchoolDashboard() {
                   <div className="relative">
                     <input
                       type="number"
-                      value={editingStudent.age || ''}
+                      value={editingStudent.age != null ? editingStudent.age : ''}
                       placeholder="Age"
                       className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                       disabled
