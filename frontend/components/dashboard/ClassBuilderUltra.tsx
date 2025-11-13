@@ -513,12 +513,20 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
   };
 
   // Drag and Drop Handlers
-  const handleDragStart = (e: React.DragEvent) => {
-    if (selectedStudents.length > 0) {
+  const handleDragStart = (e: React.DragEvent, studentId: string) => {
+    // If the dragged student is not selected, select only that student
+    if (!selectedStudents.includes(studentId)) {
+      setSelectedStudents([studentId]);
+      const student = allStudents.find((s: any) => s.id === studentId);
+      if (student) {
+        setDraggedItems([student]);
+      }
+    } else {
+      // If already selected, drag all selected students
       const students = allStudents.filter((s: any) => selectedStudents.includes(s.id));
       setDraggedItems(students);
-      e.dataTransfer.effectAllowed = 'move';
     }
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleTeacherDragStart = (e: React.DragEvent, teacher: Teacher) => {
@@ -1000,8 +1008,6 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
             {/* Student List */}
             <div
               className="flex-1 overflow-y-auto p-4 space-y-2"
-              draggable={selectedStudents.length > 0}
-              onDragStart={handleDragStart}
             >
               {filteredStudents.length === 0 ? (
                 <div className="text-center py-8">
@@ -1013,8 +1019,10 @@ export default function ClassBuilderUltra({ schoolId, onClose, onSave }: ClassBu
                 filteredStudents.map((student: any) => (
                   <div
                     key={student.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, student.id)}
                     onClick={(e) => handleSelectStudent(student.id, e)}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all transform hover:scale-[1.02] ${
+                    className={`p-3 rounded-lg border-2 cursor-move transition-all transform hover:scale-[1.02] ${
                       selectedStudents.includes(student.id)
                         ? 'bg-blue-50 border-blue-400 shadow-sm'
                         : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
