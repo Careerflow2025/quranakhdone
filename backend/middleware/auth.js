@@ -1,5 +1,6 @@
 const jwtUtils = require('../utils/jwt');
 const dbManager = require('../config/database');
+const { supabase } = require('../config/supabase');
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -46,6 +47,9 @@ const authenticateToken = (req, res, next) => {
       email: user.email,
       schoolName: user.school_name
     };
+
+    // Attach Supabase client to request for new PDF endpoints
+    req.supabase = supabase;
 
     next();
   } catch (error) {

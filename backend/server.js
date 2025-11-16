@@ -21,6 +21,8 @@ const schoolRoutes = require('./routes/schools');
 const highlightRoutes = require('./routes/highlights');
 const assignmentRoutes = require('./routes/assignments');
 const uploadRoutes = require('./routes/uploads');
+const pdfAnnotationsRoutes = require('./routes/pdf-annotations');
+const pdfFilesRoutes = require('./routes/pdf-files');
 
 // Initialize Express app
 const app = express();
@@ -137,6 +139,8 @@ app.use('/schools', schoolRoutes);
 app.use('/highlights', highlightRoutes);
 app.use('/assignments', assignmentRoutes);
 app.use('/uploads', uploadRoutes);
+app.use('/pdf-annotations', pdfAnnotationsRoutes);
+app.use('/pdf-files', pdfFilesRoutes);
 
 // Socket.IO authentication middleware
 io.use(async (socket, next) => {
@@ -216,7 +220,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle new assignment notifications
-  socket.on('assignment_created', (data) => {
+  socket.on('assignment_created', async (data) => {
     // Notify the student who was assigned
     if (data.student_id) {
       const { data: studentUser } = await supabase
@@ -224,7 +228,7 @@ io.on('connection', (socket) => {
         .select('user_id')
         .eq('id', data.student_id)
         .single();
-      
+
       if (studentUser) {
         socket.to(`user_${studentUser.user_id}`).emit('new_assignment', {
           ...data,
@@ -239,7 +243,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle voice note uploads for real-time feedback
-  socket.on('voice_note_uploaded', (data) => {
+  socket.on('voice_note_uploaded', async (data) => {
     // Notify relevant users (student and parents)
     if (data.student_id) {
       // Get student user ID
@@ -248,7 +252,7 @@ io.on('connection', (socket) => {
         .select('user_id')
         .eq('id', data.student_id)
         .single();
-      
+
       if (studentUser) {
         socket.to(`user_${studentUser.user_id}`).emit('new_voice_note', {
           ...data,
@@ -257,7 +261,7 @@ io.on('connection', (socket) => {
             displayName: socket.user.displayName
           }
         });
-        
+
         // Also notify parents
         const { data: parents } = await supabase
           .from('parent_students')
