@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSectionNotifications } from '@/hooks/useSectionNotifications';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
-import { useHighlights } from '@/hooks/useHighlights';
+import { useHighlightStore } from '@/store/highlightStore';
 import { supabase } from '@/lib/supabase';
 import {
   getQuranByScriptId,
@@ -376,86 +376,20 @@ export default function StudentDashboard() {
 
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
-  // Teacher Highlights - Fetch from database using useHighlights hook
+  // Use Zustand highlightStore for highlights (same store that MushafPageViewer uses)
   const {
-    highlights: dbHighlights,
+    highlights,
     isLoading: highlightsLoading,
-    error: highlightsError,
-    refreshHighlights
-  } = useHighlights(studentId);
+    fetchHighlights
+  } = useHighlightStore();
 
-  // Transform database highlights to UI format
-  const [highlights, setHighlights] = useState<any[]>([]);
-
-  // Transform database highlights to UI format for current page (same as StudentManagementDashboard)
+  // Fetch highlights for the current student
   useEffect(() => {
-    if (!dbHighlights || dbHighlights.length === 0) {
-      setHighlights([]);
-      return;
+    if (studentInfo?.id) {
+      console.log('📥 Fetching highlights for student:', studentInfo.id);
+      fetchHighlights({ student_id: studentInfo.id });
     }
-
-    // Get current page data
-    const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
-
-    // Transform highlights to UI format with ayahIndex and wordIndex
-    const pageHighlights: any[] = [];
-
-    dbHighlights.forEach((dbHighlight: any) => {
-      // Only show highlights for current surah
-      if (dbHighlight.surah === currentSurah) {
-        // Full ayah highlight (word_start and word_end are null)
-        if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
-          // Find all words in this ayah range
-          for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
-            const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNum);
-            if (ayahIndex >= 0) {
-              const ayah = quranText.ayahs[ayahIndex];
-              const wordCount = ayah.words?.length || 0;
-
-              // Highlight all words in this ayah
-              for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
-                pageHighlights.push({
-                  id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                  dbId: dbHighlight.id,
-                  ayahIndex,
-                  wordIndex,
-                  mistakeType: dbHighlight.type,
-                  color: dbHighlight.color,
-                  isCompleted: dbHighlight.status === 'gold',  // Check status field, not isCompleted
-                  status: dbHighlight.status,
-                  isFullAyah: true
-                });
-              }
-            }
-          }
-        } else {
-          // Single word or word range highlight
-          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === dbHighlight.ayah_start);
-          if (ayahIndex >= 0) {
-            for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
-              pageHighlights.push({
-                id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                dbId: dbHighlight.id,
-                ayahIndex,
-                wordIndex,
-                mistakeType: dbHighlight.type,
-                color: dbHighlight.color,
-                isCompleted: dbHighlight.status === 'gold',  // Check status field, not isCompleted
-                status: dbHighlight.status,
-                isFullAyah: false
-              });
-            }
-          }
-        }
-      }
-    });
-
-    setHighlights(pageHighlights);
-  }, [dbHighlights, currentMushafPage, quranText]);
-
-  // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
-  const safeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
+  }, [studentInfo?.id, fetchHighlights]);
 
   // Mock messages
   const [messages, setMessages] = useState({

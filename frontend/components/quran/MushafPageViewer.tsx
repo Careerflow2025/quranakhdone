@@ -109,12 +109,16 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
   const handleCreateHighlight = async (mistakeType: MistakeType, note?: string) => {
     if (!selection || !studentId || !user) return;
 
+    // Using Uthmani (Hafs) script as default
+    const DEFAULT_SCRIPT_ID = 'a5610a99-31eb-4dc0-bd07-f29205e3f39f';
+
     const result = await createHighlight({
       student_id: studentId,
+      script_id: DEFAULT_SCRIPT_ID,
       ayah_id: selection.ayahId,
       token_start: selection.tokenStart,
       token_end: selection.tokenEnd,
-      mistake: mistakeType,
+      mistake_type: mistakeType,
       note,
     });
 
@@ -380,8 +384,14 @@ const MushafPageViewer: React.FC<MushafPageViewerProps> = ({
             setShowPopover(false);
             setSelection(null);
           }}
-          onSelect={handleCreateHighlight}
+          onSave={handleCreateHighlight}
           position={popoverPosition}
+          selectedText={selection.selectedText}
+          selection={{
+            ayahId: selection.ayahId,
+            tokenStart: selection.tokenStart,
+            tokenEnd: selection.tokenEnd,
+          }}
         />
       )}
 

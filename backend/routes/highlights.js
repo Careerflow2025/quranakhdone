@@ -280,11 +280,26 @@ router.post('/', authenticateToken, requireTeacher, (req, res) => {
       });
     }
 
-    // Verify ayah exists
-    const ayah = db.prepare('SELECT id FROM quran_ayahs WHERE id = ?').get(ayah_id);
-    if (!ayah) {
+    // Parse ayah_id from "surah:ayah" format
+    const [surahStr, ayahStr] = ayah_id.split(':');
+    const surah = parseInt(surahStr, 10);
+    const ayah = parseInt(ayahStr, 10);
+
+    if (isNaN(surah) || isNaN(ayah) || surah < 1 || surah > 114) {
       return res.status(400).json({
-        error: 'Ayah not found'
+        error: 'Invalid ayah_id format. Expected "surah:ayah" (e.g., "1:1")'
+      });
+    }
+
+    // Get the actual ayah UUID from quran_ayahs table
+    const ayahRecord = db.prepare(`
+      SELECT id FROM quran_ayahs
+      WHERE script_id = ? AND surah = ? AND ayah = ?
+    `).get(script_id, surah, ayah);
+
+    if (!ayahRecord) {
+      return res.status(400).json({
+        error: `Ayah ${surah}:${ayah} not found for this script`
       });
     }
 
@@ -295,11 +310,12 @@ router.post('/', authenticateToken, requireTeacher, (req, res) => {
     db.prepare(`
       INSERT INTO highlights (
         id, school_id, teacher_id, student_id, script_id, ayah_id,
-        token_start, token_end, mistake_type, color
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        token_start, token_end, mistake_type, color, surah, ayah_start, ayah_end
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       highlightId, req.user.schoolId, teacher.id, student_id, script_id,
-      ayah_id, token_start, token_end, mistake_type, finalColor
+      ayahRecord.id, token_start, token_end, mistake_type, finalColor,
+      surah, ayah, ayah
     );
 
     // Add note if provided

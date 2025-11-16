@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSectionNotifications } from '@/hooks/useSectionNotifications';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
-import { useHighlights } from '@/hooks/useHighlights';
+import { useHighlightStore } from '@/store/highlightStore';
 import { useHomework } from '@/hooks/useHomework';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useProgress } from '@/hooks/useProgress';
@@ -462,12 +462,12 @@ export default function ParentDashboard() {
   } = useNotifications();
 
   // Get highlights from database for the selected child
+  // Use Zustand highlightStore for highlights (same store that MushafPageViewer uses)
   const {
-    highlights: dbHighlights,
+    highlights,
     isLoading: highlightsLoading,
-    error: highlightsError,
-    refreshHighlights
-  } = useHighlights(currentChild?.id || null);
+    fetchHighlights
+  } = useHighlightStore();
 
   // Highlights filter state (like TeacherDashboard)
   const [highlightsFilter, setHighlightsFilter] = useState('all');
@@ -498,75 +498,13 @@ export default function ParentDashboard() {
 
   // Notifications now fetched from API via useNotifications hook (removed mock data)
 
-  // Transform database highlights to UI format
-  const [highlights, setHighlights] = useState<any[]>([]);
-
-  // Transform database highlights to UI format for current page (same as Student Dashboard)
+  // Fetch highlights for the current child
   useEffect(() => {
-    if (!dbHighlights || dbHighlights.length === 0) {
-      setHighlights([]);
-      return;
+    if (currentChild?.id) {
+      console.log('📥 Fetching highlights for child:', currentChild.id);
+      fetchHighlights({ student_id: currentChild.id });
     }
-
-    // Get current page data
-    const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
-
-    // Transform highlights to UI format with ayahIndex and wordIndex
-    const pageHighlights: any[] = [];
-
-    dbHighlights.forEach((dbHighlight: any) => {
-      // Only show highlights for current surah
-      if (dbHighlight.surah === currentSurah) {
-        // Full ayah highlight (word_start and word_end are null)
-        if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
-          // Find all words in this ayah range
-          for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
-            const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNum);
-            if (ayahIndex >= 0) {
-              const ayah = quranText.ayahs[ayahIndex];
-              const wordCount = ayah.words?.length || 0;
-
-              // Highlight all words in this ayah
-              for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
-                pageHighlights.push({
-                  id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                  dbId: dbHighlight.id,
-                  ayahIndex,
-                  wordIndex,
-                  mistakeType: dbHighlight.type,
-                  color: dbHighlight.color,
-                  isCompleted: dbHighlight.status === 'gold',
-                  status: dbHighlight.status,
-                  isFullAyah: true
-                });
-              }
-            }
-          }
-        } else {
-          // Single word or word range highlight
-          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === dbHighlight.ayah_start);
-          if (ayahIndex >= 0) {
-            for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
-              pageHighlights.push({
-                id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                dbId: dbHighlight.id,
-                ayahIndex,
-                wordIndex,
-                mistakeType: dbHighlight.type,
-                color: dbHighlight.color,
-                isCompleted: dbHighlight.status === 'gold',
-                status: dbHighlight.status,
-                isFullAyah: false
-              });
-            }
-          }
-        }
-      }
-    });
-
-    setHighlights(pageHighlights);
-  }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
+  }, [currentChild?.id, fetchHighlights]);
 
   // Fetch homework when selected child changes
   useEffect(() => {

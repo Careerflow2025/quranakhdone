@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
-import { useHighlights } from '@/hooks/useHighlights';
+import { useHighlightStore } from '@/store/highlightStore';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -85,19 +85,14 @@ export default function StudentManagementDashboard() {
   const [highlightMode, setHighlightMode] = useState(false);
   const [selectedMistakeType, setSelectedMistakeType] = useState('');
 
-  // Connect highlights to database (student-specific)
+  // Use Zustand highlightStore (same store that MushafPageViewer uses)
   const {
-    highlights: dbHighlights,
+    highlights,
     isLoading: highlightsLoading,
-    error: highlightsError,
+    fetchHighlights,
     createHighlight: createHighlightDB,
-    completeHighlight,
-    deleteHighlight,
-    refreshHighlights
-  } = useHighlights(studentInfo?.id || null);
-
-  // Transform database highlights to UI format
-  const [highlights, setHighlights] = useState<any[]>([]);
+    deleteHighlight
+  } = useHighlightStore();
 
   const [notes, setNotes] = useState<any[]>([]);
   const [noteText, setNoteText] = useState('');
@@ -596,69 +591,13 @@ export default function StudentManagementDashboard() {
     }
   };
 
-  // Transform database highlights to UI format for current page
+  // Fetch highlights for the current student
   useEffect(() => {
-    if (!dbHighlights || dbHighlights.length === 0) {
-      setHighlights([]);
-      return;
+    if (studentInfo?.id) {
+      console.log('📥 Fetching highlights for student:', studentInfo.id);
+      fetchHighlights({ student_id: studentInfo.id });
     }
-
-    // Get current page data
-    const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
-
-    // Filter highlights for current page and transform to UI format
-    const pageHighlights: any[] = [];
-
-    dbHighlights.forEach((dbH: any) => {
-      // Check if highlight is on current page
-      if (dbH.page_number !== currentMushafPage) return;
-
-      // Find the ayah in quranText array
-      const ayahIndex = quranText.ayahs.findIndex((ayah: any) => ayah.number === dbH.ayah_start);
-      if (ayahIndex === -1) return;
-
-      // Check if word indices are specified (word-level highlight)
-      if (dbH.word_start !== null && dbH.word_start !== undefined &&
-          dbH.word_end !== null && dbH.word_end !== undefined) {
-        // Word-level highlight: only highlight specific words
-        for (let wordIdx = dbH.word_start; wordIdx <= dbH.word_end; wordIdx++) {
-          pageHighlights.push({
-            id: `${dbH.id}-${wordIdx}`,
-            dbId: dbH.id,
-            ayahIndex,
-            wordIndex: wordIdx,
-            mistakeType: dbH.type || dbH.color,
-            color: dbH.color,
-            timestamp: dbH.created_at,
-            isCompleted: dbH.completed_at !== null
-          });
-        }
-      } else {
-        // Full ayah highlight (word_start and word_end are NULL)
-        // Create highlight for each word in the ayah so they all show color
-        const ayah = quranText.ayahs[ayahIndex];
-        if (ayah && ayah.words) {
-          const ayahWords = ayah.words.length;
-          for (let wordIdx = 0; wordIdx < ayahWords; wordIdx++) {
-            pageHighlights.push({
-              id: `${dbH.id}-${wordIdx}`,
-              dbId: dbH.id,
-              ayahIndex,
-              wordIndex: wordIdx,
-              mistakeType: dbH.type || dbH.color,
-              color: dbH.color,
-              timestamp: dbH.created_at,
-              isCompleted: dbH.completed_at !== null,
-              isFullAyah: true  // Flag to indicate this is part of full ayah highlight
-            });
-          }
-        }
-      }
-    });
-
-    setHighlights(pageHighlights);
-  }, [dbHighlights, currentMushafPage, quranText]);
+  }, [studentInfo?.id, fetchHighlights]);
 
   // Handle Text Selection for Highlighting
   const handleTextSelection = (ayahIndex: number, wordIndex: number, isMouseDown: boolean = false, isMouseUp: boolean = false) => {
@@ -1172,98 +1111,55 @@ export default function StudentManagementDashboard() {
           <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Mistake Types & Tools (Reduced) */}
             <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
-              {/* Highlighting Tools */}
+              {/* Highlighting Instructions */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
                   <Highlighter className="w-3 h-3 mr-1" />
-                  Highlight
+                  How to Highlight
                 </h3>
-                <div className="space-y-1">
-                  {mistakeTypes.map((type: any) => (
-                    <button
-                      key={type.id}
-                      onClick={() => {
-                        // Don't clear highlights - allow all colors to coexist
-                        setSelectedMistakeType(type.id);
-                        setHighlightMode(true);
-                      }}
-                      className={`w-full p-2 rounded-md border text-left transition text-xs ${
-                        selectedMistakeType === type.id
-                          ? `border-${type.color}-500 ${type.bgColor}`
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`font-medium ${type.textColor}`}>{type.name}</span>
-                        <div className={`w-3 h-3 rounded ${type.bgColor}`}></div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                {highlightMode && (
-                  <>
-                    <div className="mt-2 p-2 bg-blue-50 rounded-md text-xs">
-                      {selectedMistakeType === 'recap' ? (
-                        <div className="text-purple-700">
-                          <p>✓ Drag to select</p>
-                          <p>✓ All Ayah button</p>
-                        </div>
-                      ) : selectedMistakeType === 'tajweed' ? (
-                        <div className="text-orange-700">
-                          <p>✓ Click words</p>
-                          <p>✓ All Ayah button</p>
-                        </div>
-                      ) : (
-                        <div className="text-red-700">
-                          <p>✓ Click words</p>
-                          <p>✓ Multiple allowed</p>
-                        </div>
-                      )}
+                <div className="space-y-2 text-xs text-gray-600">
+                  <p className="flex items-start">
+                    <span className="mr-1">1.</span>
+                    <span>Select text in the Quran viewer with your mouse</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-1">2.</span>
+                    <span>Choose the mistake type from the popup menu</span>
+                  </p>
+                  <p className="flex items-start">
+                    <span className="mr-1">3.</span>
+                    <span>Click the highlighted text to add notes</span>
+                  </p>
+                  <div className="mt-3 pt-2 border-t space-y-1">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded bg-purple-100 mr-2"></div>
+                      <span className="text-purple-700 font-medium">Recap</span>
                     </div>
-                    <button
-                      onClick={() => {
-                        setHighlightMode(false);
-                        setSelectedMistakeType('');
-                        setIsSelecting(false);
-                        setSelectionStart(null);
-                        setSelectionEnd(null);
-                      }}
-                      className="w-full mt-2 p-1.5 rounded-md text-white bg-green-600 hover:bg-green-700 text-xs"
-                    >
-                      Done
-                    </button>
-                  </>
-                )}
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded bg-orange-100 mr-2"></div>
+                      <span className="text-orange-700 font-medium">Tajweed</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded bg-red-100 mr-2"></div>
+                      <span className="text-red-700 font-medium">Haraka</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded bg-amber-100 mr-2"></div>
+                      <span className="text-amber-700 font-medium">Letter</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Highlights Summary */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
-                  Highlights
+                  Highlights ({highlights.length})
                 </h3>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {/* Show completed highlights first with gold color */}
-                  {(() => {
-                    const completedHighlights = highlights.filter((h: any) => h.isCompleted);
-                    if (completedHighlights.length > 0) {
-                      return (
-                        <div className="p-1.5 rounded-md bg-yellow-400 text-xs">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-yellow-900">
-                              ✓ Completed ({completedHighlights.length})
-                            </span>
-                            <Award className="w-3 h-3 text-yellow-900" />
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                  {/* Show other highlights by type */}
-                  {mistakeTypes.filter((type: any) => type.id !== 'completed').map((type: any) => {
-                    const typeHighlights = highlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
+                  {mistakeTypes.map((type: any) => {
+                    const typeHighlights = highlights.filter((h: any) => h.mistake === type.id);
                     if (typeHighlights.length === 0) return null;
                     return (
                       <div key={type.id} className={`p-1.5 rounded-md ${type.bgColor} text-xs`}>
@@ -1271,19 +1167,23 @@ export default function StudentManagementDashboard() {
                           <span className={`font-medium ${type.textColor}`}>
                             {type.name} ({typeHighlights.length})
                           </span>
-                          <button
-                            onClick={() => setHighlights(highlights.filter((h: any) => h.mistakeType !== type.id))}
-                            className="text-gray-500 hover:text-red-600"
-                            title="Clear all"
-                          >
-                            <X className="w-2.5 h-2.5" />
-                          </button>
+                          <div className={`w-3 h-3 rounded ${type.bgColor}`}></div>
+                        </div>
+                        <div className="text-gray-600 mt-1 text-[10px]">
+                          {typeHighlights.map((h: any) => (
+                            <div key={h.id} className="truncate">
+                              Surah {h.ayah_id ? h.ayah_id.split(':')[0] : '?'}
+                            </div>
+                          )).slice(0, 3)}
                         </div>
                       </div>
                     );
                   })}
                   {highlights.length === 0 && (
-                    <p className="text-xs text-gray-400 text-center py-2">No highlights</p>
+                    <p className="text-xs text-gray-400 text-center py-2">
+                      No highlights yet.<br/>
+                      Select text in the Quran to create highlights.
+                    </p>
                   )}
                 </div>
               </div>

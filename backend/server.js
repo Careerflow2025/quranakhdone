@@ -267,7 +267,7 @@ io.on('connection', (socket) => {
           .from('parent_students')
           .select('parents(user_id)')
           .eq('student_id', data.student_id);
-        
+
         parents?.forEach(parent => {
           socket.to(`user_${parent.parents.user_id}`).emit('new_voice_note', {
             ...data,

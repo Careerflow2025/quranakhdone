@@ -12,10 +12,11 @@ interface HighlightState {
   fetchHighlights: (params?: { student_id?: string; ayah_id?: string }) => Promise<void>;
   createHighlight: (data: {
     student_id: string;
+    script_id: string;
     ayah_id: string;
     token_start: number;
     token_end: number;
-    mistake: MistakeType;
+    mistake_type: MistakeType;
     note?: string;
   }) => Promise<{ success: boolean; error?: string }>;
   updateHighlight: (id: string, data: Partial<Highlight>) => Promise<{ success: boolean; error?: string }>;
