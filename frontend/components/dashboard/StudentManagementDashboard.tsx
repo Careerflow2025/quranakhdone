@@ -1769,26 +1769,11 @@ export default function StudentManagementDashboard() {
                             </span>
                           );
                         })}
-                        {/* Ayah Number - Traditional Mushaf Style (Inline) */}
+                        {/* Ayah Number - Traditional Mushaf Style with Islamic Octagonal Frame */}
                         <span
-                          className="inline-flex items-center justify-center mx-0.5"
-                          style={{
-                            width: '18px',  // Tiny inline circle
-                            height: '18px',
-                            borderRadius: '50%',
-                            background: 'rgba(64, 130, 109, 0.12)',  // Subtle teal background
-                            border: '1px solid rgba(64, 130, 109, 0.4)',  // Teal border
-                            color: '#000000',  // Black text
-                            fontSize: '9px',  // Very small text
-                            fontWeight: '500',
-                            boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
-                            verticalAlign: 'middle',  // Middle alignment
-                            display: 'inline-flex',
-                            fontFamily: 'sans-serif',  // Use regular font for numbers
-                            lineHeight: '1'  // Prevent line height issues
-                          }}
+                          className="ayah-number inline-flex items-center justify-center mx-2"
                         >
-                          {ayah.number}
+                          {toFarsiNumber(ayah.number)}
                         </span>
                         {/* Colored Boxes beside ayah number - one for each mistake type */}
                         {highlightMode && (() => {
@@ -1831,11 +1816,13 @@ export default function StudentManagementDashboard() {
                             );
                           })}
 
-                          {/* Farsi Page Number at Bottom */}
-                          <div className="text-center pt-6 pb-2" style={{ direction: 'ltr' }}>
-                            <span className="text-gray-500 font-arabic text-lg">
-                              {toFarsiNumber(pageNum)}
-                            </span>
+                          {/* Farsi Page Number at Bottom - in Green Circle */}
+                          <div className="flex justify-center items-center pt-8 pb-4">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-green-600">
+                              <span className="text-green-800 font-bold text-xl font-arabic">
+                                {toFarsiNumber(pageNum)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       );
