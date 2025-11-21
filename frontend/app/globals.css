@@ -352,6 +352,16 @@ mark[class*="highlight-"]:hover {
   /* Add padding so frame shows properly */
   padding: 1.8rem 2rem !important;
 
+  /* CRITICAL: VERTICAL PAGE ORIENTATION (A4 portrait style) */
+  width: 480px !important;  /* Fixed narrow width like book page */
+  min-width: 480px !important;  /* Prevent shrinking */
+  max-width: 480px !important;  /* Enforce portrait orientation */
+
+  /* CRITICAL: AUTO HEIGHT - fits content (10, 12, 13 lines - whatever needed) */
+  height: auto !important;
+  min-height: 600px !important;  /* Minimum page height */
+  max-height: none !important;  /* No maximum - grows with content */
+
   /* CRITICAL: Perfect text justification - all lines same width */
   text-align: justify !important;
   text-align-last: justify !important;
@@ -367,10 +377,11 @@ mark[class*="highlight-"]:hover {
   /* Direction for RTL text */
   direction: rtl !important;
 
-  /* Full width container */
-  width: 100% !important;
-  max-width: 100% !important;
+  /* Box sizing for proper dimensions */
   box-sizing: border-box !important;
+
+  /* Ensure page doesn't shrink in flex container */
+  flex-shrink: 0 !important;
 }
 
 /* Ensure all text elements inherit justification */
@@ -401,33 +412,60 @@ mark[class*="highlight-"]:hover {
 
 /* ============================================
    HORIZONTAL SCROLL SUPPORT
-   Traditional mushaf page-by-page scroll
+   Traditional mushaf page-by-page scroll with vertical A4 pages
    ============================================ */
 
-/* Add horizontal scroll container for mushaf pages */
-.mushaf-page-container {
+/* CRITICAL: Horizontal scroll container holding vertical pages */
+.mushaf-scroll-container {
+  /* Horizontal scrolling enabled */
   overflow-x: auto !important;
   overflow-y: hidden !important;
+
+  /* Smooth scrolling behavior */
   scroll-behavior: smooth !important;
+
+  /* Snap to pages when scrolling */
   scroll-snap-type: x mandatory !important;
+
+  /* Layout pages horizontally */
   display: flex !important;
-  gap: 2rem !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+
+  /* Spacing between pages */
+  gap: 3rem !important;
+
+  /* Full viewport dimensions */
+  width: 100% !important;
+  height: auto !important;
+
+  /* Padding for visual breathing room */
+  padding: 2rem !important;
 }
 
-/* Each page snaps into view */
+/* Each page snaps to center when scrolling */
 .mushaf-page-content {
   scroll-snap-align: center !important;
-  flex-shrink: 0 !important;
+  scroll-snap-stop: always !important;
 }
 
-/* Hide scrollbar but keep functionality */
-.mushaf-page-container::-webkit-scrollbar {
-  display: none;
+/* Keep scrollbar visible for user awareness but style it nicely */
+.mushaf-scroll-container::-webkit-scrollbar {
+  height: 8px !important;
 }
 
-.mushaf-page-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.mushaf-scroll-container::-webkit-scrollbar-track {
+  background: rgba(26, 86, 50, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+.mushaf-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(26, 86, 50, 0.4) !important;
+  border-radius: 4px !important;
+}
+
+.mushaf-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 86, 50, 0.6) !important;
 }
 
 /* ============================================
