@@ -267,6 +267,18 @@ export default function StudentManagementDashboard() {
     setCurrentMushafPage(mushafPage);
   }, [currentSurah]);
 
+  // Scroll current page into view when currentMushafPage changes
+  useEffect(() => {
+    const pageElement = document.getElementById(`mushaf-page-${currentMushafPage}`);
+    if (pageElement) {
+      pageElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [currentMushafPage]);
+
   // Update Quran text when Surah or Script changes
   useEffect(() => {
     const loadQuranText = async () => {
@@ -1342,20 +1354,18 @@ export default function StudentManagementDashboard() {
                 {/* Quran Text Display - Mushaf Style with Dynamic Script Styling */}
 <div className="relative">
 
-                  <div
-                    className="text-center leading-loose px-4 bg-gradient-to-b from-white to-gray-50 rounded-lg" 
-                    style={{
-                      ...getScriptStyling(selectedScript || 'uthmani-hafs'),
-                      pointerEvents: penMode ? 'none' : 'auto'
-                    }}
-                    onMouseUp={() => {
-                      if (isSelecting) {
-                        setIsSelecting(false);
-                        setSelectionStart(null);
-                        setSelectionEnd(null);
-                      }
-                    }}
-                  >
+                  {/* Horizontal Scroll Container */}
+                  <div className="mushaf-scroll-container" style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    overflowX: 'auto',
+                    overflowY: 'visible',
+                    gap: '3rem',
+                    scrollBehavior: 'smooth',
+                    scrollSnapType: 'x mandatory',
+                    padding: '2rem',
+                    pointerEvents: penMode ? 'none' : 'auto'
+                  }}>
                   <style jsx>{`
                     @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
 
@@ -1367,15 +1377,41 @@ export default function StudentManagementDashboard() {
                       text-align: justify;
                       text-justify: kashida;
                     }
+
+                    .mushaf-scroll-container::-webkit-scrollbar {
+                      height: 8px;
+                    }
+
+                    .mushaf-scroll-container::-webkit-scrollbar-track {
+                      background: #f1f1f1;
+                      border-radius: 4px;
+                    }
+
+                    .mushaf-scroll-container::-webkit-scrollbar-thumb {
+                      background: #40826D;
+                      border-radius: 4px;
+                    }
+
+                    .mushaf-scroll-container::-webkit-scrollbar-thumb:hover {
+                      background: #2d5f4e;
+                    }
                   `}</style>
 
                   {(() => {
-                    // Get the current mushaf page data
-                    const pageData = getPageContent(currentMushafPage);
-                    if (!pageData) return <div>Loading page...</div>;
+                    // Calculate page range to render (sliding window)
+                    const WINDOW_SIZE = 5; // Pages before/after current
+                    const totalPages = 604; // Total Quran pages
+                    const startPage = Math.max(1, currentMushafPage - WINDOW_SIZE);
+                    const endPage = Math.min(totalPages, currentMushafPage + WINDOW_SIZE);
+                    const pagesToRender = Array.from({length: endPage - startPage + 1}, (_, i) => startPage + i);
 
-                    // Determine which ayahs to show based on real mushaf page
-                    let pageAyahs = [];
+                    return pagesToRender.map((pageNum) => {
+                      // Get the page data for this specific page
+                      const pageData = getPageContent(pageNum);
+                      if (!pageData) return <div key={pageNum}>Loading page...</div>;
+
+                      // Determine which ayahs to show based on real mushaf page
+                      let pageAyahs = [];
 
                       // Check if current surah is on this page
                       if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
@@ -1410,25 +1446,37 @@ export default function StudentManagementDashboard() {
 
                       // Render the page with traditional Mushaf formatting
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
+                      const isCurrentPage = pageNum === currentMushafPage;
+
                       return (
-                        <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                          width: '38vw',  // NARROWER: More vertical/portrait-like proportions
-                          maxWidth: '480px',  // REDUCED: Traditional book page width
-                          minHeight: '65vh',  // INCREASED: Use available bottom space
-                          maxHeight: '72vh',  // INCREASED: Taller to look like a real page
-                          overflow: 'hidden',  // NO scrolling inside container
-                          margin: '0 auto',
-                          padding: '0.8rem 1rem',
-                          backgroundColor: '#FFFFFF',
-                          borderRadius: '8px',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                          border: '2px solid #40826D',
-                          ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
-                          transform: `scale(${zoomLevel / 100})`,
-                          transformOrigin: 'top center',
-                          textAlign: 'right',
-                          lineHeight: '1.5'  // Slightly more breathing room with vertical space
-                        }}>
+                        <div
+                          key={pageNum}
+                          id={`mushaf-page-${pageNum}`}
+                          className={`mushaf-page-content mushaf-text ${scriptClass}`}
+                          style={{
+                            scrollSnapAlign: 'center',
+                            flexShrink: 0,
+                            width: '38vw',  // NARROWER: More vertical/portrait-like proportions
+                            maxWidth: '480px',  // REDUCED: Traditional book page width
+                            minHeight: '65vh',  // INCREASED: Use available bottom space
+                            maxHeight: '72vh',  // INCREASED: Taller to look like a real page
+                            overflow: 'hidden',  // NO scrolling inside container
+                            margin: '0',
+                            padding: '0.8rem 1rem',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '8px',
+                            boxShadow: isCurrentPage
+                              ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                              : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+                            border: isCurrentPage ? '3px solid #40826D' : '2px solid #40826D',
+                            opacity: isCurrentPage ? 1 : 0.7,
+                            transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
+                            ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
+                            transform: `scale(${zoomLevel / 100})`,
+                            transformOrigin: 'top center',
+                            textAlign: 'right',
+                            lineHeight: '1.5'  // Slightly more breathing room with vertical space
+                          }}>
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
                             return (
@@ -1629,8 +1677,10 @@ export default function StudentManagementDashboard() {
                           })}
                         </div>
                       );
-                    })()}
+                    });
+                  })()}
                   </div>
+                  {/* End Horizontal Scroll Container */}
                 </div>
 
                 {/* Page Navigation */}
