@@ -1830,17 +1830,17 @@ export default function StudentManagementDashboard() {
                               </span>
                             );
                           })}
+
+                          {/* Farsi Page Number at Bottom */}
+                          <div className="text-center pt-6 pb-2" style={{ direction: 'ltr' }}>
+                            <span className="text-gray-500 font-arabic text-lg">
+                              {toFarsiNumber(pageNum)}
+                            </span>
+                          </div>
                         </div>
                       );
                     });
                   })()}
-
-                  {/* Farsi Page Number at Bottom */}
-                  <div className="text-center pt-6 pb-2" style={{ direction: 'ltr' }}>
-                    <span className="text-gray-500 font-arabic text-lg">
-                      {toFarsiNumber(pageNum)}
-                    </span>
-                  </div>
                   </div>
                   {/* End Horizontal Scroll Container */}
                 </div>
