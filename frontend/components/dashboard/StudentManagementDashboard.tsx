@@ -1609,6 +1609,7 @@ export default function StudentManagementDashboard() {
                           id={`mushaf-page-${pageNum}`}
                           className={`mushaf-page-content mushaf-text ${scriptClass}`}
                           style={{
+                            position: 'relative',  // Enable absolute positioning for page number
                             scrollSnapAlign: 'center',
                             flexShrink: 0,
                             width: '38vw',  // NARROWER: More vertical/portrait-like proportions
@@ -1816,8 +1817,15 @@ export default function StudentManagementDashboard() {
                             );
                           })}
 
-                          {/* Farsi Page Number at Bottom - in Green Circle */}
-                          <div className="flex justify-center items-center pt-8 pb-4">
+                          {/* Farsi Page Number at Bottom - Absolute Position 4px from bottom */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '4px',
+                              left: '50%',
+                              transform: 'translateX(-50%)'
+                            }}
+                          >
                             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-green-600">
                               <span className="text-green-800 font-bold text-xl font-arabic">
                                 {toFarsiNumber(pageNum)}
@@ -1856,13 +1864,6 @@ export default function StudentManagementDashboard() {
                             title="Previous Page">
                             <ChevronLeft className="w-5 h-5" />
                           </button>
-
-                          {/* Page Info */}
-                          <div className="text-center">
-                            <span className="text-sm font-semibold text-gray-700">
-                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
-                            </span>
-                          </div>
 
                           {/* Next Arrow - Just Icon */}
                           <button

@@ -319,6 +319,11 @@
    BISMILLAH STYLING
    ============================================ */
 
+/* Standalone font-arabic class for Farsi numerals and Arabic text */
+.font-arabic {
+  font-family: 'Amiri Quran', serif !important;
+}
+
 .text-center.text-3xl.font-arabic {
   font-family: 'Amiri Quran', serif !important;
   font-size: 32px !important;
