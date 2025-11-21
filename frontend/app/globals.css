@@ -352,17 +352,16 @@ mark[class*="highlight-"]:hover {
   /* Add padding so frame shows properly */
   padding: 1.8rem 2rem !important;
 
-  /* CRITICAL: VERTICAL PAGE ORIENTATION (A4 portrait style) */
-  width: 480px !important;  /* Fixed narrow width like book page */
-  min-width: 480px !important;  /* Prevent shrinking */
-  max-width: 480px !important;  /* Enforce portrait orientation */
+  /* CRITICAL: A4 PAGE SIZE - fills widened container */
+  width: 85% !important;  /* Fill most of col-span-10 container */
+  min-width: 700px !important;  /* Minimum readable width */
+  max-width: 900px !important;  /* Maximum for readability */
 
-  /* CRITICAL: ALLOW VERTICAL SCROLL - see all content */
-  height: auto !important;  /* Height based on content */
-  min-height: 600px !important;  /* Minimum page height */
-  max-height: 85vh !important;  /* Maximum 85% of viewport height */
-  overflow-y: auto !important;  /* Enable vertical scrolling */
-  overflow-x: hidden !important;  /* No horizontal scroll within page */
+  /* CRITICAL: STATIC PDF-LIKE PAGE - NO scrolling inside */
+  height: 85vh !important;  /* Fixed height like real page */
+  min-height: 85vh !important;  /* Consistent page height */
+  max-height: 85vh !important;  /* Lock height */
+  overflow: hidden !important;  /* NO scrolling - static like PDF */
 
   /* CRITICAL: Perfect text justification - all lines same width EXCEPT LAST LINE */
   text-align: justify !important;
@@ -386,23 +385,7 @@ mark[class*="highlight-"]:hover {
   flex-shrink: 0 !important;
 }
 
-/* Style the vertical scrollbar within pages */
-.mushaf-page-content::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-.mushaf-page-content::-webkit-scrollbar-track {
-  background: rgba(26, 86, 50, 0.05) !important;
-}
-
-.mushaf-page-content::-webkit-scrollbar-thumb {
-  background: rgba(26, 86, 50, 0.3) !important;
-  border-radius: 3px !important;
-}
-
-.mushaf-page-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 86, 50, 0.5) !important;
-}
+/* No scrollbar needed - pages are static like PDF */
 
 /* Ensure all text elements inherit justification EXCEPT last line */
 .mushaf-page-content,
@@ -464,21 +447,17 @@ mark[class*="highlight-"]:hover {
   padding: 2rem !important;
 }
 
-/* OVERRIDE inline styles that restrict overflow - CRITICAL FIX */
+/* OVERRIDE inline styles - enforce static PDF-like pages */
 div.mushaf-page-content[style*="overflow"] {
-  overflow-y: auto !important;  /* Enable vertical scroll - override inline hidden */
-  overflow-x: hidden !important;  /* No horizontal scroll within pages */
+  overflow: hidden !important;  /* NO scrolling - static page like PDF */
 }
 
-/* OVERRIDE inline height restrictions - CRITICAL FIX */
-div.mushaf-page-content[style*="maxHeight"],
-div.mushaf-page-content[style*="max-height"] {
-  max-height: 85vh !important;  /* Allow taller pages - override inline 72vh */
-}
-
-div.mushaf-page-content[style*="minHeight"],
-div.mushaf-page-content[style*="min-height"] {
-  min-height: 600px !important;  /* Minimum page height */
+/* OVERRIDE inline height - enforce fixed page height */
+div.mushaf-page-content[style*="Height"],
+div.mushaf-page-content[style*="height"] {
+  height: 85vh !important;  /* Fixed height like real PDF page */
+  min-height: 85vh !important;
+  max-height: 85vh !important;
 }
 
 /* Ensure parent containers don't restrict overflow */

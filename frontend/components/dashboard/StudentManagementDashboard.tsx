@@ -1170,7 +1170,7 @@ export default function StudentManagementDashboard() {
         {(scriptLocked || selectedScript) && (
           <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Mistake Types & Tools (Reduced) */}
-            <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
+            <div className="col-span-1 space-y-3 max-h-screen overflow-hidden">
               {/* Highlighting Tools */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
@@ -1290,7 +1290,7 @@ export default function StudentManagementDashboard() {
             </div>
 
             {/* Main Quran Viewer */}
-            <div className="col-span-8">
+            <div className="col-span-10">
               <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
                 background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
@@ -1683,7 +1683,7 @@ export default function StudentManagementDashboard() {
             </div>
 
             {/* Right Panel - Notes */}
-            <div className="col-span-2 space-y-3">
+            <div className="col-span-1 space-y-3">
               {/* Notes Section */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
