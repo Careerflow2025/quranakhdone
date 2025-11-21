@@ -280,6 +280,7 @@ export default function StudentManagementDashboard() {
   }, [currentMushafPage]);
 
   // Update Quran text when Surah or Script changes
+  // Also populate cache and preload adjacent Surahs for smooth scrolling
   useEffect(() => {
     const loadQuranText = async () => {
       const scriptId = selectedScript || 'uthmani-hafs';
@@ -289,20 +290,64 @@ export default function StudentManagementDashboard() {
         const surahData = await getSurahByNumber(scriptId, currentSurah);
 
         if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
-          // Use the actual Quran data
-          setQuranText({
+          // Transform to component format
+          const transformedData = {
+            number: currentSurah,
             surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
             ayahs: surahData.ayahs.map((ayah: any) => ({
               number: ayah.numberInSurah,
               text: ayah.text,
               words: ayah.text.split(' ')
             }))
+          };
+
+          // Set current Quran text
+          setQuranText(transformedData);
+
+          // Cache this Surah
+          const cacheKey = `${scriptId}-${currentSurah}`;
+          setSurahCache(prev => ({
+            ...prev,
+            [cacheKey]: transformedData
+          }));
+
+          // Preload adjacent Surahs (previous and next) for smooth scrolling
+          const adjacentSurahs = [
+            currentSurah - 1,
+            currentSurah + 1
+          ].filter(num => num >= 1 && num <= 114);
+
+          adjacentSurahs.forEach(async (surahNum) => {
+            const adjCacheKey = `${scriptId}-${surahNum}`;
+            // Only load if not already cached
+            if (!surahCache[adjCacheKey]) {
+              try {
+                const adjSurahData = await getSurahByNumber(scriptId, surahNum);
+                if (adjSurahData && adjSurahData.ayahs) {
+                  setSurahCache(prev => ({
+                    ...prev,
+                    [adjCacheKey]: {
+                      number: surahNum,
+                      surah: adjSurahData.name,
+                      ayahs: adjSurahData.ayahs.map((ayah: any) => ({
+                        number: ayah.numberInSurah,
+                        text: ayah.text,
+                        words: ayah.text.split(' ')
+                      }))
+                    }
+                  }));
+                }
+              } catch (error) {
+                console.warn(`Failed to preload Surah ${surahNum}:`, error);
+              }
+            }
           });
         }
       } catch (error) {
         console.error('Error loading Quran text:', error);
         // Fallback for any loading issues
         setQuranText({
+          number: currentSurah,
           surah: surahInfo?.nameArabic || 'سورة',
           ayahs: [
             {
@@ -536,6 +581,10 @@ export default function StudentManagementDashboard() {
   };
 
   const [quranText, setQuranText] = useState(quranTexts[1]);
+
+  // Surah Cache: Store loaded Surahs to avoid re-fetching
+  // Key: `${scriptId}-${surahNumber}`, Value: Surah data
+  const [surahCache, setSurahCache] = useState<Record<string, any>>({});
 
   // Progress Stats
   const [progressStats] = useState({
@@ -1410,32 +1459,127 @@ export default function StudentManagementDashboard() {
                       const pageData = getPageContent(pageNum);
                       if (!pageData) return <div key={pageNum}>Loading page...</div>;
 
-                      // Determine which ayahs to show based on real mushaf page
-                      let pageAyahs = [];
+                      // Load ayahs for THIS specific page regardless of currentSurah
+                      // This ensures ALL pages show content, not just the selected Surah
+                      let pageAyahs: any[] = [];
 
-                      // Check if current surah is on this page
-                      if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
-                        // Single surah on this page - show ayahs from start to end
-                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                          const ayahNumber = idx + 1;
-                          return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
-                        });
-                      } else if (pageData.surahStart === currentSurah) {
-                        // Current surah starts on this page
-                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                          const ayahNumber = idx + 1;
-                          return ayahNumber >= pageData.ayahStart;
-                        });
-                      } else if (pageData.surahEnd === currentSurah) {
-                        // Current surah ends on this page
-                        pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                          const ayahNumber = idx + 1;
-                          return ayahNumber <= pageData.ayahEnd;
-                        });
-                      } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
-                        // Current surah is somewhere in the middle of this page
-                        // Show all ayahs of this surah
-                        pageAyahs = quranText.ayahs;
+                      // CRITICAL FIX: Load Surah data based on the PAGE, not currentSurah
+                      // This makes all 604 pages display content when scrolling
+                      if (pageData.surahStart === pageData.surahEnd) {
+                        // Single Surah on this page
+                        const surahNumber = pageData.surahStart;
+                        const scriptId = selectedScript || 'uthmani-hafs';
+                        const cacheKey = `${scriptId}-${surahNumber}`;
+
+                        // Check cache first
+                        const cachedSurah = surahCache[cacheKey];
+                        if (cachedSurah) {
+                          // Use cached Surah data
+                          pageAyahs = cachedSurah.ayahs.filter((ayah: any, idx: number) => {
+                            const ayahNumber = idx + 1;
+                            return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
+                          });
+                        } else if (surahNumber === currentSurah && quranText && quranText.number === currentSurah) {
+                          // Fallback to current loaded Surah if not in cache yet
+                          pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
+                            const ayahNumber = idx + 1;
+                            return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
+                          });
+                        } else {
+                          // Surah not loaded yet - trigger async load
+                          // Display placeholder while loading
+                          pageAyahs = [];
+
+                          // Asynchronously load and cache this Surah (fire and forget)
+                          if (!surahCache[cacheKey]) {
+                            getSurahByNumber(scriptId, surahNumber).then((surahData) => {
+                              if (surahData && surahData.ayahs) {
+                                setSurahCache(prev => ({
+                                  ...prev,
+                                  [cacheKey]: {
+                                    number: surahNumber,
+                                    surah: surahData.name,
+                                    ayahs: surahData.ayahs.map((ayah: any) => ({
+                                      number: ayah.numberInSurah,
+                                      text: ayah.text,
+                                      words: ayah.text.split(' ')
+                                    }))
+                                  }
+                                }));
+                              }
+                            }).catch((error) => {
+                              console.warn(`Failed to load Surah ${surahNumber}:`, error);
+                            });
+                          }
+                        }
+                      } else {
+                        // Multi-Surah page - more complex handling needed
+                        // Load both start and end Surahs from cache
+                        const scriptId = selectedScript || 'uthmani-hafs';
+                        const startCacheKey = `${scriptId}-${pageData.surahStart}`;
+                        const endCacheKey = `${scriptId}-${pageData.surahEnd}`;
+
+                        const startSurah = surahCache[startCacheKey];
+                        const endSurah = surahCache[endCacheKey];
+
+                        if (startSurah && endSurah) {
+                          // Both Surahs cached - combine them
+                          const startAyahs = startSurah.ayahs.filter((ayah: any, idx: number) => {
+                            const ayahNumber = idx + 1;
+                            return ayahNumber >= pageData.ayahStart;
+                          });
+                          const endAyahs = endSurah.ayahs.filter((ayah: any, idx: number) => {
+                            const ayahNumber = idx + 1;
+                            return ayahNumber <= pageData.ayahEnd;
+                          });
+                          pageAyahs = [...startAyahs, ...endAyahs];
+                        } else {
+                          // One or both Surahs not cached - show placeholder
+                          pageAyahs = [];
+
+                          // Trigger async loads for missing Surahs
+                          if (!startSurah) {
+                            getSurahByNumber(scriptId, pageData.surahStart).then((surahData) => {
+                              if (surahData && surahData.ayahs) {
+                                setSurahCache(prev => ({
+                                  ...prev,
+                                  [startCacheKey]: {
+                                    number: pageData.surahStart,
+                                    surah: surahData.name,
+                                    ayahs: surahData.ayahs.map((ayah: any) => ({
+                                      number: ayah.numberInSurah,
+                                      text: ayah.text,
+                                      words: ayah.text.split(' ')
+                                    }))
+                                  }
+                                }));
+                              }
+                            }).catch((error) => {
+                              console.warn(`Failed to load Surah ${pageData.surahStart}:`, error);
+                            });
+                          }
+
+                          if (!endSurah && pageData.surahEnd !== pageData.surahStart) {
+                            getSurahByNumber(scriptId, pageData.surahEnd).then((surahData) => {
+                              if (surahData && surahData.ayahs) {
+                                setSurahCache(prev => ({
+                                  ...prev,
+                                  [endCacheKey]: {
+                                    number: pageData.surahEnd,
+                                    surah: surahData.name,
+                                    ayahs: surahData.ayahs.map((ayah: any) => ({
+                                      number: ayah.numberInSurah,
+                                      text: ayah.text,
+                                      words: ayah.text.split(' ')
+                                    }))
+                                  }
+                                }));
+                              }
+                            }).catch((error) => {
+                              console.warn(`Failed to load Surah ${pageData.surahEnd}:`, error);
+                            });
+                          }
+                        }
                       }
 
                       // Calculate total page content length for DYNAMIC FONT SIZING
