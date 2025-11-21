@@ -1817,20 +1817,27 @@ export default function StudentManagementDashboard() {
                             );
                           })}
 
-                          {/* Farsi Page Number at Bottom - Absolute Position 4px from bottom */}
+                          {/* Farsi Page Number at Bottom - Simple clean number */}
                           <div
                             style={{
                               position: 'absolute',
-                              bottom: '4px',
+                              bottom: '8px',  // 8px accounts for container padding to get 3-5px from canvas edge
                               left: '50%',
-                              transform: 'translateX(-50%)'
+                              transform: 'translateX(-50%)',
+                              textAlign: 'center'
                             }}
                           >
-                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-green-600">
-                              <span className="text-green-800 font-bold text-xl font-arabic">
-                                {toFarsiNumber(pageNum)}
-                              </span>
-                            </div>
+                            <span
+                              style={{
+                                fontFamily: "'Scheherazade New', 'Tahoma', serif",
+                                fontSize: '22px',
+                                fontWeight: '600',
+                                color: '#1a5632',
+                                direction: 'rtl'
+                              }}
+                            >
+                              {toFarsiNumber(pageNum)}
+                            </span>
                           </div>
                         </div>
                       );
