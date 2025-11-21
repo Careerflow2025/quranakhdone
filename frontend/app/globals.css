@@ -357,10 +357,12 @@ mark[class*="highlight-"]:hover {
   min-width: 480px !important;  /* Prevent shrinking */
   max-width: 480px !important;  /* Enforce portrait orientation */
 
-  /* CRITICAL: AUTO HEIGHT - fits content (10, 12, 13 lines - whatever needed) */
-  height: auto !important;
+  /* CRITICAL: ALLOW VERTICAL SCROLL - see all content */
+  height: auto !important;  /* Height based on content */
   min-height: 600px !important;  /* Minimum page height */
-  max-height: none !important;  /* No maximum - grows with content */
+  max-height: 85vh !important;  /* Maximum 85% of viewport height */
+  overflow-y: auto !important;  /* Enable vertical scrolling */
+  overflow-x: hidden !important;  /* No horizontal scroll within page */
 
   /* CRITICAL: Perfect text justification - all lines same width */
   text-align: justify !important;
@@ -382,6 +384,24 @@ mark[class*="highlight-"]:hover {
 
   /* Ensure page doesn't shrink in flex container */
   flex-shrink: 0 !important;
+}
+
+/* Style the vertical scrollbar within pages */
+.mushaf-page-content::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.mushaf-page-content::-webkit-scrollbar-track {
+  background: rgba(26, 86, 50, 0.05) !important;
+}
+
+.mushaf-page-content::-webkit-scrollbar-thumb {
+  background: rgba(26, 86, 50, 0.3) !important;
+  border-radius: 3px !important;
+}
+
+.mushaf-page-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 86, 50, 0.5) !important;
 }
 
 /* Ensure all text elements inherit justification */
@@ -419,7 +439,7 @@ mark[class*="highlight-"]:hover {
 .mushaf-scroll-container {
   /* Horizontal scrolling enabled */
   overflow-x: auto !important;
-  overflow-y: hidden !important;
+  overflow-y: visible !important;  /* Allow vertical overflow for pages */
 
   /* Smooth scrolling behavior */
   scroll-behavior: smooth !important;
@@ -438,9 +458,32 @@ mark[class*="highlight-"]:hover {
   /* Full viewport dimensions */
   width: 100% !important;
   height: auto !important;
+  min-height: 85vh !important;  /* Ensure enough height for pages */
 
   /* Padding for visual breathing room */
   padding: 2rem !important;
+}
+
+/* OVERRIDE inline styles that restrict overflow - CRITICAL FIX */
+div.mushaf-page-content[style*="overflow"] {
+  overflow-y: auto !important;  /* Enable vertical scroll - override inline hidden */
+  overflow-x: hidden !important;  /* No horizontal scroll within pages */
+}
+
+/* OVERRIDE inline height restrictions - CRITICAL FIX */
+div.mushaf-page-content[style*="maxHeight"],
+div.mushaf-page-content[style*="max-height"] {
+  max-height: 85vh !important;  /* Allow taller pages - override inline 72vh */
+}
+
+div.mushaf-page-content[style*="minHeight"],
+div.mushaf-page-content[style*="min-height"] {
+  min-height: 600px !important;  /* Minimum page height */
+}
+
+/* Ensure parent containers don't restrict overflow */
+.mushaf-scroll-container > * {
+  overflow: visible !important;
 }
 
 /* Each page snaps to center when scrolling */
