@@ -84,11 +84,11 @@
 .ayah-container .text-right {
   direction: rtl;
   text-align: justify;
-  text-align-last: justify; /* Makes last line also justified */
+  text-align-last: start; /* Last line NOT justified - natural 1px spacing */
   text-justify: inter-word;
   hyphens: none;
-  word-spacing: 0.1em;
-  letter-spacing: 0.02em;
+  word-spacing: 1px; /* EXACTLY 1px spacing between words */
+  letter-spacing: 0px; /* No letter spacing */
   line-height: 2.5;
   font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', serif;
   font-size: 26px;
