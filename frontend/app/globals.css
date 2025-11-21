@@ -142,17 +142,23 @@
   vertical-align: middle;
 }
 
-/* Traditional Circular Frame with Ornate Design */
+/* Traditional Islamic Octagonal Frame with Ornate Design */
 .ayah-number {
   width: 42px;
   height: 42px;
-  border-radius: 50%;
+  /* Octagonal shape using clip-path - authentic Islamic geometric pattern */
+  clip-path: polygon(
+    30% 0%, 70% 0%,
+    100% 30%, 100% 70%,
+    70% 100%, 30% 100%,
+    0% 70%, 0% 30%
+  );
   background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F0 100%);
   border: 2.5px solid #1a5632;
   box-shadow:
-    0 2px 8px rgba(26, 86, 50, 0.3),
-    inset 0 1px 3px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    0 3px 10px rgba(26, 86, 50, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.15);
   font-family: 'Scheherazade New', serif;
   font-size: 18px;
   font-weight: 700;
@@ -161,7 +167,7 @@
   transition: all 0.3s ease;
 }
 
-/* Ornate outer ring */
+/* Ornate outer octagonal ring - matches main shape */
 .ayah-number::before {
   content: '';
   position: absolute;
@@ -169,13 +175,20 @@
   left: -6px;
   right: -6px;
   bottom: -6px;
-  border: 1.5px solid #C4A962;
-  border-radius: 50%;
-  opacity: 0.6;
+  /* Matching octagonal shape for outer ring */
+  clip-path: polygon(
+    30% 0%, 70% 0%,
+    100% 30%, 100% 70%,
+    70% 100%, 30% 100%,
+    0% 70%, 0% 30%
+  );
+  border: 2px solid #C4A962;
+  opacity: 0.7;
   pointer-events: none;
+  box-shadow: 0 0 8px rgba(196, 169, 98, 0.3);
 }
 
-/* Inner decorative circle */
+/* Inner decorative octagon - creates layered depth */
 .ayah-number::after {
   content: '';
   position: absolute;
@@ -183,9 +196,16 @@
   left: 3px;
   right: 3px;
   bottom: 3px;
-  border: 1px solid rgba(196, 169, 98, 0.3);
-  border-radius: 50%;
+  /* Inner octagonal accent */
+  clip-path: polygon(
+    30% 0%, 70% 0%,
+    100% 30%, 100% 70%,
+    70% 100%, 30% 100%,
+    0% 70%, 0% 30%
+  );
+  border: 1px solid rgba(196, 169, 98, 0.4);
   pointer-events: none;
+  background: radial-gradient(circle, rgba(196, 169, 98, 0.1) 0%, transparent 70%);
 }
 
 /* Hover effect for interactive elements */

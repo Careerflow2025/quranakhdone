@@ -157,6 +157,12 @@ export default function StudentManagementDashboard() {
   const [isIdle, setIsIdle] = useState(false);
   const IDLE_TIMEOUT = 120000; // 2 minutes
 
+  // Utility: Convert numbers to Farsi/Eastern Arabic numerals
+  const toFarsiNumber = (num: number): string => {
+    const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return String(num).split('').map(d => farsiDigits[parseInt(d)]).join('');
+  };
+
   // Progress Calculation - Page-based
   const calculatePageBasedProgress = (studentId: string, targetPages: number) => {
     let completedPages = 0;
@@ -1120,6 +1126,15 @@ export default function StudentManagementDashboard() {
                 <User className="w-4 h-4 text-gray-600" />
                 <span className="text-sm font-medium text-gray-700">{studentInfo.name}</span>
               </div>
+
+              {/* Page Number Badge */}
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                <BookOpen className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-700">
+                  Page {currentMushafPage}
+                </span>
+              </div>
+
               {/* Surah Selector Dropdown */}
               <div className="relative">
                 <button
@@ -1819,6 +1834,13 @@ export default function StudentManagementDashboard() {
                       );
                     });
                   })()}
+
+                  {/* Farsi Page Number at Bottom */}
+                  <div className="text-center pt-6 pb-2" style={{ direction: 'ltr' }}>
+                    <span className="text-gray-500 font-arabic text-lg">
+                      {toFarsiNumber(pageNum)}
+                    </span>
+                  </div>
                   </div>
                   {/* End Horizontal Scroll Container */}
                 </div>
