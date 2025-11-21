@@ -352,15 +352,15 @@ mark[class*="highlight-"]:hover {
   /* Add padding so frame shows properly */
   padding: 1.8rem 2rem !important;
 
-  /* CRITICAL: A4 PAGE SIZE - fills widened container */
-  width: 85% !important;  /* Fill most of col-span-10 container */
-  min-width: 700px !important;  /* Minimum readable width */
-  max-width: 900px !important;  /* Maximum for readability */
+  /* CRITICAL: A4 PAGE SIZE - proper A4 proportions (1:1.414 ratio) */
+  width: 70% !important;  /* Reasonable width in col-span-10 container */
+  min-width: 650px !important;  /* Minimum readable width */
+  max-width: 800px !important;  /* Maximum for readability */
 
-  /* CRITICAL: STATIC PDF-LIKE PAGE - NO scrolling inside */
-  height: 85vh !important;  /* Fixed height like real page */
-  min-height: 85vh !important;  /* Consistent page height */
-  max-height: 85vh !important;  /* Lock height */
+  /* CRITICAL: TALLER A4 PAGE - proper height proportions */
+  height: auto !important;  /* Height based on content - allows proper A4 ratio */
+  min-height: 120vh !important;  /* Much taller - proper A4 proportions */
+  max-height: none !important;  /* No max - let content determine height */
   overflow: hidden !important;  /* NO scrolling - static like PDF */
 
   /* CRITICAL: Perfect text justification - all lines same width EXCEPT LAST LINE */
@@ -418,30 +418,30 @@ mark[class*="highlight-"]:hover {
    Traditional mushaf page-by-page scroll with vertical A4 pages
    ============================================ */
 
-/* CRITICAL: Horizontal scroll container holding vertical pages */
+/* CRITICAL: VERTICAL scroll container - pages stacked top to bottom */
 .mushaf-scroll-container {
-  /* Horizontal scrolling enabled */
-  overflow-x: auto !important;
-  overflow-y: visible !important;  /* Allow vertical overflow for pages */
+  /* VERTICAL scrolling enabled - scroll down through pages */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;  /* No horizontal scroll */
 
   /* Smooth scrolling behavior */
   scroll-behavior: smooth !important;
 
-  /* Snap to pages when scrolling */
-  scroll-snap-type: x mandatory !important;
+  /* Snap to pages when scrolling DOWN */
+  scroll-snap-type: y mandatory !important;
 
-  /* Layout pages horizontally */
+  /* Layout pages VERTICALLY - stacked top to bottom */
   display: flex !important;
-  flex-direction: row !important;
-  align-items: flex-start !important;
+  flex-direction: column !important;
+  align-items: center !important;
 
   /* Spacing between pages */
-  gap: 3rem !important;
+  gap: 2rem !important;
 
   /* Full viewport dimensions */
   width: 100% !important;
-  height: auto !important;
-  min-height: 85vh !important;  /* Ensure enough height for pages */
+  height: 90vh !important;  /* Fixed container height for scrolling */
+  max-height: 90vh !important;
 
   /* Padding for visual breathing room */
   padding: 2rem !important;
@@ -452,12 +452,12 @@ div.mushaf-page-content[style*="overflow"] {
   overflow: hidden !important;  /* NO scrolling - static page like PDF */
 }
 
-/* OVERRIDE inline height - enforce fixed page height */
+/* OVERRIDE inline height - enforce tall A4 page height */
 div.mushaf-page-content[style*="Height"],
 div.mushaf-page-content[style*="height"] {
-  height: 85vh !important;  /* Fixed height like real PDF page */
-  min-height: 85vh !important;
-  max-height: 85vh !important;
+  height: auto !important;  /* Auto height based on content */
+  min-height: 120vh !important;  /* Much taller for A4 proportions */
+  max-height: none !important;  /* No maximum - let content flow */
 }
 
 /* Ensure parent containers don't restrict overflow */
@@ -473,7 +473,7 @@ div.mushaf-page-content[style*="height"] {
 
 /* Keep scrollbar visible for user awareness but style it nicely */
 .mushaf-scroll-container::-webkit-scrollbar {
-  height: 8px !important;
+  width: 10px !important;  /* Vertical scrollbar width */
 }
 
 .mushaf-scroll-container::-webkit-scrollbar-track {

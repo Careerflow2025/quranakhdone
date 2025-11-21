@@ -1354,15 +1354,15 @@ export default function StudentManagementDashboard() {
                 {/* Quran Text Display - Mushaf Style with Dynamic Script Styling */}
 <div className="relative">
 
-                  {/* Horizontal Scroll Container */}
+                  {/* Vertical Scroll Container */}
                   <div className="mushaf-scroll-container" style={{
                     display: 'flex',
-                    flexDirection: 'row',
-                    overflowX: 'auto',
-                    overflowY: 'visible',
+                    flexDirection: 'column',
+                    overflowX: 'hidden',
+                    overflowY: 'auto',
                     gap: '3rem',
                     scrollBehavior: 'smooth',
-                    scrollSnapType: 'x mandatory',
+                    scrollSnapType: 'y mandatory',
                     padding: '2rem',
                     pointerEvents: penMode ? 'none' : 'auto'
                   }}>
@@ -1379,7 +1379,7 @@ export default function StudentManagementDashboard() {
                     }
 
                     .mushaf-scroll-container::-webkit-scrollbar {
-                      height: 8px;
+                      width: 10px;
                     }
 
                     .mushaf-scroll-container::-webkit-scrollbar-track {
@@ -1399,7 +1399,7 @@ export default function StudentManagementDashboard() {
 
                   {(() => {
                     // Calculate page range to render (sliding window)
-                    const WINDOW_SIZE = 5; // Pages before/after current
+                    const WINDOW_SIZE = 15; // Pages before/after current
                     const totalPages = 604; // Total Quran pages
                     const startPage = Math.max(1, currentMushafPage - WINDOW_SIZE);
                     const endPage = Math.min(totalPages, currentMushafPage + WINDOW_SIZE);
