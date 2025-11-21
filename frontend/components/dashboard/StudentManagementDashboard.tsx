@@ -1446,12 +1446,9 @@ export default function StudentManagementDashboard() {
                   `}</style>
 
                   {(() => {
-                    // Calculate page range to render (sliding window)
-                    const WINDOW_SIZE = 15; // Pages before/after current
+                    // Render ALL 604 pages for continuous scrolling
                     const totalPages = 604; // Total Quran pages
-                    const startPage = Math.max(1, currentMushafPage - WINDOW_SIZE);
-                    const endPage = Math.min(totalPages, currentMushafPage + WINDOW_SIZE);
-                    const pagesToRender = Array.from({length: endPage - startPage + 1}, (_, i) => startPage + i);
+                    const pagesToRender = Array.from({length: totalPages}, (_, i) => i + 1);
 
                     return pagesToRender.map((pageNum) => {
                       // Get the page data for this specific page
