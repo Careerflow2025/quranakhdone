@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Traditional Quran Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;700&display=swap');
+
 /* Professional Notification Animations */
 @keyframes slideIn {
   from {
@@ -16,4 +19,343 @@
 
 .animate-slideIn {
   animation: slideIn 0.3s ease-out forwards;
+}
+
+/* ============================================
+   TRADITIONAL QURAN VIEWER ENHANCEMENTS
+   Pure CSS - No functionality changes
+   ============================================ */
+
+/* Traditional Islamic Frame Border */
+.quran-viewer,
+.mushaf-page-container {
+  position: relative;
+}
+
+/* Ornate Islamic Frame - Outer Border */
+.quran-viewer::before,
+.mushaf-page-container::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  border: 3px solid #1a5632;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Golden Inner Frame */
+.quran-viewer::after,
+.mushaf-page-container::after {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  right: -15px;
+  bottom: -15px;
+  border: 2px solid #C4A962;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: inset 0 0 20px rgba(196, 169, 98, 0.2);
+}
+
+/* Page Background - Cream Mushaf Paper */
+.quran-viewer > div,
+.mushaf-page-container > div {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(to bottom, #FFFEF8 0%, #FDFCF5 50%, #FFFEF8 100%);
+  padding: 30px;
+  border-radius: 8px;
+}
+
+/* ============================================
+   PERFECT TEXT JUSTIFICATION
+   All lines same width, traditional layout
+   ============================================ */
+
+/* Quran Text Container */
+.quran-text,
+.quran-text-area,
+.ayah-container .text-right {
+  direction: rtl;
+  text-align: justify;
+  text-align-last: justify; /* Makes last line also justified */
+  text-justify: inter-word;
+  hyphens: none;
+  word-spacing: 0.1em;
+  letter-spacing: 0.02em;
+  line-height: 2.5;
+  font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', serif;
+  font-size: 26px;
+  color: #1a1a1a;
+}
+
+/* Ensure consistent line width */
+.ayah-container {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  margin-bottom: 0;
+  padding: 20px 40px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Remove ayah container individual borders for seamless text flow */
+.quran-viewer .ayah-container {
+  border-left: none !important;
+  border-right: none !important;
+  background-color: transparent !important;
+}
+
+/* Add subtle divider between ayahs */
+.ayah-container + .ayah-container {
+  margin-top: 0;
+  padding-top: 25px;
+}
+
+/* Mushaf-style text block */
+.quran-text-area {
+  min-height: 700px;
+  padding: 40px 60px;
+  line-height: 2.8;
+}
+
+/* ============================================
+   ENHANCED AYAH NUMBER STYLING
+   Traditional Islamic ornate design
+   ============================================ */
+
+/* Ayah Number Container */
+.ayah-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0 12px;
+  vertical-align: middle;
+}
+
+/* Traditional Circular Frame with Ornate Design */
+.ayah-number {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F0 100%);
+  border: 2.5px solid #1a5632;
+  box-shadow:
+    0 2px 8px rgba(26, 86, 50, 0.3),
+    inset 0 1px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  font-family: 'Scheherazade New', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a5632;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Ornate outer ring */
+.ayah-number::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 1.5px solid #C4A962;
+  border-radius: 50%;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Inner decorative circle */
+.ayah-number::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(196, 169, 98, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Hover effect for interactive elements */
+.ayah-container:hover .ayah-number {
+  transform: scale(1.08);
+  box-shadow:
+    0 3px 12px rgba(26, 86, 50, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   PAGE LAYOUT CONSISTENCY
+   Traditional Quran book formatting
+   ============================================ */
+
+/* Page Header Styling */
+.quran-viewer .flex.items-center.justify-between.mb-6 {
+  background: linear-gradient(to right, #1a5632 0%, #2a7f4d 50%, #1a5632 100%);
+  border: 2px solid #C4A962;
+  border-radius: 8px;
+  padding: 20px 30px !important;
+  margin-bottom: 30px !important;
+  box-shadow: 0 4px 15px rgba(26, 86, 50, 0.2);
+}
+
+.quran-viewer .flex.items-center.justify-between.mb-6 h2 {
+  color: #FFFFFF;
+  font-family: 'Scheherazade New', serif;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.quran-viewer .flex.items-center.justify-between.mb-6 p {
+  color: #E8D4A2;
+}
+
+/* Consistent Page Spacing */
+.quran-viewer .space-y-6 {
+  space-y: 0 !important;
+}
+
+/* Line Consistency - All same height */
+.quran-text span,
+.quran-text-area span {
+  display: inline;
+  line-height: 2.8;
+  vertical-align: baseline;
+}
+
+/* Prevent text wrapping issues */
+.quran-text,
+.quran-text-area {
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: normal;
+}
+
+/* ============================================
+   MUSHAF PAGE BORDER ENHANCEMENT
+   ============================================ */
+
+/* Enhanced Page Border */
+.page-border {
+  border: 4px solid #1a5632 !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 6px 25px rgba(0, 0, 0, 0.15),
+    inset 0 0 30px rgba(196, 169, 98, 0.1) !important;
+  position: relative;
+  overflow: visible;
+}
+
+/* Ornate corner decorations */
+.page-border::before,
+.page-border::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #C4A962;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.page-border::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 12px 0 0 0;
+}
+
+.page-border::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 12px 0;
+}
+
+/* Inner border enhancement */
+.page-border > div {
+  border: 2px solid #E8D4A2 !important;
+  margin: 12px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #FFFEF8 0%, #FDFCF5 50%, #FFFEF8 100%);
+}
+
+/* ============================================
+   BISMILLAH STYLING
+   ============================================ */
+
+.text-center.text-3xl.font-arabic {
+  font-family: 'Amiri Quran', serif !important;
+  font-size: 32px !important;
+  color: #1a5632 !important;
+  font-weight: 400 !important;
+  margin: 30px 0 40px 0 !important;
+  padding: 20px !important;
+  background: linear-gradient(to bottom, transparent 0%, rgba(196, 169, 98, 0.05) 50%, transparent 100%);
+  border-top: 1px solid rgba(196, 169, 98, 0.3);
+  border-bottom: 1px solid rgba(196, 169, 98, 0.3);
+}
+
+/* ============================================
+   HIGHLIGHT PRESERVATION
+   Ensure highlights work perfectly
+   ============================================ */
+
+/* Keep highlight functionality intact */
+mark[class*="highlight-"] {
+  display: inline;
+  padding: 2px 4px;
+  margin: 0 1px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+mark[class*="highlight-"]:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .quran-text,
+  .quran-text-area {
+    font-size: 22px;
+    line-height: 2.3;
+    padding: 20px 15px;
+  }
+
+  .ayah-number {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .quran-viewer::before,
+  .mushaf-page-container::before {
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+  }
 }
