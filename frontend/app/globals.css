@@ -351,11 +351,42 @@ mark[class*="highlight-"]:hover {
 
   /* Add padding so frame shows properly */
   padding: 1.8rem 2rem !important;
+
+  /* CRITICAL: Perfect text justification - all lines same width */
+  text-align: justify !important;
+  text-align-last: justify !important;
+  text-justify: inter-word !important;
+
+  /* CRITICAL: Minimal word spacing - 1px only */
+  word-spacing: 1px !important;
+  letter-spacing: 0 !important;
+
+  /* Ensure proper line height for uniform appearance */
+  line-height: 2.5 !important;
+
+  /* Direction for RTL text */
+  direction: rtl !important;
+
+  /* Full width container */
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure all text elements inherit justification */
+.mushaf-page-content,
+.mushaf-page-content * {
+  text-align: justify !important;
+  text-align-last: justify !important;
+  word-spacing: 1px !important;
+  letter-spacing: 0 !important;
 }
 
 /* Ensure word spans with note icons are positioned relatively */
 .mushaf-page-content span.inline.cursor-pointer {
   position: relative !important;
+  /* Critical: Keep inline display for proper text flow */
+  display: inline !important;
 }
 
 /* Note icon positioning - TOP of highlight, no left spacing */
@@ -366,6 +397,37 @@ mark[class*="highlight-"]:hover {
   transform: translateX(-50%) !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* ============================================
+   HORIZONTAL SCROLL SUPPORT
+   Traditional mushaf page-by-page scroll
+   ============================================ */
+
+/* Add horizontal scroll container for mushaf pages */
+.mushaf-page-container {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-behavior: smooth !important;
+  scroll-snap-type: x mandatory !important;
+  display: flex !important;
+  gap: 2rem !important;
+}
+
+/* Each page snaps into view */
+.mushaf-page-content {
+  scroll-snap-align: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Hide scrollbar but keep functionality */
+.mushaf-page-container::-webkit-scrollbar {
+  display: none;
+}
+
+.mushaf-page-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ============================================

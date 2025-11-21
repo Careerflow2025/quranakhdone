@@ -459,9 +459,9 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
   return {
     fontFamily: script.fontFamily,  // Authentic font for each Qira'at (visual uniqueness)
     fontSize: baseFontSize,  // Normalized size prevents overflow/underflow
-    lineHeight: '2.0',  // Consistent line spacing for all scripts
-    letterSpacing: script.letterSpacing || 'normal',
-    wordSpacing: script.wordSpacing || 'normal',
+    lineHeight: '2.5',  // Consistent line spacing for all scripts
+    letterSpacing: '0px',  // No letter spacing - minimal gaps
+    wordSpacing: '1px',  // Minimal word spacing - 1px only for clean layout
     direction: script.direction as 'rtl',
     color: script.textColor || '#000000',
     fontWeight: script.fontWeight || 'normal'
