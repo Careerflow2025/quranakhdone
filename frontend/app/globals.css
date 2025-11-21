@@ -335,129 +335,19 @@ mark[class*="highlight-"]:hover {
 
 /* ============================================
    STUDENT MANAGEMENT DASHBOARD SPECIFIC
-   Apply same enhancements to dashboard viewer
+   MINIMAL STYLING - Frame only, no layout changes
    ============================================ */
 
-/* Target the mushaf page container in dashboard */
+/* Simple traditional frame - matching reference image */
 .mushaf-page-content {
-  /* Traditional Islamic Frame */
-  position: relative !important;
-
-  /* Enhanced border matching reference image */
-  border: 4px solid #1a5632 !important;
+  /* Traditional double border frame */
+  border: 3px solid #1a5632 !important;
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.5) !important,
-    inset 0 0 0 1px rgba(196, 169, 98, 0.5) !important,
-    0 2px 10px rgba(0, 0, 0, 0.2) !important,
-    inset 0 0 30px rgba(196, 169, 98, 0.1) !important;
+    inset 0 0 0 1px #C4A962,
+    0 4px 12px rgba(0, 0, 0, 0.15) !important;
 
-  /* Ornate corner decorations */
-  overflow: visible !important;
-}
-
-/* Add ornate frame corners to dashboard */
-.mushaf-page-content::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 50px;
-  height: 50px;
-  border: 3px solid #C4A962;
-  border-right: none;
-  border-bottom: none;
-  border-radius: 10px 0 0 0;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.mushaf-page-content::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  right: -3px;
-  width: 50px;
-  height: 50px;
-  border: 3px solid #C4A962;
-  border-left: none;
-  border-top: none;
-  border-radius: 0 0 10px 0;
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* Perfect text justification for dashboard */
-.mushaf-text,
-.mushaf-page-text {
-  text-align: justify !important;
-  text-align-last: justify !important;
-  text-justify: inter-word !important;
-  line-height: 2.2 !important;
-  word-spacing: 0.08em !important;
-  letter-spacing: 0.01em !important;
-}
-
-/* Enhanced ayah number in dashboard - make circular with ornate design */
-.mushaf-page-content span.inline.relative.group {
-  display: inline-block !important;
-}
-
-/* Style the ayah separator/number in dashboard */
-.mushaf-page-content span.inline.relative.group::after {
-  content: attr(data-ayah-number);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  margin: 0 10px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F0 100%);
-  border: 2.5px solid #1a5632;
-  box-shadow:
-    0 2px 8px rgba(26, 86, 50, 0.3),
-    inset 0 1px 3px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
-  font-family: 'Scheherazade New', serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a5632;
-  position: relative;
-  vertical-align: middle;
-  transition: all 0.3s ease;
-}
-
-/* Cream paper background for dashboard viewer */
-.mushaf-page-content {
-  background: linear-gradient(to bottom, #FFFEF8 0%, #FDFCF5 50%, #FFFEF8 100%) !important;
-}
-
-/* Traditional Arabic fonts for dashboard */
-.mushaf-text,
-.mushaf-page-text,
-.mushaf-page-content {
-  font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', serif !important;
-}
-
-/* Ensure full-width lines in dashboard */
-.mushaf-page-content > span {
-  display: block;
-  width: 100%;
-}
-
-/* Bismillah styling in dashboard */
-.mushaf-page-content ~ div .text-center.text-3xl.font-arabic,
-.text-center.text-3xl.font-arabic {
-  font-family: 'Amiri Quran', serif !important;
-  font-size: 32px !important;
-  color: #1a5632 !important;
-  font-weight: 400 !important;
-  margin: 25px 0 35px 0 !important;
-  padding: 18px !important;
-  background: linear-gradient(to bottom, transparent 0%, rgba(196, 169, 98, 0.05) 50%, transparent 100%);
-  border-top: 1px solid rgba(196, 169, 98, 0.3);
-  border-bottom: 1px solid rgba(196, 169, 98, 0.3);
-  border-radius: 4px;
+  /* Cream mushaf paper background */
+  background: #FFFEF8 !important;
 }
 
 /* ============================================
