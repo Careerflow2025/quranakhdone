@@ -470,36 +470,38 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
 
 /**
  * Get DYNAMIC font sizing based on page content length
- * Automatically scales font down for longer pages to fit everything on screen WITHOUT SCROLLING
+ * Automatically scales font intelligently for optimal readability
  *
- * CRITICAL UX RULE: Everything must be visible without scrolling
- * Optimized for PORTRAIT/VERTICAL container (65-72vh height)
- * - Very short pages (< 700 chars): 17px
- * - Short pages (700-1000 chars): 16px
- * - Medium pages (1000-1400 chars): 15px
- * - Long pages (1400-1800 chars): 14px
- * - Very long pages (> 1800 chars): 13px minimum
+ * SMART ADAPTATION RULE: Bigger text that adapts based on content density
+ * - Very short pages (< 500 chars): 28px (much bigger for sparse content)
+ * - Short pages (500-800 chars): 26px (bigger for light content)
+ * - Medium pages (800-1200 chars): 24px (comfortable reading size)
+ * - Long pages (1200-1600 chars): 22px (slightly smaller for more content)
+ * - Very long pages (1600-2000 chars): 20px (compact for dense content)
+ * - Extra long pages (> 2000 chars): 18px (minimum readable size)
  *
  * @param textContent - The full text content of the current page
  * @param scriptId - The Qira'at script ID
- * @returns CSS properties with DYNAMICALLY SCALED font size
+ * @returns CSS properties with INTELLIGENTLY SCALED font size
  */
 export function getDynamicScriptStyling(textContent: string, scriptId: string) {
   const contentLength = textContent.length;
 
-  // Balanced font scaling for vertical/portrait container
-  let baseFontSize = '17px';
+  // Smart font scaling - bigger text that adapts to content density
+  let baseFontSize = '28px';  // Default for very short pages
 
-  if (contentLength > 1800) {
-    baseFontSize = '13px';  // Very long pages
-  } else if (contentLength > 1400) {
-    baseFontSize = '14px';  // Long pages
-  } else if (contentLength > 1000) {
-    baseFontSize = '15px';  // Medium pages
-  } else if (contentLength > 700) {
-    baseFontSize = '16px';  // Short pages
+  if (contentLength > 2000) {
+    baseFontSize = '18px';  // Extra long pages - minimum readable
+  } else if (contentLength > 1600) {
+    baseFontSize = '20px';  // Very long pages - compact
+  } else if (contentLength > 1200) {
+    baseFontSize = '22px';  // Long pages - slightly smaller
+  } else if (contentLength > 800) {
+    baseFontSize = '24px';  // Medium pages - comfortable
+  } else if (contentLength > 500) {
+    baseFontSize = '26px';  // Short pages - bigger
   } else {
-    baseFontSize = '17px';  // Very short pages
+    baseFontSize = '28px';  // Very short pages - much bigger
   }
 
   // Get base styling and override with dynamic font size

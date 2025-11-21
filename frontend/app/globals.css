@@ -348,6 +348,24 @@ mark[class*="highlight-"]:hover {
 
   /* Cream mushaf paper background */
   background: #FFFEF8 !important;
+
+  /* Add padding so frame shows properly */
+  padding: 1.8rem 2rem !important;
+}
+
+/* Ensure word spans with note icons are positioned relatively */
+.mushaf-page-content span.inline.cursor-pointer {
+  position: relative !important;
+}
+
+/* Note icon positioning - TOP of highlight, no left spacing */
+.mushaf-page-content sup.text-blue-500 {
+  position: absolute !important;
+  top: -10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* ============================================
