@@ -1113,14 +1113,13 @@ export default function StudentManagementDashboard() {
               </div>
             </div>
 
-            {/* Center - Student Info */}
-            <div className="text-center">
-              <p className="text-sm text-gray-500">{studentInfo.name} • {classInfo?.name || 'No Class'}</p>
-              <p className="text-xs text-gray-400">Student Management Dashboard</p>
-            </div>
-            
-            {/* Right Side - Controls */}
+            {/* Right Side - Controls with Compact Student Info */}
             <div className="flex items-center space-x-3">
+              {/* Compact Student Info Badge */}
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-full border border-gray-200">
+                <User className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">{studentInfo.name}</span>
+              </div>
               {/* Surah Selector Dropdown */}
               <div className="relative">
                 <button
