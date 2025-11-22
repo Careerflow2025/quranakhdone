@@ -365,25 +365,16 @@ mark[class*="highlight-"]:hover {
 
 /* Islamic traditional frame with gold and green dual colors */
 .mushaf-page-content {
-  /* Islamic patterned border - triangular decorative pattern embedded in border */
-  border: 16px solid !important;
-  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cdefs%3E%3Cpattern id='trianglePattern' x='0' y='0' width='48' height='48' patternUnits='userSpaceOnUse'%3E%3Crect width='48' height='48' fill='%23C4A962'/%3E%3Cpolygon points='0,0 24,16 48,0' fill='%2340826D'/%3E%3Cpolygon points='0,48 24,32 48,48' fill='%2340826D'/%3E%3Cpolygon points='0,0 16,24 0,48' fill='%23D4AF37'/%3E%3Cpolygon points='48,0 32,24 48,48' fill='%23D4AF37'/%3E%3Ccircle cx='24' cy='24' r='4' fill='%2340826D'/%3E%3Cline x1='12' y1='12' x2='36' y2='36' stroke='%2340826D' stroke-width='1'/%3E%3Cline x1='36' y1='12' x2='12' y2='36' stroke='%2340826D' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='48' height='48' fill='url(%23trianglePattern)'/%3E%3C/svg%3E") !important;
-  border-image-slice: 16 !important;
-  border-image-width: 16px !important;
-  border-image-repeat: repeat !important;
+  /* Clean double-frame border matching reference image - simple and elegant */
+  /* Outer dark green border */
+  border: 12px solid #1a5632 !important;
 
-  /* Layered shadows for depth and golden glow - Islamic aesthetic */
+  /* Inner gold border using box-shadow inset */
   box-shadow:
-    /* Inner decorative gold accent line */
-    inset 0 0 0 2px #D4AF37,
-    /* Inner subtle gold glow */
-    inset 0 0 15px rgba(196, 169, 98, 0.4),
-    /* Outer golden glow for richness */
-    0 0 20px rgba(196, 169, 98, 0.3),
-    /* Depth shadow */
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    /* Additional green accent shadow */
-    0 0 0 1px rgba(64, 130, 109, 0.5) !important;
+    /* Inner gold frame - 10px thick */
+    inset 0 0 0 10px #C4A962,
+    /* Subtle depth shadow */
+    0 4px 12px rgba(0, 0, 0, 0.15) !important;
 
   /* Cream mushaf paper background */
   background: #FFFEF8 !important;
