@@ -1574,74 +1574,77 @@ export default function StudentManagementDashboard() {
                           }
                         }
                       } else {
-                        // Multi-Surah page - more complex handling needed
-                        // Load both start and end Surahs from cache
+                        // Multi-Surah page - CRITICAL FIX: Load ALL Surahs, not just start/end
+                        // Pages like 604 have 3 Surahs [112, 113, 114], old code only loaded 112 and 114!
                         const scriptId = selectedScript || 'uthmani-hafs';
-                        const startCacheKey = `${scriptId}-${pageData.surahStart}`;
-                        const endCacheKey = `${scriptId}-${pageData.surahEnd}`;
 
-                        const startSurah = surahCache[startCacheKey];
-                        const endSurah = surahCache[endCacheKey];
+                        // Use surahsOnPage array to get ALL Surahs on this page
+                        const surahsOnThisPage = pageData.surahsOnPage || [];
 
-                        if (startSurah && endSurah) {
-                          // Both Surahs cached - combine them
-                          const startAyahs = startSurah.ayahs.filter((ayah: any, idx: number) => {
-                            const ayahNumber = idx + 1;
-                            return ayahNumber >= pageData.ayahStart;
+                        // Check if ALL Surahs are cached
+                        const allSurahsCached = surahsOnThisPage.every(surahNum =>
+                          surahCache[`${scriptId}-${surahNum}`]
+                        );
+
+                        if (allSurahsCached && surahsOnThisPage.length > 0) {
+                          // All Surahs cached - build pageAyahs from ALL Surahs
+                          const allAyahsOnPage: any[] = [];
+
+                          surahsOnThisPage.forEach((surahNum, index) => {
+                            const cacheKey = `${scriptId}-${surahNum}`;
+                            const surah = surahCache[cacheKey];
+
+                            if (surah) {
+                              if (index === 0) {
+                                // FIRST Surah: include ayahs from ayahStart onwards
+                                const ayahs = surah.ayahs.filter((ayah: any) =>
+                                  ayah.number >= pageData.ayahStart
+                                );
+                                allAyahsOnPage.push(...ayahs);
+                              } else if (index === surahsOnThisPage.length - 1) {
+                                // LAST Surah: include ayahs up to ayahEnd
+                                const ayahs = surah.ayahs.filter((ayah: any) =>
+                                  ayah.number <= pageData.ayahEnd
+                                );
+                                allAyahsOnPage.push(...ayahs);
+                              } else {
+                                // MIDDLE Surahs: include ALL ayahs (complete Surah)
+                                allAyahsOnPage.push(...surah.ayahs);
+                              }
+                            }
                           });
-                          const endAyahs = endSurah.ayahs.filter((ayah: any, idx: number) => {
-                            const ayahNumber = idx + 1;
-                            return ayahNumber <= pageData.ayahEnd;
-                          });
-                          pageAyahs = [...startAyahs, ...endAyahs];
+
+                          pageAyahs = allAyahsOnPage;
                         } else {
-                          // One or both Surahs not cached - show placeholder
+                          // Not all Surahs cached - show placeholder
                           pageAyahs = [];
 
-                          // Trigger async loads for missing Surahs
-                          if (!startSurah) {
-                            getSurahByNumber(scriptId, pageData.surahStart).then((surahData) => {
-                              if (surahData && surahData.ayahs) {
-                                setSurahCache(prev => ({
-                                  ...prev,
-                                  [startCacheKey]: {
-                                    number: pageData.surahStart,
-                                    surah: surahData.name,
-                                    ayahs: surahData.ayahs.map((ayah: any) => ({
-                                      number: ayah.numberInSurah,
-                                      surah: pageData.surahStart,  // CRITICAL: Track which Surah this ayah belongs to
-                                      text: ayah.text,
-                                      words: ayah.text.split(' ')
-                                    }))
-                                  }
-                                }));
-                              }
-                            }).catch((error) => {
-                              console.warn(`Failed to load Surah ${pageData.surahStart}:`, error);
-                            });
-                          }
+                          // Trigger async loads for ALL missing Surahs
+                          surahsOnThisPage.forEach(surahNum => {
+                            const cacheKey = `${scriptId}-${surahNum}`;
 
-                          if (!endSurah && pageData.surahEnd !== pageData.surahStart) {
-                            getSurahByNumber(scriptId, pageData.surahEnd).then((surahData) => {
-                              if (surahData && surahData.ayahs) {
-                                setSurahCache(prev => ({
-                                  ...prev,
-                                  [endCacheKey]: {
-                                    number: pageData.surahEnd,
-                                    surah: surahData.name,
-                                    ayahs: surahData.ayahs.map((ayah: any) => ({
-                                      number: ayah.numberInSurah,
-                                      surah: pageData.surahEnd,  // CRITICAL: Track which Surah this ayah belongs to
-                                      text: ayah.text,
-                                      words: ayah.text.split(' ')
-                                    }))
-                                  }
-                                }));
-                              }
-                            }).catch((error) => {
-                              console.warn(`Failed to load Surah ${pageData.surahEnd}:`, error);
-                            });
-                          }
+                            if (!surahCache[cacheKey]) {
+                              getSurahByNumber(scriptId, surahNum).then((surahData) => {
+                                if (surahData && surahData.ayahs) {
+                                  setSurahCache(prev => ({
+                                    ...prev,
+                                    [cacheKey]: {
+                                      number: surahNum,
+                                      surah: surahData.name,
+                                      ayahs: surahData.ayahs.map((ayah: any) => ({
+                                        number: ayah.numberInSurah,
+                                        surah: surahNum,  // CRITICAL: Track which Surah this ayah belongs to
+                                        text: ayah.text,
+                                        words: ayah.text.split(' ')
+                                      }))
+                                    }
+                                  }));
+                                }
+                              }).catch((error) => {
+                                console.warn(`Failed to load Surah ${surahNum}:`, error);
+                              });
+                            }
+                          });
                         }
                       }
 
