@@ -1327,6 +1327,48 @@ export default function StudentManagementDashboard() {
                 </span>
               </div>
 
+              {/* Zoom Controls */}
+              <div className="flex items-center space-x-2 px-3 py-2 bg-purple-50 rounded-full border border-purple-200">
+                {/* Zoom Out Button */}
+                <button
+                  onClick={() => setZoomLevel(Math.max(50, zoomLevel - 10))}
+                  className="p-1 hover:bg-purple-100 rounded-md transition-colors"
+                  title="Zoom Out"
+                  disabled={zoomLevel <= 50}
+                >
+                  <ZoomOut className={`w-4 h-4 ${zoomLevel <= 50 ? 'text-purple-300' : 'text-purple-600'}`} />
+                </button>
+
+                {/* Zoom Slider */}
+                <input
+                  type="range"
+                  min="50"
+                  max="200"
+                  step="10"
+                  value={zoomLevel}
+                  onChange={(e) => setZoomLevel(parseInt(e.target.value))}
+                  className="w-24 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer slider-purple"
+                  style={{
+                    background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${((zoomLevel - 50) / 150) * 100}%, #e9d5ff ${((zoomLevel - 50) / 150) * 100}%, #e9d5ff 100%)`
+                  }}
+                />
+
+                {/* Zoom Level Display */}
+                <span className="text-xs font-semibold text-purple-700 min-w-[45px] text-center">
+                  {zoomLevel}%
+                </span>
+
+                {/* Zoom In Button */}
+                <button
+                  onClick={() => setZoomLevel(Math.min(200, zoomLevel + 10))}
+                  className="p-1 hover:bg-purple-100 rounded-md transition-colors"
+                  title="Zoom In"
+                  disabled={zoomLevel >= 200}
+                >
+                  <ZoomIn className={`w-4 h-4 ${zoomLevel >= 200 ? 'text-purple-300' : 'text-purple-600'}`} />
+                </button>
+              </div>
+
               {/* Surah Selector Dropdown */}
               <div className="relative">
                 <button
@@ -1645,6 +1687,58 @@ export default function StudentManagementDashboard() {
 
                     .mushaf-scroll-container::-webkit-scrollbar-thumb:hover {
                       background: #2d5f4e;
+                    }
+
+                    /* Zoom Slider Styling */
+                    input[type="range"].slider-purple {
+                      -webkit-appearance: none;
+                      appearance: none;
+                      height: 8px;
+                      border-radius: 4px;
+                      outline: none;
+                    }
+
+                    input[type="range"].slider-purple::-webkit-slider-thumb {
+                      -webkit-appearance: none;
+                      appearance: none;
+                      width: 18px;
+                      height: 18px;
+                      border-radius: 50%;
+                      background: #a855f7;
+                      cursor: pointer;
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                      transition: all 0.2s ease;
+                    }
+
+                    input[type="range"].slider-purple::-webkit-slider-thumb:hover {
+                      background: #9333ea;
+                      transform: scale(1.1);
+                      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                    }
+
+                    input[type="range"].slider-purple::-webkit-slider-thumb:active {
+                      transform: scale(1.2);
+                    }
+
+                    input[type="range"].slider-purple::-moz-range-thumb {
+                      width: 18px;
+                      height: 18px;
+                      border-radius: 50%;
+                      background: #a855f7;
+                      cursor: pointer;
+                      border: none;
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                      transition: all 0.2s ease;
+                    }
+
+                    input[type="range"].slider-purple::-moz-range-thumb:hover {
+                      background: #9333ea;
+                      transform: scale(1.1);
+                      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                    }
+
+                    input[type="range"].slider-purple::-moz-range-thumb:active {
+                      transform: scale(1.2);
                     }
                   `}</style>
 
