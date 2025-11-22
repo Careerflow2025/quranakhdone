@@ -1672,7 +1672,7 @@ export default function StudentManagementDashboard() {
                             boxShadow: isCurrentPage
                               ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
                               : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                            border: '6px solid #40826D',  // 6px thick border on all sides (mushaf-style frame)
+                            border: '15px solid #40826D',  // 15px thick border on all sides (mushaf-style frame matching reference)
                             opacity: isCurrentPage ? 1 : 0.7,
                             transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
                             ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
