@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { useHighlights } from '@/hooks/useHighlights';
 import {
@@ -1455,12 +1456,7 @@ export default function StudentManagementDashboard() {
                   pointerEvents: penMode ? 'none' : 'auto'
                 }}>
 
-                {/* Basmala for new Surahs (except Surah 1 which has it in verse 1, and Surah 9 which doesn't have it) */}
-                {currentSurah !== 1 && currentSurah !== 9 && currentMushafPage === 1 && (
-                  <div className="text-center text-3xl font-arabic text-gray-700 py-6 border-b mb-6">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                  </div>
-                )}
+                {/* Basmala removed - now using PNG image in page rendering below */}
 
                 {/* Quran Text Display - Mushaf Style with Dynamic Script Styling */}
 <div className="relative">
@@ -1684,16 +1680,18 @@ export default function StudentManagementDashboard() {
 
                           {/* Bismillah Image - Display before every Surah start except At-Tawbah (Surah 9) */}
                           {pageData.ayahStart === 1 && pageData.surahStart !== 9 && (
-                            <div className="text-center mb-4">
-                              <img
+                            <div className="text-center mb-4 flex justify-center">
+                              <Image
                                 src="/images/bismillah.png"
                                 alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                                className="mx-auto"
+                                width={500}
+                                height={140}
+                                priority
+                                className="object-contain"
                                 style={{
-                                  width: 'auto',
-                                  height: '50px',
-                                  objectFit: 'contain',
-                                  marginBottom: '1rem'
+                                  maxWidth: '100%',
+                                  height: 'auto',
+                                  maxHeight: '60px'
                                 }}
                               />
                             </div>
