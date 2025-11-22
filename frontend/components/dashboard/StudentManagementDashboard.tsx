@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { useHighlights } from '@/hooks/useHighlights';
 import {
@@ -1680,18 +1679,19 @@ export default function StudentManagementDashboard() {
 
                           {/* Bismillah Image - Display before every Surah start except At-Tawbah (Surah 9) */}
                           {pageData.ayahStart === 1 && pageData.surahStart !== 9 && (
-                            <div className="text-center mb-4 flex justify-center">
-                              <Image
+                            <div className="text-center mb-6 py-4">
+                              <img
                                 src="/images/bismillah.png"
-                                alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                                width={500}
-                                height={140}
-                                priority
-                                className="object-contain"
+                                alt=""
+                                onError={(e) => console.error('Bismillah image failed to load:', e)}
+                                onLoad={() => console.log('Bismillah image loaded successfully')}
                                 style={{
-                                  maxWidth: '100%',
+                                  display: 'block',
+                                  margin: '0 auto',
+                                  maxWidth: '90%',
                                   height: 'auto',
-                                  maxHeight: '60px'
+                                  maxHeight: '70px',
+                                  objectFit: 'contain'
                                 }}
                               />
                             </div>
