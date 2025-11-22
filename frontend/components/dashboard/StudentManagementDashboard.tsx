@@ -129,6 +129,7 @@ export default function StudentManagementDashboard() {
 
   // New: Quran container ref and teacher data for professional pen annotations
   const quranContainerRef = useRef<HTMLDivElement>(null);
+  const mushafScrollContainerRef = useRef<HTMLDivElement>(null); // For IntersectionObserver
   const [teacherData, setTeacherData] = useState<{ id: string; school_id: string } | null>(null);
 
   // Fetch teacher data when teacherInfo is available
@@ -287,8 +288,13 @@ export default function StudentManagementDashboard() {
 
   // Track which page is currently visible (for dynamic page number in header)
   useEffect(() => {
+    // Wait for scroll container to be ready
+    if (!mushafScrollContainerRef.current) {
+      return;
+    }
+
     const observerOptions = {
-      root: null, // viewport
+      root: mushafScrollContainerRef.current, // Use scroll container as root, not viewport
       threshold: 0.5, // 50% of page must be visible
       rootMargin: '0px'
     };
@@ -319,13 +325,13 @@ export default function StudentManagementDashboard() {
     };
 
     // Delay observation to ensure pages are rendered
-    const timeoutId = setTimeout(observePages, 500);
+    const timeoutId = setTimeout(observePages, 1000);
 
     return () => {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, []); // Run once on mount
+  }, [mushafScrollContainerRef.current]); // Re-run when ref is set
 
   // Update Quran text when Surah or Script changes
   // Also populate cache and preload adjacent Surahs for smooth scrolling
@@ -1460,7 +1466,7 @@ export default function StudentManagementDashboard() {
 <div className="relative">
 
                   {/* Vertical Scroll Container */}
-                  <div className="mushaf-scroll-container" style={{
+                  <div ref={mushafScrollContainerRef} className="mushaf-scroll-container" style={{
                     display: 'flex',
                     flexDirection: 'column',
                     overflowX: 'hidden',
@@ -1666,7 +1672,7 @@ export default function StudentManagementDashboard() {
                             boxShadow: isCurrentPage
                               ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
                               : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                            border: isCurrentPage ? '3px solid #40826D' : '2px solid #40826D',
+                            border: '6px solid #40826D',  // 6px thick border on all sides (mushaf-style frame)
                             opacity: isCurrentPage ? 1 : 0.7,
                             transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
                             ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
