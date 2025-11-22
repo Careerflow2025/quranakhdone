@@ -3,6 +3,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ReactSketchCanvas, ReactSketchCanvasRef } from 'react-sketch-canvas';
 import { supabase } from '@/lib/supabase/client';
+import {
+  transformSketchToRelative,
+  transformSketchToScreen,
+  getCanvasDimensions,
+  validateCoordinates
+} from '@/lib/annotationCoordinates';
 
 interface PenAnnotationCanvasProps {
   studentId: string;
@@ -161,8 +167,26 @@ export default function PenAnnotationCanvas({
         const latestAnnotation = result.data.annotations[0];
         if (latestAnnotation.drawing_data && canvasRef.current) {
           const renderStart = Date.now();
-          await canvasRef.current.loadPaths(latestAnnotation.drawing_data);
-          console.log('⏱️ [CANVAS RENDER] Took:', Date.now() - renderStart, 'ms');
+
+          // CRITICAL: Transform relative coordinates (0-1) → screen coordinates
+          // Get current canvas dimensions
+          const canvasDimensions = getCanvasDimensions(canvasContainerRef);
+          console.log('📐 [LOAD] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+
+          // Transform coordinates from relative (database) to screen (rendering)
+          const screenData = transformSketchToScreen(
+            latestAnnotation.drawing_data,
+            canvasDimensions
+          );
+
+          // Validate transformed coordinates
+          if (validateCoordinates(screenData, false)) {
+            await canvasRef.current.loadPaths(screenData);
+            console.log('⏱️ [CANVAS RENDER] Took:', Date.now() - renderStart, 'ms');
+            console.log('✅ [COORDINATES] Transformed from relative → screen');
+          } else {
+            console.error('❌ Invalid screen coordinates after transformation');
+          }
 
           setHasUnsavedChanges(false);
           const totalTime = Date.now() - startTime;
@@ -193,9 +217,29 @@ export default function PenAnnotationCanvas({
         return;
       }
 
-      // Export paths from react-sketch-canvas
+      // Export paths from react-sketch-canvas (returns SCREEN coordinates)
       const exportedData = await canvasRef.current.exportPaths();
       console.log('📊 [EXPORT] Paths count:', exportedData.length);
+
+      // CRITICAL: Transform screen coordinates → relative coordinates (0-1 range)
+      // Get current canvas dimensions
+      const canvasDimensions = getCanvasDimensions(canvasContainerRef);
+      console.log('📐 [SAVE] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+
+      // Transform coordinates from screen (canvas) to relative (database)
+      const relativeData = transformSketchToRelative(
+        { paths: exportedData },
+        canvasDimensions
+      );
+
+      // Validate transformed coordinates
+      if (!validateCoordinates(relativeData, true)) {
+        console.error('❌ Invalid relative coordinates - aborting save');
+        setIsSaving(false);
+        return;
+      }
+
+      console.log('✅ [COORDINATES] Transformed from screen → relative');
 
       const response = await fetch('/api/pen-annotations/save', {
         method: 'POST',
@@ -208,7 +252,7 @@ export default function PenAnnotationCanvas({
           teacherId,
           pageNumber,
           scriptId: scriptUuid,
-          drawingData: exportedData // Store the exported JSON directly
+          drawingData: relativeData // Store relative coordinates (0-1 range)
         })
       });
 
@@ -218,7 +262,7 @@ export default function PenAnnotationCanvas({
 
       const result = await response.json();
       if (result.success) {
-        console.log('✅ Annotations saved successfully');
+        console.log('✅ Annotations saved successfully with relative coordinates');
         setHasUnsavedChanges(false);
         onSave?.();
       }
