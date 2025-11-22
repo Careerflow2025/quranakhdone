@@ -115,7 +115,7 @@ export default function StudentManagementDashboard() {
   const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
-  const [currentDisplaySurah, setCurrentDisplaySurah] = useState<{ number: number; nameArabic: string } | null>(null);
+  const [currentDisplaySurahs, setCurrentDisplaySurahs] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<any>(null);
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
@@ -375,17 +375,19 @@ export default function StudentManagementDashboard() {
       }, 500);
     }
 
-    // Update current display Surah when page changes
+    // Update current display Surahs when page changes (show ALL Surahs on multi-Surah pages)
     const pageInfo = getPageContent(currentMushafPage);
     if (pageInfo) {
-      const surahNumber = pageInfo.surahStart;
-      const surahInfo = allSurahs.find((s: any) => s.number === surahNumber);
-      if (surahInfo) {
-        setCurrentDisplaySurah({
-          number: surahNumber,
-          nameArabic: surahInfo.nameArabic
-        });
-      }
+      // Use surahsOnPage array to get ALL Surahs on this page
+      const surahsOnThisPage = pageInfo.surahsOnPage || [pageInfo.surahStart];
+      const surahNames = surahsOnThisPage
+        .map((surahNum: number) => {
+          const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+          return surahInfo?.nameArabic || '';
+        })
+        .filter((name: string) => name !== '');
+
+      setCurrentDisplaySurahs(surahNames);
     }
   }, [currentMushafPage]);
 
@@ -416,18 +418,19 @@ export default function StudentManagementDashboard() {
           if (!isNaN(pageNum)) {
             setCurrentMushafPage(pageNum);
 
-            // Update current display Surah based on page
+            // Update current display Surahs based on page (show ALL Surahs on multi-Surah pages)
             const pageInfo = getPageContent(pageNum);
             if (pageInfo) {
-              // Get the Surah that STARTS on this page (primary Surah)
-              const surahNumber = pageInfo.surahStart;
-              const surahInfo = allSurahs.find((s: any) => s.number === surahNumber);
-              if (surahInfo) {
-                setCurrentDisplaySurah({
-                  number: surahNumber,
-                  nameArabic: surahInfo.nameArabic
-                });
-              }
+              // Use surahsOnPage array to get ALL Surahs on this page
+              const surahsOnThisPage = pageInfo.surahsOnPage || [pageInfo.surahStart];
+              const surahNames = surahsOnThisPage
+                .map((surahNum: number) => {
+                  const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+                  return surahInfo?.nameArabic || '';
+                })
+                .filter((name: string) => name !== '');
+
+              setCurrentDisplaySurahs(surahNames);
             }
           }
         }
@@ -1302,12 +1305,16 @@ export default function StudentManagementDashboard() {
                 <span className="text-sm font-medium text-gray-700">{studentInfo.name}</span>
               </div>
 
-              {/* Current Surah Badge - Real-time based on scroll */}
-              {currentDisplaySurah && (
+              {/* Current Surah Badge - Real-time based on scroll (shows ALL Surahs on multi-Surah pages) */}
+              {currentDisplaySurahs.length > 0 && (
                 <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
                   <Book className="w-4 h-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-700 font-arabic">
-                    سُورَةُ {currentDisplaySurah.nameArabic}
+                    {currentDisplaySurahs.length === 1 ? (
+                      <>سُورَةُ {currentDisplaySurahs[0]}</>
+                    ) : (
+                      <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
+                    )}
                   </span>
                 </div>
               )}
