@@ -285,6 +285,48 @@ export default function StudentManagementDashboard() {
     }
   }, [currentMushafPage]);
 
+  // Track which page is currently visible (for dynamic page number in header)
+  useEffect(() => {
+    const observerOptions = {
+      root: null, // viewport
+      threshold: 0.5, // 50% of page must be visible
+      rootMargin: '0px'
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          // Extract page number from element ID (mushaf-page-123 -> 123)
+          const pageId = entry.target.id;
+          const pageNum = parseInt(pageId.replace('mushaf-page-', ''));
+          if (!isNaN(pageNum)) {
+            setCurrentMushafPage(pageNum);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all page elements (they're rendered dynamically, so wait a bit)
+    const observePages = () => {
+      for (let i = 1; i <= 604; i++) {
+        const pageElement = document.getElementById(`mushaf-page-${i}`);
+        if (pageElement) {
+          observer.observe(pageElement);
+        }
+      }
+    };
+
+    // Delay observation to ensure pages are rendered
+    const timeoutId = setTimeout(observePages, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, []); // Run once on mount
+
   // Update Quran text when Surah or Script changes
   // Also populate cache and preload adjacent Surahs for smooth scrolling
   useEffect(() => {
@@ -1847,44 +1889,6 @@ export default function StudentManagementDashboard() {
                   {/* End Horizontal Scroll Container */}
                 </div>
 
-                {/* Page Navigation */}
-                <div className="mt-2 border-t pt-2" style={{ pointerEvents: penMode ? 'none' : 'auto' }}>
-                  <div className="flex items-center justify-center gap-4">
-                    {(() => {
-                      // Get current page content to determine Surah
-                      const currentPageContent = getPageContent(currentMushafPage);
-                      const currentSurahNumber = currentPageContent?.surahStart || 1;
-
-                      // Get Surah page boundaries
-                      const { firstPage, lastPage } = getSurahPageRange(currentSurahNumber);
-
-                      const isFirstPage = currentMushafPage <= firstPage;
-                      const isLastPage = currentMushafPage >= lastPage;
-
-                      return (
-                        <>
-                          {/* Previous Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
-                            disabled={isFirstPage}
-                            className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Previous Page">
-                            <ChevronLeft className="w-5 h-5" />
-                          </button>
-
-                          {/* Next Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
-                            disabled={isLastPage}
-                            className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Next Page">
-                            <ChevronRight className="w-5 h-5" />
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
                 </div>
               </div>
             </div>
