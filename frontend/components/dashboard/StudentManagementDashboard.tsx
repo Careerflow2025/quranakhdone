@@ -119,6 +119,10 @@ export default function StudentManagementDashboard() {
   const [selectionStart, setSelectionStart] = useState<any>(null);
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
   const [selectionEnd, setSelectionEnd] = useState<any>(null);
+
+  // Quran preloading state
+  const [quranPreloadProgress, setQuranPreloadProgress] = useState(0);
+  const [isQuranFullyLoaded, setIsQuranFullyLoaded] = useState(false);
   
   // Pen Annotation States
   const [penMode, setPenMode] = useState(false);
@@ -143,6 +147,83 @@ export default function StudentManagementDashboard() {
       });
     }
   }, [teacherInfo, studentInfo]);
+
+  // PRELOAD ALL 114 SURAHS ON MOUNT for seamless scrolling
+  // This ensures all 604 pages have content immediately available
+  useEffect(() => {
+    const preloadAllSurahs = async () => {
+      const scriptId = selectedScript || 'uthmani-hafs';
+      console.log('🚀 Starting full Quran preload: ALL 114 Surahs...');
+
+      const allSurahNumbers = Array.from({ length: 114 }, (_, i) => i + 1);
+      let loadedCount = 0;
+
+      // Load all Surahs in batches to avoid overwhelming the system
+      const BATCH_SIZE = 10;
+
+      for (let i = 0; i < allSurahNumbers.length; i += BATCH_SIZE) {
+        const batch = allSurahNumbers.slice(i, i + BATCH_SIZE);
+
+        // Load batch in parallel
+        await Promise.all(
+          batch.map(async (surahNum) => {
+            const cacheKey = `${scriptId}-${surahNum}`;
+
+            // Skip if already cached
+            if (surahCache[cacheKey]) {
+              loadedCount++;
+              setQuranPreloadProgress(Math.round((loadedCount / 114) * 100));
+              return;
+            }
+
+            try {
+              const surahData = await getSurahByNumber(scriptId, surahNum);
+              const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+
+              if (surahData && surahData.ayahs && surahData.ayahs.length > 0) {
+                const transformedData = {
+                  number: surahNum,
+                  surah: surahData.name || surahInfo?.nameArabic || '',
+                  ayahs: surahData.ayahs.map((ayah: any) => ({
+                    number: ayah.numberInSurah,
+                    surah: surahNum, // CRITICAL: Track which Surah this ayah belongs to
+                    text: ayah.text,
+                    words: ayah.text.split(' ')
+                  }))
+                };
+
+                setSurahCache(prev => ({
+                  ...prev,
+                  [cacheKey]: transformedData
+                }));
+
+                loadedCount++;
+                const progress = Math.round((loadedCount / 114) * 100);
+                setQuranPreloadProgress(progress);
+
+                if (loadedCount % 10 === 0) {
+                  console.log(`📚 Preloaded ${loadedCount}/114 Surahs (${progress}%)`);
+                }
+              }
+            } catch (error) {
+              console.warn(`⚠️ Failed to preload Surah ${surahNum}:`, error);
+              loadedCount++; // Count it anyway to keep progress moving
+              setQuranPreloadProgress(Math.round((loadedCount / 114) * 100));
+            }
+          })
+        );
+      }
+
+      console.log('✅ Full Quran preload COMPLETE! All 114 Surahs loaded.');
+      setIsQuranFullyLoaded(true);
+      setQuranPreloadProgress(100);
+    };
+
+    // Only run once on mount
+    if (!isQuranFullyLoaded) {
+      preloadAllSurahs();
+    }
+  }, []); // Empty dependency array = run once on mount
 
   // Real mushaf has 604 pages with specific ayah layouts
 
@@ -347,7 +428,7 @@ export default function StudentManagementDashboard() {
   }, [mushafScrollContainerRef.current, isProgrammaticScroll]); // Re-run when ref is set or scroll flag changes
 
   // Update Quran text when Surah or Script changes
-  // Also populate cache and preload adjacent Surahs for smooth scrolling
+  // Cache is already populated with ALL 114 Surahs from mount preloading
   useEffect(() => {
     const loadQuranText = async () => {
       const scriptId = selectedScript || 'uthmani-hafs';
@@ -363,6 +444,7 @@ export default function StudentManagementDashboard() {
             surah: surahData.name || surahInfo?.nameArabic || 'الفاتحة',
             ayahs: surahData.ayahs.map((ayah: any) => ({
               number: ayah.numberInSurah,
+              surah: currentSurah, // CRITICAL: Track which Surah this ayah belongs to
               text: ayah.text,
               words: ayah.text.split(' ')
             }))
@@ -378,37 +460,7 @@ export default function StudentManagementDashboard() {
             [cacheKey]: transformedData
           }));
 
-          // Preload adjacent Surahs (previous and next) for smooth scrolling
-          const adjacentSurahs = [
-            currentSurah - 1,
-            currentSurah + 1
-          ].filter(num => num >= 1 && num <= 114);
-
-          adjacentSurahs.forEach(async (surahNum) => {
-            const adjCacheKey = `${scriptId}-${surahNum}`;
-            // Only load if not already cached
-            if (!surahCache[adjCacheKey]) {
-              try {
-                const adjSurahData = await getSurahByNumber(scriptId, surahNum);
-                if (adjSurahData && adjSurahData.ayahs) {
-                  setSurahCache(prev => ({
-                    ...prev,
-                    [adjCacheKey]: {
-                      number: surahNum,
-                      surah: adjSurahData.name,
-                      ayahs: adjSurahData.ayahs.map((ayah: any) => ({
-                        number: ayah.numberInSurah,
-                        text: ayah.text,
-                        words: ayah.text.split(' ')
-                      }))
-                    }
-                  }));
-                }
-              } catch (error) {
-                console.warn(`Failed to preload Surah ${surahNum}:`, error);
-              }
-            }
-          });
+          // NOTE: Adjacent Surahs preloading removed - ALL 114 Surahs are now preloaded on mount
         }
       } catch (error) {
         console.error('Error loading Quran text:', error);
@@ -1157,6 +1209,40 @@ export default function StudentManagementDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Full Quran Preloading Overlay */}
+      {!isQuranFullyLoaded && (
+        <div className="fixed inset-0 bg-white bg-opacity-95 z-50 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto p-8">
+            {/* Islamic Decoration */}
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center animate-pulse">
+                <BookOpen className="w-10 h-10 text-white" />
+              </div>
+            </div>
+
+            {/* Loading Text */}
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading the Holy Quran</h2>
+            <p className="text-xl font-arabic text-green-700 mb-6">جارٍ تحميل القرآن الكريم</p>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-3 mb-3 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-green-600 to-emerald-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${quranPreloadProgress}%` }}
+              ></div>
+            </div>
+
+            {/* Progress Text */}
+            <p className="text-sm text-gray-600">
+              Loading {quranPreloadProgress}% of 114 Surahs...
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              Preparing all 604 pages for seamless reading
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-6 py-4">
