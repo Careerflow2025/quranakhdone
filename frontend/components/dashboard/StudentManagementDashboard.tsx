@@ -117,6 +117,7 @@ export default function StudentManagementDashboard() {
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<any>(null);
+  const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
   const [selectionEnd, setSelectionEnd] = useState<any>(null);
   
   // Pen Annotation States
@@ -272,6 +273,8 @@ export default function StudentManagementDashboard() {
   // Update Mushaf page when Surah changes (not when script changes)
   useEffect(() => {
     const mushafPage = getPageBySurahAyah(currentSurah, 1);
+    console.log(`Navigation: Surah ${currentSurah} → Page ${mushafPage}`);
+    setIsProgrammaticScroll(true); // Disable observer during navigation
     setCurrentMushafPage(mushafPage);
   }, [currentSurah]);
 
@@ -284,6 +287,10 @@ export default function StudentManagementDashboard() {
         block: 'nearest',
         inline: 'center'
       });
+      // Re-enable observer after scroll animation completes (500ms)
+      setTimeout(() => {
+        setIsProgrammaticScroll(false);
+      }, 500);
     }
   }, [currentMushafPage]);
 
@@ -301,6 +308,11 @@ export default function StudentManagementDashboard() {
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      // Skip observer updates during programmatic scrolling to prevent interference
+      if (isProgrammaticScroll) {
+        return;
+      }
+
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
           // Extract page number from element ID (mushaf-page-123 -> 123)
@@ -332,7 +344,7 @@ export default function StudentManagementDashboard() {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [mushafScrollContainerRef.current]); // Re-run when ref is set
+  }, [mushafScrollContainerRef.current, isProgrammaticScroll]); // Re-run when ref is set or scroll flag changes
 
   // Update Quran text when Surah or Script changes
   // Also populate cache and preload adjacent Surahs for smooth scrolling
@@ -1208,12 +1220,8 @@ export default function StudentManagementDashboard() {
                         <button
                           key={surah.number}
                           onClick={() => {
+                            // Set the Surah - the useEffect will handle page navigation
                             setCurrentSurah(surah.number);
-                            // Navigate to the page where this Surah starts
-                            const pageNumber = getPageBySurahAyah(surah.number, 1);
-                            if (pageNumber) {
-                              setCurrentMushafPage(pageNumber);
-                            }
                             setShowSurahDropdown(false);
                           }}
                           className={`p-3 text-left hover:bg-green-50 rounded-lg transition ${
