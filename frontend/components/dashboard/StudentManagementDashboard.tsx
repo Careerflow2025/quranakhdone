@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { useHighlights } from '@/hooks/useHighlights';
+import { BISMILLAH_BASE64 } from '@/lib/bismillahImage';
 import {
   getQuranByScriptId,
   getSurahByNumber,
@@ -1681,10 +1682,8 @@ export default function StudentManagementDashboard() {
                           {pageData.ayahStart === 1 && pageData.surahStart !== 9 && (
                             <div className="text-center mb-6 py-4">
                               <img
-                                src="/images/bismillah.png"
-                                alt=""
-                                onError={(e) => console.error('Bismillah image failed to load:', e)}
-                                onLoad={() => console.log('Bismillah image loaded successfully')}
+                                src={BISMILLAH_BASE64}
+                                alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
                                 style={{
                                   display: 'block',
                                   margin: '0 auto',
