@@ -1682,8 +1682,8 @@ export default function StudentManagementDashboard() {
                             lineHeight: '1.5'  // Slightly more breathing room with vertical space
                           }}>
 
-                          {/* Bismillah Image - Display before Surah start (except Surah 1 and 9) */}
-                          {pageData.ayahStart === 1 && pageData.surahStart !== 1 && pageData.surahStart !== 9 && (
+                          {/* Bismillah Image - Display before every Surah start except At-Tawbah (Surah 9) */}
+                          {pageData.ayahStart === 1 && pageData.surahStart !== 9 && (
                             <div className="text-center mb-4">
                               <img
                                 src="/images/bismillah.png"
