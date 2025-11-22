@@ -1606,40 +1606,12 @@ export default function StudentManagementDashboard() {
                 boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
                 maxHeight: '95vh',
                 overflow: 'hidden',
-                position: 'relative' // CRITICAL: Enable absolute positioning for canvas child
+                position: 'relative'
               }}>
-                {/* Professional Pen Annotations - ALWAYS visible, covers ENTIRE white viewer area */}
-                {studentInfo && teacherData && selectedScript && (
-                  <PenAnnotationCanvas
-                    studentId={studentInfo.id}
-                    teacherId={teacherData.id}
-                    pageNumber={currentMushafPage}
-                    scriptId={selectedScript}
-                    enabled={penMode}
-                    containerRef={quranContainerRef}
-                    penColor={penColor}
-                    setPenColor={setPenColor}
-                    penWidth={penWidth}
-                    setPenWidth={setPenWidth}
-                    eraserMode={eraserMode}
-                    setEraserMode={setEraserMode}
-                    onSave={() => {
-                      console.log('✅ Pen annotations saved successfully');
-                    }}
-                    onLoad={() => {
-                      console.log('✅ Pen annotations loaded successfully');
-                    }}
-                    onClear={() => {
-                      console.log('🗑️ Pen annotations cleared');
-                    }}
-                  />
-                )}
-
                 {/* Page-like container for Quran text */}
                 <div className="p-1" style={{
                   backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
-                  backgroundSize: '50px 50px',
-                  pointerEvents: penMode ? 'none' : 'auto'
+                  backgroundSize: '50px 50px'
                 }}>
 
                 {/* Basmala removed - now using PNG image in page rendering below */}
@@ -1900,7 +1872,7 @@ export default function StudentManagementDashboard() {
                           id={`mushaf-page-${pageNum}`}
                           className={`mushaf-page-content mushaf-text ${scriptClass}`}
                           style={{
-                            position: 'relative',  // Enable absolute positioning for page number
+                            position: 'relative',  // Enable absolute positioning for canvas overlay
                             scrollSnapAlign: 'center',
                             flexShrink: 0,
                             width: '38vw',  // NARROWER: More vertical/portrait-like proportions
@@ -1924,6 +1896,43 @@ export default function StudentManagementDashboard() {
                             textAlign: 'right',
                             lineHeight: '1.5'  // Slightly more breathing room with vertical space
                           }}>
+
+                          {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
+                          {studentInfo && teacherData && selectedScript && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              pointerEvents: (penMode && isCurrentPage) ? 'auto' : 'none',
+                              zIndex: penMode ? 10 : 1
+                            }}>
+                              <PenAnnotationCanvas
+                                studentId={studentInfo.id}
+                                teacherId={teacherData.id}
+                                pageNumber={pageNum}
+                                scriptId={selectedScript}
+                                enabled={penMode && isCurrentPage}
+                                containerRef={{current: document.getElementById(`mushaf-page-${pageNum}`) as HTMLDivElement}}
+                                penColor={penColor}
+                                setPenColor={setPenColor}
+                                penWidth={penWidth}
+                                setPenWidth={setPenWidth}
+                                eraserMode={eraserMode}
+                                setEraserMode={setEraserMode}
+                                onSave={() => {
+                                  console.log(`✅ Page ${pageNum} annotations saved`);
+                                }}
+                                onLoad={() => {
+                                  console.log(`✅ Page ${pageNum} annotations loaded`);
+                                }}
+                                onClear={() => {
+                                  console.log(`🗑️ Page ${pageNum} annotations cleared`);
+                                }}
+                              />
+                            </div>
+                          )}
 
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
                             // CRITICAL FIX: Detect if this is the first ayah of a NEW Surah
