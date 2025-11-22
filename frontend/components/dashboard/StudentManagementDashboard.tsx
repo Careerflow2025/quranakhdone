@@ -115,6 +115,7 @@ export default function StudentManagementDashboard() {
   const [selectedHighlightForNotes, setSelectedHighlightForNotes] = useState<string | null>(null);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
+  const [currentDisplaySurah, setCurrentDisplaySurah] = useState<{ number: number; nameArabic: string } | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState<any>(null);
   const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
@@ -373,6 +374,19 @@ export default function StudentManagementDashboard() {
         setIsProgrammaticScroll(false);
       }, 500);
     }
+
+    // Update current display Surah when page changes
+    const pageInfo = getPageContent(currentMushafPage);
+    if (pageInfo) {
+      const surahNumber = pageInfo.surahStart;
+      const surahInfo = allSurahs.find((s: any) => s.number === surahNumber);
+      if (surahInfo) {
+        setCurrentDisplaySurah({
+          number: surahNumber,
+          nameArabic: surahInfo.nameArabic
+        });
+      }
+    }
   }, [currentMushafPage]);
 
   // Track which page is currently visible (for dynamic page number in header)
@@ -401,6 +415,20 @@ export default function StudentManagementDashboard() {
           const pageNum = parseInt(pageId.replace('mushaf-page-', ''));
           if (!isNaN(pageNum)) {
             setCurrentMushafPage(pageNum);
+
+            // Update current display Surah based on page
+            const pageInfo = getPageContent(pageNum);
+            if (pageInfo) {
+              // Get the Surah that STARTS on this page (primary Surah)
+              const surahNumber = pageInfo.surahStart;
+              const surahInfo = allSurahs.find((s: any) => s.number === surahNumber);
+              if (surahInfo) {
+                setCurrentDisplaySurah({
+                  number: surahNumber,
+                  nameArabic: surahInfo.nameArabic
+                });
+              }
+            }
           }
         }
       });
@@ -1273,6 +1301,16 @@ export default function StudentManagementDashboard() {
                 <User className="w-4 h-4 text-gray-600" />
                 <span className="text-sm font-medium text-gray-700">{studentInfo.name}</span>
               </div>
+
+              {/* Current Surah Badge - Real-time based on scroll */}
+              {currentDisplaySurah && (
+                <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                  <Book className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700 font-arabic">
+                    سُورَةُ {currentDisplaySurah.nameArabic}
+                  </span>
+                </div>
+              )}
 
               {/* Page Number Badge */}
               <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
