@@ -63,8 +63,17 @@ export default function MushafPageDisplay({
   const renderBismillah = () => {
     if (pageInfo.ayahStart === 1 && pageInfo.surahStart !== 1 && pageInfo.surahStart !== 9) {
       return (
-        <div className="text-center text-3xl font-arabic text-gray-800 mb-6 py-3">
-          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        <div className="text-center mb-6 py-3">
+          <img
+            src="/images/bismillah.png"
+            alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+            className="mx-auto"
+            style={{
+              width: 'auto',
+              height: '60px',
+              objectFit: 'contain'
+            }}
+          />
         </div>
       );
     }
