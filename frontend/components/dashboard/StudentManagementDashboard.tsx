@@ -1209,6 +1209,11 @@ export default function StudentManagementDashboard() {
                           key={surah.number}
                           onClick={() => {
                             setCurrentSurah(surah.number);
+                            // Navigate to the page where this Surah starts
+                            const pageNumber = getPageBySurahAyah(surah.number, 1);
+                            if (pageNumber) {
+                              setCurrentMushafPage(pageNumber);
+                            }
                             setShowSurahDropdown(false);
                           }}
                           className={`p-3 text-left hover:bg-green-50 rounded-lg transition ${
@@ -1556,6 +1561,7 @@ export default function StudentManagementDashboard() {
                                     surah: surahData.name,
                                     ayahs: surahData.ayahs.map((ayah: any) => ({
                                       number: ayah.numberInSurah,
+                                      surah: surahNumber,  // CRITICAL: Track which Surah this ayah belongs to
                                       text: ayah.text,
                                       words: ayah.text.split(' ')
                                     }))
@@ -1603,6 +1609,7 @@ export default function StudentManagementDashboard() {
                                     surah: surahData.name,
                                     ayahs: surahData.ayahs.map((ayah: any) => ({
                                       number: ayah.numberInSurah,
+                                      surah: pageData.surahStart,  // CRITICAL: Track which Surah this ayah belongs to
                                       text: ayah.text,
                                       words: ayah.text.split(' ')
                                     }))
@@ -1624,6 +1631,7 @@ export default function StudentManagementDashboard() {
                                     surah: surahData.name,
                                     ayahs: surahData.ayahs.map((ayah: any) => ({
                                       number: ayah.numberInSurah,
+                                      surah: pageData.surahEnd,  // CRITICAL: Track which Surah this ayah belongs to
                                       text: ayah.text,
                                       words: ayah.text.split(' ')
                                     }))
@@ -1678,28 +1686,33 @@ export default function StudentManagementDashboard() {
                             lineHeight: '1.5'  // Slightly more breathing room with vertical space
                           }}>
 
-                          {/* Bismillah Image - Display before every Surah start except At-Tawbah (Surah 9) */}
-                          {pageData.ayahStart === 1 && pageData.surahStart !== 9 && (
-                            <div className="text-center mb-6 py-4">
-                              <img
-                                src={BISMILLAH_BASE64}
-                                alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                                style={{
-                                  display: 'block',
-                                  margin: '0 auto',
-                                  maxWidth: '90%',
-                                  height: 'auto',
-                                  maxHeight: '70px',
-                                  objectFit: 'contain'
-                                }}
-                              />
-                            </div>
-                          )}
-
                           {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                            // CRITICAL FIX: Detect if this is the first ayah of a NEW Surah
+                            // This handles pages with multiple Surahs (e.g., page 604 has Surahs 112, 113, 114)
+                            const isFirstAyahOfSurah = ayah.number === 1;
+                            const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
+                            const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
                             const ayahIndex = quranText.ayahs.indexOf(ayah);
                             return (
-                              <span key={ayah.number} className="inline relative group">
+                              <React.Fragment key={`ayah-${ayah.surah}-${ayah.number}-${ayahIdx}`}>
+                                {/* Display Bismillah before each NEW Surah (except Surah 9) */}
+                                {shouldShowBismillah && (
+                                  <div className="text-center mb-6 py-4" style={{ display: 'block', width: '100%' }}>
+                                    <img
+                                      src={BISMILLAH_BASE64}
+                                      alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                                      style={{
+                                        display: 'block',
+                                        margin: '0 auto',
+                                        maxWidth: '90%',
+                                        height: 'auto',
+                                        maxHeight: '70px',
+                                        objectFit: 'contain'
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                              <span className="inline relative group">
                         {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
                           const wordHighlights = highlights.filter(
@@ -1877,6 +1890,7 @@ export default function StudentManagementDashboard() {
                           });
                         })()}{' '}
                               </span>
+                              </React.Fragment>
                             );
                           })}
 
