@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useStudentManagement } from '@/hooks/useStudentManagement';
 import { useHighlights } from '@/hooks/useHighlights';
