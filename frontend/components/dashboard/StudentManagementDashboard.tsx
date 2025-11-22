@@ -1531,9 +1531,11 @@ export default function StudentManagementDashboard() {
                         const scriptId = selectedScript || 'uthmani-hafs';
                         const cacheKey = `${scriptId}-${surahNumber}`;
 
-                        // Check cache first
+                        // Check cache first - VALIDATE that cached ayahs have surah property
                         const cachedSurah = surahCache[cacheKey];
-                        if (cachedSurah) {
+                        const isCacheValid = cachedSurah && cachedSurah.ayahs && cachedSurah.ayahs.length > 0 && cachedSurah.ayahs[0].surah !== undefined;
+
+                        if (isCacheValid) {
                           // Use cached Surah data
                           pageAyahs = cachedSurah.ayahs.filter((ayah: any, idx: number) => {
                             const ayahNumber = idx + 1;
@@ -1581,10 +1583,11 @@ export default function StudentManagementDashboard() {
                         // Use surahsOnPage array to get ALL Surahs on this page
                         const surahsOnThisPage = pageData.surahsOnPage || [];
 
-                        // Check if ALL Surahs are cached
-                        const allSurahsCached = surahsOnThisPage.every(surahNum =>
-                          surahCache[`${scriptId}-${surahNum}`]
-                        );
+                        // Check if ALL Surahs are cached AND VALID (have surah property)
+                        const allSurahsCached = surahsOnThisPage.every(surahNum => {
+                          const cached = surahCache[`${scriptId}-${surahNum}`];
+                          return cached && cached.ayahs && cached.ayahs.length > 0 && cached.ayahs[0].surah !== undefined;
+                        });
 
                         if (allSurahsCached && surahsOnThisPage.length > 0) {
                           // All Surahs cached - build pageAyahs from ALL Surahs
