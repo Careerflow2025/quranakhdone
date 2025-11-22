@@ -7930,23 +7930,37 @@ export function getPageBySurahAyah(surah: number, ayah: number): number {
   // CRITICAL FIX: Find the correct page for a specific Surah and Ayah
   // Handles multi-Surah pages correctly (e.g., page 604 has Surahs 112, 113, 114)
 
+  console.log(`🔍 getPageBySurahAyah called: Surah ${surah}, Ayah ${ayah}`);
+
   const page = mushafPages.find(p => {
     // CASE 1: Single Surah page (surahStart === surahEnd)
     if (p.surahStart === p.surahEnd && p.surahStart === surah) {
-      return ayah >= p.ayahStart && ayah <= p.ayahEnd;
+      const match = ayah >= p.ayahStart && ayah <= p.ayahEnd;
+      if (match) {
+        console.log(`✅ CASE 1 Match: Page ${p.pageNumber} (Single Surah page)`);
+      }
+      return match;
     }
 
     // CASE 2: Surah STARTS on this page (surahStart === surah)
     // This means the Surah begins here, check if ayah is after the start point
     if (p.surahStart === surah) {
-      return ayah >= p.ayahStart;
+      const match = ayah >= p.ayahStart;
+      if (match) {
+        console.log(`✅ CASE 2 Match: Page ${p.pageNumber} (Surah STARTS here, ayah ${ayah} >= ${p.ayahStart})`);
+      }
+      return match;
     }
 
     // CASE 3: Surah ENDS on this page (surahEnd === surah)
     // This means the Surah concludes here, check if ayah is before the end point
     // IMPORTANT: Only match if this is NOT the starting page (avoid multi-match)
     if (p.surahEnd === surah && p.surahStart !== surah) {
-      return ayah <= p.ayahEnd;
+      const match = ayah <= p.ayahEnd;
+      if (match) {
+        console.log(`✅ CASE 3 Match: Page ${p.pageNumber} (Surah ENDS here, ayah ${ayah} <= ${p.ayahEnd})`);
+      }
+      return match;
     }
 
     // CASE 4: Multi-Surah page where this Surah appears in the MIDDLE
@@ -7955,6 +7969,7 @@ export function getPageBySurahAyah(surah: number, ayah: number): number {
     if (p.surahsOnPage && p.surahsOnPage.includes(surah)) {
       // If surah is in the middle of the page (not start or end), it's complete
       if (surah !== p.surahStart && surah !== p.surahEnd) {
+        console.log(`✅ CASE 4 Match: Page ${p.pageNumber} (Complete Surah in MIDDLE)`);
         return true; // Complete Surah on this page
       }
       // If surah is surahStart or surahEnd, already handled above
@@ -7963,7 +7978,9 @@ export function getPageBySurahAyah(surah: number, ayah: number): number {
     return false;
   });
 
-  return page?.pageNumber || 1;
+  const resultPage = page?.pageNumber || 1;
+  console.log(`🎯 RESULT: Surah ${surah} Ayah ${ayah} → Page ${resultPage}`);
+  return resultPage;
 }
 
 export function getPageContent(pageNumber: number): MushafPage | undefined {
