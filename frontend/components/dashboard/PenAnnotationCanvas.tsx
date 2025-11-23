@@ -16,13 +16,13 @@ interface PenAnnotationCanvasProps {
   pageNumber: number;
   scriptId: string;
   enabled: boolean;
-  containerRef: React.RefObject<HTMLDivElement>;
   penColor: string;
   setPenColor: (color: string) => void;
   penWidth: number;
   setPenWidth: (width: number) => void;
   eraserMode: boolean;
   setEraserMode: (mode: boolean) => void;
+  zoomLevel: number;  // Current zoom level (100 = normal, 150 = 150%, etc)
   onSave?: () => void;
   onLoad?: () => void;
   onClear?: () => void;
@@ -34,13 +34,13 @@ export default function PenAnnotationCanvas({
   pageNumber,
   scriptId,
   enabled,
-  containerRef,
   penColor,
   setPenColor,
   penWidth,
   setPenWidth,
   eraserMode,
   setEraserMode,
+  zoomLevel,
   onSave,
   onLoad,
   onClear
@@ -189,9 +189,9 @@ export default function PenAnnotationCanvas({
           const renderStart = Date.now();
 
           // CRITICAL: Transform relative coordinates (0-1) → screen coordinates
-          // Get current canvas dimensions
-          const canvasDimensions = getCanvasDimensions(canvasContainerRef);
-          console.log('📐 [LOAD] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+          // Get current canvas dimensions (unscaled by passing zoomLevel)
+          const canvasDimensions = getCanvasDimensions(canvasContainerRef, zoomLevel);
+          console.log('📐 [LOAD] Canvas dimensions (unscaled):', canvasDimensions.width, 'x', canvasDimensions.height, 'at zoom:', zoomLevel);
 
           // Safety check: Don't transform if canvas has no dimensions yet
           if (canvasDimensions.width === 0 || canvasDimensions.height === 0) {
@@ -249,9 +249,9 @@ export default function PenAnnotationCanvas({
       console.log('📊 [EXPORT] Paths count:', exportedData.length);
 
       // CRITICAL: Transform screen coordinates → relative coordinates (0-1 range)
-      // Get current canvas dimensions
-      const canvasDimensions = getCanvasDimensions(canvasContainerRef);
-      console.log('📐 [SAVE] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+      // Get current canvas dimensions (unscaled by passing zoomLevel)
+      const canvasDimensions = getCanvasDimensions(canvasContainerRef, zoomLevel);
+      console.log('📐 [SAVE] Canvas dimensions (unscaled):', canvasDimensions.width, 'x', canvasDimensions.height, 'at zoom:', zoomLevel);
 
       // Safety check: Don't save if canvas has no dimensions
       if (canvasDimensions.width === 0 || canvasDimensions.height === 0) {

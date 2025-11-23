@@ -187,10 +187,12 @@ export function transformSketchToScreen(
  * Get canvas dimensions from a canvas element or container ref
  *
  * @param elementOrRef - Canvas element, container div, or React ref
+ * @param zoomLevel - Optional zoom level (100 = normal, 150 = 150%, etc). If provided, returns unscaled dimensions
  * @returns Canvas dimensions in pixels
  */
 export function getCanvasDimensions(
-  elementOrRef: HTMLElement | React.RefObject<HTMLElement> | null
+  elementOrRef: HTMLElement | React.RefObject<HTMLElement> | null,
+  zoomLevel?: number
 ): CanvasDimensions {
   let element: HTMLElement | null = null;
 
@@ -206,9 +208,12 @@ export function getCanvasDimensions(
   }
 
   const rect = element.getBoundingClientRect();
+  const scaleFactor = zoomLevel ? zoomLevel / 100 : 1;
+
+  // Divide by scale factor to get true unscaled dimensions
   return {
-    width: rect.width,
-    height: rect.height
+    width: rect.width / scaleFactor,
+    height: rect.height / scaleFactor
   };
 }
 

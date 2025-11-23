@@ -1939,6 +1939,7 @@ export default function StudentManagementDashboard() {
                                 setPenWidth={setPenWidth}
                                 eraserMode={eraserMode}
                                 setEraserMode={setEraserMode}
+                                zoomLevel={zoomLevel}
                                 onSave={() => {
                                   console.log(`✅ Page ${pageNum} annotations saved`);
                                 }}
