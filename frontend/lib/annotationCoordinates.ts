@@ -143,16 +143,39 @@ export function transformSketchToScreen(
     return relativeData;
   }
 
-  const transformedPaths = relativeData.paths.map((pathObj: SketchPath) => {
-    const transformedPoints = pathObj.paths.map((point: Point) =>
-      transformPointToScreen(point, currentDimensions)
-    );
+  const transformedPaths = relativeData.paths
+    .map((pathObj: SketchPath) => {
+      // CRITICAL: Filter out null/undefined/NaN coordinates (corrupted data from before dimension validation)
+      const validPoints = pathObj.paths.filter((point: Point) => {
+        const isValid = point.x !== null &&
+                       point.x !== undefined &&
+                       !isNaN(point.x) &&
+                       point.y !== null &&
+                       point.y !== undefined &&
+                       !isNaN(point.y);
 
-    return {
-      ...pathObj,
-      paths: transformedPoints
-    };
-  });
+        if (!isValid) {
+          console.warn('⚠️ [CORRUPTED COORDINATE] Skipping invalid point:', point);
+        }
+        return isValid;
+      });
+
+      // Skip paths with no valid points
+      if (validPoints.length === 0) {
+        console.warn('⚠️ [CORRUPTED PATH] Skipping path with all invalid coordinates');
+        return null;
+      }
+
+      const transformedPoints = validPoints.map((point: Point) =>
+        transformPointToScreen(point, currentDimensions)
+      );
+
+      return {
+        ...pathObj,
+        paths: transformedPoints
+      };
+    })
+    .filter((path: SketchPath | null): path is SketchPath => path !== null); // Remove null paths
 
   return {
     ...relativeData,

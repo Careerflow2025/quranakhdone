@@ -1885,35 +1885,48 @@ export default function StudentManagementDashboard() {
                       const isCurrentPage = pageNum === currentMushafPage;
 
                       return (
+                        <React.Fragment>
+                        {/* ZOOM FIX: Wrapper adjusts layout space, inner div handles visual scaling */}
                         <div
                           key={pageNum}
-                          id={`mushaf-page-${pageNum}`}
-                          className={`mushaf-page-content mushaf-text ${scriptClass}`}
                           style={{
-                            position: 'relative',  // Enable absolute positioning for canvas overlay
                             scrollSnapAlign: 'center',
                             flexShrink: 0,
-                            width: '38vw',  // NARROWER: More vertical/portrait-like proportions
-                            maxWidth: '480px',  // REDUCED: Traditional book page width
-                            minHeight: '65vh',  // INCREASED: Use available bottom space
-                            maxHeight: '72vh',  // INCREASED: Taller to look like a real page
-                            overflow: 'hidden',  // NO scrolling inside container
-                            margin: '0',
-                            padding: '0.8rem 1rem',
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '8px',
-                            boxShadow: isCurrentPage
-                              ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
-                              : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                            border: '15px solid #40826D',  // 15px thick border on all sides (mushaf-style frame matching reference)
-                            opacity: isCurrentPage ? 1 : 0.7,
-                            transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
-                            ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
-                            transform: `scale(${zoomLevel / 100})`,
-                            transformOrigin: 'top center',
-                            textAlign: 'right',
-                            lineHeight: '1.5'  // Slightly more breathing room with vertical space
-                          }}>
+                            minHeight: `calc(65vh * ${zoomLevel / 100})`,  // Scale layout space with zoom
+                            maxHeight: `calc(72vh * ${zoomLevel / 100})`,  // Scale layout space with zoom
+                            width: '38vw',
+                            maxWidth: '480px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'flex-start'
+                          }}
+                        >
+                          <div
+                            id={`mushaf-page-${pageNum}`}
+                            className={`mushaf-page-content mushaf-text ${scriptClass}`}
+                            style={{
+                              position: 'relative',  // Enable absolute positioning for canvas overlay
+                              width: '38vw',  // NARROWER: More vertical/portrait-like proportions
+                              maxWidth: '480px',  // REDUCED: Traditional book page width
+                              minHeight: '65vh',  // INCREASED: Use available bottom space
+                              maxHeight: '72vh',  // INCREASED: Taller to look like a real page
+                              overflow: 'hidden',  // NO scrolling inside container
+                              margin: '0',
+                              padding: '0.8rem 1rem',
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '8px',
+                              boxShadow: isCurrentPage
+                                ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                                : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+                              border: '15px solid #40826D',  // 15px thick border on all sides (mushaf-style frame matching reference)
+                              opacity: isCurrentPage ? 1 : 0.7,
+                              transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
+                              ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
+                              transform: `scale(${zoomLevel / 100})`,
+                              transformOrigin: 'top center',
+                              textAlign: 'right',
+                              lineHeight: '1.5'  // Slightly more breathing room with vertical space
+                            }}>
 
                           {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
                           {studentInfo && teacherData && selectedScript && (
@@ -1932,7 +1945,6 @@ export default function StudentManagementDashboard() {
                                 pageNumber={pageNum}
                                 scriptId={selectedScript}
                                 enabled={penMode && isCurrentPage}
-                                containerRef={{current: document.getElementById(`mushaf-page-${pageNum}`) as HTMLDivElement}}
                                 penColor={penColor}
                                 setPenColor={setPenColor}
                                 penWidth={penWidth}
@@ -2183,6 +2195,8 @@ export default function StudentManagementDashboard() {
                             </span>
                           </div>
                         </div>
+                        </div>  {/* Close zoom wrapper */}
+                        </React.Fragment>
                       );
                     });
                   })()}
