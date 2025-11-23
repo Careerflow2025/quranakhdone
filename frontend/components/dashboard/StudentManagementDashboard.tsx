@@ -77,7 +77,17 @@ export default function StudentManagementDashboard() {
   } = useStudentManagement(studentId);
 
   // Core States
-  const [selectedScript, setSelectedScript] = useState('uthmani-hafs'); // Default to Uthmani script
+  // CRITICAL: Persist script selection across login sessions to prevent annotation load failures
+  const [selectedScript, setSelectedScript] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedScript = localStorage.getItem('selectedScript');
+      if (savedScript) {
+        console.log('💾 [SCRIPT PERSISTENCE] Restored from localStorage:', savedScript);
+        return savedScript;
+      }
+    }
+    return 'uthmani-hafs'; // Default to Uthmani script
+  });
   const [scriptLocked, setScriptLocked] = useState(false);
   const [currentSurah, setCurrentSurah] = useState(1);
   const [currentAyah, setCurrentAyah] = useState(1);
@@ -148,6 +158,14 @@ export default function StudentManagementDashboard() {
       });
     }
   }, [teacherInfo, studentInfo]);
+
+  // Persist script selection to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && selectedScript) {
+      localStorage.setItem('selectedScript', selectedScript);
+      console.log('💾 [SCRIPT PERSISTENCE] Saved to localStorage:', selectedScript);
+    }
+  }, [selectedScript]);
 
   // PRELOAD ALL 114 SURAHS ON MOUNT for seamless scrolling
   // This ensures all 604 pages have content immediately available
