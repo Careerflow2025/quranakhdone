@@ -56,6 +56,7 @@ export default function PenAnnotationCanvas({
   // Get script UUID from code
   useEffect(() => {
     const fetchScriptUuid = async () => {
+      console.log('🔎 [SCRIPT LOOKUP] Fetching UUID for code:', scriptId);
       const { data, error } = await supabase
         .from('quran_scripts')
         .select('id')
@@ -63,12 +64,18 @@ export default function PenAnnotationCanvas({
         .single();
 
       if (data && !error) {
-        setScriptUuid((data as any).id);
+        const uuid = (data as any).id;
+        console.log('✅ [SCRIPT FOUND] UUID:', uuid);
+        setScriptUuid(uuid);
+      } else {
+        console.error('❌ [SCRIPT ERROR]:', error);
       }
     };
 
     if (scriptId) {
       fetchScriptUuid();
+    } else {
+      console.warn('⚠️ [SCRIPT MISSING] No scriptId provided');
     }
   }, [scriptId]);
 
@@ -153,6 +160,19 @@ export default function PenAnnotationCanvas({
         }
       );
       console.log('⏱️ [API FETCH] Took:', Date.now() - fetchStart, 'ms');
+      console.log('📡 [HTTP STATUS]:', response.status, response.statusText);
+
+      // CRITICAL: Check response.ok BEFORE parsing JSON
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ [LOAD API ERROR]:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        setIsLoading(false);
+        return;
+      }
 
       const parseStart = Date.now();
       const result = await response.json();
@@ -172,6 +192,13 @@ export default function PenAnnotationCanvas({
           // Get current canvas dimensions
           const canvasDimensions = getCanvasDimensions(canvasContainerRef);
           console.log('📐 [LOAD] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+
+          // Safety check: Don't transform if canvas has no dimensions yet
+          if (canvasDimensions.width === 0 || canvasDimensions.height === 0) {
+            console.error('❌ [LOAD SKIPPED] Canvas has no dimensions yet, cannot transform coordinates');
+            setIsLoading(false);
+            return;
+          }
 
           // Transform coordinates from relative (database) to screen (rendering)
           const screenData = transformSketchToScreen(
@@ -225,6 +252,13 @@ export default function PenAnnotationCanvas({
       // Get current canvas dimensions
       const canvasDimensions = getCanvasDimensions(canvasContainerRef);
       console.log('📐 [SAVE] Canvas dimensions:', canvasDimensions.width, 'x', canvasDimensions.height);
+
+      // Safety check: Don't save if canvas has no dimensions
+      if (canvasDimensions.width === 0 || canvasDimensions.height === 0) {
+        console.error('❌ [SAVE ABORTED] Canvas has no dimensions, cannot transform coordinates');
+        setIsSaving(false);
+        return;
+      }
 
       // Transform coordinates from screen (canvas) to relative (database)
       const relativeData = transformSketchToRelative(
