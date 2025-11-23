@@ -1885,33 +1885,21 @@ export default function StudentManagementDashboard() {
                       const isCurrentPage = pageNum === currentMushafPage;
 
                       return (
-                        <React.Fragment>
-                        {/* ZOOM FIX: Wrapper adjusts layout space, inner div handles visual scaling */}
-                        <div
-                          key={pageNum}
-                          style={{
-                            scrollSnapAlign: 'center',
-                            flexShrink: 0,
-                            minHeight: `calc(65vh * ${zoomLevel / 100})`,  // Scale layout space with zoom
-                            maxHeight: `calc(72vh * ${zoomLevel / 100})`,  // Scale layout space with zoom
-                            width: '38vw',
-                            maxWidth: '480px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'flex-start'
-                          }}
-                        >
                           <div
+                            key={pageNum}
                             id={`mushaf-page-${pageNum}`}
                             className={`mushaf-page-content mushaf-text ${scriptClass}`}
                             style={{
                               position: 'relative',  // Enable absolute positioning for canvas overlay
+                              scrollSnapAlign: 'center',
+                              flexShrink: 0,
                               width: '38vw',  // NARROWER: More vertical/portrait-like proportions
                               maxWidth: '480px',  // REDUCED: Traditional book page width
                               minHeight: '65vh',  // INCREASED: Use available bottom space
                               maxHeight: '72vh',  // INCREASED: Taller to look like a real page
                               overflow: 'hidden',  // NO scrolling inside container
                               margin: '0',
+                              marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,  // Compensate for scale overflow: at 150% adds 32.5vh gap, at 50% removes 32.5vh gap
                               padding: '0.8rem 1rem',
                               backgroundColor: '#FFFFFF',
                               borderRadius: '8px',
@@ -2195,8 +2183,6 @@ export default function StudentManagementDashboard() {
                             </span>
                           </div>
                         </div>
-                        </div>  {/* Close zoom wrapper */}
-                        </React.Fragment>
                       );
                     });
                   })()}
