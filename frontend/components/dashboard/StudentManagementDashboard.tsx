@@ -1983,15 +1983,18 @@ export default function StudentManagementDashboard() {
                           const wordHighlights = highlights.filter(
                             h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                           );
-                          // Check if any highlight is completed and get appropriate colors
-                          const mistakes = wordHighlights.map((h: any) => {
-                            // If highlight is marked as completed, show gold color
-                            if (h.isCompleted) {
-                              return completedType;
+                          // CRITICAL FIX: If ANY highlight is completed, show ONLY gold color
+                          const mistakes = (() => {
+                            // Check if any highlight on this word is completed
+                            if (wordHighlights.some((h: any) => h.isCompleted)) {
+                              // Show ONLY gold, ignore all other colors
+                              return [completedType];
                             }
-                            // Otherwise show the original mistake color
-                            return mistakeTypes.find((m: any) => m.id === h.mistakeType);
-                          }).filter(Boolean);
+                            // Otherwise show all non-completed highlight colors
+                            return wordHighlights.map((h: any) =>
+                              mistakeTypes.find((m: any) => m.id === h.mistakeType)
+                            ).filter(Boolean);
+                          })();
 
                           // Check if word is in selection range
                           let isInSelection = false;
@@ -2084,8 +2087,9 @@ export default function StudentManagementDashboard() {
                                   backgroundSize: '100% 70%',  // 30% reduction in vertical height
                                   backgroundRepeat: 'no-repeat',
                                   backgroundPosition: 'center',
-                                  fontWeight: '600',
-                                  border: '1px solid rgba(0,0,0,0.15)'
+                                  fontWeight: '600'
+                                  // CRITICAL FIX: Removed border that caused 1px offset
+                                  // Previous: border: '1px solid rgba(0,0,0,0.15)'
                                 } : {})
                               }}
                             >
