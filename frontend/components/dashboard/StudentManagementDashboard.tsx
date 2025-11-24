@@ -2099,6 +2099,8 @@ export default function StudentManagementDashboard() {
                               }}
                             >
                               {word}
+                              {/* Add space after each word EXCEPT the last word in the ayah */}
+                              {wordIndex < ayah.words.length - 1 ? ' ' : ''}
                               {(() => {
                                 // Check if any highlight on this word has notes from database
                                 const hasNotes = wordHighlights.some((h: any) => {
