@@ -1906,7 +1906,7 @@ export default function StudentManagementDashboard() {
                               overflow: 'hidden',  // NO scrolling inside container
                               margin: '0',
                               marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,  // Compensate for scale overflow: at 150% adds 32.5vh gap, at 50% removes 32.5vh gap
-                              padding: '0.8rem 0.5rem',  // REDUCED: Smaller horizontal padding to reduce gap between page number and text
+                              padding: '0.6rem 0.3rem',  // COMPACT: Traditional book layout with minimal padding
                               backgroundColor: '#FFFFFF',
                               borderRadius: '8px',
                               boxShadow: isCurrentPage
@@ -1920,7 +1920,7 @@ export default function StudentManagementDashboard() {
                               transformOrigin: 'top center',
                               textAlign: 'right',
                               lineHeight: '1.5',  // Slightly more breathing room with vertical space
-                              wordSpacing: '-0.15em'  // REDUCED: Tighter word spacing for authentic Quran look
+                              wordSpacing: '-0.45em'  // TIGHT: 45% reduction for authentic compact Quran spacing
                             }}>
 
                           {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
@@ -2126,7 +2126,7 @@ export default function StudentManagementDashboard() {
                         })}
                         {/* Ayah Number - Traditional Mushaf Style with Islamic Octagonal Frame */}
                         <span
-                          className="ayah-number inline-flex items-center justify-center mx-2"
+                          className="ayah-number inline-flex items-center justify-center mx-1"
                         >
                           {toFarsiNumber(ayah.number)}
                         </span>
