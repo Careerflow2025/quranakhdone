@@ -844,7 +844,12 @@ export default function StudentManagementDashboard() {
       // Removed: if (dbH.page_number !== currentMushafPage) return;
 
       // Find the ayah in quranText array
-      const ayahIndex = quranText.ayahs.findIndex((ayah: any) => ayah.number === dbH.ayah_start);
+      // CRITICAL FIX: Match BOTH surah and ayah number to prevent cross-surah matches
+      // When page filter was removed, quranText.ayahs contains multiple surahs
+      // Without surah matching, Surah 2 Ayah 5 would incorrectly match Surah 1 Ayah 5
+      const ayahIndex = quranText.ayahs.findIndex((ayah: any) =>
+        ayah.number === dbH.ayah_start && ayah.surah === dbH.surah
+      );
       if (ayahIndex === -1) return;
 
       // Check if word indices are specified (word-level highlight)
@@ -2093,7 +2098,7 @@ export default function StudentManagementDashboard() {
                                 } : {})
                               }}
                             >
-                              {word}{' '}
+                              {word}
                               {(() => {
                                 // Check if any highlight on this word has notes from database
                                 const hasNotes = wordHighlights.some((h: any) => {
