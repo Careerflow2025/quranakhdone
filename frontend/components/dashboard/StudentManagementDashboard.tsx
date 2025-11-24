@@ -839,8 +839,9 @@ export default function StudentManagementDashboard() {
     const pageHighlights: any[] = [];
 
     dbHighlights.forEach((dbH: any) => {
-      // Check if highlight is on current page
-      if (dbH.page_number !== currentMushafPage) return;
+      // CRITICAL FIX: Show ALL highlights on ALL pages (dropdown only navigates)
+      // The page_number filter was causing highlights to disappear when scrolling
+      // Removed: if (dbH.page_number !== currentMushafPage) return;
 
       // Find the ayah in quranText array
       const ayahIndex = quranText.ayahs.findIndex((ayah: any) => ayah.number === dbH.ayah_start);
@@ -2042,8 +2043,8 @@ export default function StudentManagementDashboard() {
                               style={{
                                 position: 'relative',
                                 color: '#000000',  // ALWAYS black text, never change
-                                paddingLeft: '2px',    // Horizontal padding
-                                paddingRight: '2px',   // Horizontal padding
+                                // CRITICAL FIX: Removed padding for exact word boundary highlighting
+                                // Previous: paddingLeft: '2px', paddingRight: '2px' caused offset
                                 lineHeight: '1.3',     // Line height
                                 display: 'inline',     // Inline display
                                 ...(mistakes.length === 1 ? {
