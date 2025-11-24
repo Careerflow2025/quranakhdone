@@ -1099,9 +1099,10 @@ export default function StudentDashboard() {
                     .mushaf-page-content {
                       text-align: justify;
                       text-align-last: right;
+                      text-justify: inter-character;
                       direction: rtl;
-                      word-spacing: -0.05em;
-                      letter-spacing: 0.01em;
+                      word-spacing: -0.3em;
+                      letter-spacing: 0.08em;
                     }
                   `}</style>
 
