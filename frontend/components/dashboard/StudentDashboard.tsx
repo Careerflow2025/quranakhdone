@@ -1174,6 +1174,7 @@ export default function StudentDashboard() {
                       {ayah.words.map((word: any, wordIndex: any) => {
                         // Extract word text - handle both string and object formats
                         const wordText = typeof word === 'string' ? word : (word.text || word);
+                        const isLastWord = wordIndex === ayah.words.length - 1;  // ✅ CHECK: Is this the last word before ayah number?
 
                         // Get ALL highlights for this word (multiple colors allowed)
                         const wordHighlights = safeHighlights.filter(
@@ -1252,7 +1253,7 @@ export default function StudentDashboard() {
                               } : {})
                             }}
                           >
-                            {wordText}{' '}
+                            {wordText}{!isLastWord && ' '}
                             {(() => {
                               // Check if any highlight on this word has notes from database
                               const hasNotes = wordHighlights.some((h: any) => {
