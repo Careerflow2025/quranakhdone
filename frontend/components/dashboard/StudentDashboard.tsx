@@ -1206,8 +1206,7 @@ export default function StudentDashboard() {
                             style={{
                               position: 'relative',
                               color: '#000000',  // ALWAYS black text, never change
-                              paddingLeft: '2px',    // Horizontal padding
-                              paddingRight: '2px',   // Horizontal padding
+                              padding: '0',  // ✅ NO PADDING - let justify control spacing
                               lineHeight: '1.3',     // Line height
                               display: 'inline',     // Inline display
                               pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
@@ -1253,7 +1252,7 @@ export default function StudentDashboard() {
                               } : {})
                             }}
                           >
-                            {wordText}{'\u200A'}
+                            {wordText}{' '}
                             {(() => {
                               // Check if any highlight on this word has notes from database
                               const hasNotes = wordHighlights.some((h: any) => {
