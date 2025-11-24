@@ -1150,7 +1150,10 @@ export default function StudentDashboard() {
                         maxHeight: '72vh',  // INCREASED: Taller to look like a real page
                         overflow: 'hidden',  // NO scrolling inside container
                         margin: '0 auto',
-                        padding: '0.8rem 1rem',
+                        paddingTop: '0.8rem',  // ✅ EXPLICIT: Top padding
+                        paddingBottom: '0.8rem',  // ✅ EXPLICIT: Bottom padding
+                        paddingLeft: '0.75rem',  // ✅ SYMMETRIC: Equal left/right padding
+                        paddingRight: '0.75rem',  // ✅ SYMMETRIC: Equal left/right padding
                         backgroundColor: '#FFFFFF',
                         borderRadius: '8px',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
@@ -1159,9 +1162,9 @@ export default function StudentDashboard() {
                         transform: `scale(${zoomLevel / 100})`,
                         transformOrigin: 'top center',
                         textAlign: 'justify',  // ✅ JUSTIFY for equal-width lines
-                        textAlignLast: 'justify',  // ✅ Justify ALL lines including last
-                        wordSpacing: '0.1em',  // ✅ Small controlled word spacing
-                        letterSpacing: '0.05em',  // ✅ Distribute to letters too
+                        textAlignLast: 'start',  // ✅ Last line natural (RIGHT-aligned in RTL)
+                        wordSpacing: '0',  // ✅ NO extra word spacing - rely on justify
+                        letterSpacing: '0',  // ✅ NO letter spacing - natural look
                         lineHeight: '1.5'  // Slightly more breathing room with vertical space
                       }}>
                         {pageAyahs.map((ayah: any, ayahIdx: any) => {
