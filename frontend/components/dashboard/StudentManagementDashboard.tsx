@@ -1890,6 +1890,41 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       const isCurrentPage = pageNum === currentMushafPage;
 
+                      // CRITICAL FIX: Don't render full page until Surah data is loaded
+                      // This prevents flash of empty/wrongly-styled content while async loads complete
+                      if (pageAyahs.length === 0) {
+                        return (
+                          <div
+                            key={pageNum}
+                            className="mushaf-page-content"
+                            style={{
+                              scrollSnapAlign: 'center',
+                              flexShrink: 0,
+                              width: '38vw',
+                              maxWidth: '480px',
+                              minHeight: '65vh',
+                              maxHeight: '72vh',
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '8px',
+                              border: '15px solid #40826D',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              opacity: 0.7,
+                              marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,
+                              transform: `scale(${zoomLevel / 100})`,
+                              transformOrigin: 'top center'
+                            }}
+                          >
+                            <div className="animate-pulse text-center" style={{ direction: 'rtl' }}>
+                              <div className="text-gray-400" style={{ fontFamily: "'Scheherazade New', 'Tahoma', serif", fontSize: '20px' }}>
+                                Loading page {toFarsiNumber(pageNum)}...
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                           <div
                             key={pageNum}
