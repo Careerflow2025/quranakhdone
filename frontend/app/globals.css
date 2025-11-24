@@ -83,9 +83,7 @@
 .quran-text-area,
 .ayah-container .text-right {
   direction: rtl;
-  text-align: justify;
-  text-align-last: start; /* Last line NOT justified - natural 1px spacing */
-  text-justify: inter-word;
+  text-align: right; /* Right-aligned RTL text for traditional layout */
   hyphens: none;
   word-spacing: 1px; /* EXACTLY 1px spacing between words */
   letter-spacing: 0px; /* No letter spacing */
@@ -393,10 +391,8 @@ mark[class*="highlight-"]:hover {
   max-height: none !important;  /* No max - let content determine height */
   overflow: hidden !important;  /* NO scrolling - static like PDF */
 
-  /* CRITICAL: Perfect text justification - all lines same width EXCEPT LAST LINE */
-  text-align: justify !important;
-  text-align-last: start !important;  /* Last line NOT justified - natural spacing */
-  text-justify: inter-word !important;
+  /* CRITICAL: Right-aligned RTL text for traditional mushaf layout */
+  text-align: right !important;
 
   /* CRITICAL: Minimal word spacing - EXACTLY 1px only */
   word-spacing: 1px !important;
@@ -417,11 +413,10 @@ mark[class*="highlight-"]:hover {
 
 /* No scrollbar needed - pages are static like PDF */
 
-/* Ensure all text elements inherit justification EXCEPT last line */
+/* Ensure all text elements inherit right alignment and compact spacing */
 .mushaf-page-content,
 .mushaf-page-content * {
-  text-align: justify !important;
-  text-align-last: start !important;  /* Last line NOT stretched - natural 1px spacing */
+  text-align: right !important;
   word-spacing: 1px !important;
   letter-spacing: 0px !important;
 }
