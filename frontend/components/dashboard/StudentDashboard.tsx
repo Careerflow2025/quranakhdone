@@ -1247,7 +1247,7 @@ export default function StudentDashboard() {
                               } : {})
                             }}
                           >
-                            {wordText}{' '}
+                            {wordText}{'\u200A'}
                             {(() => {
                               // Check if any highlight on this word has notes from database
                               const hasNotes = wordHighlights.some((h: any) => {
@@ -1300,7 +1300,7 @@ export default function StudentDashboard() {
                         }}
                       >
                         {ayah.number}
-                      </span>{' '}
+                      </span>
                             </span>
                           );
                         })}
