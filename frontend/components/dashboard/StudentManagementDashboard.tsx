@@ -1906,7 +1906,7 @@ export default function StudentManagementDashboard() {
                               overflow: 'hidden',  // NO scrolling inside container
                               margin: '0',
                               marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,  // Compensate for scale overflow: at 150% adds 32.5vh gap, at 50% removes 32.5vh gap
-                              padding: '0.6rem 0.3rem',  // COMPACT: Traditional book layout with minimal padding
+                              padding: '0.4rem 0.2rem',  // ULTRA-COMPACT: Traditional mushaf spacing
                               backgroundColor: '#FFFFFF',
                               borderRadius: '8px',
                               boxShadow: isCurrentPage
@@ -1919,8 +1919,7 @@ export default function StudentManagementDashboard() {
                               transform: `scale(${zoomLevel / 100})`,
                               transformOrigin: 'top center',
                               textAlign: 'right',
-                              lineHeight: '1.5',  // Slightly more breathing room with vertical space
-                              wordSpacing: '-0.45em'  // TIGHT: 45% reduction for authentic compact Quran spacing
+                              lineHeight: '1.5'  // Slightly more breathing room with vertical space
                             }}>
 
                           {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
@@ -2119,14 +2118,14 @@ export default function StudentManagementDashboard() {
                                 return null;
                               })()}
                             </span>
-                            {/* CRITICAL FIX: Space OUTSIDE span so it's NOT included in highlight background */}
-                            {wordIndex < ayah.words.length - 1 ? ' ' : ''}
+                            {/* CRITICAL FIX: Hair space (U+200A) - ultra-thin Unicode space for compact Quran layout */}
+                            {wordIndex < ayah.words.length - 1 ? '\u200A' : ''}
                             </React.Fragment>
                           );
                         })}
                         {/* Ayah Number - Traditional Mushaf Style with Islamic Octagonal Frame */}
                         <span
-                          className="ayah-number inline-flex items-center justify-center mx-1"
+                          className="ayah-number inline-flex items-center justify-center ml-0 mr-1"
                         >
                           {toFarsiNumber(ayah.number)}
                         </span>
