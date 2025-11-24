@@ -14,9 +14,11 @@ import {
   getResponsiveScriptStyling,
   getDynamicScriptStyling
 } from '@/data/quran/cleanQuranLoader';
+import { getPageWithLines, QuranWord, QuranLine } from '@/data/quran/lineBasedQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
+import MushafLineRenderer from '@/components/dashboard/MushafLineRenderer';
 import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
@@ -1098,11 +1100,12 @@ export default function StudentDashboard() {
 
                     .mushaf-page-content {
                       text-align: justify;
-                      text-align-last: right;
+                      text-align-last: justify;
                       text-justify: inter-character;
                       direction: rtl;
-                      word-spacing: -0.3em;
-                      letter-spacing: 0.08em;
+                      word-spacing: -0.8em;
+                      letter-spacing: 0.2em;
+                      hyphens: none;
                     }
                   `}</style>
 
