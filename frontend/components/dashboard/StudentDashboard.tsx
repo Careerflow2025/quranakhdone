@@ -1287,7 +1287,7 @@ export default function StudentDashboard() {
                       })}
                       {/* Ayah Number - Traditional Mushaf Style (Inline) */}
                       <span
-                        className="inline-flex items-center justify-center mx-0.5"
+                        className="inline-flex items-center justify-center"
                         style={{
                           width: '18px',  // Tiny inline circle
                           height: '18px',
@@ -1301,7 +1301,9 @@ export default function StudentDashboard() {
                           verticalAlign: 'middle',  // Middle alignment
                           display: 'inline-flex',
                           fontFamily: 'sans-serif',  // Use regular font for numbers
-                          lineHeight: '1'  // Prevent line height issues
+                          lineHeight: '1',  // Prevent line height issues
+                          margin: '0',  // ✅ ZERO MARGIN - no space around ayah number
+                          padding: '0'  // ✅ ZERO PADDING - no space around ayah number
                         }}
                       >
                         {ayah.number}
