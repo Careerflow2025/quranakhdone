@@ -1917,14 +1917,15 @@ export default function StudentManagementDashboard() {
                             }}>
 
                           {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
-                          {studentInfo && teacherData && selectedScript && (
+                          {/* CRITICAL PERFORMANCE FIX: Only render canvas for CURRENT page (not all 604 pages) */}
+                          {studentInfo && teacherData && selectedScript && isCurrentPage && (
                             <div style={{
                               position: 'absolute',
                               top: 0,
                               left: 0,
                               right: 0,
                               bottom: 0,
-                              pointerEvents: (penMode && isCurrentPage) ? 'auto' : 'none',
+                              pointerEvents: penMode ? 'auto' : 'none',
                               zIndex: penMode ? 10 : 1
                             }}>
                               <PenAnnotationCanvas
@@ -1932,7 +1933,7 @@ export default function StudentManagementDashboard() {
                                 teacherId={teacherData.id}
                                 pageNumber={pageNum}
                                 scriptId={selectedScript}
-                                enabled={penMode && isCurrentPage}
+                                enabled={penMode}
                                 penColor={penColor}
                                 setPenColor={setPenColor}
                                 penWidth={penWidth}
