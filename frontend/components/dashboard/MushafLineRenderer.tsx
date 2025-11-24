@@ -76,9 +76,6 @@ export default function MushafLineRenderer({
             width: '100%',
             marginBottom: lineIdx < linePageData.lines.length - 1 ? '0.3rem' : '0',
             textAlign: 'justify',
-            textAlignLast: 'right',
-            textJustify: 'inter-word',
-            wordSpacing: '0.1em',
             whiteSpace: 'normal'
           }}
         >
