@@ -1290,21 +1290,21 @@ export default function StudentDashboard() {
                       <span
                         className="inline-flex items-center justify-center"
                         style={{
-                          width: '18px',  // Tiny inline circle
-                          height: '18px',
+                          width: '16px',  // ✅ SMALLER: Less visual width
+                          height: '16px',
                           borderRadius: '50%',
                           background: 'rgba(64, 130, 109, 0.12)',  // Subtle teal background
                           border: '1px solid rgba(64, 130, 109, 0.4)',  // Teal border
                           color: '#000000',  // Black text
-                          fontSize: '9px',  // Very small text
+                          fontSize: '8px',  // ✅ SMALLER text for smaller circle
                           fontWeight: '500',
                           boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
-                          verticalAlign: 'middle',  // Middle alignment
+                          verticalAlign: 'middle',
                           display: 'inline-flex',
-                          fontFamily: 'sans-serif',  // Use regular font for numbers
-                          lineHeight: '1',  // Prevent line height issues
-                          margin: '0',  // ✅ ZERO MARGIN - no space around ayah number
-                          padding: '0'  // ✅ ZERO PADDING - no space around ayah number
+                          fontFamily: 'sans-serif',
+                          lineHeight: '1',
+                          margin: '0 -2px',  // ✅ NEGATIVE MARGIN: Pull tight against text on both sides
+                          padding: '0'
                         }}
                       >
                         {ayah.number}
