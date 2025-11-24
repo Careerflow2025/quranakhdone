@@ -203,7 +203,8 @@ export default function PenAnnotationCanvas({
           // Transform coordinates from relative (database) to screen (rendering)
           const screenData = transformSketchToScreen(
             latestAnnotation.drawing_data,
-            canvasDimensions
+            canvasDimensions,
+            zoomLevel
           );
 
           // Validate transformed coordinates
@@ -263,7 +264,8 @@ export default function PenAnnotationCanvas({
       // Transform coordinates from screen (canvas) to relative (database)
       const relativeData = transformSketchToRelative(
         { paths: exportedData },
-        canvasDimensions
+        canvasDimensions,
+        zoomLevel
       );
 
       // Validate transformed coordinates

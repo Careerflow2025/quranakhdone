@@ -93,20 +93,29 @@ export function transformPointToScreen(
  *
  * This function is called BEFORE saving to database.
  *
- * @param screenData - react-sketch-canvas exported data (screen coordinates)
- * @param dimensions - Current canvas dimensions
+ * @param screenData - react-sketch-canvas exported data (screen coordinates in SCALED space)
+ * @param dimensions - Current canvas dimensions (UNSCALED)
+ * @param zoomLevel - Current zoom level (100 = normal, 150 = 150%, etc) - used to unscale coordinates
  * @returns Transformed data with relative coordinates (0-1 range)
  */
 export function transformSketchToRelative(
   screenData: SketchData,
-  dimensions: CanvasDimensions
+  dimensions: CanvasDimensions,
+  zoomLevel?: number
 ): SketchData {
-  console.log('📊 [TRANSFORM TO RELATIVE] Canvas:', dimensions.width, 'x', dimensions.height);
+  const scaleFactor = zoomLevel ? zoomLevel / 100 : 1;
+  console.log('📊 [TRANSFORM TO RELATIVE] Canvas:', dimensions.width, 'x', dimensions.height, 'Scale:', scaleFactor);
 
   const transformedPaths = screenData.paths.map((pathObj) => {
-    const transformedPoints = pathObj.paths.map((point) =>
-      transformPointToRelative(point, dimensions)
-    );
+    const transformedPoints = pathObj.paths.map((point) => {
+      // CRITICAL: Coordinates from react-sketch-canvas are in SCALED pixel space
+      // First unscale them, THEN transform to relative
+      const unscaledPoint = {
+        x: point.x / scaleFactor,
+        y: point.y / scaleFactor
+      };
+      return transformPointToRelative(unscaledPoint, dimensions);
+    });
 
     return {
       ...pathObj,
@@ -128,14 +137,17 @@ export function transformSketchToRelative(
  * This function is called AFTER loading from database.
  *
  * @param relativeData - Database data (relative coordinates 0-1)
- * @param currentDimensions - Current canvas dimensions (may be different zoom level)
- * @returns Transformed data with current screen coordinates
+ * @param currentDimensions - Current canvas dimensions (UNSCALED)
+ * @param zoomLevel - Current zoom level (100 = normal, 150 = 150%, etc) - used to scale coordinates
+ * @returns Transformed data with current screen coordinates (in SCALED space for react-sketch-canvas)
  */
 export function transformSketchToScreen(
   relativeData: any,
-  currentDimensions: CanvasDimensions
+  currentDimensions: CanvasDimensions,
+  zoomLevel?: number
 ): SketchData {
-  console.log('📊 [TRANSFORM TO SCREEN] Canvas:', currentDimensions.width, 'x', currentDimensions.height);
+  const scaleFactor = zoomLevel ? zoomLevel / 100 : 1;
+  console.log('📊 [TRANSFORM TO SCREEN] Canvas:', currentDimensions.width, 'x', currentDimensions.height, 'Scale:', scaleFactor);
 
   // Handle old format (already in screen coordinates)
   if (!relativeData.version || relativeData.version !== '2.0') {
@@ -166,9 +178,15 @@ export function transformSketchToScreen(
         return null;
       }
 
-      const transformedPoints = validPoints.map((point: Point) =>
-        transformPointToScreen(point, currentDimensions)
-      );
+      const transformedPoints = validPoints.map((point: Point) => {
+        // Transform relative → unscaled screen
+        const unscaledPoint = transformPointToScreen(point, currentDimensions);
+        // Scale to match current zoom level for react-sketch-canvas
+        return {
+          x: unscaledPoint.x * scaleFactor,
+          y: unscaledPoint.y * scaleFactor
+        };
+      });
 
       return {
         ...pathObj,
