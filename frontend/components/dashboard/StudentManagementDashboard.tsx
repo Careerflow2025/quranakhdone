@@ -15,7 +15,7 @@ import {
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
-import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
+import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
 import NotesPanel from '@/features/annotations/components/NotesPanel';
 import {
   Book,
@@ -1204,7 +1204,7 @@ export default function StudentManagementDashboard() {
   };
 
   // REMOVED: Mock completed homework simulation - using only real database data
-  // REMOVED: Old canvas drawing functions - now using professional PenAnnotationCanvas component
+  // REMOVED: Old canvas drawing functions - now using professional SimpleAnnotationCanvas component
 
   // Loading state
   if (studentDataLoading) {
@@ -1928,19 +1928,15 @@ export default function StudentManagementDashboard() {
                               pointerEvents: penMode ? 'auto' : 'none',
                               zIndex: penMode ? 10 : 1
                             }}>
-                              <PenAnnotationCanvas
+                              <SimpleAnnotationCanvas
                                 studentId={studentInfo.id}
                                 teacherId={teacherData.id}
                                 pageNumber={pageNum}
                                 scriptId={selectedScript}
                                 enabled={penMode}
                                 penColor={penColor}
-                                setPenColor={setPenColor}
                                 penWidth={penWidth}
-                                setPenWidth={setPenWidth}
                                 eraserMode={eraserMode}
-                                setEraserMode={setEraserMode}
-                                zoomLevel={zoomLevel}
                                 onSave={() => {
                                   console.log(`✅ Page ${pageNum} annotations saved`);
                                 }}

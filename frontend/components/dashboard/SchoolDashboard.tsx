@@ -26,7 +26,7 @@ import {
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
-import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
+import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
 import {
   Users, UserPlus, GraduationCap, BookOpen, Calendar, Bell, Settings, Home, Search, Filter,
   Download, Upload, Edit, Trash2, MoreVertical, Check, AlertCircle, Clock, FileText, Award,
@@ -4267,7 +4267,7 @@ export default function SchoolDashboard() {
                   }}>
                     {/* Read-Only Pen Annotations Display */}
                     {viewingStudentQuran && viewingStudentQuran.teacherId && selectedScript && (
-                      <PenAnnotationCanvas
+                      <SimpleAnnotationCanvas
                         studentId={viewingStudentQuran.id}
                         teacherId={viewingStudentQuran.teacherId}
                         pageNumber={currentMushafPage}
@@ -4275,11 +4275,8 @@ export default function SchoolDashboard() {
                         enabled={false}
                         containerRef={quranContainerRef}
                         penColor={penColor}
-                        setPenColor={setPenColor}
                         penWidth={penWidth}
-                        setPenWidth={setPenWidth}
                         eraserMode={eraserMode}
-                        setEraserMode={setEraserMode}
                         onSave={() => {}}
                         onLoad={() => {}}
                         onClear={() => {}}

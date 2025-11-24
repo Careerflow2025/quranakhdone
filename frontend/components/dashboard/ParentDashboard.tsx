@@ -19,7 +19,7 @@ import {
 } from '@/data/quran/cleanQuranLoader';
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
-import PenAnnotationCanvas from '@/components/dashboard/PenAnnotationCanvas';
+import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
 import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
@@ -1541,7 +1541,7 @@ export default function ParentDashboard() {
               }}>
                 {/* Read-Only Pen Annotations Display */}
                 {currentChild && currentChild.teacherId && selectedScript && (
-                  <PenAnnotationCanvas
+                  <SimpleAnnotationCanvas
                     studentId={currentChild.id}
                     teacherId={currentChild.teacherId}
                     pageNumber={currentMushafPage}
@@ -1549,11 +1549,8 @@ export default function ParentDashboard() {
                     enabled={false}
                     containerRef={quranContainerRef}
                     penColor={penColor}
-                    setPenColor={setPenColor}
                     penWidth={penWidth}
-                    setPenWidth={setPenWidth}
                     eraserMode={eraserMode}
-                    setEraserMode={setEraserMode}
                     onSave={() => {}}
                     onLoad={() => {}}
                     onClear={() => {}}
