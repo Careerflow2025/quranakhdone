@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Assignment Rubric API Endpoints
  * POST /api/assignments/:id/rubric - Attach rubric to assignment

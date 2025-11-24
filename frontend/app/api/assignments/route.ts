@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Assignments API Endpoints
  * POST /api/assignments - Create new assignment

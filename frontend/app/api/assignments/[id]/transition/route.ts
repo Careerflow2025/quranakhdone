@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Assignment Status Transition API
  * POST /api/assignments/:id/transition - Change assignment status

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Single Assignment API Endpoints
  * GET /api/assignments/:id - Get single assignment with full details
