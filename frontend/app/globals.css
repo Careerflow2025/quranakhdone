@@ -84,11 +84,11 @@
 .ayah-container .text-right {
   direction: rtl;
   text-align: justify; /* Justify for equal-width lines */
-  text-align-last: start; /* Keep last line natural, not stretched */
-  text-justify: inter-word; /* Distribute spacing between words only */
+  text-align-last: justify; /* ✅ Justify last line too for consistency */
+  text-justify: distribute; /* ✅ Distribute spacing evenly across words AND letters */
   hyphens: none;
-  word-spacing: 1px; /* EXACTLY 1px spacing between words */
-  letter-spacing: 0px; /* No letter spacing */
+  word-spacing: 0.1em; /* ✅ Small word spacing */
+  letter-spacing: 0.05em; /* ✅ Tiny letter spacing helps distribute */
   line-height: 2.5;
   font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', serif;
   font-size: 32px; /* Increased from 26px for better page fill */

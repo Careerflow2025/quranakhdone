@@ -1144,8 +1144,8 @@ export default function StudentDashboard() {
                     const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                     return (
                       <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                        width: '38vw',  // NARROWER: More vertical/portrait-like proportions
-                        maxWidth: '480px',  // REDUCED: Traditional book page width
+                        width: '45vw',  // ✅ WIDER: Fit more words per line to reduce gaps
+                        maxWidth: '600px',  // ✅ INCREASED: More words = less stretching
                         minHeight: '65vh',  // INCREASED: Use available bottom space
                         maxHeight: '72vh',  // INCREASED: Taller to look like a real page
                         overflow: 'hidden',  // NO scrolling inside container
@@ -1158,7 +1158,10 @@ export default function StudentDashboard() {
                         ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
                         transform: `scale(${zoomLevel / 100})`,
                         transformOrigin: 'top center',
-                        textAlign: 'right',
+                        textAlign: 'justify',  // ✅ JUSTIFY for equal-width lines
+                        textAlignLast: 'justify',  // ✅ Justify ALL lines including last
+                        wordSpacing: '0.1em',  // ✅ Small controlled word spacing
+                        letterSpacing: '0.05em',  // ✅ Distribute to letters too
                         lineHeight: '1.5'  // Slightly more breathing room with vertical space
                       }}>
                         {pageAyahs.map((ayah: any, ayahIdx: any) => {

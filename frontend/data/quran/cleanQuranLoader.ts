@@ -487,21 +487,21 @@ export function getResponsiveScriptStyling(scriptId: string, baseFontSize: strin
 export function getDynamicScriptStyling(textContent: string, scriptId: string) {
   const contentLength = textContent.length;
 
-  // Smart font scaling - bigger text that adapts to content density
-  let baseFontSize = '28px';  // Default for very short pages
+  // ✅ BIGGER font scaling - much larger text to fill pages properly
+  let baseFontSize = '42px';  // Default for very short pages - MUCH BIGGER
 
   if (contentLength > 2000) {
-    baseFontSize = '18px';  // Extra long pages - minimum readable
+    baseFontSize = '30px';  // Extra long pages - still substantial
   } else if (contentLength > 1600) {
-    baseFontSize = '20px';  // Very long pages - compact
+    baseFontSize = '32px';  // Very long pages - readable
   } else if (contentLength > 1200) {
-    baseFontSize = '22px';  // Long pages - slightly smaller
+    baseFontSize = '34px';  // Long pages - comfortable
   } else if (contentLength > 800) {
-    baseFontSize = '24px';  // Medium pages - comfortable
+    baseFontSize = '36px';  // Medium pages - generous
   } else if (contentLength > 500) {
-    baseFontSize = '26px';  // Short pages - bigger
+    baseFontSize = '38px';  // Short pages - big
   } else {
-    baseFontSize = '28px';  // Very short pages - much bigger
+    baseFontSize = '42px';  // Very short pages - VERY BIG to fill space
   }
 
   // Get base styling and override with dynamic font size
