@@ -75,8 +75,9 @@ export default function MushafLineRenderer({
             display: 'block',
             width: '100%',
             marginBottom: lineIdx < linePageData.lines.length - 1 ? '0.3rem' : '0',
-            textAlign: 'justify',
-            whiteSpace: 'normal'
+            textAlign: 'right',
+            whiteSpace: 'normal',
+            wordSpacing: 'normal'
           }}
         >
           {/* Each word in the line */}
