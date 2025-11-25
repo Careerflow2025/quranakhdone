@@ -1890,41 +1890,6 @@ export default function StudentManagementDashboard() {
                       const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                       const isCurrentPage = pageNum === currentMushafPage;
 
-                      // CRITICAL FIX: Don't render full page until Surah data is loaded
-                      // This prevents flash of empty/wrongly-styled content while async loads complete
-                      if (pageAyahs.length === 0) {
-                        return (
-                          <div
-                            key={pageNum}
-                            className="mushaf-page-content"
-                            style={{
-                              scrollSnapAlign: 'center',
-                              flexShrink: 0,
-                              width: '38vw',
-                              maxWidth: '480px',
-                              minHeight: '65vh',
-                              maxHeight: '72vh',
-                              backgroundColor: '#FFFFFF',
-                              borderRadius: '8px',
-                              border: '15px solid #40826D',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              opacity: 0.7,
-                              marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,
-                              transform: `scale(${zoomLevel / 100})`,
-                              transformOrigin: 'top center'
-                            }}
-                          >
-                            <div className="animate-pulse text-center" style={{ direction: 'rtl' }}>
-                              <div className="text-gray-400" style={{ fontFamily: "'Scheherazade New', 'Tahoma', serif", fontSize: '20px' }}>
-                                Loading page {toFarsiNumber(pageNum)}...
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-
                       return (
                           <div
                             key={pageNum}
@@ -1941,7 +1906,7 @@ export default function StudentManagementDashboard() {
                               overflow: 'hidden',  // NO scrolling inside container
                               margin: '0',
                               marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,  // Compensate for scale overflow: at 150% adds 32.5vh gap, at 50% removes 32.5vh gap
-                              padding: '0.4rem 0.2rem',  // ULTRA-COMPACT: Traditional mushaf spacing
+                              padding: '0.8rem 0.5rem',  // REDUCED: Smaller horizontal padding to reduce gap between page number and text
                               backgroundColor: '#FFFFFF',
                               borderRadius: '8px',
                               boxShadow: isCurrentPage
@@ -1954,7 +1919,8 @@ export default function StudentManagementDashboard() {
                               transform: `scale(${zoomLevel / 100})`,
                               transformOrigin: 'top center',
                               textAlign: 'right',
-                              lineHeight: '1.5'  // Slightly more breathing room with vertical space
+                              lineHeight: '1.5',  // Slightly more breathing room with vertical space
+                              wordSpacing: '-0.15em'  // REDUCED: Tighter word spacing for authentic Quran look
                             }}>
 
                           {/* Per-Page Pen Annotation Canvas - INSIDE transform container */}
@@ -2153,14 +2119,14 @@ export default function StudentManagementDashboard() {
                                 return null;
                               })()}
                             </span>
-                            {/* CRITICAL FIX: Hair space (U+200A) - ultra-thin Unicode space for compact Quran layout */}
-                            {wordIndex < ayah.words.length - 1 ? '\u200A' : ''}
+                            {/* CRITICAL FIX: Space OUTSIDE span so it's NOT included in highlight background */}
+                            {wordIndex < ayah.words.length - 1 ? ' ' : ''}
                             </React.Fragment>
                           );
                         })}
                         {/* Ayah Number - Traditional Mushaf Style with Islamic Octagonal Frame */}
                         <span
-                          className="ayah-number inline-flex items-center justify-center ml-0 mr-1"
+                          className="ayah-number inline-flex items-center justify-center mx-2"
                         >
                           {toFarsiNumber(ayah.number)}
                         </span>
