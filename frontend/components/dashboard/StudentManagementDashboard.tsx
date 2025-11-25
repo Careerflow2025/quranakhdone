@@ -449,6 +449,11 @@ export default function StudentManagementDashboard() {
                 .filter((name: string) => name !== '');
 
               setCurrentDisplaySurahs(surahNames);
+
+              // CRITICAL FIX: Auto-update surah selector during manual scroll
+              // This syncs the dropdown selection with the current page being viewed
+              // The isProgrammaticScroll check above prevents infinite loops
+              setCurrentSurah(pageInfo.surahStart);
             }
           }
         }
