@@ -256,6 +256,13 @@ export default function StudentDashboard() {
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [highlightStyle, setHighlightStyle] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedStyle = localStorage.getItem('student_highlightStyle');
+      return savedStyle || 'full';
+    }
+    return 'full';
+  });
   const [penMode, setPenMode] = useState(false);
   const [penColor, setPenColor] = useState('#FF0000');
   const [penWidth, setPenWidth] = useState(2);
@@ -351,6 +358,14 @@ export default function StudentDashboard() {
       fetchStudentMastery(studentInfo.id);
     }
   }, [studentInfo?.id, fetchStudentMastery]);
+
+  // Persist highlight style to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && highlightStyle) {
+      localStorage.setItem('student_highlightStyle', highlightStyle);
+      console.log('💾 [STUDENT HIGHLIGHT STYLE] Saved to localStorage:', highlightStyle);
+    }
+  }, [highlightStyle]);
 
   // Transform homework data to match UI expectations
   const transformedHomework = useMemo(() => {
@@ -1205,46 +1220,79 @@ export default function StudentDashboard() {
                               lineHeight: '1.3',     // Line height
                               display: 'inline',     // Inline display
                               pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
-                              ...(mistakes.length === 1 ? {
-                                backgroundImage: `linear-gradient(${
-                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                }, ${
-                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                })`,
-                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center'
-                              } : mistakes.length > 1 ? {
-                                backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                  const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
-                                    m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                                    m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                                    m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                                    m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
-                                  const percent = (i * 100) / mistakes.length;
-                                  const nextPercent = ((i + 1) * 100) / mistakes.length;
-                                  return `${color} ${percent}%, ${color} ${nextPercent}%`;
-                                }).join(', ')})`,
-                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center',
-                                fontWeight: '600',
-                                border: '1px solid rgba(0,0,0,0.15)'
-                              } : {})
+                              ...(highlightStyle === 'full' ? (
+                                // FULL BACKGROUND MODE (original)
+                                mistakes.length === 1 ? {
+                                  backgroundImage: `linear-gradient(${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  }, ${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  })`,
+                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center'
+                                } : mistakes.length > 1 ? {
+                                  backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
+                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                    const percent = (i * 100) / mistakes.length;
+                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                  }).join(', ')})`,
+                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center',
+                                  fontWeight: '600',
+                                  border: '1px solid rgba(0,0,0,0.15)'
+                                } : {}
+                              ) : (
+                                // UNDERLINE MODE (new)
+                                mistakes.length === 1 ? {
+                                  borderBottom: `3px solid ${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.9)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent'
+                                  }`,
+                                  paddingBottom: '2px'
+                                } : mistakes.length > 1 ? {
+                                  borderBottom: `3px solid`,
+                                  borderImage: `linear-gradient(to right, ${mistakes.map((m: any, i: any) => {
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.9)' :
+                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent';
+                                    const percent = (i * 100) / mistakes.length;
+                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                  }).join(', ')}) 1`,
+                                  paddingBottom: '2px',
+                                  fontWeight: '600'
+                                } : {}
+                              ))
                             }}
                           >
                             {wordText}{' '}
@@ -1375,6 +1423,33 @@ export default function StudentDashboard() {
                     className="w-full"
                   />
                   <div className="text-xs text-center text-gray-600">{zoomLevel}%</div>
+                </div>
+              </div>
+
+              {/* Highlight Style Toggle */}
+              <div className="bg-white rounded-lg shadow-sm p-3">
+                <h3 className="font-semibold mb-2 text-sm">Highlight Style</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setHighlightStyle('full')}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                      highlightStyle === 'full'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Full
+                  </button>
+                  <button
+                    onClick={() => setHighlightStyle('underline')}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                      highlightStyle === 'underline'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Underline
+                  </button>
                 </div>
               </div>
             </div>

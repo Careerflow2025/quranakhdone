@@ -14,6 +14,7 @@ interface MushafLineRendererProps {
   dbHighlights: any[];
   quranText: any;
   handleHighlightClick: (highlightId: string) => void;
+  highlightStyle?: string; // 'full' or 'underline'
 }
 
 export default function MushafLineRenderer({
@@ -24,7 +25,8 @@ export default function MushafLineRenderer({
   mistakeTypes,
   dbHighlights,
   quranText,
-  handleHighlightClick
+  handleHighlightClick,
+  highlightStyle = 'full' // Default to 'full' for backward compatibility
 }: MushafLineRendererProps) {
   // Get the mushaf page data with line information
   const linePageData = getPageWithLines(currentMushafPage);
@@ -164,46 +166,79 @@ export default function MushafLineRenderer({
                   padding: '0',
                   display: 'inline',
                   pointerEvents: 'auto',
-                  ...(mistakes.length === 1 ? {
-                    backgroundImage: `linear-gradient(${
-                      mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                      mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                      mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                      mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                      mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                      mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                      mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                    }, ${
-                      mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                      mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                      mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                      mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                      mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                      mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                      mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                    })`,
-                    backgroundSize: '100% 70%',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center'
-                  } : mistakes.length > 1 ? {
-                    backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                      const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                        m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                        m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
-                        m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                        m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                        m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                        m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
-                      const percent = (i * 100) / mistakes.length;
-                      const nextPercent = ((i + 1) * 100) / mistakes.length;
-                      return `${color} ${percent}%, ${color} ${nextPercent}%`;
-                    }).join(', ')})`,
-                    backgroundSize: '100% 70%',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                    fontWeight: '600',
-                    border: '1px solid rgba(0,0,0,0.15)'
-                  } : {})
+                  ...(highlightStyle === 'full' ? (
+                    // FULL BACKGROUND MODE (original)
+                    mistakes.length === 1 ? {
+                      backgroundImage: `linear-gradient(${
+                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                      }, ${
+                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                      })`,
+                      backgroundSize: '100% 70%',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center'
+                    } : mistakes.length > 1 ? {
+                      backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                        const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                          m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                          m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
+                          m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                          m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                          m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                          m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                        const percent = (i * 100) / mistakes.length;
+                        const nextPercent = ((i + 1) * 100) / mistakes.length;
+                        return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                      }).join(', ')})`,
+                      backgroundSize: '100% 70%',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                      fontWeight: '600',
+                      border: '1px solid rgba(0,0,0,0.15)'
+                    } : {}
+                  ) : (
+                    // UNDERLINE MODE (new)
+                    mistakes.length === 1 ? {
+                      borderBottom: `3px solid ${
+                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.9)' :
+                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent'
+                      }`,
+                      paddingBottom: '2px'
+                    } : mistakes.length > 1 ? {
+                      borderBottom: `3px solid`,
+                      borderImage: `linear-gradient(to right, ${mistakes.map((m: any, i: any) => {
+                        const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                          m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                          m.bgColor.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                          m.bgColor.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                          m.bgColor.includes('green') ? 'rgba(34,197,94,0.9)' :
+                          m.bgColor.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                          m.bgColor.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent';
+                        const percent = (i * 100) / mistakes.length;
+                        const nextPercent = ((i + 1) * 100) / mistakes.length;
+                        return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                      }).join(', ')}) 1`,
+                      paddingBottom: '2px',
+                      fontWeight: '600'
+                    } : {}
+                  ))
                 }}
               >
                 {word.text}
