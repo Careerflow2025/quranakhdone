@@ -1100,8 +1100,6 @@ export default function StudentDashboard() {
 
                     .mushaf-page-content {
                       direction: rtl;
-                      text-align: justify;
-                      text-justify: kashida;
                     }
                   `}</style>
 

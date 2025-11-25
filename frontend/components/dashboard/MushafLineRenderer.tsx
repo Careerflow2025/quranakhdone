@@ -75,8 +75,7 @@ export default function MushafLineRenderer({
             display: 'block',
             width: '100%',
             marginBottom: lineIdx < linePageData.lines.length - 1 ? '0.3rem' : '0',
-            textAlign: 'justify',
-            textJustify: 'kashida',
+            textAlign: 'right',
             whiteSpace: 'normal'
           }}
         >
