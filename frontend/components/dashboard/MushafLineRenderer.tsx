@@ -88,9 +88,30 @@ export default function MushafLineRenderer({
             const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNumber);
 
             // Find word position within ayah for highlight matching
-            const wordHighlights = ayahIndex >= 0 ? safeHighlights.filter(
+            let wordHighlights = ayahIndex >= 0 ? safeHighlights.filter(
               (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === word.position - 1
             ) : [];
+
+            // CRITICAL FIX: Sort highlights to prioritize ones with notes
+            // This ensures clicking a word with multiple overlapping highlights
+            // will click the one with conversation history first
+            wordHighlights = wordHighlights.sort((a: any, b: any) => {
+              const aDbHighlight = dbHighlights?.find((dbH: any) => dbH.id === a.dbId);
+              const bDbHighlight = dbHighlights?.find((dbH: any) => dbH.id === b.dbId);
+              const aHasNotes = aDbHighlight && aDbHighlight.notes && aDbHighlight.notes.length > 0;
+              const bHasNotes = bDbHighlight && bDbHighlight.notes && bDbHighlight.notes.length > 0;
+
+              // Highlights with notes come first
+              if (aHasNotes && !bHasNotes) return -1;
+              if (!aHasNotes && bHasNotes) return 1;
+
+              // Then prioritize completed highlights
+              if (a.isCompleted && !b.isCompleted) return -1;
+              if (!a.isCompleted && b.isCompleted) return 1;
+
+              // Then by creation time (older first, as they likely have more context)
+              return (aDbHighlight?.created_at || '').localeCompare(bDbHighlight?.created_at || '');
+            });
 
             const mistakes = wordHighlights.map((h: any) => {
               if (h.isCompleted) {
@@ -115,7 +136,25 @@ export default function MushafLineRenderer({
                 key={`${line.lineNumber}-${wordIdx}`}
                 onClick={() => {
                   if (wordHighlights.length > 0) {
-                    handleHighlightClick(wordHighlights[0].id);
+                    const clickedHighlight = wordHighlights[0];
+                    const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === clickedHighlight.dbId);
+                    const noteCount = dbHighlight?.notes?.length || 0;
+
+                    console.log('🖱️ MushafLineRenderer: Word clicked', {
+                      wordText: word.text,
+                      totalHighlights: wordHighlights.length,
+                      clickedHighlightId: clickedHighlight.id,
+                      clickedDbId: clickedHighlight.dbId,
+                      hasNotes: noteCount > 0,
+                      noteCount: noteCount,
+                      allHighlightIds: wordHighlights.map((h: any) => ({
+                        id: h.id,
+                        dbId: h.dbId,
+                        hasNotes: dbHighlights?.find((dbH: any) => dbH.id === h.dbId)?.notes?.length > 0
+                      }))
+                    });
+
+                    handleHighlightClick(clickedHighlight.id);
                   }
                 }}
                 className="inline cursor-pointer rounded transition-colors select-none"
