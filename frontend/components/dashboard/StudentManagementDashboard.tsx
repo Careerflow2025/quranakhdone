@@ -109,6 +109,10 @@ export default function StudentManagementDashboard() {
   // Transform database highlights to UI format
   const [highlights, setHighlights] = useState<any[]>([]);
 
+  // Global map of ALL database highlights by ID for notes access
+  // This ensures notes remain accessible even when highlights aren't rendered on current page
+  const [highlightIdMap, setHighlightIdMap] = useState<Record<string, any>>({});
+
   const [notes, setNotes] = useState<any[]>([]);
   const [noteText, setNoteText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -839,17 +843,37 @@ export default function StudentManagementDashboard() {
 
   // Transform database highlights to UI format for current page
   useEffect(() => {
+    console.log('🔄 Transform: Starting highlight transform', {
+      dbHighlightsCount: dbHighlights?.length || 0,
+      currentPage: currentMushafPage,
+      quranTextAyahs: quranText.ayahs.length
+    });
+
     if (!dbHighlights || dbHighlights.length === 0) {
+      console.log('⚠️ Transform: No dbHighlights to transform');
       setHighlights([]);
+      setHighlightIdMap({});
       return;
     }
 
+    // Build global ID map for ALL database highlights (for notes access)
+    const idMap: Record<string, any> = {};
+    dbHighlights.forEach((dbH: any) => {
+      idMap[dbH.id] = dbH;
+    });
+    setHighlightIdMap(idMap);
+    console.log('✅ Transform: Built global ID map with', Object.keys(idMap).length, 'highlights');
+
     // Get current page data
     const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
+    if (!pageData) {
+      console.log('⚠️ Transform: No page data for page', currentMushafPage);
+      return;
+    }
 
     // Filter highlights for current page and transform to UI format
     const pageHighlights: any[] = [];
+    let filteredCount = 0;
 
     dbHighlights.forEach((dbH: any) => {
       // CRITICAL FIX: Show ALL highlights on ALL pages (dropdown only navigates)
@@ -863,7 +887,11 @@ export default function StudentManagementDashboard() {
       const ayahIndex = quranText.ayahs.findIndex((ayah: any) =>
         ayah.number === dbH.ayah_start && ayah.surah === dbH.surah
       );
-      if (ayahIndex === -1) return;
+      if (ayahIndex === -1) {
+        filteredCount++;
+        // Don't log every filtered highlight to avoid spam, but track count
+        return;
+      }
 
       // Check if word indices are specified (word-level highlight)
       if (dbH.word_start !== null && dbH.word_start !== undefined &&
@@ -902,6 +930,13 @@ export default function StudentManagementDashboard() {
           }
         }
       }
+    });
+
+    console.log('✅ Transform: Complete', {
+      totalDB: dbHighlights.length,
+      rendered: pageHighlights.length,
+      filtered: filteredCount,
+      globalMapSize: Object.keys(idMap).length
     });
 
     setHighlights(pageHighlights);
@@ -1188,11 +1223,50 @@ export default function StudentManagementDashboard() {
       }
     } else {
       // Normal mode - open notes conversation modal
-      // Find the highlight to get its database ID
-      const clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+      console.log('🖱️ Click: handleHighlightClick called', { highlightId });
+
+      // First try to find in current highlights array (for currently visible highlights)
+      let clickedHighlight = highlights.find((h: any) => h.id === highlightId);
+      console.log('🔍 Click: Found in highlights array?', !!clickedHighlight);
+
+      // If not found, extract database UUID from composite ID and use global map
+      if (!clickedHighlight) {
+        // Composite ID format: "database-uuid-wordIndex"
+        // Extract the database UUID (everything before the last hyphen)
+        const idStr = String(highlightId);
+        const lastHyphen = idStr.lastIndexOf('-');
+        if (lastHyphen > 0) {
+          const dbId = idStr.substring(0, lastHyphen);
+          console.log('🔍 Click: Extracted dbId from composite ID:', dbId);
+
+          // Check if this database highlight exists in our global map
+          if (highlightIdMap[dbId]) {
+            console.log('✅ Click: Found in global highlightIdMap!');
+            // Create a pseudo-highlight object with the dbId
+            clickedHighlight = {
+              id: highlightId,
+              dbId: dbId
+            };
+          } else {
+            console.warn('⚠️ Click: dbId not found in highlightIdMap', {
+              dbId,
+              mapSize: Object.keys(highlightIdMap).length,
+              availableIds: Object.keys(highlightIdMap).slice(0, 5)
+            });
+          }
+        }
+      }
+
       if (clickedHighlight && clickedHighlight.dbId) {
+        console.log('✅ Click: Opening notes modal for dbId:', clickedHighlight.dbId);
         setSelectedHighlightForNotes(clickedHighlight.dbId);
         setShowNotesModal(true);
+      } else {
+        console.error('❌ Click: Could not find highlight or extract dbId', {
+          highlightId,
+          foundInArray: !!highlights.find((h: any) => h.id === highlightId),
+          highlightIdMapSize: Object.keys(highlightIdMap).length
+        });
       }
 
       // Legacy note popup (kept for backwards compatibility)

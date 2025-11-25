@@ -115,12 +115,22 @@ export default function NotesPanel({
 
   // Load highlight details (including previous_color for completed context)
   async function loadHighlightDetails() {
-    if (!highlightId) return;
+    console.log('📋 NotesPanel: loadHighlightDetails called', { highlightId });
+
+    if (!highlightId) {
+      console.warn('⚠️ NotesPanel: No highlightId provided');
+      return;
+    }
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      console.warn('⚠️ NotesPanel: No session available');
+      return;
+    }
 
     try {
+      console.log('🔍 NotesPanel: Querying highlight with ID:', highlightId);
+
       // Fetch highlight details directly from Supabase
       const { data, error } = await supabase
         .from('highlights')
@@ -129,15 +139,25 @@ export default function NotesPanel({
         .single();
 
       if (error) {
-        console.error('❌ Failed to fetch highlight details:', error);
+        console.error('❌ NotesPanel: Failed to fetch highlight details:', error);
         return;
       }
 
-      console.log('✅ Highlight details loaded:', data);
+      console.log('✅ NotesPanel: Highlight details loaded:', {
+        id: data.id,
+        type: data.type,
+        color: data.color,
+        previous_color: data.previous_color,
+        completed_at: data.completed_at,
+        hasCompletedAt: !!data.completed_at
+      });
+
       setHighlightData(data);
-      setIsCompleted(!!data.completed_at); // Update completion status
+      const completionStatus = !!data.completed_at;
+      console.log('🎯 NotesPanel: Setting isCompleted to:', completionStatus);
+      setIsCompleted(completionStatus); // Update completion status
     } catch (error) {
-      console.error('❌ Error loading highlight details:', error);
+      console.error('❌ NotesPanel: Error loading highlight details:', error);
     }
   }
 
@@ -588,42 +608,62 @@ export default function NotesPanel({
           </p>
 
           {/* Mark as Completed Button - Only for teachers */}
-          {currentUser && (currentUser.role === 'teacher' || currentUser.role === 'admin' || currentUser.role === 'owner') && !isCompleted && (
-            <div className="pt-3 border-t">
-              <button
-                onClick={markAsCompleted}
-                disabled={isCompleting}
-                className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
-              >
-                <CheckCircle className="w-5 h-5" />
-                {isCompleting ? 'Marking as Completed...' : 'Mark as Completed'}
-              </button>
-              <p className="text-xs text-gray-500 text-center mt-2">
-                This will turn the highlight gold and track progress
-              </p>
-            </div>
-          )}
+          {(() => {
+            const isTeacherRole = currentUser && (currentUser.role === 'teacher' || currentUser.role === 'admin' || currentUser.role === 'owner');
+            const shouldShowButton = isTeacherRole && !isCompleted;
+            console.log('🔘 NotesPanel: Button logic', {
+              hasCurrentUser: !!currentUser,
+              userRole: currentUser?.role,
+              isTeacherRole,
+              isCompleted,
+              shouldShowButton
+            });
+            return shouldShowButton ? (
+              <div className="pt-3 border-t">
+                <button
+                  onClick={markAsCompleted}
+                  disabled={isCompleting}
+                  className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  {isCompleting ? 'Marking as Completed...' : 'Mark as Completed'}
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  This will turn the highlight gold and track progress
+                </p>
+              </div>
+            ) : null;
+          })()}
 
           {/* Completed Status - Shows original mistake type context */}
-          {isCompleted && (
-            <div className="pt-3 border-t">
-              <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex flex-col items-center justify-center gap-1.5">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Completed</span>
-                </div>
-                {highlightData?.previous_color && (
-                  <div className="text-xs text-yellow-800 font-normal">
-                    {highlightData.previous_color === 'purple' && 'Originally: Recap/Review'}
-                    {highlightData.previous_color === 'orange' && 'Originally: Tajweed Issue'}
-                    {highlightData.previous_color === 'red' && 'Originally: Haraka Issue'}
-                    {(highlightData.previous_color === 'brown' || highlightData.previous_color === 'amber') && 'Originally: Letter Issue'}
-                    {highlightData.previous_color === 'green' && 'Originally: Homework'}
+          {(() => {
+            const shouldShowCompleted = isCompleted;
+            console.log('✅ NotesPanel: Completed status logic', {
+              isCompleted,
+              shouldShowCompleted,
+              hasHighlightData: !!highlightData,
+              previousColor: highlightData?.previous_color
+            });
+            return shouldShowCompleted ? (
+              <div className="pt-3 border-t">
+                <div className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 font-semibold rounded-lg flex flex-col items-center justify-center gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Completed</span>
                   </div>
-                )}
+                  {highlightData?.previous_color && (
+                    <div className="text-xs text-yellow-800 font-normal">
+                      {highlightData.previous_color === 'purple' && 'Originally: Recap/Review'}
+                      {highlightData.previous_color === 'orange' && 'Originally: Tajweed Issue'}
+                      {highlightData.previous_color === 'red' && 'Originally: Haraka Issue'}
+                      {(highlightData.previous_color === 'brown' || highlightData.previous_color === 'amber') && 'Originally: Letter Issue'}
+                      {highlightData.previous_color === 'green' && 'Originally: Homework'}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            ) : null;
+          })()}
         </div>
       )}
 
