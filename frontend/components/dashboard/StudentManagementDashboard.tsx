@@ -2073,9 +2073,29 @@ export default function StudentManagementDashboard() {
                               <span className="inline relative group">
                         {ayah.words.map((word: any, wordIndex: any) => {
                           // Get ALL highlights for this word (multiple colors allowed)
-                          const wordHighlights = highlights.filter(
+                          let wordHighlights = highlights.filter(
                             h => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                           );
+
+                          // CRITICAL FIX: Sort highlights to prioritize ones with conversation history
+                          // When clicking a word with multiple overlapping highlights,
+                          // we want to click the one that has notes/conversation, not empty ones
+                          wordHighlights = wordHighlights.sort((a: any, b: any) => {
+                            // Check if highlights have notes
+                            const aHasNotes = notes.some((n: any) => n.highlightIds.includes(a.id));
+                            const bHasNotes = notes.some((n: any) => n.highlightIds.includes(b.id));
+
+                            // Highlights with notes come first
+                            if (aHasNotes && !bHasNotes) return -1;
+                            if (!aHasNotes && bHasNotes) return 1;
+
+                            // Then prioritize completed highlights (gold)
+                            if (a.isCompleted && !b.isCompleted) return -1;
+                            if (!a.isCompleted && b.isCompleted) return 1;
+
+                            // Then by ID (older highlights likely have more context)
+                            return String(a.id).localeCompare(String(b.id));
+                          });
                           // CRITICAL FIX: If ANY highlight is completed, show ONLY gold color
                           const mistakes = (() => {
                             // Check if any highlight on this word is completed
