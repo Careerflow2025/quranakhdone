@@ -373,6 +373,14 @@ export default function StudentManagementDashboard() {
   // Update Mushaf page when Surah changes (not when script changes)
   useEffect(() => {
     const mushafPage = getPageBySurahAyah(currentSurah, 1);
+
+    // CRITICAL FIX: Skip navigation if we're already on the correct page
+    // This prevents interference when currentSurah is updated by the scroll observer
+    // Without this check, the observer update triggers navigation → blocks observer → page tracking freezes
+    if (mushafPage === currentMushafPage) {
+      return;
+    }
+
     console.log(`Navigation: Surah ${currentSurah} → Page ${mushafPage}`);
     setIsProgrammaticScroll(true); // Disable observer during navigation
     setCurrentMushafPage(mushafPage);
