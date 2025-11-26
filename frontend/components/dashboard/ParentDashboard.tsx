@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSectionNotifications } from '@/hooks/useSectionNotifications';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
