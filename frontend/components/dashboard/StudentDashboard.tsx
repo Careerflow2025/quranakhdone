@@ -1159,6 +1159,7 @@ export default function StudentDashboard() {
                     const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
                     return (
                       <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
+                        position: 'relative',  // Enable absolute positioning for canvas overlay (matches StudentManagementDashboard)
                         width: '38vw',  // NARROWER: More vertical/portrait-like proportions
                         maxWidth: '480px',  // REDUCED: Traditional book page width
                         minHeight: '65vh',  // INCREASED: Use available bottom space
@@ -1189,15 +1190,11 @@ export default function StudentDashboard() {
                           (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                         );
 
-                        // Check if any highlight is completed and get appropriate colors
-                        const mistakes = wordHighlights.map((h: any) => {
-                          // If highlight is marked as completed, show gold color
-                          if (h.isCompleted) {
-                            return { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' };
-                          }
-                          // Otherwise show the original mistake color
-                          return mistakeTypes.find((m: any) => m.id === h.mistakeType);
-                        }).filter(Boolean);
+                        // CRITICAL FIX: If ANY highlight is completed, show ONLY gold (not gold + other colors)
+                        const hasCompletedHighlight = wordHighlights.some((h: any) => h.isCompleted);
+                        const mistakes = hasCompletedHighlight
+                          ? [{ id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' }]
+                          : wordHighlights.map((h: any) => mistakeTypes.find((m: any) => m.id === h.mistakeType)).filter(Boolean);
 
                         return (
                           <span
@@ -2130,16 +2127,17 @@ export default function StudentDashboard() {
 
       {/* Notes Conversation Modal - Popup Overlay */}
       {showNotesModal && selectedHighlightForNotes && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl">
             <NotesPanel
               highlightId={selectedHighlightForNotes}
               mode="modal"
               onClose={() => {
                 setShowNotesModal(false);
                 setSelectedHighlightForNotes(null);
+                // Refresh highlights to update note indicators
+                refreshHighlights();
               }}
-              readOnly={false}
             />
           </div>
         </div>
