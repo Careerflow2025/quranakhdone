@@ -20,6 +20,7 @@ import {
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
+import { BISMILLAH_BASE64 } from '@/lib/bismillahImage';
 import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
@@ -419,10 +420,20 @@ export default function ParentDashboard() {
 
   // Mushaf-specific states (for Student Dashboard Quran View)
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
+  const [currentDisplaySurahs, setCurrentDisplaySurahs] = useState<string[]>([]);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [surahSearch, setSurahSearch] = useState('');
   const quranContainerRef = useRef<HTMLDivElement>(null);
+
+  // Highlight style preference (full background or underline)
+  const [highlightStyle, setHighlightStyle] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedStyle = localStorage.getItem('parent_highlightStyle');
+      return savedStyle || 'full';
+    }
+    return 'full';
+  });
 
   // Pen annotation states (read-only for parents)
   const [penMode, setPenMode] = useState(false);
@@ -496,6 +507,14 @@ export default function ParentDashboard() {
   const { studentOverview: masteryData, isLoading: isMasteryLoading, fetchStudentMastery } = useMastery(currentChild?.id);
 
   // Notifications now fetched from API via useNotifications hook (removed mock data)
+
+  // Persist highlight style to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && highlightStyle) {
+      localStorage.setItem('parent_highlightStyle', highlightStyle);
+      console.log('💾 [PARENT HIGHLIGHT STYLE] Saved to localStorage:', highlightStyle);
+    }
+  }, [highlightStyle]);
 
   // Transform database highlights to UI format
   const [highlights, setHighlights] = useState<any[]>([]);
@@ -593,6 +612,21 @@ export default function ParentDashboard() {
       fetchStudentMastery(currentChild.id);
     }
   }, [currentChild?.id, fetchStudentMastery]);
+
+  // Update current display Surahs based on page
+  useEffect(() => {
+    const pageInfo = getPageContent(currentMushafPage);
+    if (pageInfo) {
+      const surahsOnThisPage = pageInfo.surahsOnPage || [pageInfo.surahStart];
+      const surahNames = surahsOnThisPage
+        .map((surahNum: number) => {
+          const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+          return surahInfo?.nameArabic || '';
+        })
+        .filter((name: string) => name !== '');
+      setCurrentDisplaySurahs(surahNames);
+    }
+  }, [currentMushafPage]);
 
   // Load Quran text based on current mushaf page (ADDED from Student Dashboard)
   useEffect(() => {
@@ -1653,9 +1687,29 @@ export default function ParentDashboard() {
                         lineHeight: '1.5'  // Slightly more breathing room with vertical space
                       }}>
                         {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                          const isFirstAyahOfSurah = ayah.number === 1;
+                          const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
+                          const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
                           const ayahIndex = quranText.ayahs.indexOf(ayah);
                           return (
-                            <span key={ayah.number} className="inline relative group">
+                            <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
+                              {shouldShowBismillah && (
+                                <div className="text-center mb-6 py-4" style={{ display: 'block', width: '100%' }}>
+                                  <img
+                                    src={BISMILLAH_BASE64}
+                                    alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                                    style={{
+                                      display: 'block',
+                                      margin: '0 auto',
+                                      maxWidth: '90%',
+                                      height: 'auto',
+                                      maxHeight: '70px',
+                                      objectFit: 'contain'
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            <span className="inline relative group">
                       {ayah.words.map((word: any, wordIndex: any) => {
                         // Extract word text - handle both string and object formats
                         const wordText = typeof word === 'string' ? word : (word.text || word);
@@ -1693,46 +1747,79 @@ export default function ParentDashboard() {
                               lineHeight: '1.3',     // Line height
                               display: 'inline',     // Inline display
                               pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
-                              ...(mistakes.length === 1 ? {
-                                backgroundImage: `linear-gradient(${
-                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                }, ${
-                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                  mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                })`,
-                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center'
-                              } : mistakes.length > 1 ? {
-                                backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                  const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
-                                    m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                                    m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                                    m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                                    m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
-                                  const percent = (i * 100) / mistakes.length;
-                                  const nextPercent = ((i + 1) * 100) / mistakes.length;
-                                  return `${color} ${percent}%, ${color} ${nextPercent}%`;
-                                }).join(', ')})`,
-                                backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center',
+                              // CONDITIONAL STYLING: Full background vs Underline based on highlightStyle state
+                              ...(highlightStyle === 'full' ? (
+                                // FULL BACKGROUND MODE
+                                mistakes.length === 1 ? {
+                                  backgroundImage: `linear-gradient(${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  }, ${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                  })`,
+                                  backgroundSize: '100% 70%',
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center'
+                                } : mistakes.length > 1 ? {
+                                  backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
+                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                    const percent = (i * 100) / mistakes.length;
+                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                  }).join(', ')})`,
+                                  backgroundSize: '100% 70%',
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'center',
                                 fontWeight: '600',
                                 border: '1px solid rgba(0,0,0,0.15)'
-                              } : {})
+                              } : {}
+                              ) : (
+                                // UNDERLINE MODE
+                                mistakes.length === 1 ? {
+                                  borderBottom: `3px solid ${
+                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.8)' :
+                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.8)' :
+                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.8)' :
+                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.8)' :
+                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.8)' :
+                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.8)' : 'transparent'
+                                  }`,
+                                  paddingBottom: '2px'
+                                } : mistakes.length > 1 ? {
+                                  borderBottom: '3px solid transparent',
+                                  borderImage: `linear-gradient(90deg, ${mistakes.map((m: any, i: any) => {
+                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.8)' :
+                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.9)' :
+                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent';
+                                    const percent = (i * 100) / mistakes.length;
+                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                  }).join(', ')}) 1`,
+                                  paddingBottom: '2px'
+                                } : {}
+                              ))
                             }}
                           >
                             {wordText}{' '}
@@ -1790,6 +1877,7 @@ export default function ParentDashboard() {
                         {ayah.number}
                       </span>{' '}
                             </span>
+                            </React.Fragment>
                           );
                         })}
                       </div>
@@ -1826,10 +1914,28 @@ export default function ParentDashboard() {
                           </button>
 
                           {/* Page Info */}
-                          <div className="text-center">
-                            <span className="text-sm font-semibold text-gray-700">
-                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
-                            </span>
+                          <div className="flex items-center gap-2">
+                            {/* Current Surah Badge */}
+                            {currentDisplaySurahs.length > 0 && (
+                              <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                                <Book className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-medium text-blue-700 font-arabic">
+                                  {currentDisplaySurahs.length === 1 ? (
+                                    <>سُورَةُ {currentDisplaySurahs[0]}</>
+                                  ) : (
+                                    <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Page Number Badge */}
+                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                              <BookOpen className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-700">
+                                Page {currentMushafPage}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Next Arrow - Just Icon */}
@@ -1907,6 +2013,33 @@ export default function ParentDashboard() {
                     className="w-full"
                   />
                   <div className="text-xs text-center text-gray-600">{zoomLevel}%</div>
+                </div>
+              </div>
+
+              {/* Highlight Style Toggle */}
+              <div className="bg-white rounded-lg shadow-sm p-3">
+                <h3 className="font-semibold mb-2 text-sm">Highlight Style</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setHighlightStyle('full')}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                      highlightStyle === 'full'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Full
+                  </button>
+                  <button
+                    onClick={() => setHighlightStyle('underline')}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                      highlightStyle === 'underline'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Underline
+                  </button>
                 </div>
               </div>
             </div>

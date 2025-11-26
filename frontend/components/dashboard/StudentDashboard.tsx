@@ -17,6 +17,7 @@ import {
 import { surahList } from '@/data/quran/surahData';
 import { mushafPages, getPageContent, getPageBySurahAyah, getSurahPageRange, TOTAL_MUSHAF_PAGES } from '@/data/completeMushafPages';
 import SimpleAnnotationCanvas from '@/components/dashboard/SimpleAnnotationCanvas';
+import { BISMILLAH_BASE64 } from '@/lib/bismillahImage';
 import MessagesPanel from '@/components/messages/MessagesPanel';
 import GradebookPanel from '@/components/gradebook/GradebookPanel';
 import CalendarPanel from '@/components/calendar/CalendarPanel';
@@ -255,6 +256,7 @@ export default function StudentDashboard() {
   const [quranText, setQuranText] = useState({ surah: '', ayahs: [] });
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
+  const [currentDisplaySurahs, setCurrentDisplaySurahs] = useState<string[]>([]);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [highlightStyle, setHighlightStyle] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -366,6 +368,21 @@ export default function StudentDashboard() {
       console.log('💾 [STUDENT HIGHLIGHT STYLE] Saved to localStorage:', highlightStyle);
     }
   }, [highlightStyle]);
+
+  // Update current display Surahs based on page
+  useEffect(() => {
+    const pageInfo = getPageContent(currentMushafPage);
+    if (pageInfo) {
+      const surahsOnThisPage = pageInfo.surahsOnPage || [pageInfo.surahStart];
+      const surahNames = surahsOnThisPage
+        .map((surahNum: number) => {
+          const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+          return surahInfo?.nameArabic || '';
+        })
+        .filter((name: string) => name !== '');
+      setCurrentDisplaySurahs(surahNames);
+    }
+  }, [currentMushafPage]);
 
   // Transform homework data to match UI expectations
   const transformedHomework = useMemo(() => {
@@ -1178,9 +1195,29 @@ export default function StudentDashboard() {
                         lineHeight: '1.5'  // Slightly more breathing room with vertical space
                       }}>
                         {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                          const isFirstAyahOfSurah = ayah.number === 1;
+                          const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
+                          const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
                           const ayahIndex = quranText.ayahs.indexOf(ayah);
                           return (
-                            <span key={ayah.number} className="inline relative group">
+                            <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
+                              {shouldShowBismillah && (
+                                <div className="text-center mb-6 py-4" style={{ display: 'block', width: '100%' }}>
+                                  <img
+                                    src={BISMILLAH_BASE64}
+                                    alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                                    style={{
+                                      display: 'block',
+                                      margin: '0 auto',
+                                      maxWidth: '90%',
+                                      height: 'auto',
+                                      maxHeight: '70px',
+                                      objectFit: 'contain'
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            <span className="inline relative group">
                       {ayah.words.map((word: any, wordIndex: any) => {
                         // Extract word text - handle both string and object formats
                         const wordText = typeof word === 'string' ? word : (word.text || word);
@@ -1347,6 +1384,7 @@ export default function StudentDashboard() {
                         {ayah.number}
                       </span>{' '}
                             </span>
+                            </React.Fragment>
                           );
                         })}
                       </div>
@@ -1382,10 +1420,28 @@ export default function StudentDashboard() {
                           </button>
 
                           {/* Page Info */}
-                          <div className="text-center">
-                            <span className="text-sm font-semibold text-gray-700">
-                              Page {currentMushafPage} of {lastPage} (Surah {currentSurahNumber})
-                            </span>
+                          <div className="flex items-center gap-2">
+                            {/* Current Surah Badge */}
+                            {currentDisplaySurahs.length > 0 && (
+                              <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                                <Book className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-medium text-blue-700 font-arabic">
+                                  {currentDisplaySurahs.length === 1 ? (
+                                    <>سُورَةُ {currentDisplaySurahs[0]}</>
+                                  ) : (
+                                    <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Page Number Badge */}
+                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                              <BookOpen className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-700">
+                                Page {currentMushafPage}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Next Arrow - Just Icon */}
