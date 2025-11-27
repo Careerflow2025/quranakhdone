@@ -4715,7 +4715,14 @@ export default function SchoolDashboard() {
                               <span
                                 onClick={() => {
                                   if (wordHighlights.length > 0) {
-                                    handleHighlightClick(wordHighlights[0].id);
+                                    // CRITICAL FIX: Find the highlight that actually has notes, not just the first one
+                                    const highlightWithNotes = wordHighlights.find((h: any) => {
+                                      const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                      return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                                    });
+                                    // If found highlight with notes, open that one; otherwise open first one
+                                    const highlightToOpen = highlightWithNotes || wordHighlights[0];
+                                    handleHighlightClick(highlightToOpen.id);
                                   }
                                 }}
                                 className="inline cursor-pointer rounded transition-colors select-none"
