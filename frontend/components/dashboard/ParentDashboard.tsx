@@ -524,53 +524,47 @@ export default function ParentDashboard() {
   // Transform database highlights to UI format
   const [highlights, setHighlights] = useState<any[]>([]);
 
-  // Transform database highlights to UI format for current page (same as Student Dashboard)
+  // Transform database highlights to UI format (matching SchoolDashboard pattern)
   useEffect(() => {
     if (!dbHighlights || dbHighlights.length === 0) {
       setHighlights([]);
       return;
     }
 
-    // Get current page data
-    const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
+    // CRITICAL FIX: Build combined ayahs array from cache + quranText (like SchoolDashboard)
+    // This ensures we can find ayahIndex for ayahs from ALL surahs, not just currently loaded one
+    const allAyahsForLookup: any[] = [];
+    Object.keys(surahCache).forEach(cacheKey => {
+      const cachedSurah = surahCache[parseInt(cacheKey)];
+      if (cachedSurah && cachedSurah.ayahs && Array.isArray(cachedSurah.ayahs)) {
+        allAyahsForLookup.push(...cachedSurah.ayahs);
+      }
+    });
+    if (quranText && quranText.ayahs && Array.isArray(quranText.ayahs)) {
+      quranText.ayahs.forEach(qa => {
+        const exists = allAyahsForLookup.some(a => a.surah === qa.surah && a.number === qa.number);
+        if (!exists) allAyahsForLookup.push(qa);
+      });
+    }
 
     // Transform highlights to UI format with ayahIndex and wordIndex
     const pageHighlights: any[] = [];
 
     dbHighlights.forEach((dbHighlight: any) => {
-      // Only show highlights for current surah
-      if (dbHighlight.surah === currentSurah) {
-        // Full ayah highlight (word_start and word_end are null)
-        if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
-          // Find all words in this ayah range
-          for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
-            const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNum);
-            if (ayahIndex >= 0) {
-              const ayah = quranText.ayahs[ayahIndex];
-              const wordCount = ayah.words?.length || 0;
-
-              // Highlight all words in this ayah
-              for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
-                pageHighlights.push({
-                  id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                  dbId: dbHighlight.id,
-                  ayahIndex,
-                  wordIndex,
-                  mistakeType: dbHighlight.type,
-                  color: dbHighlight.color,
-                  isCompleted: dbHighlight.status === 'gold',
-                  status: dbHighlight.status,
-                  isFullAyah: true
-                });
-              }
-            }
-          }
-        } else {
-          // Single word or word range highlight
-          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === dbHighlight.ayah_start);
+      // Full ayah highlight (word_start and word_end are null)
+      if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
+        // Find all words in this ayah range
+        for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
+          // CRITICAL FIX: Find ayahIndex by matching BOTH surah AND number
+          const ayahIndex = allAyahsForLookup.findIndex((a: any) =>
+            a.surah === dbHighlight.surah && a.number === ayahNum
+          );
           if (ayahIndex >= 0) {
-            for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
+            const ayah = allAyahsForLookup[ayahIndex];
+            const wordCount = ayah.words?.length || 0;
+
+            // Highlight all words in this ayah
+            for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
               pageHighlights.push({
                 id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
                 dbId: dbHighlight.id,
@@ -580,16 +574,37 @@ export default function ParentDashboard() {
                 color: dbHighlight.color,
                 isCompleted: dbHighlight.status === 'gold',
                 status: dbHighlight.status,
-                isFullAyah: false
+                isFullAyah: true
               });
             }
+          }
+        }
+      } else {
+        // Single word or word range highlight
+        // CRITICAL FIX: Find ayahIndex by matching BOTH surah AND number
+        const ayahIndex = allAyahsForLookup.findIndex((a: any) =>
+          a.surah === dbHighlight.surah && a.number === dbHighlight.ayah_start
+        );
+        if (ayahIndex >= 0) {
+          for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
+            pageHighlights.push({
+              id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
+              dbId: dbHighlight.id,
+              ayahIndex,
+              wordIndex,
+              mistakeType: dbHighlight.type,
+              color: dbHighlight.color,
+              isCompleted: dbHighlight.status === 'gold',
+              status: dbHighlight.status,
+              isFullAyah: false
+            });
           }
         }
       }
     });
 
     setHighlights(pageHighlights);
-  }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
+  }, [dbHighlights, currentMushafPage, quranText, currentSurah, surahCache]);
 
   // Fetch homework when selected child changes
   useEffect(() => {
@@ -1813,7 +1828,27 @@ export default function ParentDashboard() {
                           const isFirstAyahOfSurah = ayah.number === 1;
                           const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
                           const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
-                          const ayahIndex = quranText.ayahs.indexOf(ayah);
+
+                          // CRITICAL FIX: Build combined ayahs array from cache + quranText (matching SchoolDashboard)
+                          // This ensures we can find ayahIndex for ayahs from ALL surahs, not just currently loaded one
+                          const allAyahsForLookup: any[] = [];
+                          Object.keys(surahCache).forEach(cacheKey => {
+                            const cachedSurah = surahCache[parseInt(cacheKey)];
+                            if (cachedSurah && cachedSurah.ayahs && Array.isArray(cachedSurah.ayahs)) {
+                              allAyahsForLookup.push(...cachedSurah.ayahs);
+                            }
+                          });
+                          if (quranText && quranText.ayahs && Array.isArray(quranText.ayahs)) {
+                            quranText.ayahs.forEach(qa => {
+                              const exists = allAyahsForLookup.some(a => a.surah === qa.surah && a.number === qa.number);
+                              if (!exists) allAyahsForLookup.push(qa);
+                            });
+                          }
+
+                          // CRITICAL FIX: Find ayahIndex by matching BOTH surah AND number, not just indexOf
+                          const ayahIndex = allAyahsForLookup.findIndex((a: any) =>
+                            a.surah === ayah.surah && a.number === ayah.number
+                          );
                           return (
                             <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
                               {shouldShowBismillah && (
