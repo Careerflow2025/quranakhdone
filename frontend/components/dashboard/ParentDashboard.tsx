@@ -1814,26 +1814,9 @@ export default function ParentDashboard() {
                           const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
                           const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
 
-                          // CRITICAL FIX: Build combined ayahs array from cache + quranText (matching SchoolDashboard)
-                          // This ensures we can find ayahIndex for ayahs from ALL surahs, not just currently loaded one
-                          const allAyahsForLookup: any[] = [];
-                          Object.keys(surahCache).forEach(cacheKey => {
-                            const cachedSurah = surahCache[parseInt(cacheKey)];
-                            if (cachedSurah && cachedSurah.ayahs && Array.isArray(cachedSurah.ayahs)) {
-                              allAyahsForLookup.push(...cachedSurah.ayahs);
-                            }
-                          });
-                          if (quranText && quranText.ayahs && Array.isArray(quranText.ayahs)) {
-                            quranText.ayahs.forEach(qa => {
-                              const exists = allAyahsForLookup.some(a => a.surah === qa.surah && a.number === qa.number);
-                              if (!exists) allAyahsForLookup.push(qa);
-                            });
-                          }
-
-                          // CRITICAL FIX: Find ayahIndex by matching BOTH surah AND number, not just indexOf
-                          const ayahIndex = allAyahsForLookup.findIndex((a: any) =>
-                            a.surah === ayah.surah && a.number === ayah.number
-                          );
+                          // CRITICAL FIX: Use same LOCAL index as transformation (line 548)
+                          // This ensures ayahIndex matches between transformation and rendering
+                          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayah.number);
                           return (
                             <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
                               {shouldShowBismillah && (
