@@ -1237,21 +1237,31 @@ export default function StudentDashboard() {
                             ayah.number >= pageContent.ayahStart && ayah.number <= pageContent.ayahEnd
                           );
                         }
+                      } else if (quranText && quranText.ayahs && quranText.ayahs.length > 0) {
+                        // FALLBACK: Use quranText if cache not valid yet (prevents blank page on initial load)
+                        const loadedSurahNumber = quranText.ayahs[0]?.surah || currentSurah;
 
-                        // Asynchronously load and cache this Surah
-                        if (!surahCache[cacheKey]) {
-                          getSurahByNumber(scriptId, surahNumber).then((surahData) => {
-                            if (surahData && surahData.ayahs) {
-                              setSurahCache((prev: any) => ({
-                                ...prev,
-                                [cacheKey]: surahData
-                              }));
-                              console.log(`✅ [CACHE LOADED] Surah ${surahNumber} for page ${pageNum}`);
-                            }
-                          }).catch((err) => {
-                            console.error(`❌ [CACHE ERROR] Failed to load Surah ${surahNumber}:`, err);
-                          });
+                        if (loadedSurahNumber === surahNumber) {
+                          // Only use quranText if it's for the current page's surah
+                          pageAyahs = quranText.ayahs.filter((ayah: any) =>
+                            ayah.number >= pageContent.ayahStart && ayah.number <= pageContent.ayahEnd
+                          );
                         }
+                      }
+
+                      // Asynchronously load and cache this Surah
+                      if (!isCacheValid && !surahCache[cacheKey]) {
+                        getSurahByNumber(scriptId, surahNumber).then((surahData) => {
+                          if (surahData && surahData.ayahs) {
+                            setSurahCache((prev: any) => ({
+                              ...prev,
+                              [cacheKey]: surahData
+                            }));
+                            console.log(`✅ [CACHE LOADED] Surah ${surahNumber} for page ${pageNum}`);
+                          }
+                        }).catch((err) => {
+                          console.error(`❌ [CACHE ERROR] Failed to load Surah ${surahNumber}:`, err);
+                        });
                       }
 
                       // Calculate page content for dynamic sizing
@@ -1371,9 +1381,16 @@ export default function StudentDashboard() {
                               <span
                                 key={`${ayahIndex}-${wordIndex}`}
                                 onClick={() => {
-                                  // READ-ONLY: Only allow viewing notes, no highlighting
+                                  // STUDENT VIEW: Allow viewing and replying to notes
                                   if (wordHighlights.length > 0) {
-                                    handleHighlightClick(wordHighlights[0].id);
+                                    // CRITICAL FIX: Find the highlight that actually has notes, not just the first one
+                                    const highlightWithNotes = wordHighlights.find((h: any) => {
+                                      const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                      return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                                    });
+                                    // If found highlight with notes, open that one; otherwise open first one
+                                    const highlightToOpen = highlightWithNotes || wordHighlights[0];
+                                    handleHighlightClick(highlightToOpen.id);
                                   }
                                 }}
                                 className="inline cursor-pointer rounded transition-colors select-none"
