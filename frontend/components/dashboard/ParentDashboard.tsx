@@ -1845,19 +1845,22 @@ export default function ParentDashboard() {
                           (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
                         );
 
-                        // Check if any highlight is completed and get appropriate colors
-                        const mistakes = wordHighlights.map((h: any) => {
-                          // If highlight is marked as completed, show gold color
-                          if (h.isCompleted) {
-                            return { id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' };
+                        // CRITICAL FIX: If ANY highlight is completed, show ONLY gold color (matching SchoolDashboard)
+                        const mistakes = (() => {
+                          // Check if any highlight on this word is completed
+                          if (wordHighlights.some((h: any) => h.isCompleted)) {
+                            // Show ONLY gold, ignore all other colors
+                            return [{ id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' }];
                           }
-                          // Otherwise show the original mistake color
-                          return mistakeTypes.find((m: any) => m.id === h.mistakeType);
-                        }).filter(Boolean);
+                          // Otherwise show all non-completed highlight colors
+                          return wordHighlights.map((h: any) =>
+                            mistakeTypes.find((m: any) => m.id === h.mistakeType)
+                          ).filter(Boolean);
+                        })();
 
                         return (
+                          <React.Fragment key={`${ayahIndex}-${wordIndex}`}>
                           <span
-                            key={`${ayahIndex}-${wordIndex}`}
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
                               if (wordHighlights.length > 0) {
@@ -1955,7 +1958,7 @@ export default function ParentDashboard() {
                               ))
                             }}
                           >
-                            {wordText}{' '}
+                            {wordText}
                             {(() => {
                               // Check if any highlight on this word has notes from database
                               const hasNotes = wordHighlights.some((h: any) => {
@@ -1967,25 +1970,17 @@ export default function ParentDashboard() {
 
                               if (hasNotes) {
                                 return (
-                                  <span
-                                    className="inline-flex items-center justify-center text-blue-500"
-                                    style={{
-                                      fontSize: '8px',
-                                      width: '12px',
-                                      height: '12px',
-                                      marginLeft: '1px',
-                                      verticalAlign: 'top',
-                                      position: 'relative',
-                                      top: '0px'
-                                    }}
-                                  >
-                                    <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
-                                  </span>
+                                  <sup className="text-blue-500 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                    <MessageSquare className="w-2.5 h-2.5 inline" />
+                                  </sup>
                                 );
                               }
                               return null;
                             })()}
                           </span>
+                          {/* CRITICAL FIX: Space OUTSIDE span so it's NOT included in highlight background */}
+                          {wordIndex < ayah.words.length - 1 ? ' ' : ''}
+                          </React.Fragment>
                         );
                       })}
                       {/* Ayah Number - Traditional Mushaf Style (Inline) */}
