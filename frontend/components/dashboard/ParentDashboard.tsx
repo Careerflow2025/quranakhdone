@@ -1730,6 +1730,16 @@ export default function ParentDashboard() {
                         ? ayah.words
                         : ayah.text ? ayah.text.split(' ').map((w: string) => ({ text: w })) : []
                     }));
+                  } else if (quranText && quranText.ayahs && quranText.ayahs.length > 0) {
+                    // FALLBACK: Use quranText if cache not valid yet (prevents blank page on initial load)
+                    const loadedSurahNumber = quranText.ayahs[0]?.surah || currentSurah;
+
+                    if (loadedSurahNumber === pageContent.surahStart) {
+                      // Only use quranText if it's for the current page's surah
+                      pageAyahs = quranText.ayahs.filter((ayah: any) =>
+                        ayah.number >= pageContent.ayahStart && ayah.number <= pageContent.ayahEnd
+                      );
+                    }
                   }
 
                   const pageContentText = pageAyahs
@@ -1848,7 +1858,14 @@ export default function ParentDashboard() {
                             onClick={() => {
                               // READ-ONLY: Only allow viewing notes, no highlighting
                               if (wordHighlights.length > 0) {
-                                handleHighlightClick(wordHighlights[0].id);
+                                // CRITICAL FIX: Find the highlight that actually has notes, not just the first one
+                                const highlightWithNotes = wordHighlights.find((h: any) => {
+                                  const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                  return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                                });
+                                // If found highlight with notes, open that one; otherwise open first one
+                                const highlightToOpen = highlightWithNotes || wordHighlights[0];
+                                handleHighlightClick(highlightToOpen.id);
                               }
                             }}
                             className="inline cursor-pointer rounded transition-colors select-none"
