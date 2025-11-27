@@ -426,6 +426,11 @@ export default function ParentDashboard() {
   const [surahSearch, setSurahSearch] = useState('');
   const quranContainerRef = useRef<HTMLDivElement>(null);
 
+  // Scrolling model state variables
+  const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
+  const mushafScrollContainerRef = useRef<HTMLDivElement>(null);
+  const [surahCache, setSurahCache] = useState<Record<number, any>>({});
+
   // Highlight style preference (full background or underline)
   const [highlightStyle, setHighlightStyle] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -932,6 +937,68 @@ export default function ParentDashboard() {
 
     loadQuranText();
   }, [currentMushafPage, selectedScript]);
+
+  // IntersectionObserver for automatic page tracking during scroll
+  useEffect(() => {
+    if (!mushafScrollContainerRef.current) {
+      return;
+    }
+
+    const observerOptions = {
+      root: mushafScrollContainerRef.current,
+      threshold: 0.5,
+      rootMargin: '0px'
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      if (isProgrammaticScroll) {
+        return;
+      }
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const pageId = entry.target.id;
+          const pageNum = parseInt(pageId.replace('mushaf-page-', ''));
+
+          if (!isNaN(pageNum)) {
+            setCurrentMushafPage(pageNum);
+
+            const pageInfo = getPageContent(pageNum);
+            if (pageInfo) {
+              const surahsOnThisPage = pageInfo.surahsOnPage || [pageInfo.surahStart];
+              const surahNames = surahsOnThisPage
+                .map((surahNum: number) => {
+                  const surahInfo = surahList.find((s: any) => s.number === surahNum);
+                  return surahInfo?.nameArabic || '';
+                })
+                .filter((name: string) => name !== '');
+
+              setCurrentDisplaySurahs(surahNames);
+              setCurrentSurah(pageInfo.surahStart);
+            }
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    const observePages = () => {
+      for (let i = 1; i <= 604; i++) {
+        const pageElement = document.getElementById(`mushaf-page-${i}`);
+        if (pageElement) {
+          observer.observe(pageElement);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(observePages, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [mushafScrollContainerRef.current, isProgrammaticScroll]);
 
   // Load conversation data when highlight is selected
   useEffect(() => {
@@ -1564,129 +1631,175 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            {/* Main Quran Viewer */}
+            {/* Main Quran Viewer - Scrolling Model */}
             <div className="col-span-8">
-              <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
-                background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                maxHeight: '95vh',
-                overflow: 'hidden',
-                position: 'relative'
-              }}>
-                {/* Read-Only Pen Annotations Display */}
-                {currentChild && currentChild.teacherId && selectedScript && (
-                  <SimpleAnnotationCanvas
-                    studentId={currentChild.id}
-                    teacherId={currentChild.teacherId}
-                    pageNumber={currentMushafPage}
-                    scriptId={selectedScript}
-                    enabled={false}
-                    containerRef={quranContainerRef}
-                    penColor={penColor}
-                    penWidth={penWidth}
-                    eraserMode={eraserMode}
-                    onSave={() => {}}
-                    onLoad={() => {}}
-                    onClear={() => {}}
-                  />
-                )}
-
-                {/* Page-like container for Quran text */}
-                <div className="p-1" style={{
-                  backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
-                  backgroundSize: '50px 50px',
-                  pointerEvents: 'none'
-                }}>
-
-                {/* Basmala for new Surahs */}
-                {currentSurah !== 1 && currentSurah !== 9 && currentMushafPage === 1 && (
-                  <div className="text-center text-3xl font-arabic text-gray-700 py-6 border-b mb-6">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+              {/* Surah and Page Badges - Fixed at top */}
+              <div className="mb-2 flex items-center justify-center gap-3">
+                {/* Current Surah Badge */}
+                {currentDisplaySurahs.length > 0 && (
+                  <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
+                    <Book className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-700 font-arabic">
+                      {currentDisplaySurahs.length === 1 ? (
+                        <>سُورَةُ {currentDisplaySurahs[0]}</>
+                      ) : (
+                        <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
+                      )}
+                    </span>
                   </div>
                 )}
 
-                {/* Quran Text Display - Mushaf Style */}
-                <div className="relative">
-                  <div
-                    className="text-center leading-loose px-4 bg-gradient-to-b from-white to-gray-50 rounded-lg"
-                    style={{
-                      ...getScriptStyling(selectedScript || 'uthmani-hafs'),
-                      pointerEvents: 'none'
-                    }}
-                  >
-                  <style jsx>{`
-                    @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+                {/* Page Number Badge */}
+                <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                  <BookOpen className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">
+                    Page {currentMushafPage}
+                  </span>
+                </div>
+              </div>
 
-                    .mushaf-page-text {
-                      text-align-last: start;
+              {/* Scrollable Container for All 604 Pages */}
+              <div
+                ref={mushafScrollContainerRef}
+                className="mushaf-scroll-container"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  gap: '3rem',
+                  scrollBehavior: 'smooth',
+                  scrollSnapType: 'y mandatory',
+                  padding: '2rem',
+                  maxHeight: '85vh',
+                  background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                }}
+              >
+                <style jsx>{`
+                  .mushaf-scroll-container::-webkit-scrollbar { width: 10px; }
+                  .mushaf-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; }
+                  .mushaf-scroll-container::-webkit-scrollbar-thumb { background: #888; border-radius: 5px; }
+                  .mushaf-scroll-container::-webkit-scrollbar-thumb:hover { background: #555; }
+                `}</style>
+
+                {/* Render All 604 Mushaf Pages */}
+                {Array.from({ length: 604 }, (_, i) => i + 1).map((pageNum) => {
+                  const pageContent = getPageContent(pageNum);
+                  if (!pageContent) return null;
+
+                  const isCurrentPage = pageNum === currentMushafPage;
+
+                  // Get or load surah for this page
+                  const cachedSurah = surahCache[pageContent.surahStart];
+
+                  // Load surah if not cached
+                  if (!cachedSurah && selectedScript) {
+                    getSurahByNumber(selectedScript, pageContent.surahStart).then((data) => {
+                      setSurahCache((prev) => ({
+                        ...prev,
+                        [pageContent.surahStart]: data
+                      }));
+                    });
+                  }
+
+                  // Get page ayahs from cached surah
+                  let pageAyahs: any[] = [];
+                  if (cachedSurah && cachedSurah.ayahs) {
+                    if (pageContent.surahStart === pageContent.surahEnd) {
+                      // Single surah on page
+                      pageAyahs = cachedSurah.ayahs.filter((ayah: any) => {
+                        const ayahNumber = ayah.numberInSurah;
+                        return ayahNumber >= pageContent.ayahStart && ayahNumber <= pageContent.ayahEnd;
+                      });
+                    } else if (pageContent.surahStart < pageContent.surahEnd) {
+                      // Multiple surahs on page - show from ayahStart onwards
+                      pageAyahs = cachedSurah.ayahs.filter((ayah: any) => {
+                        const ayahNumber = ayah.numberInSurah;
+                        return ayahNumber >= pageContent.ayahStart;
+                      });
                     }
 
-                    .mushaf-page-content {
-                      text-align: justify;
-                      text-justify: kashida;
-                    }
-                  `}</style>
+                    // Map to expected format
+                    pageAyahs = pageAyahs.map((ayah: any) => ({
+                      number: ayah.numberInSurah,
+                      text: ayah.text,
+                      surah: pageContent.surahStart,
+                      words: Array.isArray(ayah.words)
+                        ? ayah.words
+                        : ayah.text ? ayah.text.split(' ').map((w: string) => ({ text: w })) : []
+                    }));
+                  }
 
-                  {(() => {
-                    // Get the current mushaf page data
-                    const pageData = getPageContent(currentMushafPage);
-                    if (!pageData) return <div>Loading page...</div>;
+                  const pageContentText = pageAyahs
+                    .map((ayah: any) => ayah.words.map((word: any) => (typeof word === 'string' ? word : word.text || word)).join(' '))
+                    .join(' ');
 
-                    // Determine which ayahs to show based on real mushaf page - EXACT COPY FROM STUDENT DASHBOARD
-                    let pageAyahs = [];
+                  const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
 
-                    if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
-                      // Current surah is entirely contained within this page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
-                      });
-                    } else if (pageData.surahStart === currentSurah) {
-                      // Current surah starts on this page but continues on next page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart;
-                      });
-                    } else if (pageData.surahEnd === currentSurah) {
-                      // Current surah ends on this page but started on previous page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber <= pageData.ayahEnd;
-                      });
-                    } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
-                      // Current surah is somewhere in the middle of this page
-                      // Show all ayahs of this surah
-                      pageAyahs = quranText.ayahs;
-                    }
-
-                    // Calculate total page content length for DYNAMIC FONT SIZING
-                    // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
-                    const pageContent = pageAyahs.map((ayah: any) =>
-                      ayah.words.map((word: any) => word.text).join(' ')
-                    ).join(' ');
-
-                    // Render the page with traditional Mushaf formatting
-                    const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
-                    return (
-                      <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                        width: '38vw',  // NARROWER: More vertical/portrait-like proportions
-                        maxWidth: '480px',  // REDUCED: Traditional book page width
-                        minHeight: '65vh',  // INCREASED: Use available bottom space
-                        maxHeight: '72vh',  // INCREASED: Taller to look like a real page
-                        overflow: 'hidden',  // NO scrolling inside container
+                  return (
+                    <div
+                      key={pageNum}
+                      id={`mushaf-page-${pageNum}`}
+                      className={`mushaf-page-content mushaf-text ${scriptClass}`}
+                      style={{
+                        position: 'relative', // For canvas overlay
+                        scrollSnapAlign: 'center',
+                        flexShrink: 0,
+                        width: '38vw',
+                        maxWidth: '480px',
+                        minHeight: '65vh',
+                        maxHeight: '72vh',
+                        overflow: 'hidden',
                         margin: '0 auto',
                         padding: '0.8rem 1rem',
                         backgroundColor: '#FFFFFF',
                         borderRadius: '8px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                        border: '2px solid #40826D',
-                        ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
-                        transform: `scale(${zoomLevel / 100})`,
-                        transformOrigin: 'top center',
+                        boxShadow: isCurrentPage
+                          ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5)'
+                          : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3)',
+                        border: '15px solid #40826D',
+                        opacity: isCurrentPage ? 1 : 0.7,
+                        transition: 'opacity 0.3s, box-shadow 0.3s',
+                        ...getDynamicScriptStyling(pageContentText, selectedScript || 'uthmani-hafs'),
                         textAlign: 'right',
-                        lineHeight: '1.5'  // Slightly more breathing room with vertical space
-                      }}>
-                        {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                        lineHeight: '1.5'
+                      }}
+                    >
+                      {/* Canvas ONLY for current page (read-only for parents) */}
+                      {isCurrentPage && currentChild && currentChild.teacherId && selectedScript && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            pointerEvents: 'none',
+                            zIndex: 1
+                          }}
+                        >
+                          <SimpleAnnotationCanvas
+                            studentId={currentChild.id}
+                            teacherId={currentChild.teacherId}
+                            pageNumber={pageNum}
+                            scriptId={selectedScript}
+                            enabled={false}
+                            containerRef={mushafScrollContainerRef}
+                            penColor={penColor}
+                            penWidth={penWidth}
+                            eraserMode={eraserMode}
+                            onSave={() => {}}
+                            onLoad={() => {}}
+                            onClear={() => {}}
+                          />
+                        </div>
+                      )}
+
+                      {/* Render page ayahs with highlights */}
+                      <div style={{ position: 'relative', zIndex: 2, pointerEvents: 'auto' }}>
+                        {pageAyahs.map((ayah: any, ayahIdx: number) => {
                           const isFirstAyahOfSurah = ayah.number === 1;
                           const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
                           const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
@@ -1881,76 +1994,9 @@ export default function ParentDashboard() {
                           );
                         })}
                       </div>
-                    );
-                  })()}
-                  </div>
-                </div>
-                </div>
-
-                {/* Page Navigation - OUTSIDE pointerEvents:none container */}
-                <div className="mt-2 border-t pt-2">
-                  <div className="flex items-center justify-center gap-4">
-                    {(() => {
-                      // Get current page content to determine Surah
-                      const currentPageContent = getPageContent(currentMushafPage);
-                      const currentSurahNumber = currentPageContent?.surahStart || 1;
-
-                      // For parent dashboard: allow navigation through ALL 604 pages
-                      const firstPage = 1;
-                      const lastPage = 604;
-
-                      const isFirstPage = currentMushafPage <= firstPage;
-                      const isLastPage = currentMushafPage >= lastPage;
-
-                      return (
-                        <>
-                          {/* Previous Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
-                            disabled={isFirstPage}
-                            className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Previous Page">
-                            <ChevronLeft className="w-5 h-5" />
-                          </button>
-
-                          {/* Page Info */}
-                          <div className="flex items-center gap-2">
-                            {/* Current Surah Badge */}
-                            {currentDisplaySurahs.length > 0 && (
-                              <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
-                                <Book className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium text-blue-700 font-arabic">
-                                  {currentDisplaySurahs.length === 1 ? (
-                                    <>سُورَةُ {currentDisplaySurahs[0]}</>
-                                  ) : (
-                                    <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
-                                  )}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Page Number Badge */}
-                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
-                              <BookOpen className="w-4 h-4 text-green-600" />
-                              <span className="text-sm font-medium text-green-700">
-                                Page {currentMushafPage}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Next Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
-                            disabled={isLastPage}
-                            className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Next Page">
-                            <ChevronRight className="w-5 h-5" />
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1974,12 +2020,23 @@ export default function ParentDashboard() {
                         <button
                           key={surah.number}
                           onClick={() => {
-                            // Navigate to first page of selected surah
+                            // Navigate to first page of selected surah with programmatic scroll
                             const { firstPage } = getSurahPageRange(surah.number);
                             console.log('🔖 Navigating to surah:', surah.number, 'page:', firstPage);
+
+                            setIsProgrammaticScroll(true);
                             setCurrentMushafPage(firstPage);
                             setCurrentSurah(surah.number);
                             setShowSurahDropdown(false);
+
+                            // Scroll to the page
+                            setTimeout(() => {
+                              const pageElement = document.getElementById(`mushaf-page-${firstPage}`);
+                              if (pageElement && mushafScrollContainerRef.current) {
+                                pageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => setIsProgrammaticScroll(false), 1000);
+                              }
+                            }, 100);
                           }}
                           className={`w-full text-left p-2 rounded-lg hover:bg-gray-50 ${
                             currentSurah === surah.number ? 'bg-green-50 border-green-200 border' : ''
@@ -2043,7 +2100,7 @@ export default function ParentDashboard() {
                 </div>
               </div>
             </div>
-          </div>
+            </div>
           </>
         )}
 
@@ -2966,6 +3023,7 @@ export default function ParentDashboard() {
                   setShowNotesModal(false);
                   setSelectedHighlightForNotes(null);
                   setConversationData(null);
+                  refreshHighlights();
                 }}
                 className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
               >
@@ -3105,6 +3163,7 @@ export default function ParentDashboard() {
                   setShowNotesModal(false);
                   setSelectedHighlightForNotes(null);
                   setConversationData(null);
+                  refreshHighlights();
                 }}
                 className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition font-medium"
               >

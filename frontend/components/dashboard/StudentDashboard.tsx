@@ -257,6 +257,7 @@ export default function StudentDashboard() {
   const [showSurahDropdown, setShowSurahDropdown] = useState(false);
   const [currentMushafPage, setCurrentMushafPage] = useState(1);
   const [currentDisplaySurahs, setCurrentDisplaySurahs] = useState<string[]>([]);
+  const [isProgrammaticScroll, setIsProgrammaticScroll] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [highlightStyle, setHighlightStyle] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -270,6 +271,10 @@ export default function StudentDashboard() {
   const [penWidth, setPenWidth] = useState(2);
   const [eraserMode, setEraserMode] = useState(false);
   const quranContainerRef = useRef<HTMLDivElement>(null);
+  const mushafScrollContainerRef = useRef<HTMLDivElement>(null); // For IntersectionObserver
+
+  // Surah cache for scrolling model - CRITICAL: Cache all loaded Surahs to avoid re-fetching
+  const [surahCache, setSurahCache] = useState<any>({});
 
   // Mistake Types for Highlights (Read-only display for students)
   const mistakeTypes = [
@@ -383,6 +388,74 @@ export default function StudentDashboard() {
       setCurrentDisplaySurahs(surahNames);
     }
   }, [currentMushafPage]);
+
+  // IntersectionObserver for automatic page tracking during scroll
+  useEffect(() => {
+    // Wait for scroll container to be ready
+    if (!mushafScrollContainerRef.current) {
+      return;
+    }
+
+    const observerOptions = {
+      root: mushafScrollContainerRef.current, // Use scroll container as root, not viewport
+      threshold: 0.5, // 50% of page must be visible
+      rootMargin: '0px'
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      // Skip observer updates during programmatic scrolling to prevent interference
+      if (isProgrammaticScroll) {
+        return;
+      }
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const pageId = entry.target.getAttribute('id');
+          if (pageId && pageId.startsWith('mushaf-page-')) {
+            const pageNumber = parseInt(pageId.replace('mushaf-page-', ''), 10);
+            if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= 604) {
+              setCurrentMushafPage(pageNumber);
+
+              // Update current surah based on page content
+              const pageContent = getPageContent(pageNumber);
+              if (pageContent) {
+                setCurrentSurah(pageContent.surahStart);
+
+                // Update display surahs
+                const surahsOnThisPage = pageContent.surahsOnPage || [pageContent.surahStart];
+                const surahNames = surahsOnThisPage
+                  .map((surahNum: number) => {
+                    const surahInfo = allSurahs.find((s: any) => s.number === surahNum);
+                    return surahInfo?.nameArabic || '';
+                  })
+                  .filter((name: string) => name !== '');
+                setCurrentDisplaySurahs(surahNames);
+              }
+            }
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all page elements (they're rendered dynamically, so wait a bit)
+    const observePages = () => {
+      for (let i = 1; i <= 604; i++) {
+        const pageElement = document.getElementById(`mushaf-page-${i}`);
+        if (pageElement) {
+          observer.observe(pageElement);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(observePages, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [mushafScrollContainerRef.current, isProgrammaticScroll]); // Re-run when ref is set or scroll flag changes
 
   // Transform homework data to match UI expectations
   const transformedHomework = useMemo(() => {
@@ -1071,393 +1144,418 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Main Quran Viewer */}
+            {/* Main Quran Viewer - SCROLLING MODEL */}
             <div className="col-span-8">
-              <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
+              <div ref={mushafScrollContainerRef} className="mushaf-scroll-container" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                overflowX: 'hidden',
+                overflowY: 'auto',
+                gap: '3rem',
+                scrollBehavior: 'smooth',
+                scrollSnapType: 'y mandatory',
+                padding: '2rem',
                 background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
                 maxHeight: '95vh',
-                overflow: 'hidden',
-                position: 'relative'
+                borderRadius: '12px'
               }}>
-                {/* Read-Only Pen Annotations Display */}
-                {studentInfo && studentInfo.teacherId && selectedScript && (
-                  <SimpleAnnotationCanvas
-                    studentId={studentInfo.id}
-                    teacherId={studentInfo.teacherId}
-                    pageNumber={currentMushafPage}
-                    scriptId={selectedScript}
-                    enabled={false}
-                    containerRef={quranContainerRef}
-                    penColor={penColor}
-                    penWidth={penWidth}
-                    eraserMode={eraserMode}
-                    onSave={() => {}}
-                    onLoad={() => {}}
-                    onClear={() => {}}
-                  />
-                )}
+                <style jsx>{`
+                  @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
 
-                {/* Page-like container for Quran text */}
-                <div className="p-1" style={{
-                  backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(0,0,0,.02) 25%, rgba(0,0,0,.02) 26%, transparent 27%, transparent 74%, rgba(0,0,0,.02) 75%, rgba(0,0,0,.02) 76%, transparent 77%, transparent)',
-                  backgroundSize: '50px 50px',
-                  pointerEvents: 'none'
-                }}>
+                  .mushaf-page-text {
+                    text-align-last: start;
+                  }
 
-                {/* Basmala for new Surahs */}
-                {currentSurah !== 1 && currentSurah !== 9 && currentMushafPage === 1 && (
-                  <div className="text-center text-3xl font-arabic text-gray-700 py-6 border-b mb-6">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                  </div>
-                )}
+                  .mushaf-page-content {
+                    text-align: justify;
+                    text-justify: kashida;
+                  }
 
-                {/* Quran Text Display - Mushaf Style */}
-                <div className="relative">
-                  <div
-                    className="text-center leading-loose px-4 bg-gradient-to-b from-white to-gray-50 rounded-lg"
-                    style={{
-                      ...getScriptStyling(selectedScript || 'uthmani-hafs'),
-                      pointerEvents: 'none'
-                    }}
-                  >
-                  <style jsx>{`
-                    @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap');
+                  .mushaf-scroll-container::-webkit-scrollbar {
+                    width: 10px;
+                  }
 
-                    .mushaf-page-text {
-                      text-align-last: start;
-                    }
+                  .mushaf-scroll-container::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 4px;
+                  }
 
-                    .mushaf-page-content {
-                      text-align: justify;
-                      text-justify: kashida;
-                    }
-                  `}</style>
+                  .mushaf-scroll-container::-webkit-scrollbar-thumb {
+                    background: #40826D;
+                    border-radius: 4px;
+                  }
 
-                  {(() => {
-                    // Get the current mushaf page data
-                    const pageData = getPageContent(currentMushafPage);
-                    if (!pageData) return <div>Loading page...</div>;
+                  .mushaf-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: #2d5f4e;
+                  }
+                `}</style>
 
-                    // Determine which ayahs to show based on real mushaf page
-                    let pageAyahs = [];
+                {(() => {
+                  // Render ALL 604 pages for continuous scrolling
+                  const totalPages = 604;
+                  const pagesToRender = Array.from({length: totalPages}, (_, i) => i + 1);
 
-                    if (pageData.surahStart === currentSurah && pageData.surahEnd === currentSurah) {
-                      // Current surah is entirely contained within this page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart && ayahNumber <= pageData.ayahEnd;
-                      });
-                    } else if (pageData.surahStart === currentSurah) {
-                      // Current surah starts on this page but continues on next page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber >= pageData.ayahStart;
-                      });
-                    } else if (pageData.surahEnd === currentSurah) {
-                      // Current surah ends on this page but started on previous page
-                      pageAyahs = quranText.ayahs.filter((ayah: any, idx: number) => {
-                        const ayahNumber = idx + 1;
-                        return ayahNumber <= pageData.ayahEnd;
-                      });
-                    } else if (pageData.surahsOnPage && pageData.surahsOnPage.includes(currentSurah)) {
-                      // Current surah is somewhere in the middle of this page
-                      // Show all ayahs of this surah
-                      pageAyahs = quranText.ayahs;
-                    }
+                  return pagesToRender.map((pageNum) => {
+                    // Get page content information
+                    const pageContent = getPageContent(pageNum);
+                    if (!pageContent) return null;
 
-                    // Calculate total page content length for DYNAMIC FONT SIZING
-                    // CRITICAL UX RULE: Everything must fit on screen WITHOUT SCROLLING
-                    const pageContent = pageAyahs.map((ayah: any) =>
-                      ayah.words.map((word: any) => word.text).join(' ')
-                    ).join(' ');
+                    const isCurrentPage = pageNum === currentMushafPage;
 
-                    // Render the page with traditional Mushaf formatting
-                    const scriptClass = `script-${selectedScript || 'uthmani-hafs'}`;
-                    return (
-                      <div className={`mushaf-page-content mushaf-text ${scriptClass}`} style={{
-                        position: 'relative',  // Enable absolute positioning for canvas overlay (matches StudentManagementDashboard)
-                        width: '38vw',  // NARROWER: More vertical/portrait-like proportions
-                        maxWidth: '480px',  // REDUCED: Traditional book page width
-                        minHeight: '65vh',  // INCREASED: Use available bottom space
-                        maxHeight: '72vh',  // INCREASED: Taller to look like a real page
-                        overflow: 'hidden',  // NO scrolling inside container
-                        margin: '0 auto',
-                        padding: '0.8rem 1rem',
-                        backgroundColor: '#FFFFFF',
-                        borderRadius: '8px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
-                        border: '2px solid #40826D',
-                        ...getDynamicScriptStyling(pageContent, selectedScript || 'uthmani-hafs'),  // DYNAMIC sizing - scales font based on page length
-                        transform: `scale(${zoomLevel / 100})`,
-                        transformOrigin: 'top center',
-                        textAlign: 'right',
-                        lineHeight: '1.5'  // Slightly more breathing room with vertical space
-                      }}>
-                        {pageAyahs.map((ayah: any, ayahIdx: any) => {
-                          const isFirstAyahOfSurah = ayah.number === 1;
-                          const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
-                          const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
-                          const ayahIndex = quranText.ayahs.indexOf(ayah);
-                          return (
-                            <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
-                              {shouldShowBismillah && (
-                                <div className="text-center mb-6 py-4" style={{ display: 'block', width: '100%' }}>
-                                  <img
-                                    src={BISMILLAH_BASE64}
-                                    alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-                                    style={{
-                                      display: 'block',
-                                      margin: '0 auto',
-                                      maxWidth: '90%',
-                                      height: 'auto',
-                                      maxHeight: '70px',
-                                      objectFit: 'contain'
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            <span className="inline relative group">
-                      {ayah.words.map((word: any, wordIndex: any) => {
-                        // Extract word text - handle both string and object formats
-                        const wordText = typeof word === 'string' ? word : (word.text || word);
+                    // Get all Surahs on this page
+                    const surahsOnThisPage = pageContent.surahsOnPage || [pageContent.surahStart];
 
-                        // Get ALL highlights for this word (multiple colors allowed)
-                        const wordHighlights = safeHighlights.filter(
-                          (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
-                        );
+                    // CRITICAL OPTIMIZATION: Check cache first
+                    const scriptId = selectedScript || 'uthmani-hafs';
 
-                        // CRITICAL FIX: If ANY highlight is completed, show ONLY gold (not gold + other colors)
-                        const hasCompletedHighlight = wordHighlights.some((h: any) => h.isCompleted);
-                        const mistakes = hasCompletedHighlight
-                          ? [{ id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' }]
-                          : wordHighlights.map((h: any) => mistakeTypes.find((m: any) => m.id === h.mistakeType)).filter(Boolean);
+                    // For pages with single Surah
+                    if (surahsOnThisPage.length === 1) {
+                      const surahNumber = surahsOnThisPage[0];
+                      const cacheKey = `${scriptId}-${surahNumber}`;
 
-                        return (
-                          <span
-                            key={`${ayahIndex}-${wordIndex}`}
-                            onClick={() => {
-                              // READ-ONLY: Only allow viewing notes, no highlighting
-                              console.log('🖱️ Word clicked, wordHighlights:', wordHighlights);
-                              if (wordHighlights.length > 0) {
-                                // Call handleHighlightClick to open notes conversation modal
-                                console.log('📌 Calling handleHighlightClick with:', wordHighlights[0].id);
-                                handleHighlightClick(wordHighlights[0].id);
-                              }
-                            }}
-                            className="inline cursor-pointer rounded transition-colors select-none"
-                            style={{
-                              position: 'relative',
-                              color: '#000000',  // ALWAYS black text, never change
-                              paddingLeft: '2px',    // Horizontal padding
-                              paddingRight: '2px',   // Horizontal padding
-                              lineHeight: '1.3',     // Line height
-                              display: 'inline',     // Inline display
-                              pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
-                              ...(highlightStyle === 'full' ? (
-                                // FULL BACKGROUND MODE (original)
-                                mistakes.length === 1 ? {
-                                  backgroundImage: `linear-gradient(${
-                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                  }, ${
-                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
-                                  })`,
-                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                  backgroundRepeat: 'no-repeat',
-                                  backgroundPosition: 'center'
-                                } : mistakes.length > 1 ? {
-                                  backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
-                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
-                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
-                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
-                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
-                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
-                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
-                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
-                                    const percent = (i * 100) / mistakes.length;
-                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
-                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
-                                  }).join(', ')})`,
-                                  backgroundSize: '100% 70%',  // 30% reduction in vertical height
-                                  backgroundRepeat: 'no-repeat',
-                                  backgroundPosition: 'center',
-                                  fontWeight: '600',
-                                  border: '1px solid rgba(0,0,0,0.15)'
-                                } : {}
-                              ) : (
-                                // UNDERLINE MODE (new)
-                                mistakes.length === 1 ? {
-                                  borderBottom: `3px solid ${
-                                    mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
-                                    mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
-                                    mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.9)' :
-                                    mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.9)' :
-                                    mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.9)' :
-                                    mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.9)' :
-                                    mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent'
-                                  }`,
-                                  paddingBottom: '2px'
-                                } : mistakes.length > 1 ? {
-                                  borderBottom: `3px solid`,
-                                  borderImage: `linear-gradient(to right, ${mistakes.map((m: any, i: any) => {
-                                    const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
-                                      m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
-                                      m.bgColor.includes('amber') ? 'rgba(180,83,9,0.9)' :
-                                      m.bgColor.includes('purple') ? 'rgba(147,51,234,0.9)' :
-                                      m.bgColor.includes('green') ? 'rgba(34,197,94,0.9)' :
-                                      m.bgColor.includes('orange') ? 'rgba(249,115,22,0.9)' :
-                                      m.bgColor.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent';
-                                    const percent = (i * 100) / mistakes.length;
-                                    const nextPercent = ((i + 1) * 100) / mistakes.length;
-                                    return `${color} ${percent}%, ${color} ${nextPercent}%`;
-                                  }).join(', ')}) 1`,
-                                  paddingBottom: '2px',
-                                  fontWeight: '600'
-                                } : {}
-                              ))
-                            }}
-                          >
-                            {wordText}{' '}
-                            {(() => {
-                              // Check if any highlight on this word has notes from database
-                              const hasNotes = wordHighlights.some((h: any) => {
-                                // Find database highlight by dbId
-                                const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
-                                // Check if it has notes array with items
-                                return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
-                              });
+                      // Check cache first
+                      const cachedSurah = surahCache[cacheKey];
+                      const isCacheValid = cachedSurah && cachedSurah.ayahs && cachedSurah.ayahs.length > 0 && cachedSurah.ayahs[0].surah !== undefined;
 
-                              if (hasNotes) {
-                                return (
-                                  <span
-                                    className="inline-flex items-center justify-center text-blue-500"
-                                    style={{
-                                      fontSize: '8px',
-                                      width: '12px',
-                                      height: '12px',
-                                      marginLeft: '1px',
-                                      verticalAlign: 'top',
-                                      position: 'relative',
-                                      top: '0px'
-                                    }}
-                                  >
-                                    <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </span>
-                        );
-                      })}
-                      {/* Ayah Number - Traditional Mushaf Style (Inline) */}
-                      <span
-                        className="inline-flex items-center justify-center mx-0.5"
-                        style={{
-                          width: '18px',  // Tiny inline circle
-                          height: '18px',
-                          borderRadius: '50%',
-                          background: 'rgba(64, 130, 109, 0.12)',  // Subtle teal background
-                          border: '1px solid rgba(64, 130, 109, 0.4)',  // Teal border
-                          color: '#000000',  // Black text
-                          fontSize: '9px',  // Very small text
-                          fontWeight: '500',
-                          boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
-                          verticalAlign: 'middle',  // Middle alignment
-                          display: 'inline-flex',
-                          fontFamily: 'sans-serif',  // Use regular font for numbers
-                          lineHeight: '1'  // Prevent line height issues
-                        }}
-                      >
-                        {ayah.number}
-                      </span>{' '}
-                            </span>
-                            </React.Fragment>
+                      if (!isCacheValid && isCurrentPage) {
+                        // Only attempt to load if this is the current page
+                        // For non-current pages, show placeholder until they become current
+                        console.log(`🔄 [CACHE MISS] Loading Surah ${surahNumber} for page ${pageNum}`);
+                      }
+
+                      // Collect ayahs for this page
+                      let pageAyahs: any[] = [];
+
+                      if (isCacheValid) {
+                        // Get ayahs from cache
+                        const surah = cachedSurah;
+
+                        if (pageContent.surahStart === pageContent.surahEnd) {
+                          // Single Surah on page
+                          pageAyahs = surah.ayahs.filter((ayah: any) =>
+                            ayah.number >= pageContent.ayahStart && ayah.number <= pageContent.ayahEnd
                           );
-                        })}
-                      </div>
-                    );
-                  })()}
-                  </div>
-                </div>
+                        }
 
-                {/* Page Navigation */}
-                <div className="mt-2 border-t pt-2" style={{ pointerEvents: 'auto' }}>
-                  <div className="flex items-center justify-center gap-4">
-                    {(() => {
-                      // Get current page content to determine Surah
-                      const currentPageContent = getPageContent(currentMushafPage);
-                      const currentSurahNumber = currentPageContent?.surahStart || 1;
+                        // Asynchronously load and cache this Surah
+                        if (!surahCache[cacheKey]) {
+                          getSurahByNumber(scriptId, surahNumber).then((surahData) => {
+                            if (surahData && surahData.ayahs) {
+                              setSurahCache((prev: any) => ({
+                                ...prev,
+                                [cacheKey]: surahData
+                              }));
+                              console.log(`✅ [CACHE LOADED] Surah ${surahNumber} for page ${pageNum}`);
+                            }
+                          }).catch((err) => {
+                            console.error(`❌ [CACHE ERROR] Failed to load Surah ${surahNumber}:`, err);
+                          });
+                        }
+                      }
 
-                      // For student dashboard: allow navigation through ALL 604 pages
-                      const firstPage = 1;
-                      const lastPage = 604;
+                      // Calculate page content for dynamic sizing
+                      const pageContentText = pageAyahs.map((ayah: any) =>
+                        ayah.words.map((word: any) => word.text || word).join(' ')
+                      ).join(' ');
 
-                      const isFirstPage = currentMushafPage <= firstPage;
-                      const isLastPage = currentMushafPage >= lastPage;
+                      const scriptClass = `script-${scriptId}`;
 
                       return (
-                        <>
-                          {/* Previous Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.max(firstPage, prev - 1))}
-                            disabled={isFirstPage}
-                            className={`p-2 ${isFirstPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Previous Page">
-                            <ChevronLeft className="w-5 h-5" />
-                          </button>
+                        <div
+                          key={pageNum}
+                          id={`mushaf-page-${pageNum}`}
+                          className={`mushaf-page-content mushaf-text ${scriptClass}`}
+                          style={{
+                            position: 'relative',  // CRITICAL: Enable absolute positioning for canvas overlay
+                            scrollSnapAlign: 'center',
+                            flexShrink: 0,
+                            width: '38vw',
+                            maxWidth: '480px',
+                            minHeight: '65vh',
+                            maxHeight: '72vh',
+                            overflow: 'hidden',
+                            margin: '0',
+                            marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,
+                            padding: '0.8rem 1rem',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '8px',
+                            boxShadow: isCurrentPage
+                              ? '0 12px 32px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(64, 130, 109, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3)'
+                              : '0 8px 24px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(64, 130, 109, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+                            border: '2px solid #40826D',
+                            opacity: isCurrentPage ? 1 : 0.7,
+                            transition: 'opacity 0.3s, box-shadow 0.3s, border 0.3s',
+                            ...getDynamicScriptStyling(pageContentText, scriptId),
+                            transform: `scale(${zoomLevel / 100})`,
+                            transformOrigin: 'top center',
+                            textAlign: 'right',
+                            lineHeight: '1.5'
+                          }}>
 
-                          {/* Page Info */}
-                          <div className="flex items-center gap-2">
-                            {/* Current Surah Badge */}
-                            {currentDisplaySurahs.length > 0 && (
-                              <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200">
-                                <Book className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm font-medium text-blue-700 font-arabic">
-                                  {currentDisplaySurahs.length === 1 ? (
-                                    <>سُورَةُ {currentDisplaySurahs[0]}</>
-                                  ) : (
-                                    <>سُورَةُ {currentDisplaySurahs.join('، ')}</>
-                                  )}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Page Number Badge */}
-                            <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
-                              <BookOpen className="w-4 h-4 text-green-600" />
-                              <span className="text-sm font-medium text-green-700">
-                                Page {currentMushafPage}
-                              </span>
+                          {/* Per-Page Pen Annotation Canvas - INSIDE page container */}
+                          {/* CRITICAL: Only render canvas for CURRENT page */}
+                          {studentInfo && studentInfo.teacherId && selectedScript && isCurrentPage && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              pointerEvents: 'none',
+                              zIndex: 1
+                            }}>
+                              <SimpleAnnotationCanvas
+                                studentId={studentInfo.id}
+                                teacherId={studentInfo.teacherId}
+                                pageNumber={pageNum}
+                                scriptId={selectedScript}
+                                enabled={false}
+                                containerRef={quranContainerRef}
+                                penColor={penColor}
+                                penWidth={penWidth}
+                                eraserMode={eraserMode}
+                                onSave={() => {}}
+                                onLoad={() => {}}
+                                onClear={() => {}}
+                              />
                             </div>
-                          </div>
+                          )}
 
-                          {/* Next Arrow - Just Icon */}
-                          <button
-                            onClick={() => setCurrentMushafPage((prev: any) => Math.min(lastPage, prev + 1))}
-                            disabled={isLastPage}
-                            className={`p-2 ${isLastPage ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'} text-white rounded-full shadow-sm transition`}
-                            title="Next Page">
-                            <ChevronRight className="w-5 h-5" />
-                          </button>
-                        </>
+                            {pageAyahs.map((ayah: any, ayahIdx: any) => {
+                              // Detect if this is the first ayah of a NEW Surah
+                              const isFirstAyahOfSurah = ayah.number === 1;
+                              const isNewSurah = ayahIdx === 0 || pageAyahs[ayahIdx - 1].surah !== ayah.surah;
+                              const shouldShowBismillah = isFirstAyahOfSurah && isNewSurah && ayah.surah !== 9;
+
+                              // CRITICAL FIX: ayahIndex should be the actual position in the CURRENT SURAH
+                              // Not the position in pageAyahs, because highlights are stored relative to surah
+                              const ayahIndex = ayah.number - 1; // Zero-based index within its surah
+
+                              return (
+                                <React.Fragment key={`ayah-${ayah.surah || currentSurah}-${ayah.number}-${ayahIdx}`}>
+                                  {/* Display Bismillah before each NEW Surah (except Surah 9) */}
+                                  {shouldShowBismillah && (
+                                    <div className="text-center mb-6 py-4" style={{ display: 'block', width: '100%' }}>
+                                      <img
+                                        src={BISMILLAH_BASE64}
+                                        alt="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                                        style={{
+                                          display: 'block',
+                                          margin: '0 auto',
+                                          maxWidth: '90%',
+                                          height: 'auto',
+                                          maxHeight: '70px',
+                                          objectFit: 'contain'
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                <span className="inline relative group">
+                          {ayah.words.map((word: any, wordIndex: any) => {
+                            // Extract word text
+                            const wordText = typeof word === 'string' ? word : (word.text || word);
+
+                            // Get ALL highlights for this word
+                            const wordHighlights = safeHighlights.filter(
+                              (h: any) => h.ayahIndex === ayahIndex && h.wordIndex === wordIndex
+                            );
+
+                            // CRITICAL FIX: If ANY highlight is completed, show ONLY gold (not gold + other colors)
+                            const hasCompletedHighlight = wordHighlights.some((h: any) => h.isCompleted);
+                            const mistakes = hasCompletedHighlight
+                              ? [{ id: 'completed', name: 'Completed', color: 'gold', bgColor: 'bg-yellow-400', textColor: 'text-yellow-900' }]
+                              : wordHighlights.map((h: any) => mistakeTypes.find((m: any) => m.id === h.mistakeType)).filter(Boolean);
+
+                            return (
+                              <span
+                                key={`${ayahIndex}-${wordIndex}`}
+                                onClick={() => {
+                                  // READ-ONLY: Only allow viewing notes, no highlighting
+                                  if (wordHighlights.length > 0) {
+                                    handleHighlightClick(wordHighlights[0].id);
+                                  }
+                                }}
+                                className="inline cursor-pointer rounded transition-colors select-none"
+                                style={{
+                                  position: 'relative',
+                                  color: '#000000',
+                                  paddingLeft: '2px',
+                                  paddingRight: '2px',
+                                  lineHeight: '1.3',
+                                  display: 'inline',
+                                  pointerEvents: 'auto',
+                                  // CONDITIONAL STYLING: Full background vs Underline based on highlightStyle state
+                                  ...(highlightStyle === 'full' ? (
+                                    // FULL BACKGROUND MODE
+                                    mistakes.length === 1 ? {
+                                      backgroundImage: `linear-gradient(${
+                                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                      }, ${
+                                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.3)' :
+                                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.3)' : 'transparent'
+                                      })`,
+                                      backgroundSize: '100% 70%',
+                                      backgroundRepeat: 'no-repeat',
+                                      backgroundPosition: 'center'
+                                    } : mistakes.length > 1 ? {
+                                      backgroundImage: `linear-gradient(135deg, ${mistakes.map((m: any, i: any) => {
+                                        const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.6)' :
+                                          m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.4)' :
+                                          m.bgColor.includes('amber') ? 'rgba(180,83,9,0.4)' :
+                                          m.bgColor.includes('purple') ? 'rgba(147,51,234,0.4)' :
+                                          m.bgColor.includes('green') ? 'rgba(34,197,94,0.4)' :
+                                          m.bgColor.includes('orange') ? 'rgba(249,115,22,0.4)' :
+                                          m.bgColor.includes('red') ? 'rgba(239,68,68,0.4)' : 'transparent';
+                                        const percent = (i * 100) / mistakes.length;
+                                        const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                        return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                      }).join(', ')})`,
+                                      backgroundSize: '100% 70%',
+                                      backgroundRepeat: 'no-repeat',
+                                      backgroundPosition: 'center',
+                                      fontWeight: '600',
+                                      border: '1px solid rgba(0,0,0,0.15)'
+                                    } : {}
+                                  ) : (
+                                    // UNDERLINE MODE
+                                    mistakes.length === 1 ? {
+                                      borderBottom: `3px solid ${
+                                        mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                        mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                                        mistakes[0]?.bgColor?.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                                        mistakes[0]?.bgColor?.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                                        mistakes[0]?.bgColor?.includes('green') ? 'rgba(34,197,94,0.9)' :
+                                        mistakes[0]?.bgColor?.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                                        mistakes[0]?.bgColor?.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent'
+                                      }`,
+                                      paddingBottom: '2px'
+                                    } : mistakes.length > 1 ? {
+                                      borderBottom: `3px solid`,
+                                      borderImage: `linear-gradient(to right, ${mistakes.map((m: any, i: any) => {
+                                        const color = m.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
+                                          m.bgColor === 'bg-yellow-400' ? 'rgba(250,204,21,0.9)' :
+                                          m.bgColor.includes('amber') ? 'rgba(180,83,9,0.9)' :
+                                          m.bgColor.includes('purple') ? 'rgba(147,51,234,0.9)' :
+                                          m.bgColor.includes('green') ? 'rgba(34,197,94,0.9)' :
+                                          m.bgColor.includes('orange') ? 'rgba(249,115,22,0.9)' :
+                                          m.bgColor.includes('red') ? 'rgba(239,68,68,0.9)' : 'transparent';
+                                        const percent = (i * 100) / mistakes.length;
+                                        const nextPercent = ((i + 1) * 100) / mistakes.length;
+                                        return `${color} ${percent}%, ${color} ${nextPercent}%`;
+                                      }).join(', ')}) 1`,
+                                      paddingBottom: '2px',
+                                      fontWeight: '600'
+                                    } : {}
+                                  ))
+                                }}
+                              >
+                                {wordText}{' '}
+                                {(() => {
+                                  // Check if any highlight on this word has notes from database
+                                  const hasNotes = wordHighlights.some((h: any) => {
+                                    const dbHighlight = dbHighlights?.find((dbH: any) => dbH.id === h.dbId);
+                                    return dbHighlight && dbHighlight.notes && dbHighlight.notes.length > 0;
+                                  });
+
+                                  if (hasNotes) {
+                                    return (
+                                      <span
+                                        className="inline-flex items-center justify-center text-blue-500"
+                                        style={{
+                                          fontSize: '8px',
+                                          width: '12px',
+                                          height: '12px',
+                                          marginLeft: '1px',
+                                          verticalAlign: 'top',
+                                          position: 'relative',
+                                          top: '0px'
+                                        }}
+                                      >
+                                        <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
+                                      </span>
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                              </span>
+                            );
+                          })}
+                          {/* Ayah Number - Traditional Mushaf Style (Inline) */}
+                          <span
+                            className="inline-flex items-center justify-center mx-0.5"
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              borderRadius: '50%',
+                              background: 'rgba(64, 130, 109, 0.12)',
+                              border: '1px solid rgba(64, 130, 109, 0.4)',
+                              color: '#000000',
+                              fontSize: '9px',
+                              fontWeight: '500',
+                              boxShadow: '0 0.5px 1px rgba(0,0,0,0.1)',
+                              verticalAlign: 'middle',
+                              display: 'inline-flex',
+                              fontFamily: 'sans-serif',
+                              lineHeight: '1'
+                            }}
+                          >
+                            {ayah.number}
+                          </span>{' '}
+                                </span>
+                                </React.Fragment>
+                              );
+                            })}
+                        </div>
                       );
-                    })()}
-                  </div>
-                </div>
-                </div>
+                    } else {
+                      // Pages with multiple Surahs - need to handle differently
+                      // For now, show placeholder for multi-surah pages
+                      return (
+                        <div
+                          key={pageNum}
+                          id={`mushaf-page-${pageNum}`}
+                          className="mushaf-page-content"
+                          style={{
+                            position: 'relative',
+                            scrollSnapAlign: 'center',
+                            flexShrink: 0,
+                            width: '38vw',
+                            maxWidth: '480px',
+                            minHeight: '65vh',
+                            maxHeight: '72vh',
+                            overflow: 'hidden',
+                            margin: '0',
+                            marginBottom: `calc(65vh * (${zoomLevel / 100} - 1))`,
+                            padding: '0.8rem 1rem',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '8px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                            border: '2px solid #40826D',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                          <div className="text-gray-400 text-center">
+                            Page {pageNum}<br />
+                            <span className="text-xs">Multiple Surahs</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                  });
+                })()}
               </div>
             </div>
 
