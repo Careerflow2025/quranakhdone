@@ -390,65 +390,87 @@ export default function SchoolDashboard() {
 
   // Transform highlights from database format to UI format
   useEffect(() => {
-    if (!dbHighlights || !quranText.ayahs || quranText.ayahs.length === 0) {
+    console.log('🔄 Transform: Starting highlight transform', {
+      dbHighlightsCount: dbHighlights?.length || 0,
+      currentPage: currentMushafPage,
+      quranTextAyahs: quranText.ayahs.length
+    });
+
+    if (!dbHighlights || dbHighlights.length === 0) {
+      console.log('⚠️ Transform: No dbHighlights to transform');
       setHighlights([]);
       return;
     }
 
-    // Get current page data
-    const pageData = getPageContent(currentMushafPage);
-    if (!pageData) return;
-
     // Transform highlights to UI format with ayahIndex and wordIndex
     const pageHighlights: any[] = [];
+    let filteredCount = 0;
 
     dbHighlights.forEach((dbHighlight: any) => {
-      // Only show highlights for current surah
-      if (dbHighlight.surah === currentSurah) {
-        // Full ayah highlight (word_start and word_end are null)
-        if (dbHighlight.word_start === null || dbHighlight.word_start === undefined) {
-          // Find all words in this ayah range
-          for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
-            const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === ayahNum);
-            if (ayahIndex >= 0) {
-              const ayah = quranText.ayahs[ayahIndex];
-              const wordCount = ayah.words?.length || 0;
+      // CRITICAL FIX: Show ALL highlights on ALL pages (scrolling model)
+      // Removed: if (dbHighlight.surah === currentSurah) - this was hiding highlights on other surahs
 
-              // Highlight all words in this ayah
-              for (let wordIndex = 0; wordIndex < wordCount; wordIndex++) {
-                pageHighlights.push({
-                  id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
-                  dbId: dbHighlight.id,
-                  ayahIndex,
-                  wordIndex,
-                  mistakeType: dbHighlight.type,
-                  color: dbHighlight.color,
-                  surahNumber: dbHighlight.surah,
-                  ayahNumber: ayahNum,
-                  isCompleted: dbHighlight.status === 'gold',
-                  status: dbHighlight.status,
-                  isFullAyah: true
-                });
-              }
-            }
+      // Check if word indices are specified (word-level highlight)
+      if (dbHighlight.word_start !== null && dbHighlight.word_start !== undefined &&
+          dbHighlight.word_end !== null && dbHighlight.word_end !== undefined) {
+        // Word-level highlight: only highlight specific words
+        // CRITICAL FIX: Match BOTH surah AND ayah to prevent cross-surah matches
+        const ayahIndex = quranText.ayahs.findIndex((a: any) =>
+          a.number === dbHighlight.ayah_start && a.surah === dbHighlight.surah
+        );
+
+        if (ayahIndex === -1) {
+          filteredCount++;
+          return;
+        }
+
+        for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
+          pageHighlights.push({
+            id: `${dbHighlight.id}-${wordIndex}`,
+            dbId: dbHighlight.id,
+            ayahIndex,
+            wordIndex,
+            mistakeType: dbHighlight.type || dbHighlight.color,
+            color: dbHighlight.color,
+            surahNumber: dbHighlight.surah,
+            ayahNumber: dbHighlight.ayah_start,
+            timestamp: dbHighlight.created_at,
+            isCompleted: dbHighlight.completed_at !== null,
+            status: dbHighlight.status,
+            isFullAyah: false
+          });
+        }
+      } else {
+        // Full ayah highlight (word_start and word_end are NULL)
+        // Create highlight for each word in the ayah so they all show color
+        for (let ayahNum = dbHighlight.ayah_start; ayahNum <= dbHighlight.ayah_end; ayahNum++) {
+          // CRITICAL FIX: Match BOTH surah AND ayah to prevent cross-surah matches
+          const ayahIndex = quranText.ayahs.findIndex((a: any) =>
+            a.number === ayahNum && a.surah === dbHighlight.surah
+          );
+
+          if (ayahIndex === -1) {
+            filteredCount++;
+            continue;
           }
-        } else {
-          // Single word or word range highlight
-          const ayahIndex = quranText.ayahs.findIndex((a: any) => a.number === dbHighlight.ayah_start);
-          if (ayahIndex >= 0) {
-            for (let wordIndex = dbHighlight.word_start; wordIndex <= dbHighlight.word_end; wordIndex++) {
+
+          const ayah = quranText.ayahs[ayahIndex];
+          if (ayah && ayah.words) {
+            const ayahWords = ayah.words.length;
+            for (let wordIndex = 0; wordIndex < ayahWords; wordIndex++) {
               pageHighlights.push({
-                id: `${dbHighlight.id}-${ayahIndex}-${wordIndex}`,
+                id: `${dbHighlight.id}-${wordIndex}`,
                 dbId: dbHighlight.id,
                 ayahIndex,
                 wordIndex,
-                mistakeType: dbHighlight.type,
+                mistakeType: dbHighlight.type || dbHighlight.color,
                 color: dbHighlight.color,
                 surahNumber: dbHighlight.surah,
-                ayahNumber: dbHighlight.ayah_start,
-                isCompleted: dbHighlight.status === 'gold',
+                ayahNumber: ayahNum,
+                timestamp: dbHighlight.created_at,
+                isCompleted: dbHighlight.completed_at !== null,
                 status: dbHighlight.status,
-                isFullAyah: false
+                isFullAyah: true
               });
             }
           }
@@ -456,8 +478,14 @@ export default function SchoolDashboard() {
       }
     });
 
+    console.log('✅ Transform: Complete', {
+      totalDB: dbHighlights.length,
+      rendered: pageHighlights.length,
+      filtered: filteredCount
+    });
+
     setHighlights(pageHighlights);
-  }, [dbHighlights, currentMushafPage, quranText, currentSurah]);
+  }, [dbHighlights, currentMushafPage, quranText]);
 
   // Safety check for backward compatibility: use highlights if available, otherwise dbHighlights
   const studentSafeHighlights = highlights.length > 0 ? highlights : (dbHighlights || []);
@@ -4664,8 +4692,8 @@ export default function SchoolDashboard() {
                             }).filter(Boolean);
 
                             return (
+                              <React.Fragment key={`${ayahIndex}-${wordIndex}`}>
                               <span
-                                key={`${ayahIndex}-${wordIndex}`}
                                 onClick={() => {
                                   if (wordHighlights.length > 0) {
                                     handleHighlightClick(wordHighlights[0].id);
@@ -4784,6 +4812,9 @@ export default function SchoolDashboard() {
                                   return null;
                                 })()}
                               </span>
+                              {/* CRITICAL FIX: Space OUTSIDE span so it's NOT included in highlight background */}
+                              {wordIndex < ayah.words.length - 1 ? ' ' : ''}
+                              </React.Fragment>
                             );
                           })}
                           {/* Ayah Number - Traditional Mushaf Style (Inline) */}
