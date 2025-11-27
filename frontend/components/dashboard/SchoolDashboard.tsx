@@ -577,11 +577,28 @@ export default function SchoolDashboard() {
   // Handle clicking on a highlight to view notes (read-only for school admin)
   const handleHighlightClick = (highlightId: string) => {
     console.log('👁️ School admin viewing highlight:', highlightId);
+    console.log('📊 Total highlights in array:', highlights.length);
+
     // Find the database ID from the UI highlight ID
     const highlight = highlights.find((h: any) => h.id === highlightId);
+    console.log('🔍 Found highlight:', highlight ? 'YES' : 'NO');
+
+    if (highlight) {
+      console.log('🆔 Highlight dbId:', highlight.dbId);
+      console.log('📝 Highlight details:', {
+        id: highlight.id,
+        dbId: highlight.dbId,
+        surah: highlight.surahNumber,
+        ayah: highlight.ayahNumber
+      });
+    }
+
     if (highlight && highlight.dbId) {
+      console.log('✅ Opening modal with dbId:', highlight.dbId);
       setSelectedHighlightForNotes(highlight.dbId);
       setShowNotesModal(true);
+    } else {
+      console.error('❌ Cannot open modal - missing highlight or dbId');
     }
   };
 
