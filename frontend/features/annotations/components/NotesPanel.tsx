@@ -444,27 +444,29 @@ export default function NotesPanel({
             {notes.map((note) => {
               const isCurrentUser = currentUser && note.author_user_id === currentUser.user_id;
               const isReply = note.parent_note_id !== null;
+              // ROLE-BASED COLORS: Teacher (blue) vs Student (green)
+              const isTeacher = note.author_role === 'teacher';
+              const messageAlignment = isCurrentUser ? 'justify-end' : 'justify-start';
+              const messageBgColor = isTeacher
+                ? 'bg-blue-500 text-white'
+                : 'bg-emerald-500 text-white';
 
               return (
                 <div
                   key={note.id}
-                  className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${messageAlignment}`}
                   style={{ marginLeft: isReply ? `${note.depth * 16}px` : '0' }}
                 >
                   <div
-                    className={`max-w-[75%] rounded-lg p-3 ${
-                      isCurrentUser
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-white text-gray-800 border border-gray-200'
-                    }`}
+                    className={`max-w-[75%] rounded-lg p-3 ${messageBgColor}`}
                   >
-                    {/* Author name */}
+                    {/* Author name and role */}
                     <div className="flex items-center gap-1 mb-1">
-                      <User className={`w-3 h-3 ${isCurrentUser ? 'text-emerald-100' : 'text-gray-500'}`} />
-                      <span className={`text-xs font-medium ${isCurrentUser ? 'text-emerald-100' : 'text-gray-600'}`}>
-                        {isCurrentUser ? 'You' : note.author_name}
+                      <User className="w-3 h-3 text-white/80" />
+                      <span className="text-xs font-medium text-white/90">
+                        {note.author_name || 'Unknown'}
                       </span>
-                      <span className={`text-xs ${isCurrentUser ? 'text-emerald-100' : 'text-gray-500'}`}>
+                      <span className="text-xs text-white/70">
                         ({note.author_role})
                       </span>
                     </div>
@@ -477,18 +479,14 @@ export default function NotesPanel({
                     )}
 
                     {note.type === 'audio' && note.audio_url && (
-                      <div className={`flex items-center gap-2 rounded-lg p-3 min-w-[280px] ${
-                        isCurrentUser ? 'bg-white/20' : 'bg-gray-50'
-                      }`}>
-                        <Volume2 className={`w-5 h-5 flex-shrink-0 ${
-                          isCurrentUser ? 'text-white' : 'text-emerald-600'
-                        }`} />
+                      <div className="flex items-center gap-2 rounded-lg p-3 min-w-[280px] bg-white/20">
+                        <Volume2 className="w-5 h-5 flex-shrink-0 text-white" />
                         <audio
                           controls
                           className="flex-1"
                           style={{
                             height: '40px',
-                            filter: isCurrentUser ? 'invert(1) brightness(2)' : 'none'
+                            filter: 'invert(1) brightness(2)'
                           }}
                         >
                           <source src={note.audio_url} type="audio/webm" />
@@ -501,9 +499,7 @@ export default function NotesPanel({
                     )}
 
                     {/* Timestamp and reply button */}
-                    <div className={`flex items-center justify-between gap-2 mt-2 text-xs ${
-                      isCurrentUser ? 'text-emerald-100' : 'text-gray-500'
-                    }`}>
+                    <div className="flex items-center justify-between gap-2 mt-2 text-xs text-white/70">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         <span>{new Date(note.created_at).toLocaleTimeString('en-US', {
@@ -516,7 +512,7 @@ export default function NotesPanel({
                       {!isCurrentUser && (
                         <button
                           onClick={() => setReplyingTo(note.id)}
-                          className="text-xs underline hover:no-underline text-emerald-600"
+                          className="text-xs underline hover:no-underline text-white"
                         >
                           Reply {note.reply_count > 0 && `(${note.reply_count})`}
                         </button>
