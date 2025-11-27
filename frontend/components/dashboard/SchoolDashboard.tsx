@@ -532,15 +532,34 @@ export default function SchoolDashboard() {
       const highlightWithNotes = dbHighlights.find((h: any) => h.id === selectedHighlightForNotes);
 
       if (highlightWithNotes) {
+        // CRITICAL FIX: Build combined ayahs array from ALL cached surahs + quranText
+        // This ensures we can find ayahs from ANY cached surah, not just currently loaded one
+        const allAyahsForConversation: any[] = [];
+        Object.keys(surahCache).forEach(cacheKey => {
+          const cachedSurah = surahCache[cacheKey];
+          if (cachedSurah && cachedSurah.ayahs && Array.isArray(cachedSurah.ayahs)) {
+            allAyahsForConversation.push(...cachedSurah.ayahs);
+          }
+        });
+        if (quranText && quranText.ayahs && Array.isArray(quranText.ayahs)) {
+          quranText.ayahs.forEach(qa => {
+            const exists = allAyahsForConversation.some(a => a.surah === qa.surah && a.number === qa.number);
+            if (!exists) allAyahsForConversation.push(qa);
+          });
+        }
+
         // Get highlighted text from Quran
         let highlightedText = '';
         let wordRange = '';
 
-        if (quranText && quranText.ayahs && quranText.ayahs.length > 0) {
+        if (allAyahsForConversation.length > 0) {
           // Full ayah highlight
           if (highlightWithNotes.word_start === null || highlightWithNotes.word_start === undefined) {
-            const ayahsInRange = quranText.ayahs.filter((a: any) =>
-              a.number >= highlightWithNotes.ayah_start && a.number <= highlightWithNotes.ayah_end
+            // CRITICAL FIX: Match BOTH surah AND ayah number
+            const ayahsInRange = allAyahsForConversation.filter((a: any) =>
+              a.surah === highlightWithNotes.surah &&
+              a.number >= highlightWithNotes.ayah_start &&
+              a.number <= highlightWithNotes.ayah_end
             );
             highlightedText = ayahsInRange.map((a: any) => a.text).join(' ');
             wordRange = highlightWithNotes.ayah_start === highlightWithNotes.ayah_end
@@ -548,7 +567,10 @@ export default function SchoolDashboard() {
               : `Full Ayahs ${highlightWithNotes.ayah_start}-${highlightWithNotes.ayah_end}`;
           } else {
             // Word-level highlight
-            const ayah = quranText.ayahs.find((a: any) => a.number === highlightWithNotes.ayah_start);
+            // CRITICAL FIX: Match BOTH surah AND ayah number
+            const ayah = allAyahsForConversation.find((a: any) =>
+              a.surah === highlightWithNotes.surah && a.number === highlightWithNotes.ayah_start
+            );
             if (ayah && ayah.words) {
               const words = ayah.words.slice(highlightWithNotes.word_start, highlightWithNotes.word_end + 1);
               highlightedText = words.map((w: any) => typeof w === 'string' ? w : w.text).join(' ');
@@ -578,7 +600,7 @@ export default function SchoolDashboard() {
         console.error('❌ Highlight not found in dbHighlights');
       }
     }
-  }, [selectedHighlightForNotes, dbHighlights, quranText]);
+  }, [selectedHighlightForNotes, dbHighlights, quranText, surahCache]);
 
   // Fetch teacher for the viewing student (for pen annotations)
   useEffect(() => {
@@ -4847,20 +4869,9 @@ export default function SchoolDashboard() {
 
                                   if (hasNotes) {
                                     return (
-                                      <span
-                                        className="inline-flex items-center justify-center text-blue-500"
-                                        style={{
-                                          fontSize: '8px',
-                                          width: '12px',
-                                          height: '12px',
-                                          marginLeft: '1px',
-                                          verticalAlign: 'top',
-                                          position: 'relative',
-                                          top: '0px'
-                                        }}
-                                      >
-                                        <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
-                                      </span>
+                                      <sup className="text-blue-500 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                        <MessageSquare className="w-2.5 h-2.5 inline" />
+                                      </sup>
                                     );
                                   }
                                   return null;
