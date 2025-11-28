@@ -17,6 +17,8 @@ interface Note {
   created_at: string;
   reply_count: number;
   depth: number;
+  seen_at: string | null;
+  seen_by: string | null;
 }
 
 interface NotesPanelProps {
@@ -171,6 +173,67 @@ export default function NotesPanel({
     }, 10000);
     return () => clearInterval(interval);
   }, [highlightId]);
+
+  // Auto-mark messages as seen (WhatsApp-style read receipts)
+  useEffect(() => {
+    if (!notes || notes.length === 0 || !currentUser) return;
+
+    const markMessagesAsSeen = async () => {
+      // Find unread messages from other users
+      const unseenMessages = notes.filter(note =>
+        note.author_user_id !== currentUser.user_id &&
+        !note.seen_at
+      );
+
+      if (unseenMessages.length === 0) return;
+
+      console.log(`📬 Marking ${unseenMessages.length} messages as seen...`);
+
+      try {
+        // Get auth session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('❌ No session available for marking messages');
+          return;
+        }
+
+        // Mark each unseen message
+        const promises = unseenMessages.map(note =>
+          fetch(`/api/highlights/${highlightId}/notes/${note.id}/mark-seen`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+        );
+
+        const results = await Promise.allSettled(promises);
+
+        // Log results
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+
+        console.log(`✅ Marked ${succeeded} messages as seen`);
+        if (failed > 0) {
+          console.error(`❌ Failed to mark ${failed} messages as seen`);
+        }
+
+        // Refresh thread to show updated status
+        if (succeeded > 0) {
+          setTimeout(() => load(), 1000); // Delay refresh to ensure DB update
+        }
+
+      } catch (err) {
+        console.error('❌ Error in mark-as-seen batch operation:', err);
+      }
+    };
+
+    // Delay marking to ensure user actually viewed the conversation (500ms)
+    const timer = setTimeout(markMessagesAsSeen, 500);
+
+    return () => clearTimeout(timer);
+  }, [notes, currentUser, highlightId]);
 
   // Add note or reply
   async function add() {
@@ -506,6 +569,27 @@ export default function NotesPanel({
                           hour: 'numeric',
                           minute: '2-digit'
                         })}</span>
+
+                        {/* WhatsApp-style Read Receipts - Only for current user's messages */}
+                        {isCurrentUser && (
+                          <div className="flex items-center gap-0.5 ml-2">
+                            {note.seen_at && note.seen_by ? (
+                              <>
+                                {/* Double checkmark - blue (seen) */}
+                                <CheckCircle className="w-3 h-3 text-blue-300" strokeWidth={2.5} />
+                                <CheckCircle className="w-3 h-3 text-blue-300 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-blue-300 ml-1">Seen</span>
+                              </>
+                            ) : (
+                              <>
+                                {/* Double checkmark - gray (sent) */}
+                                <CheckCircle className="w-3 h-3 text-white/50" strokeWidth={2.5} />
+                                <CheckCircle className="w-3 h-3 text-white/50 -ml-1.5" strokeWidth={2.5} />
+                                <span className="text-white/50 ml-1">Sent</span>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Reply button - only show for messages from OTHER users */}
