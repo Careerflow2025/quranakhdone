@@ -3226,15 +3226,6 @@ export default function SchoolDashboard() {
   // Component UI render
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Hamburger Menu Button - Mobile Only */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 rounded-lg bg-white shadow-lg hover:bg-gray-50 active:scale-95 transition-all touch-manipulation"
-        aria-label="Open menu"
-      >
-        <Menu className="w-6 h-6 text-gray-700" />
-      </button>
-
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -3584,10 +3575,22 @@ export default function SchoolDashboard() {
         {/* Header */}
         <header className="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between relative">
-            {/* Dashboard title - hidden on small mobile, visible on sm+ */}
-            <h1 className="hidden sm:block text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
-              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            </h1>
+            {/* Mobile: Hamburger menu on left | Desktop: Title on left */}
+            <div className="flex items-center">
+              {/* Hamburger Menu - Mobile only */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="sm:hidden p-2 rounded-lg hover:bg-gray-50 active:scale-95 transition-all touch-manipulation mr-2"
+                aria-label="Open menu"
+              >
+                <Menu className="w-6 h-6 text-gray-700" />
+              </button>
+
+              {/* Dashboard title - hidden on small mobile, visible on sm+ */}
+              <h1 className="hidden sm:block text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              </h1>
+            </div>
 
             {/* Center - QuranAkh Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center hidden lg:flex pointer-events-none">
@@ -3598,10 +3601,12 @@ export default function SchoolDashboard() {
               />
             </div>
 
+            {/* Right side: Bell + Logo (Mobile) | Refresh + Bell + Logo (Desktop) */}
             <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+              {/* Refresh button - hidden on mobile, visible on sm+ */}
               <button
                 onClick={refreshData}
-                className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
+                className="hidden sm:flex p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
                 title="Refresh Data"
               >
                 <RefreshCw className="w-5 h-5 md:w-6 md:h-6" />
