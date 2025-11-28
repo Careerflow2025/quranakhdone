@@ -127,6 +127,16 @@ export interface Note {
   audio_url?: string;
   created_at: string;
   author?: Profile;
+  // WhatsApp-style read receipts
+  seen_at?: string | null;
+  seen_by?: string | null;
+  // Threaded conversation support (NotesPanel compatibility)
+  parent_note_id?: string | null;
+  author_name?: string;
+  author_role?: string;
+  visible_to_parent?: boolean;
+  reply_count?: number;
+  depth?: number;
 }
 
 // Assignment Types
