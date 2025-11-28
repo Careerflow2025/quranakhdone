@@ -259,18 +259,18 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-lg mb-3">
-                    <Icon className="w-6 h-6 text-emerald-600" />
+                <div key={index} className="text-center p-3 md:p-0">
+                  <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-emerald-100 rounded-lg mb-2 md:mb-3">
+                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
                   </div>
-                  <div className="text-3xl font-bold text-gray-900">{stat.number}</div>
-                  <div className="text-gray-600">{stat.label}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900">{stat.number}</div>
+                  <div className="text-xs md:text-sm text-gray-600">{stat.label}</div>
                 </div>
               );
             })}
@@ -279,30 +279,30 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-20 px-4">
+      <section id="features" className="py-12 md:py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Everything You Need in One Platform
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Built specifically for Quran education with features that actually matter
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={index}
-                  className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                  className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                 >
-                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} mb-5`}>
-                    <Icon className="w-7 h-7 text-white" />
+                  <div className={`inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-r ${feature.color} mb-4 md:mb-5`}>
+                    <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 md:mb-3">{feature.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
                 </div>
               );
             })}
@@ -311,18 +311,18 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-gradient-to-b from-emerald-50 to-white">
+      <section id="how-it-works" className="py-12 md:py-20 bg-gradient-to-b from-emerald-50 to-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Get Started in 3 Simple Steps
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg md:text-xl text-gray-600">
               Join thousands of schools already using QuranAkh
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 step: '1',
@@ -344,13 +344,13 @@ export default function HomePage() {
               }
             ].map((item, index) => (
               <div key={index} className="relative">
-                <div className="bg-white rounded-2xl p-8 shadow-lg h-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full text-2xl font-bold mb-6">
+                <div className="bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg h-full">
+                  <div className="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-emerald-100 text-emerald-600 rounded-full text-xl md:text-2xl font-bold mb-4 md:mb-6">
                     {item.step}
                   </div>
-                  <item.icon className="w-12 h-12 text-emerald-600 mb-4" />
-                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
+                  <item.icon className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 mb-3 md:mb-4" />
+                  <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">{item.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600">{item.description}</p>
                 </div>
                 {index < 2 && (
                   <ChevronRight className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-emerald-300" />
@@ -464,7 +464,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">

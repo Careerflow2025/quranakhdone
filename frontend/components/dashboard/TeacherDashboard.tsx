@@ -437,9 +437,9 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-4 sm:px-6 lg:px-8">
-          <nav className="flex justify-center space-x-8 overflow-x-auto">
+        {/* Tab Navigation - Mobile Scrollable */}
+        <div className="px-2 sm:px-6 lg:px-8">
+          <nav className="flex justify-start md:justify-center space-x-4 md:space-x-8 overflow-x-auto pb-px scrollbar-hide -mx-2 px-2">
             {tabs.map((tab: any) => {
               const sectionId = tabToSection[tab];
               const hasNotifications = getSectionCount(sectionId) > 0;
@@ -453,13 +453,13 @@ export default function TeacherDashboard() {
                     }
                     setActiveTab(tab);
                   }}
-                  className={`relative py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                  className={`relative py-3 md:py-4 px-3 md:px-1 border-b-2 font-medium text-xs md:text-sm whitespace-nowrap ${
                     activeTab === tab
                       ? 'border-blue-600 text-blue-600'
                       : hasNotifications
                       ? 'border-blue-300 text-blue-500 hover:text-blue-700 hover:border-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  } touch-manipulation`}
                 >
                   <span className="relative inline-block">
                     {tab.charAt(0).toUpperCase() + tab.slice(1).replace(' ', ' ')}
@@ -509,21 +509,21 @@ export default function TeacherDashboard() {
 
             {/* Premium Stats Cards */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
 
               {/* Total Students Card */}
               <div
                 onClick={() => setActiveTab('students')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-blue-500 overflow-hidden cursor-pointer touch-manipulation">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative flex flex-col space-y-4">
+                <div className="relative flex flex-col space-y-3 md:space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
-                      <Users className="w-8 h-8 text-blue-600" />
+                    <div className="p-2 md:p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
+                      <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalStudents}</p>
+                      <p className="text-xs md:text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
+                      <p className="text-3xl md:text-5xl font-bold text-slate-900 mt-1 md:mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalStudents}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"></div>
@@ -533,7 +533,7 @@ export default function TeacherDashboard() {
               {/* Total Assignments Card */}
               <div
                 onClick={() => setActiveTab('assignments')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer touch-manipulation">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
@@ -551,8 +551,8 @@ export default function TeacherDashboard() {
 
               {/* My Classes Card */}
               <div
-                onClick={() => setActiveTab('classes')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden cursor-pointer">
+                onClick={() => setActiveTab('my classes')}
+                className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-indigo-500 overflow-hidden cursor-pointer touch-manipulation">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
@@ -571,7 +571,7 @@ export default function TeacherDashboard() {
               {/* Total Homework Card */}
               <div
                 onClick={() => setActiveTab('homework')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer touch-manipulation">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
@@ -590,7 +590,7 @@ export default function TeacherDashboard() {
               {/* Total Targets Card */}
               <div
                 onClick={() => setActiveTab('targets')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer touch-manipulation">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
@@ -651,8 +651,8 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Homework Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+            {/* Homework Cards - Mobile-optimized single column on small screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {transformedHomework
                 .filter((hw: any) => {
                   // Status filter
@@ -770,8 +770,8 @@ export default function TeacherDashboard() {
                 </button>
               </div>
 
-              {/* Stats Row */}
-              <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-3 md:gap-4 mt-6">
+              {/* Stats Row - Mobile 2 columns, larger 5 columns */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mt-6">
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Total</p>
                   <p className="text-2xl font-bold">{safeHighlights.length}</p>
@@ -1088,11 +1088,11 @@ export default function TeacherDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {myClasses.map((cls: any) => (
                   <div
                     key={cls.id}
-                    className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden"
+                    className="group relative bg-white rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg hover:shadow-2xl active:scale-95 md:hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-indigo-500 overflow-hidden"
                   >
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1364,8 +1364,8 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Assignment Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+            {/* Assignment Cards - Mobile-optimized single column */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {transformedAssignments
                 .filter((assignment: any) => {
                   // Status filter

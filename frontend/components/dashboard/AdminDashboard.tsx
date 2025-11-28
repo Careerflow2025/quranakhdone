@@ -169,14 +169,14 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+      {/* Tabs - Mobile Scrollable */}
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="flex space-x-4 md:space-x-8 min-w-min px-2 md:px-0">
           {['overview', 'schools', 'users', 'analytics', 'settings'].map((tab: any) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 px-1 border-b-2 font-medium text-sm capitalize ${
+              className={`pb-3 px-3 md:px-1 border-b-2 font-medium text-xs md:text-sm capitalize whitespace-nowrap touch-manipulation ${
                 activeTab === tab
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -188,21 +188,22 @@ export default function AdminDashboard() {
         </nav>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
+      {/* Stats Grid - Mobile 2 cols, Tablet 2 cols, Desktop 4 cols */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
         {/* Total Schools */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-4 md:p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Schools</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalSchools}</p>
-              <p className="text-sm text-green-600 mt-2 flex items-center">
-                <ChevronUp className="w-4 h-4 mr-1" />
-                +2 this month
+              <p className="text-xs md:text-sm text-gray-600">Total Schools</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1 md:mt-2">{stats.totalSchools}</p>
+              <p className="text-xs md:text-sm text-green-600 mt-1 md:mt-2 flex items-center">
+                <ChevronUp className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="hidden sm:inline">+2 this month</span>
+                <span className="sm:hidden">+2</span>
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <School className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <School className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -258,8 +259,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Second Row Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6">
+      {/* Second Row Stats - Mobile single col, Tablet/Desktop 3 cols */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         {/* Completion Rate */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
           <div className="flex items-center justify-between">
@@ -299,10 +300,10 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6">
-        {/* Schools Table */}
-        <div className="md:col-span-2 lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
+      {/* Main Content Area - Stack on mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        {/* Schools Table - Full width on mobile */}
+        <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Schools Overview</h2>
@@ -324,34 +325,34 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[600px]">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">School</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teachers</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">School</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Teachers</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Revenue</th>
+                  <th className="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {schools.map((school: any) => (
                   <tr key={school.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    <td className="px-3 md:px-6 py-3 md:py-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{school.name}</p>
-                        <p className="text-xs text-gray-500">{school.location}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{school.name}</p>
+                        <p className="text-xs text-gray-500 hidden sm:block">{school.location}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 md:px-6 py-3 md:py-4">
                       <p className="text-sm text-gray-900">{school.students}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 md:px-6 py-3 md:py-4 hidden sm:table-cell">
                       <p className="text-sm text-gray-900">{school.teachers}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
+                    <td className="px-3 md:px-6 py-3 md:py-4">
+                      <span className={`px-2 py-1 text-xs rounded-full whitespace-nowrap ${
                         school.subscription === 'Premium' ? 'bg-purple-100 text-purple-700' :
                         school.subscription === 'Standard' ? 'bg-blue-100 text-blue-700' :
                         'bg-gray-100 text-gray-700'
@@ -359,18 +360,18 @@ export default function AdminDashboard() {
                         {school.subscription}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 md:px-6 py-3 md:py-4 hidden md:table-cell">
                       <p className="text-sm font-medium text-gray-900">${school.revenue.toLocaleString()}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                    <td className="px-3 md:px-6 py-3 md:py-4">
+                      <div className="flex items-center space-x-1 md:space-x-2">
+                        <button className="p-1.5 md:p-1 hover:bg-gray-100 rounded touch-manipulation">
                           <Eye className="w-4 h-4 text-gray-600" />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button className="p-1.5 md:p-1 hover:bg-gray-100 rounded touch-manipulation">
                           <Edit className="w-4 h-4 text-gray-600" />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button className="p-1.5 md:p-1 hover:bg-gray-100 rounded touch-manipulation hidden md:inline-flex">
                           <MoreVertical className="w-4 h-4 text-gray-600" />
                         </button>
                       </div>
@@ -406,8 +407,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+      {/* Charts Section - Stack on mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* User Growth Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -463,10 +464,10 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-sm p-6 text-white">
         <h2 className="text-xl font-semibold mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 flex flex-col items-center space-y-2 transition-all">
-            <UserPlus className="w-6 h-6" />
-            <span className="text-sm">Add User</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <button className="bg-white bg-opacity-20 hover:bg-opacity-30 active:scale-95 rounded-lg p-3 md:p-4 flex flex-col items-center space-y-1 md:space-y-2 transition-all touch-manipulation">
+            <UserPlus className="w-5 h-5 md:w-6 md:h-6" />
+            <span className="text-xs md:text-sm">Add User</span>
           </button>
           <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 flex flex-col items-center space-y-2 transition-all">
             <School className="w-6 h-6" />

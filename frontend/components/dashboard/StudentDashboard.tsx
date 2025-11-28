@@ -797,59 +797,59 @@ export default function StudentDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="px-6 py-4">
+        <div className="px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between relative">
             {/* Left Side - Title */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
               {activeTab === 'quran' ? (
                 <div className="text-center">
-                  <h1 className="text-3xl font-arabic text-green-800">
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-arabic text-green-800">
                     سُورَةُ {currentSurahInfo.nameArabic}
                   </h1>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs md:text-sm text-gray-600 hidden sm:block">
                     {currentSurahInfo.nameEnglish} • {currentSurahInfo.type} • {currentSurahInfo.verses} Verses
                   </p>
                 </div>
               ) : (
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate">
                     {activeTab === 'homework' ? 'My Homework' :
                      activeTab === 'assignments' ? 'My Assignments' :
                      activeTab === 'targets' ? 'My Targets' :
                      activeTab === 'messages' ? 'Messages' : 'Student Dashboard'}
                   </h1>
-                  <p className="text-sm text-gray-500">{studentInfo.name} • {studentInfo.class}</p>
+                  <p className="text-xs md:text-sm text-gray-500 hidden sm:block truncate">{studentInfo.name} • {studentInfo.class}</p>
                 </div>
               )}
             </div>
 
             {/* Center - QuranAkh Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none hidden lg:flex">
               <img
                 src="/quranakh-logo.png"
                 alt="QuranAkh Logo"
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
               />
             </div>
 
             {/* Right Side - Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
               {/* Notifications */}
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 hover:bg-gray-100 rounded-lg"
+                  className="relative p-2 md:p-2.5 hover:bg-gray-100 rounded-lg touch-manipulation active:scale-95 transition-transform"
                 >
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-5 h-5 md:w-6 md:h-6" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
                 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="fixed md:absolute right-0 md:right-auto left-0 md:left-auto top-16 md:top-auto md:mt-2 w-full md:w-96 max-w-md bg-white rounded-none md:rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900">
@@ -957,31 +957,31 @@ export default function StudentDashboard() {
               
               {/* Profile Dropdown */}
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg"
+                  className="flex items-center space-x-1 md:space-x-2 p-2 md:p-2.5 hover:bg-gray-100 rounded-lg touch-manipulation active:scale-95 transition-transform"
                 >
-                  <UserCircle className="w-5 h-5" />
-                  <ChevronDown className="w-4 h-4" />
+                  <UserCircle className="w-5 h-5 md:w-6 md:h-6" />
+                  <ChevronDown className="w-4 h-4 hidden sm:block" />
                 </button>
-                
+
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
-                    <button 
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border z-50">
+                    <button
                       onClick={() => {
                         setShowProfileModal(true);
                         setShowProfileDropdown(false);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-2 touch-manipulation active:bg-gray-100 transition-colors"
                     >
-                      <User className="w-4 h-4" />
+                      <User className="w-5 h-5" />
                       <span>Profile</span>
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                      className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center space-x-2 text-red-600 touch-manipulation active:bg-red-100 transition-colors"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-5 h-5" />
                       <span>Logout</span>
                     </button>
                   </div>
@@ -992,15 +992,16 @@ export default function StudentDashboard() {
               <div className="relative">
                 <button
                   onClick={() => setShowSurahDropdown(!showSurahDropdown)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition"
+                  className="flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-2.5 bg-green-50 hover:bg-green-100 rounded-lg transition touch-manipulation active:scale-95"
                 >
-                  <BookOpen className="w-4 h-4 text-green-600" />
-                  <span className="font-medium text-green-700">Change Surah</span>
+                  <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                  <span className="font-medium text-green-700 text-sm md:text-base hidden sm:inline">Change Surah</span>
+                  <span className="font-medium text-green-700 text-sm sm:hidden">Surah</span>
                   <ChevronDown className={`w-4 h-4 text-green-600 transition-transform ${showSurahDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showSurahDropdown && (
-                  <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-xl border z-50">
+                  <div className="fixed md:absolute right-0 md:right-auto left-0 md:left-auto top-16 md:top-auto md:mt-2 w-full md:w-80 max-w-md max-h-96 overflow-y-auto bg-white rounded-none md:rounded-lg shadow-xl border z-50">
                     <div className="p-2">
                       {allSurahs.map((surah: any) => (
                         <button
@@ -1038,8 +1039,8 @@ export default function StudentDashboard() {
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b shadow-sm">
-        <div className="flex justify-center">
-          <nav className="flex space-x-2 py-1">
+        <div className="overflow-x-auto scrollbar-hide touch-manipulation">
+          <nav className="flex space-x-2 md:space-x-4 py-1 px-2 md:px-0 md:justify-center min-w-max md:min-w-0">
             {[
               { id: 'quran', label: 'Quran', icon: BookOpen, section: 'quran' },
               { id: 'homework', label: 'Homework', icon: BookOpen, section: 'homework' },
@@ -1063,7 +1064,7 @@ export default function StudentDashboard() {
                     }
                     setActiveTab(tab.id);
                   }}
-                  className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 ${
+                  className={`relative py-3 px-3 md:px-6 font-medium text-xs md:text-sm rounded-lg transition-all duration-300 touch-manipulation active:scale-95 ${
                     activeTab === tab.id
                       ? 'text-white bg-green-600 shadow-sm'
                       : hasNotifications
@@ -1071,12 +1072,12 @@ export default function StudentDashboard() {
                       : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
                   }`}
                 >
-                  <span className="flex items-center space-x-2 relative">
+                  <span className="flex items-center space-x-1 md:space-x-2 relative whitespace-nowrap">
                     <div className="relative">
                       <tab.icon className="w-4 h-4" />
                       <NotificationBadge section={tab.section} />
                     </div>
-                    <span>{tab.label}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </span>
                 </button>
               );
@@ -1086,12 +1087,12 @@ export default function StudentDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="px-12 py-6">
+      <div className="px-3 md:px-6 lg:px-12 py-4 md:py-6">
         {/* Quran Tab - Read-Only Student View */}
         {activeTab === 'quran' && (
-          <div className="grid grid-cols-12 gap-4">
+          <div className="grid grid-cols-12 gap-3 md:gap-4">
             {/* Left Panel - Highlights Summary (Read-Only) */}
-            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
+            <div className="col-span-12 md:col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlights Summary */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
@@ -1139,7 +1140,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Main Quran Viewer - SCROLLING MODEL */}
-            <div className="col-span-12 md:col-span-8 lg:col-span-8 xl:col-span-8">
+            <div className="col-span-12 md:col-span-8">
               <div ref={mushafScrollContainerRef} className="mushaf-scroll-container" style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1571,7 +1572,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Right Panel - Controls */}
-            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3">
+            <div className="col-span-12 md:col-span-2 space-y-3">
               {/* Zoom Control */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm">Zoom</h3>
@@ -1669,7 +1670,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Homework Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
             {transformedHomework
               .filter((hw: any) => {
                 // Status filter - check color field directly
@@ -1825,7 +1826,7 @@ export default function StudentDashboard() {
 
           {/* Assignment Cards */}
           {!assignmentsLoading && !assignmentsError && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
               {assignments
                 .filter((assignment: any) => {
                   // CRITICAL: Use assignment.highlight.color from API response (TeacherDashboard pattern)

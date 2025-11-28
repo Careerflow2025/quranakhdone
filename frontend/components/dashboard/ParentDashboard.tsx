@@ -1118,45 +1118,45 @@ export default function ParentDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Professional Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="px-6 py-4">
+        <div className="px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between relative">
             {/* Left Side - School Logo, Title & Child Selector */}
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-6 flex-1 min-w-0">
+              <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
                 {schoolLogo ? (
                   <img
                     src={schoolLogo}
                     alt="School Logo"
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <BookOpen className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
                 )}
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">
+                <div className="min-w-0 hidden sm:block">
+                  <h1 className="text-base md:text-lg lg:text-xl font-bold text-gray-900 truncate">
                     Parent Dashboard
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">{schoolName}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">{schoolName}</p>
                 </div>
               </div>
 
               {/* Child Selector - Simplified */}
-              <div className="relative child-selector-container">
+              <div className="relative child-selector-container flex-shrink-0">
                 <button
                   onClick={() => {
                     console.log('🔘 Child selector clicked. Current state:', showChildSelector, 'Children:', children.length);
                     setShowChildSelector(!showChildSelector);
                   }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-200 border border-blue-200 shadow-sm hover:shadow-md"
+                  className="flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-200 border border-blue-200 shadow-sm hover:shadow-md touch-manipulation active:scale-95"
                 >
-                  <span className="font-semibold text-gray-900">{currentChild.name}</span>
-                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showChildSelector ? 'rotate-180' : ''}`} />
+                  <span className="font-semibold text-gray-900 text-sm md:text-base truncate max-w-[120px] md:max-w-none">{currentChild.name}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform flex-shrink-0 ${showChildSelector ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showChildSelector && (
-                  <div className="absolute top-full mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                  <div className="fixed md:absolute top-16 md:top-full left-0 right-0 md:left-auto md:right-auto md:mt-2 w-full md:w-96 max-w-md bg-white rounded-none md:rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                     <div className="bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3">
                       <h3 className="text-white font-semibold">Select Child to Monitor</h3>
                       <p className="text-blue-100 text-xs mt-0.5">Click to switch between your children</p>
@@ -1170,7 +1170,7 @@ export default function ParentDashboard() {
                             setSelectedChild(index);
                             setShowChildSelector(false);
                           }}
-                          className={`w-full text-left p-3 rounded-lg mb-1 transition-all duration-200 ${
+                          className={`w-full text-left p-3 md:p-4 rounded-lg mb-1 transition-all duration-200 touch-manipulation active:scale-[0.98] ${
                             selectedChild === index
                               ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-sm'
                               : 'hover:bg-gray-50 border-2 border-transparent'
@@ -1178,7 +1178,7 @@ export default function ParentDashboard() {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <p className="font-semibold text-gray-900">{child.name}</p>
+                              <p className="font-semibold text-gray-900 text-sm md:text-base">{child.name}</p>
                               {selectedChild === index && (
                                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
                                   Active
@@ -1198,32 +1198,32 @@ export default function ParentDashboard() {
             </div>
 
             {/* Center - QuranAkh Business Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none">
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none hidden lg:flex">
               <img
                 src="/quranakh-logo.png"
                 alt="QuranAkh Logo"
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
               />
             </div>
 
             {/* Right Side - Notifications & Profile */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
               {/* Notifications */}
               <div className="relative notifications-container">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2.5 hover:bg-gray-100 rounded-xl relative transition-colors"
+                  className="p-2 md:p-2.5 hover:bg-gray-100 rounded-xl relative transition-colors touch-manipulation active:scale-95"
                 >
-                  <Bell className="w-5 h-5 text-gray-700" />
+                  <Bell className="w-5 h-5 md:w-6 md:h-6 text-gray-700" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="fixed md:absolute right-0 md:right-auto left-0 md:left-auto top-16 md:top-auto md:mt-2 w-full md:w-96 max-w-md bg-white rounded-none md:rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900">
@@ -1333,28 +1333,28 @@ export default function ParentDashboard() {
               <div className="relative profile-dropdown-container">
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="flex items-center space-x-1 md:space-x-2 px-2 md:px-3 py-2 hover:bg-gray-100 rounded-xl transition-colors touch-manipulation active:scale-95"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium text-gray-900">Parent Account</p>
                     <p className="text-xs text-gray-500">{user?.fullName || user?.email || 'Parent'}</p>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                  <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
                 </button>
 
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border z-50">
                     <button
                       onClick={() => {
                         setShowProfileModal(true);
                         setShowProfileDropdown(false);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-2 touch-manipulation active:bg-gray-100 transition-colors"
                     >
-                      <User className="w-4 h-4" />
+                      <User className="w-5 h-5" />
                       <span>Parent Profile</span>
                     </button>
                     <hr className="my-1" />
@@ -1363,9 +1363,9 @@ export default function ParentDashboard() {
                         await supabase.auth.signOut();
                         window.location.href = '/login';
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                      className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center space-x-2 text-red-600 touch-manipulation active:bg-red-100 transition-colors"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-5 h-5" />
                       <span>Logout</span>
                     </button>
                   </div>
@@ -1378,8 +1378,8 @@ export default function ParentDashboard() {
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b shadow-sm">
-        <div className="flex justify-center overflow-x-auto">
-          <nav className="flex space-x-2 py-1 px-4">
+        <div className="overflow-x-auto scrollbar-hide touch-manipulation">
+          <nav className="flex space-x-2 md:space-x-4 py-1 px-2 md:px-0 md:justify-center min-w-max md:min-w-0">
             {[
               { id: 'overview', label: 'Overview', icon: BarChart3, section: 'overview' },
               { id: 'quran', label: 'Quran View', icon: BookOpen, section: 'quran' },
@@ -1405,7 +1405,7 @@ export default function ParentDashboard() {
                     }
                     setActiveTab(tab.id);
                   }}
-                  className={`relative py-3 px-4 font-medium text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
+                  className={`relative py-3 px-3 md:px-6 font-medium text-xs md:text-sm rounded-lg transition-all duration-300 whitespace-nowrap touch-manipulation active:scale-95 ${
                     activeTab === tab.id
                       ? 'text-white bg-blue-600 shadow-sm'
                       : hasNotifications
@@ -1428,7 +1428,7 @@ export default function ParentDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 sm:px-6 lg:px-12 py-6">
+      <div className="px-3 md:px-6 lg:px-12 py-4 md:py-6">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <>
@@ -1463,18 +1463,18 @@ export default function ParentDashboard() {
 
             {/* Premium Stats Cards */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
               {/* Total Children Card */}
-              <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden">
+              <div className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-blue-500 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
-                      <Users className="w-8 h-8 text-blue-600" />
+                      <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Children</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{children.length}</p>
+                      <p className="text-3xl md:text-4xl lg:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{children.length}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"></div>
@@ -1484,16 +1484,16 @@ export default function ParentDashboard() {
               {/* Total Highlights Card */}
               <div
                 onClick={() => setActiveTab('highlights')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-3 bg-amber-50 rounded-xl shadow-sm group-hover:bg-amber-100 transition-colors duration-300">
-                      <Highlighter className="w-8 h-8 text-amber-600" />
+                      <Highlighter className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Highlights</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalHighlights}</p>
+                      <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalHighlights}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full"></div>
@@ -1503,16 +1503,16 @@ export default function ParentDashboard() {
               {/* Total Homework Card */}
               <div
                 onClick={() => setActiveTab('homework')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-3 bg-emerald-50 rounded-xl shadow-sm group-hover:bg-emerald-100 transition-colors duration-300">
-                      <BookOpen className="w-8 h-8 text-emerald-600" />
+                      <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{totalHomework}</p>
+                      <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{totalHomework}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"></div>
@@ -1522,16 +1522,16 @@ export default function ParentDashboard() {
               {/* Total Assignments Card */}
               <div
                 onClick={() => setActiveTab('assignments')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-indigo-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-indigo-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-3 bg-indigo-50 rounded-xl shadow-sm group-hover:bg-indigo-100 transition-colors duration-300">
-                      <FileText className="w-8 h-8 text-indigo-600" />
+                      <FileText className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalAssignments}</p>
+                      <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalAssignments}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-indigo-200 to-indigo-400 rounded-full"></div>
@@ -1541,16 +1541,16 @@ export default function ParentDashboard() {
               {/* Total Targets Card */}
               <div
                 onClick={() => setActiveTab('targets')}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer">
+                className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-3 bg-purple-50 rounded-xl shadow-sm group-hover:bg-purple-100 transition-colors duration-300">
-                      <Target className="w-8 h-8 text-purple-600" />
+                      <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
-                      <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{totalTargets}</p>
+                      <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{totalTargets}</p>
                     </div>
                   </div>
                   <div className="h-1 bg-gradient-to-r from-purple-200 to-purple-400 rounded-full"></div>
@@ -1582,9 +1582,9 @@ export default function ParentDashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-12 gap-4">
+            <div className="grid grid-cols-12 gap-3 md:gap-4">
             {/* Left Panel - Highlights Summary (Read-Only) */}
-            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
+            <div className="col-span-12 md:col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlights Summary */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
@@ -1632,7 +1632,7 @@ export default function ParentDashboard() {
             </div>
 
             {/* Main Quran Viewer - Scrolling Model */}
-            <div className="col-span-12 md:col-span-8 lg:col-span-8 xl:col-span-8">
+            <div className="col-span-12 md:col-span-8">
               {/* Surah and Page Badges - Fixed at top */}
               <div className="mb-2 flex items-center justify-center gap-3">
                 {/* Current Surah Badge */}
@@ -2026,7 +2026,7 @@ export default function ParentDashboard() {
             </div>
 
             {/* Right Panel - Controls */}
-            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3">
+            <div className="col-span-12 md:col-span-2 space-y-3">
               {/* Surah Selector - EXACT COPY FROM STUDENT DASHBOARD */}
               <div className="relative surah-dropdown-container">
                 <button
@@ -2207,7 +2207,7 @@ export default function ParentDashboard() {
 
             {/* Homework Cards */}
             {!homeworkLoading && !homeworkError && transformedHomework.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {transformedHomework
                   .filter((homework: any) => {
                     // Status filter
@@ -2364,7 +2364,7 @@ export default function ParentDashboard() {
 
             {/* Assignment Cards */}
             {!assignmentsLoading && !assignmentsError && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
                 {assignments
                   .filter((assignment: any) => {
                     // CRITICAL: Use assignment.highlight.color from API response (TeacherDashboard pattern)

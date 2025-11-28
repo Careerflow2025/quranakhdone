@@ -3534,36 +3534,36 @@ export default function SchoolDashboard() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <header className="bg-white shadow-sm px-6 py-4">
+        <header className="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between relative">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
 
             {/* Center - QuranAkh Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center hidden lg:flex pointer-events-none">
               <img
                 src="/quranakh-logo.png"
                 alt="QuranAkh Logo"
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
               />
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
               <button
                 onClick={refreshData}
-                className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
+                className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
                 title="Refresh Data"
               >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw className="w-5 h-5 md:w-6 md:h-6" />
               </button>
 
               <div className="relative" ref={notificationRef}>
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 relative"
+                  className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 relative touch-manipulation active:scale-95 transition-transform"
                 >
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-5 h-5 md:w-6 md:h-6" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
                       {unreadCount > 9 ? '9+' : unreadCount}
@@ -3572,7 +3572,7 @@ export default function SchoolDashboard() {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                  <div className="fixed md:absolute right-0 md:right-auto left-0 md:left-auto top-16 md:top-auto md:mt-2 w-full md:w-96 max-w-md bg-white rounded-none md:rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900">
@@ -3780,20 +3780,20 @@ export default function SchoolDashboard() {
 
               {/* Premium Stats Cards - 2 Rows */}
               <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
                   {/* Total Students Card */}
                   <div
                     onClick={() => setActiveTab('students')}
-                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer">
+                    className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-emerald-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-emerald-50 rounded-xl shadow-sm group-hover:bg-emerald-100 transition-colors duration-300">
-                          <GraduationCap className="w-8 h-8 text-emerald-600" />
+                          <GraduationCap className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Students</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{stats.totalStudents}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-emerald-600 transition-colors duration-300">{stats.totalStudents}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"></div>
@@ -3803,16 +3803,16 @@ export default function SchoolDashboard() {
                   {/* Total Teachers Card */}
                   <div
                     onClick={() => setActiveTab('teachers')}
-                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden cursor-pointer">
+                    className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-blue-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-blue-50 rounded-xl shadow-sm group-hover:bg-blue-100 transition-colors duration-300">
-                          <Users className="w-8 h-8 text-blue-600" />
+                          <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Teachers</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalTeachers}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-blue-600 transition-colors duration-300">{stats.totalTeachers}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"></div>
@@ -3822,16 +3822,16 @@ export default function SchoolDashboard() {
                   {/* Total Parents Card */}
                   <div
                     onClick={() => setActiveTab('parents')}
-                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer">
+                    className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-purple-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-purple-50 rounded-xl shadow-sm group-hover:bg-purple-100 transition-colors duration-300">
-                          <Users className="w-8 h-8 text-purple-600" />
+                          <Users className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Parents</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{stats.totalParents}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-purple-600 transition-colors duration-300">{stats.totalParents}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-purple-200 to-purple-400 rounded-full"></div>
@@ -3846,11 +3846,11 @@ export default function SchoolDashboard() {
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-orange-50 rounded-xl shadow-sm group-hover:bg-orange-100 transition-colors duration-300">
-                          <School className="w-8 h-8 text-orange-600" />
+                          <School className="w-6 h-6 md:w-8 md:h-8 text-orange-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Classes</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-orange-600 transition-colors duration-300">{stats.totalClasses}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-orange-600 transition-colors duration-300">{stats.totalClasses}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-orange-200 to-orange-400 rounded-full"></div>
@@ -3865,11 +3865,11 @@ export default function SchoolDashboard() {
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-cyan-50 rounded-xl shadow-sm group-hover:bg-cyan-100 transition-colors duration-300">
-                          <BookOpen className="w-8 h-8 text-cyan-600" />
+                          <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-cyan-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Homework</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-cyan-600 transition-colors duration-300">{totalSchoolHomework}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-cyan-600 transition-colors duration-300">{totalSchoolHomework}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-cyan-200 to-cyan-400 rounded-full"></div>
@@ -3879,16 +3879,16 @@ export default function SchoolDashboard() {
                   {/* Total Highlights Card */}
                   <div
                     onClick={() => setActiveTab('highlights')}
-                    className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer">
+                    className="group relative bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 md:duration-500 border-l-4 border-amber-500 overflow-hidden cursor-pointer touch-manipulation active:scale-[0.98]">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-amber-50 rounded-xl shadow-sm group-hover:bg-amber-100 transition-colors duration-300">
-                          <Highlighter className="w-8 h-8 text-amber-600" />
+                          <Highlighter className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Highlights</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalSchoolHighlights}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-amber-600 transition-colors duration-300">{totalSchoolHighlights}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-amber-200 to-amber-400 rounded-full"></div>
@@ -3903,11 +3903,11 @@ export default function SchoolDashboard() {
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-indigo-50 rounded-xl shadow-sm group-hover:bg-indigo-100 transition-colors duration-300">
-                          <FileText className="w-8 h-8 text-indigo-600" />
+                          <FileText className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Assignments</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalSchoolAssignments}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-indigo-600 transition-colors duration-300">{totalSchoolAssignments}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-indigo-200 to-indigo-400 rounded-full"></div>
@@ -3922,11 +3922,11 @@ export default function SchoolDashboard() {
                     <div className="relative flex flex-col space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="p-3 bg-pink-50 rounded-xl shadow-sm group-hover:bg-pink-100 transition-colors duration-300">
-                          <Target className="w-8 h-8 text-pink-600" />
+                          <Target className="w-6 h-6 md:w-8 md:h-8 text-pink-600" />
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Targets</p>
-                          <p className="text-5xl font-bold text-slate-900 mt-2 group-hover:text-pink-600 transition-colors duration-300">{totalSchoolTargets}</p>
+                          <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 group-hover:text-pink-600 transition-colors duration-300">{totalSchoolTargets}</p>
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-pink-200 to-pink-400 rounded-full"></div>
