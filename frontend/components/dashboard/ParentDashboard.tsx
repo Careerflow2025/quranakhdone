@@ -1877,13 +1877,21 @@ export default function ParentDashboard() {
                             className="inline cursor-pointer rounded transition-colors select-none"
                             style={{
                               position: 'relative',
-                              color: '#000000',  // ALWAYS black text, never change
+                              color: highlightStyle === 'color' && mistakes.length > 0 ? (
+                                mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgb(113,63,18)' :
+                                mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgb(202,138,4)' :
+                                mistakes[0]?.bgColor?.includes('amber') ? 'rgb(180,83,9)' :
+                                mistakes[0]?.bgColor?.includes('purple') ? 'rgb(147,51,234)' :
+                                mistakes[0]?.bgColor?.includes('green') ? 'rgb(34,197,94)' :
+                                mistakes[0]?.bgColor?.includes('orange') ? 'rgb(249,115,22)' :
+                                mistakes[0]?.bgColor?.includes('red') ? 'rgb(239,68,68)' : '#000000'
+                              ) : '#000000',
                               paddingLeft: '2px',    // Horizontal padding
                               paddingRight: '2px',   // Horizontal padding
                               lineHeight: '1.3',     // Line height
                               display: 'inline',     // Inline display
                               pointerEvents: 'auto',  // CRITICAL: Override parent's pointer-events: none to enable clicks
-                              // CONDITIONAL STYLING: Full background vs Underline based on highlightStyle state
+                              // CONDITIONAL STYLING: Full background vs Underline vs Color based on highlightStyle state
                               ...(highlightStyle === 'full' ? (
                                 // FULL BACKGROUND MODE
                                 mistakes.length === 1 ? {
@@ -1926,7 +1934,7 @@ export default function ParentDashboard() {
                                 fontWeight: '600',
                                 border: '1px solid rgba(0,0,0,0.15)'
                               } : {}
-                              ) : (
+                              ) : highlightStyle === 'underline' ? (
                                 // UNDERLINE MODE
                                 mistakes.length === 1 ? {
                                   borderBottom: `3px solid ${
@@ -1955,7 +1963,9 @@ export default function ParentDashboard() {
                                   }).join(', ')}) 1`,
                                   paddingBottom: '2px'
                                 } : {}
-                              ))
+                              ) : {
+                                // COLOR MODE - only font color, no background or underline
+                              })
                             }}
                           >
                             {wordText}
@@ -2091,7 +2101,7 @@ export default function ParentDashboard() {
               {/* Highlight Style Toggle */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm">Highlight Style</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setHighlightStyle('full')}
                     className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
@@ -2111,6 +2121,16 @@ export default function ParentDashboard() {
                     }`}
                   >
                     Underline
+                  </button>
+                  <button
+                    onClick={() => setHighlightStyle('color')}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                      highlightStyle === 'color'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Color
                   </button>
                 </div>
               </div>
