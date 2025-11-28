@@ -4961,35 +4961,35 @@ export default function SchoolDashboard() {
                   </div>
 
                   {/* Highlight Style Toggle */}
-                  <div className="bg-white rounded-lg shadow-sm p-3">
-                    <h3 className="font-semibold mb-2 text-sm">Highlight Style</h3>
-                    <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-white rounded-lg shadow-sm p-4">
+                    <h3 className="font-semibold mb-3 text-base">Highlight Style</h3>
+                    <div className="flex flex-col space-y-2">
                       <button
                         onClick={() => setHighlightStyle('full')}
-                        className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                        className={`w-full px-4 py-2.5 rounded-md border text-sm font-medium transition ${
                           highlightStyle === 'full'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                       >
                         Full
                       </button>
                       <button
                         onClick={() => setHighlightStyle('underline')}
-                        className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                        className={`w-full px-4 py-2.5 rounded-md border text-sm font-medium transition ${
                           highlightStyle === 'underline'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                       >
                         Underline
                       </button>
                       <button
                         onClick={() => setHighlightStyle('color')}
-                        className={`px-3 py-2 rounded-md border text-sm font-medium transition ${
+                        className={`w-full px-4 py-2.5 rounded-md border text-sm font-medium transition ${
                           highlightStyle === 'color'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                       >
                         Color
