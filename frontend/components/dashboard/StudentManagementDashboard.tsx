@@ -1762,7 +1762,7 @@ export default function StudentManagementDashboard() {
             </div>
 
             {/* Main Quran Viewer */}
-            <div className="col-span-10">
+            <div className="col-span-8">
               <div ref={quranContainerRef} className="bg-white rounded-xl shadow-lg relative" style={{
                 background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
@@ -2407,24 +2407,24 @@ export default function StudentManagementDashboard() {
             </div>
 
             {/* Right Panel - Notes */}
-            <div className="col-span-1 space-y-3">
+            <div className="col-span-2 space-y-4">
               {/* Notes Section */}
-              <div className="bg-white rounded-lg shadow-sm p-3">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <StickyNote className="w-3 h-3 mr-1" />
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="font-semibold mb-3 text-base flex items-center">
+                  <StickyNote className="w-4 h-4 mr-2" />
                   Notes
                 </h3>
                 <div className="space-y-2">
                   {!noteMode ? (
-                    <button 
+                    <button
                       onClick={handleAddNote}
-                      className="w-full p-2 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 transition text-xs text-gray-600"
+                      className="w-full py-2.5 px-3 border-2 border-dashed border-gray-300 rounded-md hover:border-gray-400 hover:bg-gray-50 transition text-sm text-gray-600 font-medium"
                     >
-                      <Plus className="w-3 h-3 inline mr-1" />
+                      <Plus className="w-4 h-4 inline mr-2" />
                       Add Note
                     </button>
                   ) : (
-                    <div className="p-2 bg-green-50 border-2 border-green-500 rounded-md text-xs">
+                    <div className="py-3 px-3 bg-green-50 border-2 border-green-500 rounded-md text-sm">
                       <p className="text-green-700 font-medium mb-1">
                         Note Mode Active
                       </p>
@@ -2441,7 +2441,7 @@ export default function StudentManagementDashboard() {
                           setNoteMode(false);
                           setSelectedHighlightsForNote([]);
                         }}
-                        className="w-full mt-2 p-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                        className="w-full mt-2 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 transition"
                       >
                         Cancel
                       </button>
@@ -2449,14 +2449,14 @@ export default function StudentManagementDashboard() {
                   )}
                   <div className="max-h-96 overflow-y-auto space-y-2">
                     {notes.map((note: any) => (
-                      <div key={note.id} className="p-2 bg-gray-50 rounded-md">
+                      <div key={note.id} className="py-2 px-3 bg-gray-50 rounded-md">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             {note.type === 'text' ? (
-                              <p className="text-xs text-gray-700">{note.content}</p>
+                              <p className="text-sm text-gray-700">{note.content}</p>
                             ) : (
-                              <div className="flex items-center text-xs text-blue-600">
-                                <Mic className="w-3 h-3 mr-1" />
+                              <div className="flex items-center text-sm text-blue-600">
+                                <Mic className="w-4 h-4 mr-1" />
                                 Voice Note
                               </div>
                             )}
@@ -2478,9 +2478,9 @@ export default function StudentManagementDashboard() {
               </div>
 
               {/* Pen Annotation Controls */}
-              <div className="mb-4">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="font-semibold mb-3 text-base flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                   Pen Tool
@@ -2493,22 +2493,22 @@ export default function StudentManagementDashboard() {
                         setHighlightMode(false);
                       }
                     }}
-                    className={`w-full p-2 rounded-md border text-left transition text-xs ${
+                    className={`w-full py-2.5 px-3 rounded-md border text-left transition text-sm ${
                       penMode
                         ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{penMode ? 'Pen Active' : 'Enable Pen'}</span>
-                      <div className={`w-3 h-3 rounded-full ${penMode ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div className={`w-4 h-4 rounded-full ${penMode ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                     </div>
                   </button>
 
                   {/* Pen Controls - Only show when pen mode is active */}
                   {penMode && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                      <div className="text-xs font-semibold text-gray-700 mb-2">Pen Controls</div>
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Pen Controls</div>
 
                       {/* Color Picker */}
                       <div>
