@@ -1605,51 +1605,51 @@ export default function StudentManagementDashboard() {
         {/* Quran Viewer */}
         {(scriptLocked || selectedScript) && (
           <div className="grid grid-cols-12 gap-4">
-            {/* Left Panel - Mistake Types & Tools (Reduced) */}
-            <div className="col-span-1 space-y-3 max-h-screen overflow-hidden">
+            {/* Left Panel - Mistake Types & Tools (Improved Width & Spacing) */}
+            <div className="col-span-2 space-y-4 max-h-screen overflow-hidden">
               {/* Highlighting Tools */}
-              <div className="bg-white rounded-lg shadow-sm p-3">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <Highlighter className="w-3 h-3 mr-1" />
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="font-semibold mb-3 text-base flex items-center">
+                  <Highlighter className="w-4 h-4 mr-2" />
                   Highlight
                 </h3>
                 {/* Highlight Style Toggle */}
-                <div className="mb-2 border-b border-gray-200 pb-2">
-                  <div className="text-xs text-gray-600 mb-1 font-medium">Style</div>
-                  <div className="grid grid-cols-3 gap-1">
+                <div className="mb-3 border-b border-gray-200 pb-3">
+                  <div className="text-sm text-gray-600 mb-2 font-medium">Style</div>
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => setHighlightStyle('full')}
-                      className={`p-1.5 rounded-md border text-xs font-medium transition ${
+                      className={`py-2 px-3 rounded-md border text-sm font-medium transition ${
                         highlightStyle === 'full'
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       Full
                     </button>
                     <button
                       onClick={() => setHighlightStyle('underline')}
-                      className={`p-1.5 rounded-md border text-xs font-medium transition ${
+                      className={`py-2 px-3 rounded-md border text-sm font-medium transition ${
                         highlightStyle === 'underline'
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      Underline
+                      Under
                     </button>
                     <button
                       onClick={() => setHighlightStyle('color')}
-                      className={`p-1.5 rounded-md border text-xs font-medium transition ${
+                      className={`py-2 px-3 rounded-md border text-sm font-medium transition ${
                         highlightStyle === 'color'
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       Color
                     </button>
                   </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {mistakeTypes.map((type: any) => (
                     <button
                       key={type.id}
@@ -1658,15 +1658,15 @@ export default function StudentManagementDashboard() {
                         setSelectedMistakeType(type.id);
                         setHighlightMode(true);
                       }}
-                      className={`w-full p-2 rounded-md border text-left transition text-xs ${
+                      className={`w-full py-2.5 px-3 rounded-md border text-left transition text-sm ${
                         selectedMistakeType === type.id
                           ? `border-${type.color}-500 ${type.bgColor}`
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className={`font-medium ${type.textColor}`}>{type.name}</span>
-                        <div className={`w-3 h-3 rounded ${type.bgColor}`}></div>
+                        <div className={`w-4 h-4 rounded ${type.bgColor} border border-gray-300`}></div>
                       </div>
                     </button>
                   ))}
@@ -1708,23 +1708,23 @@ export default function StudentManagementDashboard() {
               </div>
 
               {/* Highlights Summary */}
-              <div className="bg-white rounded-lg shadow-sm p-3">
-                <h3 className="font-semibold mb-2 text-sm flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="font-semibold mb-3 text-base flex items-center">
+                  <Clock className="w-4 h-4 mr-2" />
                   Highlights
                 </h3>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {/* Show completed highlights first with gold color */}
                   {(() => {
                     const completedHighlights = highlights.filter((h: any) => h.isCompleted);
                     if (completedHighlights.length > 0) {
                       return (
-                        <div className="p-1.5 rounded-md bg-yellow-400 text-xs">
+                        <div className="py-2 px-3 rounded-md bg-yellow-400 text-sm">
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-yellow-900">
                               ✓ Completed ({completedHighlights.length})
                             </span>
-                            <Award className="w-3 h-3 text-yellow-900" />
+                            <Award className="w-4 h-4 text-yellow-900" />
                           </div>
                         </div>
                       );
@@ -1737,17 +1737,17 @@ export default function StudentManagementDashboard() {
                     const typeHighlights = highlights.filter((h: any) => h.mistakeType === type.id && !h.isCompleted);
                     if (typeHighlights.length === 0) return null;
                     return (
-                      <div key={type.id} className={`p-1.5 rounded-md ${type.bgColor} text-xs`}>
+                      <div key={type.id} className={`py-2 px-3 rounded-md ${type.bgColor} text-sm`}>
                         <div className="flex items-center justify-between">
                           <span className={`font-medium ${type.textColor}`}>
                             {type.name} ({typeHighlights.length})
                           </span>
                           <button
                             onClick={() => setHighlights(highlights.filter((h: any) => h.mistakeType !== type.id))}
-                            className="text-gray-500 hover:text-red-600"
+                            className="text-gray-500 hover:text-red-600 transition"
                             title="Clear all"
                           >
-                            <X className="w-2.5 h-2.5" />
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
