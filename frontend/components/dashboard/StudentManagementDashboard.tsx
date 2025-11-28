@@ -1616,7 +1616,7 @@ export default function StudentManagementDashboard() {
                 {/* Highlight Style Toggle */}
                 <div className="mb-2 border-b border-gray-200 pb-2">
                   <div className="text-xs text-gray-600 mb-1 font-medium">Style</div>
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-3 gap-1">
                     <button
                       onClick={() => setHighlightStyle('full')}
                       className={`p-1.5 rounded-md border text-xs font-medium transition ${
@@ -1636,6 +1636,16 @@ export default function StudentManagementDashboard() {
                       }`}
                     >
                       Underline
+                    </button>
+                    <button
+                      onClick={() => setHighlightStyle('color')}
+                      className={`p-1.5 rounded-md border text-xs font-medium transition ${
+                        highlightStyle === 'color'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      Color
                     </button>
                   </div>
                 </div>
@@ -2199,7 +2209,16 @@ export default function StudentManagementDashboard() {
                               }`}
                               style={{
                                 position: 'relative',
-                                color: '#000000',  // ALWAYS black text, never change
+                                // FONT COLOR: Change text color in 'color' mode, otherwise keep black
+                                color: highlightStyle === 'color' && mistakes.length > 0 ? (
+                                  mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgb(113,63,18)' :
+                                  mistakes[0]?.bgColor === 'bg-yellow-400' ? 'rgb(202,138,4)' :
+                                  mistakes[0]?.bgColor?.includes('amber') ? 'rgb(180,83,9)' :
+                                  mistakes[0]?.bgColor?.includes('purple') ? 'rgb(147,51,234)' :
+                                  mistakes[0]?.bgColor?.includes('green') ? 'rgb(34,197,94)' :
+                                  mistakes[0]?.bgColor?.includes('orange') ? 'rgb(249,115,22)' :
+                                  mistakes[0]?.bgColor?.includes('red') ? 'rgb(239,68,68)' : '#000000'
+                                ) : '#000000',
                                 // CRITICAL FIX: Removed padding for exact word boundary highlighting
                                 // Previous: paddingLeft: '2px', paddingRight: '2px' caused offset
                                 lineHeight: '1.3',     // Line height
