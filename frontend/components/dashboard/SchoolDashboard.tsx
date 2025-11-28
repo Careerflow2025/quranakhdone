@@ -150,6 +150,9 @@ export default function SchoolDashboard() {
   // Active tab state (needed before useEffect that checks it)
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Mobile sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // State for viewing student's Quran view
   const [viewingStudentQuran, setViewingStudentQuran] = useState<any>(null);
 
@@ -3223,6 +3226,24 @@ export default function SchoolDashboard() {
   // Component UI render
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Hamburger Menu Button - Mobile Only */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 rounded-lg bg-white shadow-lg hover:bg-gray-50 active:scale-95 transition-all touch-manipulation"
+        aria-label="Open menu"
+      >
+        <Menu className="w-6 h-6 text-gray-700" />
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Professional Notification System */}
       <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
         {notifications.map((notification: any) => (
@@ -3275,9 +3296,28 @@ export default function SchoolDashboard() {
         ))}
       </div>
 
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md overflow-y-auto">
+      {/* Sidebar - Desktop: always visible, Mobile: slide-out drawer */}
+      <aside className={`
+        fixed lg:static
+        inset-y-0 left-0
+        transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+        transition-transform duration-300 ease-in-out
+        w-64
+        bg-white shadow-md
+        z-50 lg:z-auto
+        overflow-y-auto
+      `}>
         <div className="p-4 pb-0 space-y-4">
+          {/* Close Button - Mobile Only */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+
           <div className="flex items-center space-x-3">
             {schoolInfo?.logo_url ? (
               <img
@@ -3352,6 +3392,8 @@ export default function SchoolDashboard() {
                       markSectionRead(item.id);
                     }
                     setActiveTab(item.id);
+                    // Close mobile sidebar after selection
+                    setSidebarOpen(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     activeTab === item.id
@@ -3391,6 +3433,8 @@ export default function SchoolDashboard() {
                       markSectionRead(item.id);
                     }
                     setActiveTab(item.id);
+                    // Close mobile sidebar after selection
+                    setSidebarOpen(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     activeTab === item.id
@@ -3431,6 +3475,8 @@ export default function SchoolDashboard() {
                       markSectionRead(item.id);
                     }
                     setActiveTab(item.id);
+                    // Close mobile sidebar after selection
+                    setSidebarOpen(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     activeTab === item.id
@@ -3509,6 +3555,8 @@ export default function SchoolDashboard() {
                       markSectionRead(item.id);
                     }
                     setActiveTab(item.id);
+                    // Close mobile sidebar after selection
+                    setSidebarOpen(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     activeTab === item.id
@@ -3529,7 +3577,7 @@ export default function SchoolDashboard() {
           </div>
           </nav>
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
