@@ -3584,7 +3584,8 @@ export default function SchoolDashboard() {
         {/* Header */}
         <header className="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between gap-3 md:gap-4 relative">
-            <h1 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 max-w-[45%] sm:max-w-none flex-1">
+            {/* Dashboard title - hidden on small mobile, visible on sm+ */}
+            <h1 className="hidden sm:block text-base md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
 
