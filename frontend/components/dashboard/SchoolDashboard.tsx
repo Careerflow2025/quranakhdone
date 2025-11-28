@@ -3583,8 +3583,8 @@ export default function SchoolDashboard() {
       <div className="flex-1 overflow-auto">
         {/* Header */}
         <header className="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between relative">
-            <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 md:gap-4 relative">
+            <h1 className="text-base md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-shrink mr-2 md:mr-0">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
 
@@ -3597,7 +3597,7 @@ export default function SchoolDashboard() {
               />
             </div>
 
-            <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+            <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
               <button
                 onClick={refreshData}
                 className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
