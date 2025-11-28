@@ -3583,9 +3583,9 @@ export default function SchoolDashboard() {
       <div className="flex-1 overflow-auto">
         {/* Header */}
         <header className="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-3 md:gap-4 relative">
+          <div className="flex items-center justify-between relative">
             {/* Dashboard title - hidden on small mobile, visible on sm+ */}
-            <h1 className="hidden sm:block text-base md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
+            <h1 className="hidden sm:block text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate min-w-0 flex-1">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h1>
 
@@ -3598,11 +3598,10 @@ export default function SchoolDashboard() {
               />
             </div>
 
-            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-              {/* Refresh button - hidden on small mobile, visible on sm+ */}
+            <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
               <button
                 onClick={refreshData}
-                className="hidden sm:flex p-1.5 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
+                className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
                 title="Refresh Data"
               >
                 <RefreshCw className="w-5 h-5 md:w-6 md:h-6" />
@@ -3611,7 +3610,7 @@ export default function SchoolDashboard() {
               <div className="relative" ref={notificationRef}>
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-1.5 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 relative touch-manipulation active:scale-95 transition-transform"
+                  className="p-2 md:p-2.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 relative touch-manipulation active:scale-95 transition-transform"
                 >
                   <Bell className="w-5 h-5 md:w-6 md:h-6" />
                   {unreadCount > 0 && (
@@ -3731,16 +3730,16 @@ export default function SchoolDashboard() {
               <div className="relative" ref={settingsRef}>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className="flex items-center space-x-2 p-1.5 md:p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 touch-manipulation active:scale-95 transition-transform"
+                  className="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
                 >
                   {schoolInfo?.logo_url ? (
                     <img
                       src={schoolInfo.logo_url}
                       alt="School Logo"
-                      className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover"
+                      className="w-8 h-8 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-7 h-7 md:w-8 md:h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {user?.fullName?.charAt(0) || schoolInfo?.name?.charAt(0) || 'S'}
                     </div>
                   )}
