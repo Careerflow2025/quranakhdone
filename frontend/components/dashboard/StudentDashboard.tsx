@@ -1091,7 +1091,7 @@ export default function StudentDashboard() {
         {activeTab === 'quran' && (
           <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Highlights Summary (Read-Only) */}
-            <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
+            <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlights Summary */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
@@ -1139,7 +1139,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Main Quran Viewer - SCROLLING MODEL */}
-            <div className="col-span-8">
+            <div className="col-span-12 lg:col-span-8 xl:col-span-8">
               <div ref={mushafScrollContainerRef} className="mushaf-scroll-container" style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1571,7 +1571,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Right Panel - Controls */}
-            <div className="col-span-2 space-y-3">
+            <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3">
               {/* Zoom Control */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm">Zoom</h3>
@@ -1669,7 +1669,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Homework Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
             {transformedHomework
               .filter((hw: any) => {
                 // Status filter - check color field directly
@@ -1825,7 +1825,7 @@ export default function StudentDashboard() {
 
           {/* Assignment Cards */}
           {!assignmentsLoading && !assignmentsError && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
               {assignments
                 .filter((assignment: any) => {
                   // CRITICAL: Use assignment.highlight.color from API response (TeacherDashboard pattern)

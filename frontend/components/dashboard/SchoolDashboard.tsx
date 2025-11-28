@@ -3780,7 +3780,7 @@ export default function SchoolDashboard() {
 
               {/* Premium Stats Cards - 2 Rows */}
               <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8">
                   {/* Total Students Card */}
                   <div
                     onClick={() => setActiveTab('students')}
@@ -4216,7 +4216,7 @@ export default function SchoolDashboard() {
                       </table>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                       {filteredStudents.map((student: any) => (
                         <div key={student.id} className="bg-white border border-gray-200 rounded-xl hover:shadow-xl transition-all duration-300 overflow-hidden group">
                           <div className="p-5">
@@ -4341,7 +4341,7 @@ export default function SchoolDashboard() {
               {/* Student's Quran Interface - Full Quran Viewer */}
               <div className="grid grid-cols-12 gap-4">
                 {/* Left Panel - Highlights Summary (Read-Only) */}
-                <div className="col-span-2 space-y-3 max-h-screen overflow-hidden">
+                <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
                   <div className="bg-white rounded-lg shadow-sm p-3">
                     <h3 className="font-semibold mb-2 text-sm flex items-center">
                       <Clock className="w-3 h-3 mr-1" />
@@ -4388,7 +4388,7 @@ export default function SchoolDashboard() {
                 </div>
 
                 {/* Main Quran Viewer - SCROLLING MODEL */}
-                <div className="col-span-8">
+                <div className="col-span-12 lg:col-span-8 xl:col-span-8">
                   <div ref={mushafScrollContainerRef} className="mushaf-scroll-container" style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -4901,7 +4901,7 @@ export default function SchoolDashboard() {
                   </div>
                 </div>
                 {/* Right Panel - Controls */}
-                <div className="col-span-2 space-y-3">
+                <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3">
                   {/* Surah Selector */}
                   <div className="relative surah-dropdown-container">
                     <button
@@ -5045,7 +5045,7 @@ export default function SchoolDashboard() {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                       {teachers.map((teacher: any, index: number) => {
                         // Gradient color variations for visual diversity
                         const gradients = [
@@ -5167,7 +5167,7 @@ export default function SchoolDashboard() {
                       <p className="text-sm text-gray-400 mt-1">Parents will appear here when they register</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                       {parents.map((parent: any, index: number) => {
                         // Gradient color variations for visual diversity
                         const gradients = [
@@ -5401,7 +5401,7 @@ export default function SchoolDashboard() {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                       {classes.map((cls: any, index: number) => {
                         // Parse schedule_json to display properly
                         const schedule = cls.schedule_json || {};
