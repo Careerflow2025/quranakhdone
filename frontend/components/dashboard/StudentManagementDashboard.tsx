@@ -2264,8 +2264,8 @@ export default function StudentManagementDashboard() {
                                     backgroundPosition: 'center',
                                     fontWeight: '600'
                                   } : {}
-                                ) : (
-                                  // UNDERLINE MODE (new)
+                                ) : highlightStyle === 'underline' ? (
+                                  // UNDERLINE MODE (existing)
                                   mistakes.length === 1 ? {
                                     borderBottom: `3px solid ${
                                       mistakes[0]?.bgColor === 'bg-yellow-900' ? 'rgba(113,63,18,0.9)' :
@@ -2294,7 +2294,9 @@ export default function StudentManagementDashboard() {
                                     paddingBottom: '2px',
                                     fontWeight: '600'
                                   } : {}
-                                ))
+                                ) : {
+                                  // COLOR MODE (new) - ONLY font color, no background or underline
+                                })
                               }}
                             >
                               {word}
