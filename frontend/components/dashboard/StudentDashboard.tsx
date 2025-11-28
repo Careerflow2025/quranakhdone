@@ -37,7 +37,6 @@ import {
   Play,
   Pause,
   Star,
-  ChevronLeft,
   ChevronRight,
   ChevronDown,
   Settings,
@@ -803,19 +802,14 @@ export default function StudentDashboard() {
             {/* Left Side - Title */}
             <div className="flex items-center space-x-4">
               {activeTab === 'quran' ? (
-                <>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <div className="text-center">
-                    <h1 className="text-3xl font-arabic text-green-800">
-                      سُورَةُ {currentSurahInfo.nameArabic}
-                    </h1>
-                    <p className="text-sm text-gray-600">
-                      {currentSurahInfo.nameEnglish} • {currentSurahInfo.type} • {currentSurahInfo.verses} Verses
-                    </p>
-                  </div>
-                </>
+                <div className="text-center">
+                  <h1 className="text-3xl font-arabic text-green-800">
+                    سُورَةُ {currentSurahInfo.nameArabic}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {currentSurahInfo.nameEnglish} • {currentSurahInfo.type} • {currentSurahInfo.verses} Verses
+                  </p>
+                </div>
               ) : (
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
