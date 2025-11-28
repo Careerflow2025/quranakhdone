@@ -1499,20 +1499,9 @@ export default function StudentDashboard() {
 
                                   if (hasNotes) {
                                     return (
-                                      <span
-                                        className="inline-flex items-center justify-center text-blue-500"
-                                        style={{
-                                          fontSize: '8px',
-                                          width: '12px',
-                                          height: '12px',
-                                          marginLeft: '1px',
-                                          verticalAlign: 'top',
-                                          position: 'relative',
-                                          top: '0px'
-                                        }}
-                                      >
-                                        <MessageSquare className="w-2 h-2" strokeWidth={2.5} />
-                                      </span>
+                                      <sup className="text-blue-500 ml-0.5" style={{ fontSize: '0.5em' }}>
+                                        <MessageSquare className="w-2.5 h-2.5 inline" />
+                                      </sup>
                                     );
                                   }
                                   return null;
