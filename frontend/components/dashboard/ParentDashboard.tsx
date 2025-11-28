@@ -1463,7 +1463,7 @@ export default function ParentDashboard() {
 
             {/* Premium Stats Cards */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
               {/* Total Children Card */}
               <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-l-4 border-blue-500 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1584,7 +1584,7 @@ export default function ParentDashboard() {
 
             <div className="grid grid-cols-12 gap-4">
             {/* Left Panel - Highlights Summary (Read-Only) */}
-            <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
+            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3 max-h-screen overflow-hidden">
               {/* Highlights Summary */}
               <div className="bg-white rounded-lg shadow-sm p-3">
                 <h3 className="font-semibold mb-2 text-sm flex items-center">
@@ -1632,7 +1632,7 @@ export default function ParentDashboard() {
             </div>
 
             {/* Main Quran Viewer - Scrolling Model */}
-            <div className="col-span-12 lg:col-span-8 xl:col-span-8">
+            <div className="col-span-12 md:col-span-8 lg:col-span-8 xl:col-span-8">
               {/* Surah and Page Badges - Fixed at top */}
               <div className="mb-2 flex items-center justify-center gap-3">
                 {/* Current Surah Badge */}
@@ -2026,7 +2026,7 @@ export default function ParentDashboard() {
             </div>
 
             {/* Right Panel - Controls */}
-            <div className="col-span-12 lg:col-span-2 xl:col-span-2 space-y-3">
+            <div className="col-span-12 md:col-span-2 lg:col-span-2 xl:col-span-2 space-y-3">
               {/* Surah Selector - EXACT COPY FROM STUDENT DASHBOARD */}
               <div className="relative surah-dropdown-container">
                 <button
@@ -2207,7 +2207,7 @@ export default function ParentDashboard() {
 
             {/* Homework Cards */}
             {!homeworkLoading && !homeworkError && transformedHomework.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-4">
                 {transformedHomework
                   .filter((homework: any) => {
                     // Status filter
@@ -2364,7 +2364,7 @@ export default function ParentDashboard() {
 
             {/* Assignment Cards */}
             {!assignmentsLoading && !assignmentsError && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
                 {assignments
                   .filter((assignment: any) => {
                     // CRITICAL: Use assignment.highlight.color from API response (TeacherDashboard pattern)
@@ -2837,7 +2837,7 @@ export default function ParentDashboard() {
 
                   {/* Highlights Grid */}
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4">
                       {filteredHighlights.map((highlight: any) => {
                         const isCompleted = highlight.completed_at !== null;
                         const colorMap: any = {
@@ -3017,7 +3017,7 @@ export default function ParentDashboard() {
                     <Users className="w-5 h-5 mr-2 text-indigo-600" />
                     Linked Children
                   </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
                     {children.map((child: any) => (
                       <div key={child.id} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
                         <div className="flex items-center justify-between">

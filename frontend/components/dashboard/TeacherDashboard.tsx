@@ -509,7 +509,7 @@ export default function TeacherDashboard() {
 
             {/* Premium Stats Cards */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
 
               {/* Total Students Card */}
               <div
@@ -652,7 +652,7 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Homework Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
               {transformedHomework
                 .filter((hw: any) => {
                   // Status filter
@@ -771,7 +771,7 @@ export default function TeacherDashboard() {
               </div>
 
               {/* Stats Row */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-4 mt-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-3 md:gap-4 mt-6">
                 <div className="bg-white bg-opacity-20 rounded-lg p-4">
                   <p className="text-purple-100 text-sm">Total</p>
                   <p className="text-2xl font-bold">{safeHighlights.length}</p>
@@ -960,7 +960,7 @@ export default function TeacherDashboard() {
 
                       {/* Highlights Grid */}
                       <div className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                           {group.highlights.map((highlight: any) => {
                             const isCompleted = highlight.completed_at !== null;
                             const colorMap: any = {
@@ -1088,7 +1088,7 @@ export default function TeacherDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6">
                 {myClasses.map((cls: any) => (
                   <div
                     key={cls.id}
@@ -1365,7 +1365,7 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Assignment Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6">
               {transformedAssignments
                 .filter((assignment: any) => {
                   // Status filter
